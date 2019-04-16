@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Plateforme d'attribution de ressources de {{mesoc}}</title>
+	<meta charset="UTF-8" />
+	<link rel="icon" href="{{ favicon }}" />
+	{% for c in css %}
+		<link rel="stylesheet" href="{{ c }}" type="text/css" media="screen" />
+	{% endfor %}
+	{% for j in js %}
+		<script type="text/javascript" src="{{ j }}" ></script>
+	{% endfor %}
+</head>
+<body>
+	<header id="header">
+		<img src="{{ banniere }}" alt="logo" />
+		<div id="co_deco">
+			<p class="gauche petit">
+				{% for s in etats.sessions %}
+				    ETAT DE LA SESSION <strong>{{ s.id_session }}</strong>=<strong>{{ s.libelle }}</strong><br />
+				{% endfor %}
+				{% if etats.projet %}
+				    ETAT DU PROJET  <strong>{{ etats.projet.id_projet }}</strong>=<strong>{{ etats.projet.libelle }}</strong><br />
+				{% endif %}
+				{% if etats.projet_test %}
+				    ETAT DU PROJET TEST  <strong>{{ etats.projet_test.id_projet_test }}</strong>=<strong>{{ etats.projet_test.libelle }}</strong><br />
+				{% endif %}
+				{% if etats.version %}
+					ETAT DE LA VERSION <strong>{{ etats.version.id_version }}</strong>=<strong>{{ etats.version.libelle }}</strong><br />
+				{% endif %}
+			</p>
+			<p class="droite">
+				{{ print_r }}
+				{% for c in conn %}
+					{% for l in c %}
+						{% if l.texte %}
+							{% if l.url %}
+								<a href="{{ l.url }}">{{ l.texte }}</a>
+							{% else %}
+								<strong>{{ l.texte }}</strong>
+							{% endif %}
+						{% endif %}
+					{% endfor %}
+					<br />
+				{% endfor %}
+			</p>
+		</div>
+	</header>
+	<div id="fil_ariane">
+	{% for a in ariane %}
+		{% if a.url %}
+			<a href="{{a.url}}">{{a.texte}}</a> ->
+		{% else %}
+			{{a.texte}}
+		{% endif %}
+	{% endfor %}
+	</div>
+		

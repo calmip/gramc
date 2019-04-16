@@ -1,0 +1,45 @@
+{# app/Resources/views/default/nouveau_profil.html.twig #}
+{% extends 'default/profil.html.twig' %}
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+
+{# ################################################################################################### #}
+
+ 
+
+{# ################################################################################################### #}
+
+{% block body %}
+
+<section>
+<h2>Vos accès à la plateforme d'attribution des ressources</h2>
+
+<div class="message warning"> 
+
+    <em>
+    Nous n'avons pas trouvé cette adresse {{ email }} dans notre base de données. Peut-être voulez-vous ouvrir un compte ?
+    </em>
+
+</div>
+
+<div class="message info">
+
+    <h2>ATTENTION</h2>
+    Si vous êtes <strong>chercheur, enseignant-chercheur ou ingénieur permanent-e</strong>,
+    affecté-e à un <strong>laboratoire de la région Midi-Pyrénées</strong>,
+    <strong>vous pouvez ouvrir un compte vous-même</strong> sur cette plateforme.
+    <br />
+    Sinon, vous devez demander à votre responsable de projet de vous déclarer en tant que collaborateur-trice,
+    et votre compte sera automatiquement ouvert.
+    
+</div>
+
+<p><em>Veuillez s'il vous plaît renseigner complètement votre profil</em></p>
+
+{{ form_start(form) }}
+{{ form_widget(form) }} 
+{{ form_end(form) }}
+
+
+{% endblock body %}
+

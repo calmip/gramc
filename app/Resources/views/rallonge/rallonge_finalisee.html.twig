@@ -1,0 +1,20 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+
+    <div class="message info">L'expertise de la demande {{  rallonge }} a bien été finalisée</div>  
+    
+    <nav>
+        <ul>
+            <li>
+                <a class="lien_actif" href="{{ path('rallonge_affectation') }}" title="retourner à votre liste des demandes">RETOUR</a>
+            </li>
+        </ul>
+    </nav>
+    
+</section>    
+
+
+{% endblock %}

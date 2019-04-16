@@ -1,0 +1,134 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+
+{{ parent() }}
+
+<script   src="{{ asset('js/compteur_caracteres.js') }}" ></script>
+<script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
+
+{% endblock myjavascripts %}
+
+{%- block choice_widget_expanded -%}
+    {%- for child in form %}
+        {{- form_widget(child) -}}
+        {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+    {% endfor -%}
+{%- endblock choice_widget_expanded -%}
+
+{% form_theme edit_form _self %}
+
+{# ######################################################################### #}
+
+{% block body %}
+
+<section>
+
+    <h2>Finalisation de la réponse à la demande de rallonge {{ rallonge }}</h2>
+
+    <div class="message warning">
+        <h2>ATTENTION</h2>
+            En tant que président du comité d'attributions, vous devez <strong>finaliser </strong> la réponse à cette demande de rallonges<br>
+            Vous pouvez:<ul>
+                <li>Compléter le commentaire pour le comité</li>
+                <li>Modifier le nombre d'heures attribuées</li>
+                <li>Ajouter un commentaire qui sera envoyé au responsable du projet.</li>
+                </ul>
+            Lorsque vous cliquerez sur <strong>ENVOYER</strong>, le responsable du projet sera automatiquement notifié de votre décision
+    </div>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Titre</th>
+            </tr>
+            <tr>
+                <td class="center">{{ rallonge.version.prjTitre }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Nombre d'heures demandées</th>
+            </tr>
+            <tr>
+                <td class="center">{{ rallonge.demHeures }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="menu_expertiser" class="center">
+        <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation de l'année dernière" title="Visualiser la consommation de l'année dernière"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
+        <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation de cette année" title="Visualiser la consommation de cette année"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneeCour })) }}" />
+        <a href="{{ path('consulter_version', { 'id' : rallonge.version.projet.idProjet, 'version' : rallonge.version.idVersion } ) }}" target="_blank"><img class="bouton_poussoir" src="{{ asset('icones/consulter64.png') }}" title="Consulter le projet initial" alt="Consulter le projet initial" /></a>
+        <a href="{{ path('rallonge_consulter', { 'id' : rallonge.idRallonge } ) }}" target="_blank"><img style="background-color:grey" class="bouton_poussoir" src="{{ asset('icones/rallonge64.png') }}" title="Consulter la demande de rallonge" alt="Consulter la demande de rallonge" /></a>
+    </div>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {# ############################################################################ #}
+
+    {{ form_start(edit_form) }}
+
+    <fieldset>
+        <legend>Expertise</legend>
+
+        <p>
+            <strong>Validation :</strong>{{ form_widget(edit_form.validation ) }}
+        </p>
+
+        <div class="message info">
+            <h2>Commentaire pour le comité</h2>
+            Ce commentaire restera au sein du comité d'attribution, il a été écrit par l'expert mais vous pouvez le compléter
+        </div>
+
+        <p class="center">
+            {{  form_label(edit_form.commentaireInterne, "Commentaire interne") }}
+            <br><span id="form_commentaireInterne_cpt" class="petit"></span>
+            {{ form_widget(edit_form.commentaireInterne, { 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 50 } }) }}
+        </p>
+
+        <div class="message info">
+            <h2>Commentaire pour le responsable du projet</h2>
+            Ce commentaire sera automatiquement envoyé au responsable du projet
+        </div>
+
+        <p class="center">
+            {{  form_label(edit_form.commentaireExterne, "Commentaire externe") }}
+            <br><span id="form_commentaireExterne_cpt" class="petit"></span>
+            {{ form_widget(edit_form.commentaireExterne, { 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 50 } }) }}
+        </p>
+
+        <p>
+            {{  form_label(edit_form.nbHeuresAtt, "Nombre d'heures attribuées") }}
+            {{ form_widget(edit_form.nbHeuresAtt ) }}
+        </p>
+    </fieldset>
+
+    {# ############################################################################ #}
+
+    <fieldset>
+        <legend>Sauvegardez vos modifications</legend>
+            {{ form_widget(edit_form.enregistrer) }}
+            <input value="Annuler" name="Annuler" type="reset">
+            {{ form_widget(edit_form.envoyer) }}
+    </fieldset>
+    {{ form_end(edit_form) }}
+
+    <div id="graph_1" class="graphique"></div>
+    <div id="graph_2" class="graphique"></div>
+
+</section>
+{% endblock %}

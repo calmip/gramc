@@ -1,0 +1,22 @@
+Bonjour {{ object.responsable  |raw }},
+
+L'expertise de votre projet {{ object.projet.idProjet  |raw }} a été traitée.
+
+Cette demande a été acceptée.
+
+Le nombre d'heures demandées  est : {{ object.demHeures |raw }}
+Le nombre d'heures attribuées est : {{ object.expertise[0].nbHeuresAtt |raw }}
+{% if( object.expertise[0].nbHeuresAttEte > 0 ) %}
+Parmi ces heures, nous vous demandons d'utiliser {{ object.expertise[0].nbHeuresAttEte |raw }}h avant le mois de Septembre.
+{% endif %}
+
+Commentaire de l'expert :
+{{ object.expertise[0].commentaireExterne |raw }}
+
+{% if (not object.isProjetTest) %}
+Commentaire de session du comité d'attributions de {{mesoc}} :
+{{ object.session.commGlobal |raw }}
+{% endif %}
+
+Cordialement,
+l'équipe {{mesoc}}

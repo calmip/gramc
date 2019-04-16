@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Rapportactivites list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Annee</th>
+                <th>Nomfichier</th>
+                <th>Taille</th>
+                <th>Filedata</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for rapportActivite in rapportActivites %}
+            <tr>
+                <td><a href="{{ path('rapportactivite_show', { 'id': rapportActivite.id }) }}">{{ rapportActivite.annee }}</a></td>
+                <td>{{ rapportActivite.nomFichier }}</td>
+                <td>{{ rapportActivite.taille }}</td>
+                <td>{{ rapportActivite.filedata }}</td>
+                <td>{{ rapportActivite.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('rapportactivite_show', { 'id': rapportActivite.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('rapportactivite_edit', { 'id': rapportActivite.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('rapportactivite_new') }}">Create a new rapportActivite</a>
+        </li>
+    </ul>
+{% endblock %}

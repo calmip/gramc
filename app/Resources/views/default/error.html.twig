@@ -1,0 +1,13 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+    <div class="message erreur"> {% if  titre is defined %}<h2>{{ titre }}</h2>{% endif %} {{ message }}</div>
+{% else %}
+    <div class="message warning">
+    <h2>Erreur</h2>Vous ne devez pas être là</div>
+{% endif %}
+
+{% endblock body %}
+

@@ -1,0 +1,16 @@
+Bonjour {{ individu.prenom |raw }} {{ individu.nom |raw }}
+
+Vous pouvez maintenant demander des ressources pour travailler sur le mésocentre {{mesoc}}.
+La plateforme d'attribution des ressources connait l'adresse électronique suivante:
+
+                    {{ individu.mail |raw }}
+
+Vous utilisez l'établissement suivant pour vous authentifier:
+
+                    {{ etab |raw }}
+
+Merci de conserver ce mail, vous en aurez besoin à l'avenir pour vous souvenir de ces paramètres d'authentification.
+
+Cordialement,
+
+L'équipe {{mesoc}}

@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Individu</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Creationstamp</th>
+                <td>{% if individu.creationStamp %}{{ individu.creationStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ individu.nom }}</td>
+            </tr>
+            <tr>
+                <th>Prenom</th>
+                <td>{{ individu.prenom }}</td>
+            </tr>
+            <tr>
+                <th>Mail</th>
+                <td>{{ individu.mail }}</td>
+            </tr>
+            <tr>
+                <th>Admin</th>
+                <td>{% if individu.admin %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Expert</th>
+                <td>{% if individu.expert %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Responsable</th>
+                <td>{% if individu.responsable %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Collaborateur</th>
+                <td>{% if individu.collaborateur %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>President</th>
+                <td>{% if individu.president %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Statut</th>
+                <td>{% if individu.statut %}{{  individu.statut }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Desactive</th>
+                <td>{% if individu.desactive %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Idindividu</th>
+                <td>{{ individu.idIndividu }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('individu_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('individu_edit', { 'id': individu.idIndividu }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

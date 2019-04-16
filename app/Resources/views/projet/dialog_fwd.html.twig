@@ -1,0 +1,39 @@
+{% extends 'default/base.html.twig' %}
+{% block body %}
+
+<h2>Attention !!!</h2>
+
+
+{% if version.cgu %}
+
+<div class="message warning">
+    Vous êtes sur le point d'envoyer {{ version.idVersion }} en expertise<br />
+    <em>Le responsable du projet a déjà accepté les CGU</em><br />
+    <em><strong> Êtes-vous sûr de vouloir faire cela ? </strong></em><br />
+    
+    <form method="post" action="" >
+        <input type="submit" id="confirm_oui" name="confirmation" value="OUI" />
+        <input type="submit" id="confirm_non" name="confirmation" value="NON" />
+    </form>
+</div>
+
+{% else %}
+
+<div class="message warning">
+    Vous êtes sur le point d'envoyer {{ version.idVersion }} en expertise
+</div>
+<div class="message erreur">
+    <strong>Le responsable du projet n'a pas accepté les CGU </strong>
+</div>
+<div class="message warning">
+    <em><strong> Êtes-vous sûr de vouloir faire cela ? </strong></em><br />
+    
+    <form method="post" action="" >
+        <input type="submit" id="confirm_oui" name="confirmation" value="OUI" />
+        <input type="submit" id="confirm_non" name="confirmation" value="NON" />
+    </form>
+</div>
+
+{% endif %}
+
+{% endblock %}

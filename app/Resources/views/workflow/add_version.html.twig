@@ -1,0 +1,62 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block body %}
+    <h2>État du projet {{ projet }}</h2>
+
+
+    <table id="session">
+        <tr>
+            <th>Projet {{ projet }}</th>
+            <td>{{ projet.getLibelleEtat }} {{ form_start( projet_form) }}
+                    {{ form_widget( projet_form.etat) }}
+                    {{ form_end( projet_form) }}</td>
+        </tr>
+       {{ form_start(signal_form) }}
+       <tr>
+          <th>Signal</th>
+          <td>{{ form_widget(signal_form.signal) }}</td>
+        </tr>
+        <tr>
+          <th></th>
+          <td>{{ form_widget(signal_form.submit) }}</td> 
+       </tr>
+       {{ form_end(signal_form) }} 
+       {{ form_start(form) }} 
+       <tr>
+            <th>Session</th>
+            <td>{{ form_widget(form.session) }}</td>
+        </tr>
+        <tr>
+            <th></th>
+            <td>{{ form_widget(form.submit) }}</td>
+        </tr>
+        {{ form_end(form) }}
+    </table>         
+    
+
+    <h2>Versions du projet {{ projet }}</h2>
+    <table id="versions">
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Session</th>
+                <th>état</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for version in versions %}
+            <tr>
+                <td>{{ version.idVersion }}</td>
+                <td>{{ version.session }}{% if( not version.session == null ) %} {{ version.session.getLibelleEtat }}{% endif %}</td>
+                <td>
+                    {{ form_start( etat_view_forms[version.getIdVersion]) }}
+                    {{ form_widget( etat_view_forms[version.getIdVersion].etat) }}
+                    {{ form_end( etat_view_forms[version.getIdVersion]) }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

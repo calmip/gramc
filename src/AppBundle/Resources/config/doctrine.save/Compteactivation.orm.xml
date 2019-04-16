@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Compteactivation" table="compteActivation">
+    <indexes>
+      <index name="id_individu" columns="id_individu"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="key" columns="key"/>
+    </unique-constraints>
+    <id name="key" type="string" column="key" length="35">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="stamp" type="datetime" column="stamp" nullable="false">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>
+    <many-to-one field="idIndividu" target-entity="Individu" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_individu" referenced-column-name="id_individu"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

@@ -1,0 +1,18 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+
+    <h2>Téléverser votre rapport d'activité pour l'année 2017</h2>
+
+    <div class="message erreur">{{ erreur | raw }}</div>
+
+   <nav>
+        <ul>
+            <li><a class="lien_actif" href="{{ path('consulter_version', { 'id' : projet, 'version' : version } ) }}" title="">Retourner au projet</a></li>
+        </ul>
+    </nav>
+</section>
+
+{% endblock %}

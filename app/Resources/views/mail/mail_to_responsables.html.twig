@@ -1,0 +1,42 @@
+{% extends 'default/base.html.twig' %}
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+
+{# ######################################################################### #}
+
+{% block body %}
+<h2>Responsables n'ayant pas encore renouvelé leur projet pour la session {{session }}</h2>
+
+<section>
+{% if sent == false %}
+    <div class="message info">Le message sera envoyé aux responsables des projets indiqués ci-dessous </div>
+
+    <p>
+    {{ form_start(form) }}
+    {{ form_widget( form)}}
+    {{ form_end(form) }}
+    </p>
+
+    <table><tbody>
+    {% for responsable in responsables %}
+	<tr>
+	    <td>{{ responsable.responsable.prenom }}</td>
+	    <td>{{ responsable.responsable.nom }}</td>
+	    <td>{{ responsable.responsable.mail }}</td>
+	    <td>
+		{% for projet in responsable.projets %}
+		{{ projet }}
+		{% endfor %}
+	    </td>
+	</tr>
+    {% endfor %}
+    </tbody></table>
+
+{% else %}
+
+    <div class="message info">Le message a bien été envoyé</div>
+
+{% endif %}
+</section>
+{% endblock body %}

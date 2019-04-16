@@ -1,0 +1,27 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+    <h2>Projet {{ projet }}, session {{  session }}: Confirmation d'envoi à l'expert</h2>
+
+    {% if cgu=='KO' %}
+        <div class="message erreur">Vous ne pouvez pas envoyer votre projet en expertise si vous n'acceptez pas les CGU</div>
+    {% endif %}
+    
+    <div class="message warning">
+        <h2>Attention</h2>Vous êtes sur le point d'envoyer votre projet pour expertise.<br>
+        Cette manipulation clôt votre demande d'attribution de ressources, <strong>elle est irréversible</strong>
+
+    {{ form_start(form) }}
+    
+    <strong>j'ai lu et approuve les <a href="{{mesoc_cgu}}">Conditions Générales d'Utilisation</a> </strong> {{ form_widget(form.CGU) }}<br />
+    {{ form_widget(form.annuler) }}
+    {{ form_widget(form.envoyer) }}
+    {{ form_end(form) }}
+
+    </div>
+
+</section>
+
+{% endblock body %}

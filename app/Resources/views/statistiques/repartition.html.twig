@@ -1,0 +1,96 @@
+{% extends 'default/base.html.twig' %}
+
+{% block menu %}
+<nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
+{% endblock menu %}
+
+{% block myjavascripts %}
+<script type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
+
+
+{% block body %}
+
+<section>
+
+<h1>Répartition des heures par thématique de l'année {{ annee }}</h1>
+
+{{ form_start(form) }}
+{{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+{{ form_end(form) }}
+
+<table>
+    <thead>
+         <tr>
+        <td>Nombre de collaborateurs</td>
+        <td>Nombre de projets</td>
+    </tr>
+    </thead>
+    <tbody>
+        {% for key,value in collaborateurs %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table>
+    <thead>
+         <tr>
+        <td>Nombre de comptes</td>
+        <td>Nombre de projets</td>
+    </tr>
+    </thead>
+    <tbody>
+        {% for key,value in comptes %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table>
+    <thead>
+         <tr>
+        <td>Projets sans compte</td>
+         </tr>
+    </thead>
+    <tbody>
+        <tr><td>
+        {% for projet in projets_sans_compte %}
+            <a href="{{ path('consulter_version', { 'id': projet }) }}" title="Consulter le projet">{{ projet }}</a>
+        {% endfor %}
+        </td></tr>
+    </tbody>
+</table>
+
+<br />
+
+
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <img class="figure" src="data:image/png;base64, {{ histogram_collaborateurs }}"  title="cliquez pour afficher la figure en taille réelle" > 
+            </td>
+            <td>
+                <img class="figure" src="data:image/png;base64, {{ histogram_comptes }}"   title="cliquez pour afficher la figure en taille réelle">
+            </td>
+        </tr>
+        <tr>
+            <td>Nombre de projets par nombre de collaborateurs</td>
+            <td>Nombre de projets par nombre de comptes</td>
+        <tr>
+    </tbody>
+</table>
+<div id="dialog"></div>
+
+
+</section>
+
+{% endblock %}

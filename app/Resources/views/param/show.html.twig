@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Param</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Cle</th>
+                <td>{{ param.cle }}</td>
+            </tr>
+            <tr>
+                <th>Val</th>
+                <td>{{ param.val }}</td>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <td>{{ param.id }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('param_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('param_edit', { 'id': param.id }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

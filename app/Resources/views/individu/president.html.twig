@@ -1,0 +1,36 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block choice_widget_expanded -%}
+
+    <ul class="inline-list" style="list-style-type:none">
+            {% for child in form %}
+                <li>{{ form_widget(child,
+                        { parent_label_class: label_attr.class|default(''), }
+                        )
+                    }} {{ form_label(child) }}
+                </li>
+            {% endfor %}
+    </ul>
+
+{% endblock choice_widget_expanded %}
+
+{% form_theme form _self %}
+
+
+{# ######################################################################################## #}
+
+{% block body %}
+
+    <h1>Président(s)</h1>
+
+        <div class="message info">
+            <p>Vous pouvez choisir un ou plusieurs utilisateurs ayant le rôle de président, parmi les <strong>experts</strong> ou les <strong>administrateurs</strong>.</p>
+        </div>
+
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+
+
+{% endblock %}

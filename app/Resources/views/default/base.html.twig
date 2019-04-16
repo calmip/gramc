@@ -1,0 +1,183 @@
+{# app/Resources/views/default/base.html.twig #}
+
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>Plateforme d'attribution de ressources de {{mesoc}}</title>
+        <link rel="icon" href="{{ absolute_url(asset('icones/favicon.ico')) }}"  />
+
+{% block stylesheets %}
+        <link href="{{ absolute_url(asset('js/jquery-ui/jquery-ui.css')) }}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{{ absolute_url(asset('js/jquery-upload-file-master/css/uploadfile.css') ) }}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{{ absolute_url(asset('js/DataTables-1.10.11/media/css/jquery.dataTables.min.css') ) }}" rel="stylesheet" type="text/css" media="screen" />
+
+        <link href="{{ absolute_url(asset('css/defaut.css'))  }}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{{ absolute_url(asset('css/gramc2.css') ) }}" rel="stylesheet" type="text/css" media="screen" />
+{% endblock stylesheets %}
+
+{% block mystyles %}
+{% endblock mystyles %}
+
+{% block javascripts %}
+        <script   src="{{ absolute_url(asset('js/jquery-2.1.4.js') ) }}" ></script>
+        <script   src="{{ absolute_url(asset('js/jquery-ui/jquery-ui.js') ) }}" ></script>
+        <script   src="{{ absolute_url(asset('js/header_fixe.js') ) }}" ></script>
+{% endblock %}
+
+{% block myjavascripts %}
+{% endblock myjavascripts %}
+
+{% block datatables %}
+        <script   src="{{ absolute_url(asset('js/DataTables-1.10.11/media/js/jquery.dataTables.min.js') )  }}" ></script>
+        <script   src="{{ absolute_url(asset('js/datatable.js') ) }}" ></script>
+{% endblock datatables %}
+
+    </head>
+
+
+    <body>
+        {% block header %}
+        <header id="header">
+            <img src="{{ asset('icones/banniere.png') }}" alt="logo" />
+
+            <div id="co_deco">
+
+            {% if app.debug %}
+                <p class="gauche petit">
+                {% for session in init.sessions_non_terminees() %}
+                    ETAT DE LA SESSION <strong>{{session.IdSession}}</strong>=<strong>{{session.LibelleEtat}}</strong><br />
+                {% endfor %}
+                </p>
+            {% endif %}
+
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <div>
+                <p class="droite">
+                {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                    SUDO par {{  app.session.get('real_user') }}</p><p class="droite">
+                {% endif %}
+                {% if app.debug %}
+                    {{ app.user.prenom }} {{ app.user.nom }} ({{ app.user.id}})
+                {% else %}
+                    {{ app.user.prenom }} {{ app.user.nom }}
+                {% endif %}
+                </p>
+                <p class="droite">{{ app.user.statut }} {{ app.user.etab }}</p>
+                <p class="droite">{{  init.tronquer_chaine(app.user.labo,15) }}</p>
+                </div>
+
+                <p class="droite"><a href=" {{ path('profil') }}">Mettre à jour mon profil</a>
+                <a href=" {{ path('deconnexion') }}">Déconnexion</a></p>
+
+            {% else %}
+                <p class="droite"><a class="droite" href=" {{ path('connexion') }}">connexion</a></p>
+                {% if app.debug %}
+
+                    <p class="droite"><a href=" {{ path('connexion_dbg') }}">connexion (DBG)</a></p>
+                {% endif %}
+            {% endif %}
+
+            </div>
+            <br />
+        </header>
+        {% endblock header %}
+
+    {% block fil_ariane %}
+
+        <div id="fil_ariane">
+        <br>
+        <a class="a_ariane" href="{{ path('accueil') }}">Accueil</a> >
+        {% if is_granted('ROLE_DEMANDEUR') %}
+            <a class="a_ariane" href="{{ path('projet_accueil') }}">Demandeur</a> |
+        {% endif %}
+        {% if is_granted('ROLE_EXPERT') %}
+            <a class="a_ariane" href="{{ path('expertise_liste') }}">Expert</a> |
+        {% endif %}
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="a_ariane" href="{{ path('admin_accueil') }}">Administrateur</a> |
+        {% endif %}
+        {% if is_granted('ROLE_PRESIDENT') %}
+            <a class="a_ariane" href="{{ path('president_accueil') }}">Président</a> |
+        {% endif %}
+
+        </div> <!-- fil_ariane -->
+
+    {% endblock fil_ariane %}
+
+
+    {# ###################################################################### #}
+
+    {% block menu %}
+    {% endblock menu %}
+
+    {% block before_body %}
+    {% endblock before_body %}
+
+    {% block body %}
+    {% endblock body  %}
+
+    {% block after_body %}
+    {% endblock after_body %}
+
+
+    <br><br>
+
+    {# ###################################################################### #}
+
+
+    {% block footer %}
+        {# footer #}
+        <footer>
+            {{ init.gramc_date('Y-m-d') }} -
+
+            {% block message %}
+
+                {% if  init.getLibelleEtatSessionCourante == 'CREE_ATTENTE' %}
+                    La prochaine session d'attribution sera ouverte le <strong>{{ init.prochaine_session }}</strong>
+
+                {% elseif  init.getLibelleEtatSessionCourante == 'EDITION_DEMANDE'%}
+
+                    {% if init.cette_session()['jours'] == 0 %}
+                    vous avez encore <strong>JUSQU'A CE SOIR</strong> pour envoyer votre projet pour expertise
+
+                    {% elseif init.cette_session()['jours'] > 0 %}
+                        vous avez jusqu'au <strong>{{ init.cette_session()['fin_sess'] }}  </strong> pour envoyer votre projet pour expertise
+
+                    {% else %}
+                    ATTENTION, la date de fin de session est dépassée
+                        {% if init.cette_session()['jours'] == -1 %}
+                            <strong>d'un jour</strong>
+                       {% else %}
+                            <strong>de {{ - init.cette_session()['jours'] }} jours</strong>
+                        {% endif %}
+
+                    {% endif %}
+
+                {% else %}
+                Prochaine session d'attribution: <strong>
+                    {%  if init.prochaine_session_saison.type == 'P' %}
+                    Printemps {{  init.prochaine_session_saison.annee }}
+                    {% else %}
+                    Automne {{  init.prochaine_session_saison.annee }}
+                    {% endif %}
+                </strong>
+                {% endif %}
+
+            {% endblock message %}
+
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <span class="petit">gramc {{ version_gramc }} <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a></span>
+            {% else %}
+                <span class="petit">gramc {{ version_gramc }} {{ init.mail_replace(mailadmin) }}</span>
+            {% endif %}
+            <span class="petit"><a href="{{ path('mentions_legales') }}" title="Lire les mentions légales">Mentions légales</a></span>
+
+        </footer>
+
+    {% endblock footer %}
+
+    </body>
+
+</html>
+

@@ -1,0 +1,121 @@
+<td>
+    <a class="suppression"  href="{{ path('remplacer_utilisateur',  { 'id': individu.id }) }}?" title="Supprimer">
+    <img class="bouton_poussoir" src="{{ asset('icones/petitdelete.png') }}" alt="Supprimer" />
+    </a>
+</td>
+
+<td>
+    <a class="modification" href="{{ path('individu_modify',  { 'id': individu.id }) }}?" title="Modifier le profil">
+    <img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" />
+    </a>
+</td>
+
+{# ################################################################################################# #}
+
+{% if ( is_granted('ROLE_ALLOWED_TO_SWITCH') and  not is_granted('ROLE_PREVIOUS_ADMIN') ) %}
+
+<td>
+    <a class="sudo" href="{{ path('sudo',  { 'id': individu.id }) }}?" title="Changer d'identité">
+    <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" />
+    </a>
+</td>
+
+{% else %}
+
+<td>
+    &nbsp;
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
+
+{% if( individu.desactive) == true %}
+
+<td style="text-align:center">
+        <img src="{{ asset('icones/inactif.png') }}" alt="rouge" title="Désactivé par l'administrateur" />
+        &nbsp;
+        <a class="activation" href="{{ path('activer_utilisateur',  { 'id': individu.id }) }}?" title="Réactiver">
+        <img class="bouton_on" src="{{ asset('icones/forbidden.png') }}" alt="Désactiver" /></a>
+        <span style="display:none">0</span>
+       
+</td>
+
+{% elseif( individu.IDP == null ) %}
+
+<td style="text-align:center">
+        <img src="{{ asset('icones/bientotactif.png') }}" alt="jaune" title="Peut activer son compte à gramc" />
+        &nbsp;
+        <a class="activation" href="{{ path('desactiver_utilisateur',  { 'id': individu.id }) }}?" title="Désactiver">
+        <img class="bouton_off" src="{{ asset('icones/forbidden.png') }}" alt="Désactiver" /></a>
+        <span style="display:none">1</span>
+</td>
+
+{% elseif( individu.desactive) == false %}
+
+<td style="text-align:center">
+        <img src="{{ asset('icones/actif.png') }}" alt="vert" title="Peut se connecter à gramc" />
+        &nbsp;
+        <a class="activation" href="{{ path('desactiver_utilisateur',  { 'id': individu.id }) }}?" title="Désactiver">
+        <img class="bouton_off" src="{{ asset('icones/forbidden.png') }}" alt="Désactiver" /></a>
+        <span style="display:none">1</span>
+</td>
+
+{% endif %}
+
+
+
+{# ################################################################################################# #}
+
+{% if( individu.expert) == false %}
+
+<td style="text-align:center">
+    <a class="expert" href="{{ path('devenir_expert',  { 'id': individu.id }) }}?" title="Devenir expert">
+    <img class="bouton_off" src="{{ asset('icones/expert.png') }}" alt="Devenir expert" />
+    </a>
+    <span style="display:none">0</span>
+</td>
+
+{% else %}
+
+<td style="text-align:center">
+    <a class="thematiques" href="{{ path('choisir_thematique', { 'id': individu.id }) }}?" title="Choisir les thématiques de cet expert">
+    <img class="bouton_off" src="{{ asset('icones/thematiques.png') }}" alt="Choisir les thématiques"></a>
+    <a class="expert" href="{{ path('plus_expert', { 'id': individu.id }) }}?" title="Cesser d'être expert">
+    <img class="bouton_on" src="{{ asset('icones/expert.png') }}" alt="Cesser d'être expert" />
+    </a>
+    <span style="display:none">1</span>
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
+{% if( individu.admin) == true %}
+
+<td style="text-align:right">
+    <a class="admin" href="{{ path('plus_admin',  { 'id': individu.id }) }}?" title="Retirer les droits admin">
+    <img class="bouton_on" src="{{ asset('icones/admin.png') }}" alt="Ne plus être admin" />
+    </a>
+    <span style="display:none">1</span>
+</td>
+
+{% else %}
+
+<td style="text-align:left">
+    <a class="admin" href="{{ path('devenir_admin',  { 'id': individu.id }) }}?" title="Devenir admin">
+   <img class="bouton_off" src="{{ asset('icones/admin.png') }}" alt="Devenir admin" />    
+    </a>
+    <span style="display:none">0</span>
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
+<td>{{ individu.prenom }}</td>
+<td>{{ individu.nom }}</td>
+<td>{{ individu.mail }}</td>
+<td>{{ individu.IDP }}</td>
+<td>{{ individu.creationStamp | date('Y-m-d') }}</td>

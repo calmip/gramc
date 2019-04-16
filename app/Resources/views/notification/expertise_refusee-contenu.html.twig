@@ -1,0 +1,17 @@
+Cher(e) président(e) du comité d'attribution,
+
+L'expertise du projet {{ object.projet |raw }} a été {% if( object.expertise[0].validation == true ) %}ACCEPTÉE{% else %}REFUSÉE{% endif %}.
+
+Nous vous laissons le soin de prendre contact avec {{ object.responsable  |raw }}, responsable du projet
+Son adresse: {{ object.responsable.mail  |raw }}
+
+Le nombre d'heures demandées était : {{ object.demHeures  |raw }}
+URL du projet                      : {{ absolute_url(path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
+
+Commentaire de l'expert :
+{{ object.expertise[0].commentaireExterne |raw }}
+
+Commentaire de l'expert à destination du comité de programme {{mesoc}} :
+{{ object.expertise[0].commentaireInterne |raw }}
+
+Cordialement

@@ -1,0 +1,17 @@
+{# app/Resources/views/default/connexion_dbg.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+    <div class="message warning">
+
+    <h2>Erreur de déconnexion</h2>Vous ne devez pas accéder cette page directement, vous n'êtes pas déconnecté</div>
+{% else %}    
+    <div class="message warning">
+
+    <h2>Déconnexion</h2>Veuillez arrêter <strong>complètement</strong> votre navigateur</div>
+{% endif %}
+    
+{% endblock %}
+ 

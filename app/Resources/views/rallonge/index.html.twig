@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Rallonges list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Etatrallonge</th>
+                <th>Demheures</th>
+                <th>Attrheures</th>
+                <th>Prjjustifrallonge</th>
+                <th>Majind</th>
+                <th>Majstamp</th>
+                <th>Attraccept</th>
+                <th>Idrallonge</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for rallonge in rallonges %}
+            <tr>
+                <td><a href="{{ path('rallonge_show', { 'id': rallonge.idRallonge }) }}">{{ rallonge.etatRallonge }}</a></td>
+                <td>{{ rallonge.demHeures }}</td>
+                <td>{{ rallonge.attrHeures }}</td>
+                <td>{{ rallonge.prjJustifRallonge }}</td>
+                <td>{{ rallonge.majInd }}</td>
+                <td>{% if rallonge.majStamp %}{{ rallonge.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+                <td>{% if rallonge.attrAccept %}Yes{% else %}No{% endif %}</td>
+                <td>{{ rallonge.idRallonge }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('rallonge_show', { 'id': rallonge.idRallonge }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('rallonge_edit', { 'id': rallonge.idRallonge }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('rallonge_new') }}">Create a new rallonge</a>
+        </li>
+    </ul>
+{% endblock %}

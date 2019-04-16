@@ -1,0 +1,22 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<h1>Passer la responsabilité du projet</h1>
+
+<div class="message info">
+<h2>Trouver un(e) autre responsable</h2>
+Vous avez la possibilité de passer la responsabilité du projet à un autre collaborateur(trice)
+à condition que cette personne ait <strong>un poste permanent</strong> dans un <strong>laboratoire de la région</strong>
+</div>
+
+<h1>Choisir un nouveau responsable</h1>
+
+
+
+{{ form_start(change_form) }}
+{{ form_widget(change_form.responsable) }}{{ form_widget(change_form.submit) }}
+{{ form_end(change_form) }}
+
+
+{% endblock %}

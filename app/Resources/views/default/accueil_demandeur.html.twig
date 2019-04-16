@@ -1,0 +1,44 @@
+{# app/Resources/views/default/accueil.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+{% if is_granted('ROLE_DEMANDEUR') %}
+
+<section>
+<h2>Projets gérés par {{ app.user.prenom }} {{ app.user.nom }}</h2>
+
+<div class="message warning"> 
+
+<h2>ATTENTION</h2>
+Si vous avez déjà des projets en cours sur {{mesoc}}, <strong>vous devriez les retrouver sur cet écran</strong>.
+Si ce n'est pas le cas, merci de <strong>commencer par prendre contact avec nous</strong>.
+<br />
+<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>
+
+</div>
+
+{% if  init.getLibelleEtatSessionCourante !=  'EDITION_DEMANDE' %}
+
+    <div class="message warning">
+
+    Merci d'attendre la prochaine session d'attribution pour demander des ressources sur {{mesoc}}.
+    Vous pouvez cependant demander un projet test en envoyant un mail à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>.
+
+    </div>
+
+{% else %}
+
+    <div class="message info">
+    
+    <em>Vous pouvez cliquer sur le lien 'Nouveau projet' pour faire une demande d'attributions de ressources</em>
+    
+    </div>
+
+{% endif %}
+
+
+{% else %}
+<h2>Reconnectez vous</h2>
+
+{% endif %}
+{% endblock body %}

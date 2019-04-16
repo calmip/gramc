@@ -1,0 +1,16 @@
+Cher(e) président(e) du comité d'attribution,
+
+Votre décision concernant le projet {{ object |raw }} a été {% if( object.expertise[0].validation == true ) %}ACCEPTÉ{% else %}REFUSÉ{% endif %}.
+
+Nous vous laissons le soin de prendre contact avec {{ object.responsable |raw }}, responsable du projet
+Son adresse: {{ object.responsable |raw }}
+
+Le nombre d'heures demandées était : {{ object.demHeures |raw }}
+
+Votre commentaire :
+{{ object.expertise[0].commentaireExterne |raw }}
+
+Votre commentaire à destination du comité de programme {{mesoc}} :
+{{ object.expertise[0].commentaireInterne |raw }}
+
+Cordialement

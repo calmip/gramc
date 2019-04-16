@@ -1,0 +1,50 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block body %}
+
+<section>
+    <h2>Téléversement générique</h2>
+    <div class="message warning">Le fichier doit être <strong>un pdf de taille inférieure à 1 Mo</strong></div>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not resultat == null %}
+        <div class="message info">
+        {% for res in resultat %}
+        <p>INFO: {{ res }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+
+{{ form_start( form  )  }}
+
+<p><label><strong>projet </strong></label>{{ form_widget( form.projet ) }}</p>
+<p><label><strong>Session </strong> (ex. 16B, pour une fiche projet, par défault la session courante) </label>{{ form_widget( form.session ) }}</p>
+<p><label> <strong>Année</strong> (ex. 2016, pour un rapport d'activité, par défaut l'année courante) </label>{{ form_widget( form.annee ) }}</p>
+<p><label> <strong>Type de document </strong>{{ form_widget( form.type ) }}</p>
+<p><label><strong>Fichier à téléverser </strong>{{ form_widget( form.file ) }}</p>
+<p><input name="submit" value="Envoyer" type="submit"></p>
+
+{{ form_end(form) }}
+
+<div class="message warning"><h2>ATTENTION</h2><strong>Risque d'écrasement d'un fichier existant !</strong></div>
+
+<nav>
+    <ul>
+        <li>
+            <a class="lien_actif" href="{{  path('admin_accueil') }}" title="">Retourner à la page d'admin</a>
+        </li>
+    </ul>
+</nav>
+
+</section>
+
+{% endblock body %}

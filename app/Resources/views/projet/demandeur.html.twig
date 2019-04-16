@@ -1,0 +1,190 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% import "default/macros.html.twig" as gramcmacros %}
+{% import "projet/macros_graphiques.html.twig" as macros_graphiques %}
+{% import _self as thismacro %}
+
+{# ################################################# #}
+
+{% macro ligne_projet(item) %}
+{% import "projet/macros_graphiques.html.twig" as macros_graphiques %}
+        <tr>
+            <td>{{ macros_graphiques.meta_etat_graphique(item.projet.getMetaEtat() ) }}</td>
+            <td><a href="{{ path('consulter_projet', { 'id': item.projet.idProjet })}}" title="Ouvrir le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" /></a>{% if( item.projet.derniereVersion.isEdited ) %}&nbsp;<a href="{{ path('version_avant_supprimer', { 'id': item.projet.derniereVersion.idVersion })}}" title="Supprimer le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>{% endif %}</td>
+            <td>{{ item.projet.idProjet }}</td>
+            <td rowspan="{{ item.cpt_rall + 1 }}">{{ item.projet.titre }}</td>
+            <td rowspan="{{ item.cpt_rall + 1 }}">{{ item.conso |number_format(1)}}&nbsp;%</td>
+            <td class='cellule_canvas' rowspan="{{ item.cpt_rall + 1 }}">
+                <canvas id="canvas_{{ item.projet.idProjet }}" class="canvas_conso" width="110" height="25"></canvas>
+            </td>
+            <td rowspan="{{ item.cpt_rall + 1 }}">
+                <img id="bconso_{{ item.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
+                title="Evolution de la consommation" alt="Evolution de la consommation"
+                data-href="{{ absolute_url(path('projet_conso', { 'id': item.projet.idProjet, 'annee' : item.projet.derniereVersion.getFullAnnee() })) }}"/>
+            </td>
+            <input id="conso_{{ item.projet.idProjet }}" value="{{ item.conso |number_format(1)}}" type="hidden">
+        </tr>
+
+        {% set num_rallonge = 1 %}
+        {% for rallonge in item.rallonges %}
+        <tr>
+            <td>{{ macros_graphiques.meta_etat_graphique(rallonge.getMetaEtat() ) }}</td>
+            <td>
+                <a href="{{ path('rallonge_consulter', { 'id': rallonge.idRallonge })}}"
+                {% if rallonge.getMetaEtat() == 'EDITION' %}
+                    title="Modifier cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier"  />
+                {% else %}
+                    title="Consulter cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
+                {% endif %}
+                </a>
+            </td>
+            <td>
+                {% if num_rallonge == 1 %}
+                    <strong>Rallonge</strong>
+                {% else %}
+                    <strong>Rallonge {{ num_rallonge }}</strong>
+                {% endif %}
+            </td>
+            {% set num_rallonge = num_rallonge + 1 %}
+        {% endfor %}
+        </tr>
+
+{% endmacro ligne_projet %}
+
+{# ################################################# #}
+
+
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/canvas_conso.js') }}" ></script>
+<script  type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
+
+
+{# ######################################################################### #}
+
+{% block body %}
+{{ gramcmacros.menu(menu) }}
+
+<div id="dialog"></div>
+
+<section>
+
+<h2>Projets gérés par {{ app.user.prenom }} {{ app.user.nom }}</h2>
+
+{# ######################################################################### #}
+
+{% if projets_resp != null %}
+<h3>En tant que responsable:</h3>
+
+<table class="projet">
+
+    <thead>
+        <tr>
+            <th colspan="2">Éditer</th>
+            <th>Numéro</th>
+            <th>Titre</th>
+            <th colspan="3">Conso</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for item in  projets_resp %}
+         {{ thismacro.ligne_projet(item) }}
+    {% endfor %}
+    </tbody>
+
+</table>
+
+{%  endif %}
+
+<input id="conso_seuil_2" value="{{ conso_seuil_2 }}" type="hidden">
+<input id="conso_seuil_1" value="{{ conso_seuil_1 }}" type="hidden">
+
+{# ######################################################################### #}
+
+{% if projets_collab != null %}
+<h3>En tant que collaborateur:</h3>
+<table class="projet">
+
+    <thead>
+        <tr>
+            <th colspan="2">Éditer</th>
+            <th>Numéro</th>
+            <th>Titre</th>
+            <th colspan="3">Conso</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for item in  projets_collab %}
+         {{ thismacro.ligne_projet(item) }}
+    {% endfor %}
+    </tbody>
+
+</table>
+{%  endif %}
+
+{% if projets_term != null %}
+<h3>Projets anciens ou terminés:</h3>
+
+<table class="projet">
+
+    <thead>
+        <tr>
+            <th colspan="2">Éditer</th>
+            <th>Numéro</th>
+            <th>Titre</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for item in  projets_term %}
+        <tr>
+            <td>{{ macros_graphiques.meta_etat_graphique(item.getMetaEtat() ) }}</td>
+            <td>
+                <a href="{{ path('consulter_projet', { 'id': item.idProjet })}}" title="Ouvrir le projet {{ item.idProjet }}">
+                <img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" />
+                </a>
+            </td>
+            <td>{{ item.idProjet }}</td>
+            <td>{{ item.titre }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+
+<div class="message warning">
+<h2>Anciens projets</h2>
+Ces projets sont rappelés ici pour mémoire, mais vous ne <strong>pouvez pas</strong> les renouveler soit parce qu'ils sont terminés
+soit parce que vous ne faites plus partie de leurs collaborateurs.
+<br>
+Vous pouvez toutefois les éditer pour <strong>ajouter des publications pour lesquelles vous avez utilisé les heures attribuées.</strong>
+<br>
+Si vous souhaiter demander des ressources, vous devez créer un nouveau projet
+</div>
+
+{%  endif %}
+
+{# ######################################################################### #}
+
+
+{% if projets_resp == null and projets_collab == null and projets_term == null and projets_standby  == null %}
+<div class="message info">
+Les utilisateurs qui ont le droit suffisant pour demander eux-mêmes des ressources sur {{mesoc}}
+peuvent cliquer sur le lien 'Nouveau projet' pour faire une demande d'attributions de ressources.
+<br>
+Les autres utilisateurs doivent se rapprocher de leur équipe de recherche.
+<br>
+Il n'est possible de demander des ressources sur {{mesoc}} que pendant une session d'attribution.
+</div>
+{% endif %}
+
+<div class="message info">
+En-dehors des sessions d'attribution, il est possible de créer un <strong>projet test</strong> (5000h max)
+</div>
+
+</section>
+{% endblock body %}

@@ -1,0 +1,55 @@
+{# app/Resources/views/default/connexion_dbg.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if is_granted('ROLE_ADMIN') %}
+
+<section><h1>Laboratoires enregistrés dans gramc</h1>
+
+<nav><ul><li><a  class="lien_actif" href="{{ path('ajouter_labo') }}" title="">Ajouter un laboratoire</a></li></ul></nav>
+
+
+<table id="laboratoires" >
+
+    <tr>
+        <th colspan="2">&nbsp;</th>
+        <th>Numéro d'ordre</th><th>Acronyme</th>
+        <th>Libellé</th>
+    </tr>
+
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>02</td>
+        <td></td>
+        <td>Autre</td>
+    </tr>
+
+    {% for lab in labs %}
+        {% if lab.idLabo > 1 %}
+            <tr>
+                <td>
+                    <a class="suppression" href="{{ path('supprimer_labo', {'id': lab.idLabo} ) }}" title="Supprimer">
+                    <img class="bouton_poussoir" src="{{ asset('icones/petitdelete.png') }}" alt="Supprimer" />
+                    </a>
+                </td>
+                <td>
+                    <a class="modification" href="{{ path('modifier_labo', {'id': lab.idLabo}) }}" title="Modifier le libellé">
+                    <img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" />
+                    </a>
+                </td>
+                <td></td>
+                <td>
+                    {{ lab.info.acro }}
+                </td>
+                 <td>
+                    {{ lab.info.nom }}
+                </td>
+         {% endif %}
+    {% endfor %}
+
+{% endif %}
+
+{% endblock %}
+

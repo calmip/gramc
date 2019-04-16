@@ -1,0 +1,136 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+ <script  src="{{ asset('js/gerer_collaborateurs.js') }}" ></script>
+{% endblock myjavascripts %}
+
+
+{# ######################################################################### #}
+
+{# Reprise du code de symfony... et modification !
+
+   Surcharges Twig:
+         - collection_widget
+         - collection_item_widget (modifie prototype)
+         - API row.vars.block_prefixes.1...
+           cf. https://stackoverflow.com/questions/13196689/how-to-get-input-form-type
+
+   Attention, fonctionne en lien avec gerer_collaborateurs.js
+
+#}
+
+{% block collection_widget %}
+    {% spaceless %}
+    <div class="collection">
+    {% if prototype is defined %}
+            {# block('collection_item_widget') ne peut être appelé qu'une seule fois autrement il y aura des problèmes #}
+            {% set protoline = block('collection_item_widget') %}
+            {% set attr = attr|merge({'data-prototype': protoline }) %}
+            {% set attr = attr|merge({'data-count': '0' }) %}
+            {% set attr = attr|merge({'data-mail_autocomplete': path('mail_autocomplete') }) %}
+    {% endif %}
+
+        <div class="collection-contents" {{ block('widget_container_attributes') }}>
+             {{ form_errors(form) }}
+            <table id="profil_horiz">
+                <thead>
+                    <tr>
+                    {% if form[0] is defined %}
+                        {% for item in form[0] %}
+                            {% if "hidden"  not in item.vars.block_prefixes.1 %}
+                            <td>{{ form_label(item) }}</td>
+                            {% else %}
+                            <td style="display:NONE"></td>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                     </tr>
+                </thead>
+
+                <tbody class="collection-tbody">
+                {% set rowNum = 0 %}
+                {% for rows in form %}
+                    {% if rows.vars.data.responsable is defined and rows.vars.data.responsable %} {# accès à la donnée via PHP #}
+                        {% set resp = 'resp' %}{% else %}{% set resp = '' %}
+                    {% endif %}
+                    <tr>
+                        {% set fieldNum = 1 %}
+                        {% for row in rows %}
+                            {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+                            <td class="collection-tbody-old  {{ resp }}">
+                            {% else %}
+                            <td style="display:NONE">
+                            {% endif %}
+                                {{ form_widget(row) }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% set rowNum = rowNum + 1 %}
+                {% endfor %}
+
+                {# nous ajoutons la nouvelle ligne du prototype d'une manière manuelle #}
+
+                {% if prototype is defined %}
+                    {{ protoline | replace({ '__name__' : rowNum })  | raw }}
+                {% endif %}
+
+                </tbody>
+            </table>
+            {{ form_rest(form) }}
+
+        </div>
+    </div>
+
+    {% endspaceless %}
+{% endblock collection_widget %}
+
+{# ######################################################################### #}
+
+{% block collection_item_widget %}
+{% spaceless %}
+    <tr>
+    {% set fieldNum = 1 %}
+    {% for row in prototype %}
+        {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+        <td class="collection-tbody-new">
+        {% endif %}
+        {# {{ form_widget(row, { 'attr': { 'class': 'collection-tbody-new' }}) }} #}
+        {{ form_widget(row) }}
+        {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+        </td>
+        {% endif %}
+        {% set fieldNum = fieldNum + 1 %}
+    {% endfor %}
+    </tr>
+{% endspaceless %}
+{% endblock collection_item_widget %}
+
+{# ######################################################################### #}
+
+
+{% block body %}
+
+{% form_theme collaborateur_form _self %}
+
+<h2>Modifier la liste des collaborateurs - projet {{ projet }} (session {{ session }})</h2>
+    <div class="message info">
+        <p><strong>Pour ajouter un collaborateur:</strong></p>
+        <ol>
+        <li>Ajoutez votre collaborateur <strong>en commençant par l'adresse mail</strong></li>
+        <li>Renseignez <strong>au moins</strong> le prénom et le nom</li>
+        <li>Eventuellement ajoutez une ligne au formulaire pour entrer un nouveau collaborateur</li>
+        <li>Cliquez sur le bouton <strong>Sauvegarder</strong></li>
+        </ol>
+    </div>
+
+
+{{ form_start(collaborateur_form) }}
+{{ form_widget(collaborateur_form) }}
+{{ form_end(collaborateur_form) }}
+
+<form action="{{ path('modifier_collaborateurs', { 'id': version.idVersion }) }}">
+    <input type="submit" value="Annuler" />
+</form>
+
+<a class="lien_actif center" href="{{ path('consulter_projet',{'id' : projet }) }}" title="Consulter le projet {{ projet }}">Retour vers le projet {{ projet }}</a>
+{% endblock %}

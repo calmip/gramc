@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Rallonge" table="rallonge">
+    <indexes>
+      <index name="id_version" columns="id_version"/>
+      <index name="num_rallonge" columns="id_rallonge"/>
+      <index name="etat_rallonge" columns="etat_rallonge"/>
+    </indexes>
+    <id name="idRallonge" type="string" column="id_rallonge" length="11">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="etatRallonge" type="integer" column="etat_rallonge" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <field name="demHeures" type="integer" column="dem_heures" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="attrHeures" type="integer" column="attr_heures" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="prjJustifRallonge" type="text" column="prj_justif_rallonge" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="majInd" type="integer" column="maj_ind" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="majStamp" type="datetime" column="maj_stamp" nullable="false">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>
+    <field name="attrAccept" type="boolean" column="attr_accept" nullable="false">
+      <options>
+        <option name="default">1</option>
+      </options>
+    </field>
+    <many-to-one field="idVersion" target-entity="Version" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_version" referenced-column-name="id_version"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

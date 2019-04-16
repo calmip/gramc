@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Metathematiques list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Libelle</th>
+                <th>Idmetathematique</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for metaThematique in metaThematiques %}
+            <tr>
+                <td><a href="{{ path('metathematique_show', { 'id': metaThematique.idMetaThematique }) }}">{{ metaThematique.libelle }}</a></td>
+                <td>{{ metaThematique.idMetaThematique }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('metathematique_show', { 'id': metaThematique.idMetaThematique }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('metathematique_edit', { 'id': metaThematique.idMetaThematique }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('metathematique_new') }}">Create a new metaThematique</a>
+        </li>
+    </ul>
+{% endblock %}

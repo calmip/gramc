@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Consommation" table="consommation">
+    <indexes>
+      <index name="id_projet" columns="id_projet"/>
+      <index name="annee" columns="annee"/>
+      <index name="annee_2" columns="annee"/>
+      <index name="id_projet_2" columns="id_projet"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="id_projet_3" columns="id_projet,annee"/>
+    </unique-constraints>
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="idProjet" type="string" column="id_projet" length="6" nullable="false">
+      <options>
+        <option name="fixed">1</option>
+      </options>
+    </field>
+    <field name="annee" type="integer" column="annee" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="limite" type="integer" column="limite" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m01" type="integer" column="m01" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m02" type="integer" column="m02" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m03" type="integer" column="m03" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m04" type="integer" column="m04" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m05" type="integer" column="m05" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m06" type="integer" column="m06" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m07" type="integer" column="m07" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m08" type="integer" column="m08" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m09" type="integer" column="m09" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m10" type="integer" column="m10" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m11" type="integer" column="m11" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="m12" type="integer" column="m12" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

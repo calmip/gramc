@@ -1,0 +1,38 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+    <h1>Sessions d'attribution</h1>
+    
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+
+    <table id="sessions">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>début</th>
+                <th>fin</th>
+                <th>Heures/année</th></th>
+                <th>président</th>
+                <th>projets</th>
+                <th>heures attribuées</th>
+                <th>état</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for session in sessions %}
+            <tr>
+                <td><a href="{{ path('consulter_session', { 'id': session.idSession }) }}">{{ session.idSession }}</a></td>
+                <td>{% if session.dateDebutSession %}{{ session.dateDebutSession|date('Y-m-d') }}{% endif %}</td>
+                <td>{% if session.dateFinSession %}{{ session.dateFinSession|date('Y-m-d') }}{% endif %}</td>
+                <td>{{ session.hparannee }}</td>
+                <td>{{ session.president }}</td>
+                <td>{{ session.version|length }}</td>
+                <td>{{ session.heuresAttribuees }}</th>
+                <td>{{ session.libelleEtat }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

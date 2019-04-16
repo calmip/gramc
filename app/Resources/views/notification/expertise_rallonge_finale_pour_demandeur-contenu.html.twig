@@ -1,0 +1,12 @@
+Bonjour {{ object.version.responsable |raw }}
+
+L'expertise de votre demande de rallonge {{ object |raw }} pour le projet {{ object.version.projet |raw }} a été traitée.
+
+Le nombre d'heures demandées est  : {{ object.demHeures |raw }}
+Le nombre d'heures attribuées est : {{ object.nbHeuresAtt |raw }}
+
+Commentaire du président du comité d'attribution:
+{{ object.commentaireExterne |raw }}
+
+ATTENTION, les heures de rallonge seront affectées le plus rapidement possible sur le supercalculateur,
+cependant vous ne les verrez pas apparaitre sur l'interface web avant demain au plus tot.

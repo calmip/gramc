@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Publication" table="publication">
+    <id name="idPubli" type="integer" column="id_publi">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="refbib" type="text" column="refbib" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="doi" type="string" column="doi" length="100" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="openUrl" type="string" column="open_url" length="300" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="annee" type="integer" column="annee" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <many-to-many field="idProjet" target-entity="Projet" mapped-by="idPubli" fetch="LAZY"/>
+  </entity>
+</doctrine-mapping>

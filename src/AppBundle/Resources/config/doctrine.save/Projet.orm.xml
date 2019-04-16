@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Projet" table="projet">
+    <indexes>
+      <index name="etat_projet" columns="etat_projet"/>
+    </indexes>
+    <id name="idProjet" type="string" column="id_projet" length="6">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="etatProjet" type="integer" column="etat_projet" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <many-to-many field="idPubli" target-entity="Publication" inversed-by="idProjet" fetch="LAZY">
+      <join-table name="publicationprojet">
+        <join-columns>
+          <join-column name="id_projet" referenced-column-name="id_projet"/>
+        </join-columns>
+        <inverse-join-columns>
+          <join-column name="id_publi" referenced-column-name="id_publi"/>
+        </inverse-join-columns>
+      </join-table>
+    </many-to-many>
+  </entity>
+</doctrine-mapping>

@@ -1,0 +1,229 @@
+{% extends 'default/base.html.twig' %}
+
+{% block menu %}
+<nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
+{% endblock menu %}
+
+{% block myjavascripts %}
+<script type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
+
+
+{% block body %}
+
+<section>
+
+<h1>Répartition du nombre des collaborateurs de l'année {{ annee }}</h1>
+
+{{ form_start(form) }}
+{{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+{{ form_end(form) }}
+
+<br />
+
+<table>
+    <thead>
+         <tr>
+        <td>Statut</td>
+        <td>Nombre de collaborateurs</td>
+        <td>Pourcentage de collaborateurs</td> 
+    </tr>
+    </thead>
+    <tbody>
+        {% for item in statuts %}
+        {% if ( item.count > 0 ) %}
+        <tr>
+            <td>{% if (item.statut == null) %}Sans statut{% else %}{{ item.statut }}{% endif %}</td>
+            <td>{{ item.count }}</td>
+             <td>{{ item.percent |number_format(2, ',', ' ')}} %</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        <tr>
+            <td>Changements de statut</td>
+            <td>{{ countChangementStatut }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total</td>
+            <td>{{ statuts_total }}</td>
+            <td>100 %</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table>
+    <thead>
+         <tr>
+        <td>Laboratoire</td>
+        <td>Nombre de collaborateurs</td>
+        <td>Pourcentage de collaborateurs</td> 
+    </tr>
+    </thead>
+    <tbody>
+        {% for item in laboratoires %}
+        {% if ( item.count > 0 ) %}
+        <tr>
+            <td>{% if(  item.laboratoire.acroLabo == null ) %}Sans laboratoire{% else %}{{ item.laboratoire.acroLabo }}{% endif %}</td>
+            <td>{{ item['count'] }}</td>
+            <td>{{ item.percent |number_format(2, ',', ' ')}} %</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        <tr>
+            <td>Changements de laboratoire</td>
+            <td>{{ countChangementLaboratoire }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total</td>
+            <td>{{ laboratoires_total }}</td>
+            <td>100 %</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+         <tr>
+        <td>Établissement</td>
+        <td>Nombre de collaborateurs</td>
+        <td>Pourcentage de collaborateurs</td> 
+    </tr>
+    </thead>
+    <tbody>
+        {% for item in etablissements %}
+        {% if ( item.count > 0 ) %}
+        <tr>
+            <td>{% if ( item.etablissement == null ) %}Sans établissement{% else %}{{ item.etablissement }}{% endif %}</td>
+            <td>{{ item['count'] }}</td>
+            <td>{{ item.percent |number_format(2, ',', ' ')}} %</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        <tr>
+            <td>Changements d'établissement</td>
+            <td>{{ countChangementEtablissement }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total</td>
+            <td>{{ etablissements_total }}</td>
+            <td>100 %</td>
+        </tr>
+    </tbody>
+</table>
+
+
+{% if( anomaliesStatut != [] ) %}
+<table>
+    <thead>
+         <tr>
+            <td colspan="5">Anomalies dans le statut des utilisateurs</td>
+         </tr>
+         <tr>
+            <td>Personne</td>
+            <td>version 1</td>
+            <td>version 2</td>
+            <td>statut 1</td>
+            <td>statut 2</td>
+         </tr>
+    </thead>
+    <tbody>
+    {% for item in anomaliesStatut %}
+        <tr>
+            <td>{{ item.individu }}</td>
+            <td>{{ item.version1 }}</td>
+            <td>{{ item.version2 }}</td>
+            <td>{{ item.statut1 }}</td>
+            <td>{{ item.statut2 }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if( anomaliesLaboratoire != [] ) %}
+<table>
+    <thead>
+         <tr>
+            <td colspan="5">Anomalies dans le laboratoire des utilisateurs</td>
+         </tr>
+         <tr>
+            <td>Personne</td>
+            <td>version 1</td>
+            <td>version 2</td>
+            <td>laboratoire 1</td>
+            <td>laboratoire 2</td>
+         </tr>
+    </thead>
+    <tbody>
+    {% for item in anomaliesLaboratoire %}
+        <tr>
+            <td>{{ item.individu }}</td>
+            <td>{{ item.version1 }}</td>
+            <td>{{ item.version2 }}</td>
+            <td>{{ item.laboratoire1 }}</td>
+            <td>{{ item.laboratoire2 }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if( anomaliesEtablissement != [] ) %}
+<table>
+    <thead>
+         <tr>
+            <td colspan="5">Anomalies dans l'établissement des utilisateurs</td>
+         </tr>
+         <tr>
+            <td>Personne</td>
+            <td>version 1</td>
+            <td>version 2</td>
+            <td>établissement 1</td>
+            <td>établissement 2</td>
+         </tr>
+    </thead>
+    <tbody>
+    {% for item in anomaliesEtablissement %}
+        <tr>
+            <td>{{ item.individu }}</td>
+            <td>{{ item.version1 }}</td>
+            <td>{{ item.version2 }}</td>
+            <td>{{ item.etablissement1 }}</td>
+            <td>{{ item.etablissement2 }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <img class="figure" src="data:image/png;base64, {{ image_statuts }}"  title="cliquez pour afficher la figure en taille réelle" >
+            </td>
+            <td>
+                <img class="figure" src="data:image/png;base64, {{ image_laboratoires }}"   title="cliquez pour afficher la figure en taille réelle">
+            </td>
+            <td>
+                <img class="figure" src="data:image/png;base64, {{ image_etablissements }}"   title="cliquez pour afficher la figure en taille réelle">
+            </td>
+        </tr>
+        <tr>
+            <td>Nombre de collaborateurs par statut</td>
+            <td>Nombre de collaborateurs par laboratoire</td>
+            <td>Nombre de collaborateurs par établissement</td>
+        <tr>
+    </tbody>
+</table>
+<div id="dialog"></div>
+
+
+</section>
+
+{% endblock %}

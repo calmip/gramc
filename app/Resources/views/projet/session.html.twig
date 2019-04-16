@@ -1,0 +1,354 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/projets_experts.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{% block body %}
+<section>
+    <h2>Projets de la session {{ session }}</h2>
+
+    {{ form_start(form) }}
+        {{ form_widget(form.session) }}{{ form_widget(form.submit) }}
+    {{ form_end(form) }}
+
+    <br>
+
+    <form action="{{ path('projet_session_csv', {'id': idSession }) }}">
+        <input type="submit" value="Télécharger en csv pour la session {{ idSession }}" />
+    </form>
+<hr>
+ <div id="bilan_legende"><div id="bilan">
+
+ <table>
+    <tr>
+        <th colspan="3">Projets</th>
+    </tr>
+    <tr>
+        <th>Nombre de projets</th>
+        <td>{{ nombreProjets }}</td>
+        <td>&nbsp;</td>
+    </tr>
+     <tr>
+        <th>Heures demandées</th>
+        <td>{{ demHeures }}</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <th>Heures attribuées</th>
+        <td>{{ attrHeures }}</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <th>Nouveaux projets</th>
+        <td>{{ nombreNouveaux }}</td>
+        <td><input type="checkbox" class="cb" id="nouveau" checked="checked" /></td>
+    </tr>
+    <tr>
+        <th>Renouvellements</th>
+        <td>{{ nombreProjets - nombreNouveaux }}</td>
+        <td><input type="checkbox" class="cb" id="renouv" checked="checked" /></td>
+    </tr>
+ </table>
+
+ <table id="themas">
+    <tr>
+        <th colspan="3">Thématiques</th>
+    </tr>
+    {% for key,value in thematiques %}
+    <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+        <td><input type="checkbox" class="cb" id="t{{ idThematiques[key] }}" checked="checked" /></td>
+    </tr>
+
+    {% endfor %}
+    <tr>
+        <th>Tout décocher</th>
+        <td>&nbsp;</td>
+        <td><input type="checkbox" id="tX" checked="checked" /></td>
+    </tr>
+ </table>
+
+ <table>
+    <tr>
+        <th colspan="3">Etats des projets</th>
+    </tr>
+    {% if( nombreAcceptes > 0 ) %}
+    <tr>
+        <th>Projets acceptés</th>
+        <td>{{ nombreAcceptes }}</td>
+        <td><input type="checkbox" class="cb" id="accepte" checked="checked" /></td>
+     </tr>
+     {% endif %}
+     {% if( nombreTermines > 0 ) %}
+     <tr>
+        <th>Projets terminés</th>
+        <td>{{ nombreTermines }}</td>
+        <td><input type="checkbox" class="cb" id="termine" checked="checked" /></td>
+     </tr>
+     {% endif %}
+     {% if( nombreSignes > 0 ) %}
+     <tr>
+        <th>Projets signés</th>
+        <td>{{ nombreSignes }}</td>
+        <td><input type="checkbox" class="cb" id="prj_fiche_val" checked="checked" /></td>
+    </tr>
+    {% endif %}
+    {% if( nombreRapports > 0 ) %}
+    <tr>
+        <th>Projets avec RA</th>
+        <td>{{  nombreRapports }}</td>
+        <td><input type="checkbox" class="cb" id="rapport_activite" checked="checked" /></td>
+    </tr>
+    {% endif %}
+    {% if(  nombreExperts > 0 ) %}
+    <tr>
+        <th>Projets avec expert affecté</th>
+        <td>{{ nombreExperts }}</td>
+        <td><input type="checkbox" class="cb" id="avec_expert" checked="checked" /></td>
+    </tr>
+    {% endif %}
+    
+    {% if( nombreEditionTest > 0 ) %}
+    <tr>
+        <th>Projets test en édition</th>
+        <td>{{ nombreEditionTest }}</td>
+        <td><input type="checkbox" class="cb" id="editionTest" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreExpertiseTest > 0 ) %}
+    <tr>
+        <th>Projets test en expertise</th>
+        <td>{{ nombreExpertiseTest }}</td>
+        <td><input type="checkbox" class="cb" id="expertiseTest" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreEdition > 0 ) %}
+    <tr>
+        <th>Projets en édition</th>
+        <td>{{ nombreEdition }}</td>
+        <td><input type="checkbox" class="cb" id="edition" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreExpertise > 0 ) %}
+    <tr>
+        <th>Projets en expertise</th>
+        <td>{{ nombreExpertise }}</td>
+        <td><input type="checkbox" class="cb" id="expertise" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+     
+    {% if( nombreAttente > 0 ) %}
+    <tr>
+        <th>Projets en attente</th>
+        <td>{{ nombreAttente }}</td>
+        <td><input type="checkbox" class="cb" id="attente" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+     
+    {% if( nombreActif > 0 ) %}
+    <tr>
+        <th>Projets actifs</th>
+        <td>{{ nombreActif }}</td>
+        <td><input type="checkbox" class="cb" id="actif" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+     
+    {% if( nombreNouvelleDem > 0 ) %}
+    <tr>
+        <th>Projets dont le renouvellement est accepté</th>
+        <td>{{ nombreNouvelleDem }}</td>
+        <td><input type="checkbox" class="cb" id="nouvelleDem" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {#  
+    {% if( nombreTermine > 0 ) %}
+    <tr>
+        <th>Projets terminés</th>
+        <td>{{ nombreTermine }}</td>
+        <td><input type="checkbox" class="cb" id="nbTermine" checked="checked" /></td>
+     </tr>
+     {% endif %}    
+    #}
+      
+    {% if( nombreAnnule > 0 ) %}
+    <tr>
+        <th>Projets annulés</th>
+        <td>{{ nombreAnnule }}</td>
+        <td><input type="checkbox" class="cb" id="annule" checked="checked" /></td>
+     </tr>
+     {% endif %}
+         
+</table>
+
+</div></div>
+
+<div id="projets" ><table id="table_projets_session">
+    <thead>
+        <tr>
+            <th title="Nouveaux projets">N</th>
+            <th></th>
+            <th>N°</th>
+            <th></th>
+            <th title="Etat">E</th>
+            <th>titre</th>
+            <th>Thématique</th>
+            <th>dari</th>
+            <th>Responsable</th>
+            <th>Laboratoire</th>
+            <th>Expert</th>
+            <th>H dem</th>
+            <th>H attr</th>
+            <th>H cons</th>
+            <th>Signature</th>
+            {% if( showRapport == true )%}
+            <th>Rapport d'Activité</th>
+            {% endif %}
+            {% if app.debug %}
+            <th>Etat prj</th>
+            <th>Etat version</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for version in versions %}
+	{% if( version != null and version.projet != null ) %}
+        <tr>
+            {% if( version.isNouvelle() ) %}
+                <td class="nouveau"><strong>N</strong></td>
+            {% else %}
+                <td class="renouv">&nbsp;</td>
+            {% endif %}
+           <td>
+            	{% if( version.projet.libelleEtat == 'STANDBY' ) %}
+            	<a class="fermeture" href="{{ path('fermer_projet', { 'id': version.projet.idProjet }) }}" title="Fermer le projet">
+                	<img src="{{ asset('icones/process-stop.png') }}" alt="Fermer" />
+            	</a>
+            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' ) %}
+            	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
+                	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
+            	</a>
+            	{% elseif( version.libelleEtat == 'EDITION_DEMANDE' and session.libelleEtat != 'ACTIF') %}
+            	<a href="{{ path('fwd_version', { 'id': version.idVersion }) }}" title="Envoyer pour expertise">
+                	<img src="{{ asset('icones/forward.png') }}" alt="En avant" />
+            	</a>
+            	{% else %}
+            	&nbsp;
+            	{% endif %}
+            </td>
+            <td>{{ version.projet.idProjet }}</td>
+            <td>
+                <a href="{{ path('consulter_version', { 'id': version.projet.idProjet, 'version': version.idVersion }) }}" title="Consulter le projet">
+                <img src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
+                </a>
+                {% if( version.projet.derniereVersion.isEdited ) %}
+                   <a href="{{ path('version_avant_supprimer',
+                    { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
+                       <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" />
+                   </a>
+                {% endif %}
+            </td>
+           	 <td class="{{ version.projet.metaEtat | lower }}">{{ gramcmacros.metagraph(version.projet.metaetat) }}</td>
+            <td>
+                {% if( version != null) %}
+                    {{ gramcmacros.afftitre(version.prjtitre) }}
+                {% endif %}
+            </td>
+            {% if( version.prjThematique != null ) %}
+            <td class="t{{ idThematiques[version.prjThematique.libelleThematique] }}">{{ version.prjThematique }}
+            {% else %}
+            <td>
+            {% endif %}
+            </td>
+            <td>
+                {{ version.prjGenciDari }}
+            </td>
+            <td>
+                {% if( version.responsable != null ) %}
+                <a class="sudo" href="{{ path('sudo',  { 'id': version.responsable.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                <a href="mailto:{{ version.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ version.responsable.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                {{ version.responsable.prenom }} {{ version.responsable.nom }}
+                    {% if(  version.responsable.peut_creer_projets == false ) %}
+                    <img class="bouton_poussoir" src="{{ asset('icones/attention.png') }}" title="Le responsable non éligible" />
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if( version != null) %}
+                    <span title="{{ version.PrjLLabo }}">{{ version.acroLaboratoire }}</span>
+                {% endif %}
+            </td>
+            {% if( version.expert != null ) %}
+            <td class="avec_expert" >
+                <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                <a href="mailto:{{ version.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ version.expert.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                {{ version.expert.prenom }} {{ version.expert.nom }}
+            {% else %}
+            <td>
+            {% endif %}
+            </td>
+            <td>{{ version.demHeures }}</td>
+            <td>{{ version.attrHeures }}</td>
+            <td>{{ version.getConso() }}</td>
+                {% if version.issigne %}
+                <td class="prj_fiche_val">
+                    <a href="{{ path('signature',  { 'id': version.idVersion }) }}?">
+                    <img src="{{ asset('icones/pdf.png') }}" alt="Fichier pdf" /></a>
+                    <small>({{ version.sizeSigne }}K)</small>
+                </td>
+                {% else %}
+                <td>-</td>
+                {% endif %}
+            {% if( showRapport ==true ) %}
+
+                {% if( version.isNouvelle() ) %}
+                    <td  class="rapport_activite">N/A
+                {% elseif version.sizeRapport == 0 %}
+                    <td>
+                {% else %}
+                    <td  class="rapport_activite">
+                    <a href="{{ path('rapport',  { 'id': version.idVersion }) }}?">
+                    <img src="{{ asset('icones/pdf.png') }}" alt="Fichier pdf" /></a>
+                    {# <small>({{ version.prjFicheLen }}K)</small> #}
+                    <small>({{ version.sizeRapport }}K)</small>
+                {% endif %}
+                </td>
+            {% endif %}
+            {% if app.debug %}
+            <td>{{ version.projet.libelleEtat }}</td>
+            <td>{{ version.libelleEtat }}</td>
+            {% endif %}
+        </tr>
+    {% else %}
+	<tr><h2>
+	{% if( version == null ) %}
+	Attention : Version nulle !
+	{% else %}
+		{% if( version != null and version.projet == null ) %}
+		Attention : Version {{ version.idVersion }} sans projet !
+		{% endif %}
+	{% endif %}
+	</h2>
+	</tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+    </table></div>
+
+    <div id="formulaire_confirmation"></div>
+
+</section>
+{% endblock body %}

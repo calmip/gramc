@@ -1,0 +1,45 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+    <h1>Journal</h1>
+    <div id="edit">
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        {{ form_end(form) }}
+    </div>
+    
+    <table id="jnl">
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>Adresse Ip</th>
+                <th>Horodatage</th>
+                <th>Niveau</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for journal in journals %}
+            <tr>
+                <td>{% if journal.individu %}
+                        {{ journal.individu }}
+                    {% else %}
+                        {% if journal.IdIndividu %}
+                            {{ journal.idIndividu }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td>{% if journal.individu %}
+                        <a href="{{ path('individu_show', { 'id': journal.individu.idIndividu }) }}"> {{ journal.ip }}</a>
+                     {% else %}
+                        {{ journal.ip }}
+                    {% endif %}
+                </td>
+                <td>{{ journal.stamp|date('Y-m-d H:i:s') }}</td>
+                <td class="{{ journal.type|lower }}">{{ journal.type }}</td>
+                <td class="msg">{{ journal.message }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

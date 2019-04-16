@@ -1,0 +1,33 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<section>
+<h2>Ajouter une thématique</h2>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+    
+    {{ form_start(edit_form) }}
+    <table>
+        <tr>
+            <th>Libellé</th>
+            <td>{{ form_widget(edit_form.libelleThematique) }}</td>
+        </tr>
+        <tr>
+            <th>Meta Thématique</th>
+            <td>{{ form_widget(edit_form.metaThematique) }}</td>
+        </tr>
+        <tr>
+            <th>Experts</th>
+            <td>{{ form_widget(edit_form.expert) }}</td>
+        </tr>
+        <tr>
+            <th></th>
+            <td>{{ form_widget(edit_form.submit) }}{{ form_widget(edit_form.reset) }}</td>
+        </tr>    
+    </table>
+    {{ form_end(edit_form) }}
+
+</section>
+
+{% endblock body %}

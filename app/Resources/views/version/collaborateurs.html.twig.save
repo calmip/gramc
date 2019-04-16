@@ -1,0 +1,200 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+<script>
+
+$(document).ready(
+function()
+{
+$(".collection").each(function()
+    {
+    // ajout d'un compteur des lignes
+    if(  $(".collection-contents",this).data("count") == 0 )
+        $(".collection-contents",this).data("count", $(".collection-tbody",this).find('tr').length);
+
+    // ajout d'un paramètre id unique au bouton    
+    $(this).append('<button class="add" id="' + $(this).parent().parent().attr('id') +
+                                '_add" type="submit">Ajouter une ligne dans le formulaire</button>');
+
+    $(this).find(".collection-tbody-old").find("input[id$='_mail'][type='text']")
+        .attr("class","mail ui-autocomplete-input").prop('disabled', true)
+        .attr("title","Vous ne pouvez pas modifier vous-même l'adresse courriel de vos collaborateurs");
+    
+    });
+
+$(".collection .add").click(function(event)
+    {
+    event.preventDefault();
+    var longueur = $(".collection-contents",this.parentNode).data("count");
+    //alert( $(".collection-contents",this.parentNode).data("count") ); 
+    var prototype = $(".collection-contents",this.parentNode).data("prototype");
+    prototype = prototype.replace(/__name__/g, longueur);
+    $(".collection-contents",this.parentNode).data("count", longueur + 1);
+    //alert( $(".collection-contents",this.parentNode).data("count") );
+    $(".collection-tbody",$(this).parent()).append(prototype);
+    $(".collection-tbody .collection-tbody-new",$(this).parent()).find("input[id$='_mail'][type='text']").attr("class","mail ui-autocomplete-input collection-tbody-new");
+    opacity($(this)); // ajout du comportement du bouton delete à la nouvelle ligne
+    mail_autocomplete($(this));
+    });
+    
+$(".collection .resp").find("input[id$='_delete'][type='checkbox']").prop('disabled', true); // impossible de supprimer le responsable
+$(".collection .resp").find("input[id$='_delete'][type='checkbox']").css("opacity",'0'); // impossible de supprimer le responsable
+
+opacity( $(this)); // ajout du comportement du bouton delete à toutes les lignes
+//mail_autocomplete();
+
+}); // $(document).ready()
+
+///////////////////////
+
+function opacity(context, mail)
+{
+
+$(".collection-contents .collection-tbody tr td input[id$='_delete'][type='checkbox']").change(function()
+    {
+    if($(this).prop('checked') )
+        {
+        $("td", $(this).parent().parent()).find(":not([id$='_delete'])").prop('disabled', true);
+        prenom = $(this).parent().parent().find("input[name*='[prenom]']").val();
+        nom    = $(this).parent().parent().find("input[name*='[nom]']").val();
+        if( nom == '' && prenom == '' ) nom = "cet utilisateur";
+        alert('ATTENTION ! Voulez-vous vraiment supprimer '+prenom+' '+nom+' de la liste des collaborateurs ?');
+		}
+    else
+        {
+        $("td .collection-tbody-new",$(this).parent().parent()).prop('disabled', false);
+        $("td",$(this).parent().parent()).find(":not([id$='_mail'])").prop('disabled', false);
+        }
+    });
+    
+} // function opacity()
+
+////////////////////////////////////////
+
+function mail_autocomplete(context)
+    {
+    $('.mail',context.parent() ).autocomplete(
+        {
+        delay: 500,
+        minLength : 4,
+        source : function(requete, reponse)
+            {
+            $.ajax({
+                   url: $(".collection-contents").data("mail_autocomplete"),
+                   type: "POST",
+                   dataType: "json",
+                   data: { 'autocomplete_form' : { 'mail' : requete.term } }, // structure compatible symfony
+                   context: $(this)
+                   })
+            .done(function(data) {  reponse(data); })
+            .fail(function(xhr, status, errorThrown) { alert (errorThrown); });
+            }
+        });
+    } // function mail_autocomplete()
+
+///////////////////////////////////////////
+
+function desactive_tout()
+    {
+    $("#profil_horiz").find("tr").each(function()
+        {
+        tr=$(this);
+        tr.find(".mail").each(function()
+            {
+            // si pas de mail spécifié, désactiver tous les champs de la ligne et de la classe inactif !
+            if ($(this).val()=="")
+                {
+                $(this).parents("tr").find(".inactif").prop("disabled",true).attr("title","Commencez par l'adresse de courriel !");
+                }
+
+            });
+        });
+    };
+
+
+</script>
+{% endblock myjavascripts %}
+
+
+{% form_theme collaborateur_form _self %}
+
+{# ######################################################################### #}
+
+{% block collection_widget %}
+    {% spaceless %}
+    <div class="collection">
+    {% if prototype is defined %}
+            {% set attr = attr|merge({'data-prototype': block('collection_item_widget') }) %}
+            {% set attr = attr|merge({'data-count': '0' }) %}
+            {% set attr = attr|merge({'data-mail_autocomplete': path('mail_autocomplete') }) %}
+    {% endif %}
+        
+        <div class="collection-contents" {{ block('widget_container_attributes') }}>
+            {{ form_errors(form) }}
+            <table id="profil_horiz">
+                <thead>
+                    <tr>
+                    {% if form[0] is defined %}
+                        {% for item in form[0] %}
+                            <td>{{ form_label(item) }}</td>
+                        {% endfor %}
+                    {% endif %}
+                     </tr>
+                </thead>
+                <tbody class="collection-tbody">
+                {% for rows in form %}
+                    {% if rows.vars.data.responsable is defined and rows.vars.data.responsable %}
+                        {% set resp = 'resp' %}{% else %}{% set resp = '' %}
+                    {% endif %}
+                    <tr class="collection-tbody-old {{ resp }}" >
+                        {% set fieldNum = 1 %}
+                        {% for row in rows %}
+                            <td class="{{ resp }}">
+                               
+                                    {{ form_widget(row) }} 
+                                 
+                                
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {{ form_rest(form) }}
+        </div>
+    </div>
+        
+    {% endspaceless %}
+{% endblock collection_widget %}
+
+{# ######################################################################### #}
+
+{% block collection_item_widget %}
+{% spaceless %}
+    <tr class="collection-tbody-new">
+    {% set fieldNum = 1 %}
+    {% for row in prototype %}
+        <td>
+        {{ form_widget(row, { 'attr': { 'class': 'inactif collection-tbody-new' }}) }}
+        </td>
+        {% set fieldNum = fieldNum + 1 %}
+    {% endfor %}
+    </tr>
+{% endspaceless %}
+{% endblock collection_item_widget %}
+
+{# ######################################################################### #}
+
+
+{% block body %}
+
+<h2>Modifier la liste des collaborateurs - projet {{ projet }} (session {{ session }})</h2>
+<div class="message info">
+<strong>Astuce:</strong> Commencez par l'adresse mail !
+</div>
+
+{{ form_start(collaborateur_form) }}
+{{ form_widget(collaborateur_form) }}
+{{ form_end(collaborateur_form) }}
+
+{% endblock %}

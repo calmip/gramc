@@ -1,0 +1,36 @@
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+    <h1>Résumés des projets de l'année {{ annee }}</h1>
+<hr />
+
+{% for m,proj in projets %}
+    <h2>{{ m }}</h2>
+    {% for p in proj %}
+        <h3>{#{{p.id}}#}{{p.titre}}</h3>
+        <p><em>Projet démarré en {{p.annee}}</em></p>
+        <p>
+            <strong>{{p.laboratoire}}</strong><br />
+            <em>Porteur de projet: </em> <strong>{{p.porteur}}</strong><br />
+            {{p.resume}}
+        </p>
+        {% if p.publis %}
+            <h4>Dernières publications:</h4>
+            <ul>
+                {% for pu in p.publis %}
+                    <li>
+                        {{ pu.refbib }} -
+                        {% if pu.doi != "" %}<small><strong>doi:</strong> pu.doi</small>{% endif %}
+                        {% if pu.openurl != "" %}<small><strong>url:</strong> pu.open_url</small>{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endfor %}
+    <hr />
+{% endfor %}
+
+</section>
+
+{% endblock body %}

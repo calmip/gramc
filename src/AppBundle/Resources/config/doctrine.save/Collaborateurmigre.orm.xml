@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Collaborateurmigre" table="collaborateurMigre">
+    <unique-constraints>
+      <unique-constraint name="id_version" columns="id_version,id_collaborateur"/>
+    </unique-constraints>
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="idVersion" type="string" column="id_version" length="9" nullable="false">
+      <options>
+        <option name="fixed">1</option>
+      </options>
+    </field>
+    <field name="idCollaborateur" type="integer" column="id_collaborateur" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <field name="responsable" type="boolean" column="responsable" nullable="false"/>
+    <field name="login" type="boolean" column="login" nullable="false"/>
+    <field name="idCollLabo" type="integer" column="id_coll_labo" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="idCollStatut" type="boolean" column="id_coll_statut" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="idCollEtab" type="integer" column="id_coll_etab" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

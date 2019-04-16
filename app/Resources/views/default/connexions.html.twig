@@ -1,0 +1,104 @@
+{# app/Resources/views/default/connexions.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+
+<nav><ul>
+
+{# link demandeur #}
+
+<li>
+{% if is_granted('ROLE_DEMANDEUR') %}
+    {{ gramcmacros.actif('projet_accueil','Demandeur',"Allez à l'espace demandeur !") }}
+{% else %}
+    {{ gramcmacros.inactif('projet_accueil','Demandeur',
+        "Vous ne pouvez pas rejoindre l'espace demandeur (vous n'êtes pas enregistré en tant que demandeur") }}
+{% endif %}
+</li>
+
+{# link expert #}
+
+<li>
+{% if is_granted('ROLE_EXPERT') %}
+    {{ gramcmacros.actif('expertise_liste','Expert',"Allez à l'espace expert !") }}
+{% else %}
+     {{ gramcmacros.inactif( 'expertise_liste','Expert',
+        "Vous ne pouvez pas rejoindre l'espace expertise (vous n'êtes pas enregistré en tant qu'expert)" ) }}
+{% endif %}
+</li>
+
+{# link administrateur #}
+
+<li>
+{% if is_granted('ROLE_ADMIN') %}
+    {{ gramcmacros.actif('admin_accueil','Administrateur',"Allez à l'espace administrateur !") }}
+{% else %}
+     {{ gramcmacros.inactif('admin_accueil','Administrateur',
+            "Vous ne pouvez pas rejoindre l'espace administrateur (vous n'êtes pas enregistré en tant qu'administateur)" ) }}
+{% endif %}
+</li>
+
+<li>
+{% if is_granted('ROLE_PRESIDENT') %}
+    {{ gramcmacros.actif('president_accueil','Président',"Allez à l'espace président !") }}
+{% else %}
+     {{ gramcmacros.inactif('president_accueil','Président',
+            "Vous ne pouvez pas rejoindre l'espace président (vous n'êtes pas enregistré en tant que président)" ) }}
+{% endif %}
+</li>
+
+{# link aide #}
+
+<li><a  class="lien_actif" href=" {{ path('aide') }} " title="">Aide</a></li>
+
+{# link GRAMC 1 #}
+
+</ul></nav>
+
+{# message #}
+
+{% if is_granted('ROLE_ADMIN') %}
+
+<div class="message info"><h2>Les personnes connectées</h2>
+</p>
+</div>
+
+<table>
+<tbody>
+    <tr>
+        <th>Prénom</th>
+        <th>Nom</th>
+        <th>Mail</th>
+        <th>Admin</th>
+        <th>Expert</th>
+        <th>Laboratoire</th>
+        <th>dernier accès (h:mn)</th>
+    </tr>
+
+    {% for item in connexions %}
+    {% if (item.user.desactive==true) %}
+    <tr class="alerte" title="CET UTILISATEUR EST DESACTIVE !!!">
+    {% else %}
+    <tr>
+    {% endif %}
+        <td>{{ item.user.prenom }}</td>
+        <td>{{ item.user.nom }}</td>
+        <td>{{ item.user.mail }}</td> 
+        <td>{% if( not ( item.user.admin == null ) ) %}<img src="{{ asset('icones/actif.png') }}" alt="vert" title="Administrateur" />{% endif %}</td> 
+        <td>{% if( not ( item.user.expert == null ) ) %}<img src="{{ asset('icones/actif.png') }}" alt="vert" title="Expert" />{% endif %}</td>
+        <td>{% if( not ( item.user.labo == null ) ) %}{{ item.user.labo.getAcroLabo }}{% endif %}</td>
+        <td>{{ item.heures }} : {{ item.minutes }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+
+
+{% endif %}
+</section>
+<br>
+{% endblock %}

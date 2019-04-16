@@ -1,0 +1,17 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+    <div class="message info">
+        <h2>Rallonge créée</h2>Vous venez de créer une demande de rallonge en tant qu'admin pour le projet {{  projet }} <br>
+        Le ou la responsable du projet doit maintenant renseigner cette demande, il/elle a été notifié-e
+    </div>
+
+<a class="lien_actif" href="{{ path('consulter_projet', {'id' : projet.idProjet }) }}" title="">Retour au projet</a>
+
+</section>
+
+
+   
+{% endblock %}

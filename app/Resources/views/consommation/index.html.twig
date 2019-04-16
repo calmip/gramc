@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Consommations list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Projet</th>
+                <th>Annee</th>
+                <th>Limite</th>
+                <th>M01</th>
+                <th>M02</th>
+                <th>M03</th>
+                <th>M04</th>
+                <th>M05</th>
+                <th>M06</th>
+                <th>M07</th>
+                <th>M08</th>
+                <th>M09</th>
+                <th>M10</th>
+                <th>M11</th>
+                <th>M12</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for consommation in consommations %}
+            <tr>
+                <td><a href="{{ path('consommation_show', { 'id': consommation.id }) }}">{{ consommation.projet }}</a></td>
+                <td>{{ consommation.annee }}</td>
+                <td>{{ consommation.limite }}</td>
+                <td>{{ consommation.m01 }}</td>
+                <td>{{ consommation.m02 }}</td>
+                <td>{{ consommation.m03 }}</td>
+                <td>{{ consommation.m04 }}</td>
+                <td>{{ consommation.m05 }}</td>
+                <td>{{ consommation.m06 }}</td>
+                <td>{{ consommation.m07 }}</td>
+                <td>{{ consommation.m08 }}</td>
+                <td>{{ consommation.m09 }}</td>
+                <td>{{ consommation.m10 }}</td>
+                <td>{{ consommation.m11 }}</td>
+                <td>{{ consommation.m12 }}</td>
+                <td>{{ consommation.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('consommation_show', { 'id': consommation.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('consommation_edit', { 'id': consommation.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('consommation_new') }}">Create a new consommation</a>
+        </li>
+    </ul>
+{% endblock %}

@@ -1,0 +1,793 @@
+-- MySQL dump 10.15  Distrib 10.0.38-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: gramc2
+-- ------------------------------------------------------
+-- Server version	10.0.38-MariaDB-0ubuntu0.16.04.1
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `collaborateurVersion`
+--
+
+DROP TABLE IF EXISTS `collaborateurVersion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `collaborateurVersion` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_coll_statut` smallint(6) DEFAULT NULL,
+  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_coll_labo` int(11) DEFAULT NULL,
+  `id_coll_etab` int(11) DEFAULT NULL,
+  `id_collaborateur` int(11) DEFAULT NULL,
+  `responsable` tinyint(1) NOT NULL,
+  `login` tinyint(1) NOT NULL,
+  `loginname` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_version_2` (`id_version`,`id_collaborateur`),
+  KEY `id_coll_labo` (`id_coll_labo`),
+  KEY `id_coll_statut` (`id_coll_statut`),
+  KEY `id_coll_etab` (`id_coll_etab`),
+  KEY `collaborateur_collaborateurprojet_fk` (`id_collaborateur`),
+  KEY `id_version` (`id_version`),
+  CONSTRAINT `FK_B49A55AD2667DCD9` FOREIGN KEY (`id_coll_statut`) REFERENCES `statut` (`id_statut`),
+  CONSTRAINT `FK_B49A55AD31598A15` FOREIGN KEY (`id_coll_labo`) REFERENCES `laboratoire` (`id_labo`),
+  CONSTRAINT `FK_B49A55AD3208B7A` FOREIGN KEY (`id_coll_etab`) REFERENCES `etablissement` (`id_etab`),
+  CONSTRAINT `FK_B49A55AD61817AB3` FOREIGN KEY (`id_version`) REFERENCES `version` (`id_version`) ON DELETE CASCADE,
+  CONSTRAINT `FK_B49A55ADC9246DB6` FOREIGN KEY (`id_collaborateur`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `collaborateurVersion`
+--
+
+LOCK TABLES `collaborateurVersion` WRITE;
+/*!40000 ALTER TABLE `collaborateurVersion` DISABLE KEYS */;
+/*!40000 ALTER TABLE `collaborateurVersion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `compta`
+--
+
+DROP TABLE IF EXISTS `compta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `compta` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `loginname` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `ressource` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `type` smallint(6) NOT NULL,
+  `conso` bigint(20) NOT NULL,
+  `quota` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `item` (`date`,`loginname`,`ressource`,`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `compta`
+--
+
+LOCK TABLES `compta` WRITE;
+/*!40000 ALTER TABLE `compta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `compta` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `compteActivation`
+--
+
+DROP TABLE IF EXISTS `compteActivation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `compteActivation` (
+  `gramc_key` varchar(35) COLLATE utf8_unicode_ci NOT NULL,
+  `id_individu` int(11) DEFAULT NULL,
+  `stamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`gramc_key`),
+  UNIQUE KEY `key` (`gramc_key`),
+  KEY `id_individu` (`id_individu`),
+  CONSTRAINT `FK_DD27FC88E3FC35B` FOREIGN KEY (`id_individu`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `compteActivation`
+--
+
+LOCK TABLES `compteActivation` WRITE;
+/*!40000 ALTER TABLE `compteActivation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `compteActivation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `consommation`
+--
+
+DROP TABLE IF EXISTS `consommation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `consommation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `annee` int(11) NOT NULL,
+  `limite` int(11) NOT NULL,
+  `m01` int(11) NOT NULL,
+  `m02` int(11) NOT NULL,
+  `m03` int(11) NOT NULL,
+  `m04` int(11) NOT NULL,
+  `m05` int(11) NOT NULL,
+  `m06` int(11) NOT NULL,
+  `m07` int(11) NOT NULL,
+  `m08` int(11) NOT NULL,
+  `m09` int(11) NOT NULL,
+  `m10` int(11) NOT NULL,
+  `m11` int(11) NOT NULL,
+  `m12` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_projet_3` (`id_projet`,`annee`),
+  KEY `id_projet` (`id_projet`),
+  KEY `annee` (`annee`),
+  KEY `annee_2` (`annee`),
+  KEY `id_projet_2` (`id_projet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `consommation`
+--
+
+LOCK TABLES `consommation` WRITE;
+/*!40000 ALTER TABLE `consommation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `consommation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `etablissement`
+--
+
+DROP TABLE IF EXISTS `etablissement`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `etablissement` (
+  `id_etab` int(11) NOT NULL AUTO_INCREMENT,
+  `libelle_etab` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_etab`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `etablissement`
+--
+
+LOCK TABLES `etablissement` WRITE;
+/*!40000 ALTER TABLE `etablissement` DISABLE KEYS */;
+INSERT INTO `etablissement` VALUES (1,'Autre'),(2,'Université Toulouse Capitole'),(3,'Université Jean Jaurès'),(4,'Université Paul Sabatier'),(5,'INPT'),(6,'INSA'),(7,'ISAE'),(8,'CNRS'),(9,'INRA'),(10,'INSERM'),(11,'IRD'),(12,'CNAP'),(13,'CEA'),(14,'INRIA'),(15,'CNES');
+/*!40000 ALTER TABLE `etablissement` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `expertise`
+--
+
+DROP TABLE IF EXISTS `expertise`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `expertise` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_expert` int(11) DEFAULT NULL,
+  `validation` int(11) NOT NULL,
+  `nb_heures_att` int(11) NOT NULL,
+  `commentaire_interne` text COLLATE utf8_unicode_ci NOT NULL,
+  `commentaire_externe` text COLLATE utf8_unicode_ci NOT NULL,
+  `definitif` tinyint(1) NOT NULL,
+  `nb_heures_att_ete` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_version_2` (`id_version`,`id_expert`),
+  KEY `version_expertise_fk` (`id_version`),
+  KEY `expert_expertise_fk` (`id_expert`),
+  KEY `id_version` (`id_version`),
+  KEY `id_expert` (`id_expert`),
+  CONSTRAINT `FK_229ADF8B61817AB3` FOREIGN KEY (`id_version`) REFERENCES `version` (`id_version`),
+  CONSTRAINT `FK_229ADF8B692C26AF` FOREIGN KEY (`id_expert`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `expertise`
+--
+
+LOCK TABLES `expertise` WRITE;
+/*!40000 ALTER TABLE `expertise` DISABLE KEYS */;
+/*!40000 ALTER TABLE `expertise` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `individu`
+--
+
+DROP TABLE IF EXISTS `individu`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `individu` (
+  `id_individu` int(11) NOT NULL AUTO_INCREMENT,
+  `id_statut` smallint(6) DEFAULT NULL,
+  `id_labo` int(11) DEFAULT NULL,
+  `id_etab` int(11) DEFAULT NULL,
+  `creation_stamp` datetime NOT NULL,
+  `nom` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `prenom` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `mail` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  `admin` tinyint(1) NOT NULL,
+  `expert` tinyint(1) NOT NULL,
+  `responsable` tinyint(1) NOT NULL,
+  `collaborateur` tinyint(1) NOT NULL,
+  `president` tinyint(1) NOT NULL,
+  `desactive` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id_individu`),
+  UNIQUE KEY `mail` (`mail`),
+  KEY `id_labo` (`id_labo`),
+  KEY `id_statut` (`id_statut`),
+  KEY `id_etab` (`id_etab`),
+  CONSTRAINT `FK_5EE42FCE18475F5E` FOREIGN KEY (`id_labo`) REFERENCES `laboratoire` (`id_labo`),
+  CONSTRAINT `FK_5EE42FCE2A3E5E31` FOREIGN KEY (`id_etab`) REFERENCES `etablissement` (`id_etab`),
+  CONSTRAINT `FK_5EE42FCEC3534552` FOREIGN KEY (`id_statut`) REFERENCES `statut` (`id_statut`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `individu`
+--
+
+LOCK TABLES `individu` WRITE;
+/*!40000 ALTER TABLE `individu` DISABLE KEYS */;
+INSERT INTO `individu` VALUES (1,0,1,1,'2019-02-20 00:00:00','admin','admin','admin.gramc@exemple.com',1,0,0,0,0,0);
+/*!40000 ALTER TABLE `individu` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `journal`
+--
+
+DROP TABLE IF EXISTS `journal`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `journal` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `individu` int(11) DEFAULT NULL,
+  `id_individu` int(11) DEFAULT NULL,
+  `gramc_sess_id` varchar(40) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `type` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `message` varchar(300) COLLATE utf8_unicode_ci NOT NULL,
+  `stamp` datetime NOT NULL,
+  `ip` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `niveau` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_C1A7E74D5EE42FCE` (`individu`),
+  CONSTRAINT `FK_C1A7E74D5EE42FCE` FOREIGN KEY (`individu`) REFERENCES `individu` (`id_individu`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `journal`
+--
+
+LOCK TABLES `journal` WRITE;
+/*!40000 ALTER TABLE `journal` DISABLE KEYS */;
+/*!40000 ALTER TABLE `journal` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `laboratoire`
+--
+
+DROP TABLE IF EXISTS `laboratoire`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `laboratoire` (
+  `id_labo` int(11) NOT NULL AUTO_INCREMENT,
+  `numero_labo` int(11) NOT NULL,
+  `acro_labo` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `nom_labo` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_labo`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `laboratoire`
+--
+
+LOCK TABLES `laboratoire` WRITE;
+/*!40000 ALTER TABLE `laboratoire` DISABLE KEYS */;
+INSERT INTO `laboratoire` VALUES (1,1,'GRAMC','Gramc');
+/*!40000 ALTER TABLE `laboratoire` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `meta_thematique`
+--
+
+DROP TABLE IF EXISTS `meta_thematique`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `meta_thematique` (
+  `id_meta_thematique` int(11) NOT NULL AUTO_INCREMENT,
+  `libelle` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_meta_thematique`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `meta_thematique`
+--
+
+LOCK TABLES `meta_thematique` WRITE;
+/*!40000 ALTER TABLE `meta_thematique` DISABLE KEYS */;
+INSERT INTO `meta_thematique` VALUES (2,'Physico-chimie des matériaux'),(3,'Biomolécules, bioinformatique'),(4,'Chimie quantique'),(5,'Méthodes et algorithmes'),(6,'Mécanique des fluides'),(7,'Physique théorique et moléculaire'),(8,'Sciences physiques pour l\'ingenieur'),(9,'Sciences de l\'Univers et de la Terre');
+/*!40000 ALTER TABLE `meta_thematique` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `param`
+--
+
+DROP TABLE IF EXISTS `param`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `param` (
+  `id_param` int(11) NOT NULL AUTO_INCREMENT,
+  `cle` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `val` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_param`),
+  UNIQUE KEY `UNIQ_A4FA7C8941401D17` (`cle`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `param`
+--
+
+LOCK TABLES `param` WRITE;
+/*!40000 ALTER TABLE `param` DISABLE KEYS */;
+/*!40000 ALTER TABLE `param` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `projet`
+--
+
+DROP TABLE IF EXISTS `projet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `projet` (
+  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `id_veract` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_verder` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `etat_projet` int(11) NOT NULL,
+  PRIMARY KEY (`id_projet`),
+  KEY `etat_projet` (`etat_projet`),
+  KEY `IDX_50159CA98AC746EE` (`id_veract`),
+  KEY `IDX_50159CA9333586B6` (`id_verder`),
+  CONSTRAINT `FK_50159CA9333586B6` FOREIGN KEY (`id_verder`) REFERENCES `version` (`id_version`) ON DELETE SET NULL,
+  CONSTRAINT `FK_50159CA98AC746EE` FOREIGN KEY (`id_veract`) REFERENCES `version` (`id_version`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `projet`
+--
+
+LOCK TABLES `projet` WRITE;
+/*!40000 ALTER TABLE `projet` DISABLE KEYS */;
+/*!40000 ALTER TABLE `projet` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `publication`
+--
+
+DROP TABLE IF EXISTS `publication`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publication` (
+  `id_publi` int(11) NOT NULL AUTO_INCREMENT,
+  `refbib` text COLLATE utf8_unicode_ci NOT NULL,
+  `doi` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `open_url` varchar(300) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `annee` int(11) NOT NULL,
+  PRIMARY KEY (`id_publi`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `publication`
+--
+
+LOCK TABLES `publication` WRITE;
+/*!40000 ALTER TABLE `publication` DISABLE KEYS */;
+/*!40000 ALTER TABLE `publication` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `publicationProjet`
+--
+
+DROP TABLE IF EXISTS `publicationProjet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publicationProjet` (
+  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `id_publi` int(11) NOT NULL,
+  PRIMARY KEY (`id_projet`,`id_publi`),
+  KEY `IDX_385F338F76222944` (`id_projet`),
+  KEY `IDX_385F338F3BE1E455` (`id_publi`),
+  CONSTRAINT `FK_385F338F3BE1E455` FOREIGN KEY (`id_publi`) REFERENCES `publication` (`id_publi`),
+  CONSTRAINT `FK_385F338F76222944` FOREIGN KEY (`id_projet`) REFERENCES `projet` (`id_projet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `publicationProjet`
+--
+
+LOCK TABLES `publicationProjet` WRITE;
+/*!40000 ALTER TABLE `publicationProjet` DISABLE KEYS */;
+/*!40000 ALTER TABLE `publicationProjet` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `rallonge`
+--
+
+DROP TABLE IF EXISTS `rallonge`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rallonge` (
+  `id_rallonge` varchar(11) COLLATE utf8_unicode_ci NOT NULL,
+  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_expert` int(11) DEFAULT NULL,
+  `etat_rallonge` int(11) NOT NULL,
+  `dem_heures` int(11) DEFAULT NULL,
+  `attr_heures` int(11) DEFAULT NULL,
+  `prj_justif_rallonge` text COLLATE utf8_unicode_ci,
+  `maj_ind` int(11) NOT NULL,
+  `maj_stamp` datetime NOT NULL,
+  `attr_accept` tinyint(1) NOT NULL,
+  `nb_heures_att` int(11) DEFAULT NULL,
+  `commentaire_interne` text COLLATE utf8_unicode_ci,
+  `commentaire_externe` text COLLATE utf8_unicode_ci,
+  `validation` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id_rallonge`),
+  KEY `IDX_B30A3270692C26AF` (`id_expert`),
+  KEY `id_version` (`id_version`),
+  KEY `num_rallonge` (`id_rallonge`),
+  KEY `etat_rallonge` (`etat_rallonge`),
+  CONSTRAINT `FK_B30A327061817AB3` FOREIGN KEY (`id_version`) REFERENCES `version` (`id_version`),
+  CONSTRAINT `FK_B30A3270692C26AF` FOREIGN KEY (`id_expert`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `rallonge`
+--
+
+LOCK TABLES `rallonge` WRITE;
+/*!40000 ALTER TABLE `rallonge` DISABLE KEYS */;
+/*!40000 ALTER TABLE `rallonge` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `rapportActivite`
+--
+
+DROP TABLE IF EXISTS `rapportActivite`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rapportActivite` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_projet` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `annee` int(11) NOT NULL,
+  `nom_fichier` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `taille` int(11) NOT NULL,
+  `confidentiel` tinyint(1) NOT NULL,
+  `filedata` blob NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_projet_2` (`id_projet`,`annee`),
+  KEY `id_projet` (`id_projet`),
+  CONSTRAINT `FK_4E9BB65D76222944` FOREIGN KEY (`id_projet`) REFERENCES `projet` (`id_projet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `rapportActivite`
+--
+
+LOCK TABLES `rapportActivite` WRITE;
+/*!40000 ALTER TABLE `rapportActivite` DISABLE KEYS */;
+/*!40000 ALTER TABLE `rapportActivite` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `session`
+--
+
+DROP TABLE IF EXISTS `session`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `session` (
+  `id_session` varchar(3) COLLATE utf8_unicode_ci NOT NULL,
+  `id_president` int(11) DEFAULT NULL,
+  `type_session` tinyint(1) NOT NULL,
+  `comm_global` text COLLATE utf8_unicode_ci,
+  `date_debut_session` date NOT NULL,
+  `date_fin_session` date DEFAULT NULL,
+  `etat_session` int(11) NOT NULL,
+  `hparannee` int(11) NOT NULL,
+  PRIMARY KEY (`id_session`),
+  KEY `etat_session` (`etat_session`),
+  KEY `id_president` (`id_president`),
+  CONSTRAINT `FK_D044D5D4EEBE6E33` FOREIGN KEY (`id_president`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `session`
+--
+
+LOCK TABLES `session` WRITE;
+/*!40000 ALTER TABLE `session` DISABLE KEYS */;
+/*!40000 ALTER TABLE `session` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sso`
+--
+
+DROP TABLE IF EXISTS `sso`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sso` (
+  `eppn` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  `id_individu` int(11) DEFAULT NULL,
+  PRIMARY KEY (`eppn`),
+  KEY `id_individu` (`id_individu`),
+  CONSTRAINT `FK_70E959E7E3FC35B` FOREIGN KEY (`id_individu`) REFERENCES `individu` (`id_individu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sso`
+--
+
+LOCK TABLES `sso` WRITE;
+/*!40000 ALTER TABLE `sso` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sso` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `statut`
+--
+
+DROP TABLE IF EXISTS `statut`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `statut` (
+  `id_statut` smallint(6) NOT NULL,
+  `libelle_statut` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `permanent` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id_statut`),
+  KEY `id_statut` (`id_statut`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `statut`
+--
+
+LOCK TABLES `statut` WRITE;
+/*!40000 ALTER TABLE `statut` DISABLE KEYS */;
+INSERT INTO `statut` VALUES (0,'Autre',0),(1,'Post-doctorant',0),(2,'ATER',0),(3,'Doctorant',0),(11,'Enseignant',1),(12,'Chercheur',1),(14,'Ingénieur',1);
+/*!40000 ALTER TABLE `statut` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `templates`
+--
+
+DROP TABLE IF EXISTS `templates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `templates` (
+  `nom` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `sujet` text COLLATE utf8_unicode_ci NOT NULL,
+  `contenu` text COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`nom`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `templates`
+--
+
+LOCK TABLES `templates` WRITE;
+/*!40000 ALTER TABLE `templates` DISABLE KEYS */;
+/*!40000 ALTER TABLE `templates` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `thematique`
+--
+
+DROP TABLE IF EXISTS `thematique`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `thematique` (
+  `id_thematique` int(11) NOT NULL AUTO_INCREMENT,
+  `id_meta_thematique` int(11) DEFAULT NULL,
+  `libelle_thematique` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_thematique`),
+  KEY `IDX_3A8ED5A8733BB48D` (`id_meta_thematique`),
+  CONSTRAINT `FK_3A8ED5A8733BB48D` FOREIGN KEY (`id_meta_thematique`) REFERENCES `meta_thematique` (`id_meta_thematique`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `thematique`
+--
+
+LOCK TABLES `thematique` WRITE;
+/*!40000 ALTER TABLE `thematique` DISABLE KEYS */;
+INSERT INTO `thematique` VALUES (2,9,'Astrophysique'),(3,5,'Calcul formel'),(4,4,'Chimie'),(5,4,'Chimie quantique'),(6,7,'Electromagnétisme, optique'),(7,5,'Informatique, automatique'),(8,6,'Mécanique des fluides'),(9,5,'Méthodes et algorithmes numériques'),(10,8,'Micro-électronique'),(11,3,'Modélisation moléculaire'),(12,9,'Océans, atmosphère, environnement'),(13,7,'Physique'),(14,2,'Physique de la matière condensée'),(15,2,'Physique et chimie des matériaux'),(16,7,'Physique moléculaire'),(17,8,'Sciences physiques pour l\'ingénieur'),(18,9,'Sciences de la Terre'),(19,3,'Bioinformatique');
+/*!40000 ALTER TABLE `thematique` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `thematiqueExpert`
+--
+
+DROP TABLE IF EXISTS `thematiqueExpert`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `thematiqueExpert` (
+  `id_thematique` int(11) NOT NULL,
+  `id_expert` int(11) NOT NULL,
+  PRIMARY KEY (`id_thematique`,`id_expert`),
+  KEY `IDX_D89754909F04557F` (`id_thematique`),
+  KEY `IDX_D8975490692C26AF` (`id_expert`),
+  CONSTRAINT `FK_D8975490692C26AF` FOREIGN KEY (`id_expert`) REFERENCES `individu` (`id_individu`),
+  CONSTRAINT `FK_D89754909F04557F` FOREIGN KEY (`id_thematique`) REFERENCES `thematique` (`id_thematique`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `thematiqueExpert`
+--
+
+LOCK TABLES `thematiqueExpert` WRITE;
+/*!40000 ALTER TABLE `thematiqueExpert` DISABLE KEYS */;
+/*!40000 ALTER TABLE `thematiqueExpert` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `version`
+--
+
+DROP TABLE IF EXISTS `version`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `version` (
+  `id_version` varchar(9) COLLATE utf8_unicode_ci NOT NULL,
+  `maj_ind` int(11) DEFAULT NULL,
+  `prj_id_thematique` int(11) DEFAULT NULL,
+  `id_session` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `etat_version` int(11) NOT NULL,
+  `prj_l_labo` varchar(300) COLLATE utf8_unicode_ci NOT NULL,
+  `prj_titre` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `dem_heures` int(11) DEFAULT NULL,
+  `attr_heures` int(11) NOT NULL,
+  `cons_heures` int(11) NOT NULL,
+  `prj_sous_thematique` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `prj_financement` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `prj_genci_machines` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
+  `prj_genci_centre` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
+  `prj_genci_heures` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `prj_resume` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `prj_expose` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `prj_justif_renouv` longtext COLLATE utf8_unicode_ci,
+  `prj_algorithme` text COLLATE utf8_unicode_ci NOT NULL,
+  `prj_conception` tinyint(1) NOT NULL,
+  `prj_developpement` tinyint(1) NOT NULL,
+  `prj_parallelisation` tinyint(1) NOT NULL,
+  `prj_utilisation` tinyint(1) NOT NULL,
+  `prj_fiche` blob NOT NULL,
+  `prj_fiche_val` tinyint(1) NOT NULL,
+  `prj_genci_dari` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `code_nom` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `code_langage` varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `code_c` tinyint(1) NOT NULL,
+  `code_cpp` tinyint(1) NOT NULL,
+  `code_for` tinyint(1) NOT NULL,
+  `code_autre` tinyint(1) NOT NULL,
+  `code_licence` text COLLATE utf8_unicode_ci NOT NULL,
+  `code_util_sur_mach` text COLLATE utf8_unicode_ci NOT NULL,
+  `code_heures_p_job` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `code_ram_p_coeur` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `code_ram_part` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `code_eff_paral` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `code_vol_donn_tmp` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `dem_logiciels` text COLLATE utf8_unicode_ci NOT NULL,
+  `dem_bib` text COLLATE utf8_unicode_ci NOT NULL,
+  `dem_post_trait` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `dem_form_maison` text COLLATE utf8_unicode_ci NOT NULL,
+  `dem_form_prise` tinyint(1) NOT NULL,
+  `dem_form_debogage` tinyint(1) NOT NULL,
+  `dem_form_optimisation` tinyint(1) NOT NULL,
+  `dem_form_autres` text COLLATE utf8_unicode_ci NOT NULL,
+  `dem_form_fortran` tinyint(1) NOT NULL,
+  `dem_form_c` tinyint(1) NOT NULL,
+  `dem_form_cpp` tinyint(1) NOT NULL,
+  `dem_form_python` tinyint(1) NOT NULL,
+  `dem_form_mpi` tinyint(1) NOT NULL,
+  `dem_form_openmp` tinyint(1) NOT NULL,
+  `dem_form_openacc` tinyint(1) NOT NULL,
+  `dem_form_paraview` tinyint(1) NOT NULL,
+  `libelle_thematique` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  `attr_accept` tinyint(1) NOT NULL,
+  `rap_conf` int(11) NOT NULL,
+  `maj_stamp` datetime NOT NULL,
+  `sond_vol_donn_perm` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `sond_duree_donn_perm` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `prj_fiche_len` int(11) NOT NULL,
+  `penal_heures` int(11) NOT NULL,
+  `attr_heures_ete` int(11) NOT NULL,
+  `sond_justif_donn_perm` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `dem_form_autres_autres` text COLLATE utf8_unicode_ci NOT NULL,
+  `cgu` tinyint(1) NOT NULL,
+  `gpu` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `politique` int(11) NOT NULL,
+  PRIMARY KEY (`id_version`),
+  KEY `IDX_BF1CD3C32EE4D7B` (`maj_ind`),
+  KEY `etat_version` (`etat_version`),
+  KEY `id_session` (`id_session`),
+  KEY `id_projet` (`id_projet`),
+  KEY `prj_id_thematique` (`prj_id_thematique`),
+  CONSTRAINT `FK_BF1CD3C32EE4D7B` FOREIGN KEY (`maj_ind`) REFERENCES `individu` (`id_individu`) ON DELETE SET NULL,
+  CONSTRAINT `FK_BF1CD3C33143FDD7` FOREIGN KEY (`prj_id_thematique`) REFERENCES `thematique` (`id_thematique`),
+  CONSTRAINT `FK_BF1CD3C376222944` FOREIGN KEY (`id_projet`) REFERENCES `projet` (`id_projet`),
+  CONSTRAINT `FK_BF1CD3C3ED97CA4` FOREIGN KEY (`id_session`) REFERENCES `session` (`id_session`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `version`
+--
+
+LOCK TABLES `version` WRITE;
+/*!40000 ALTER TABLE `version` DISABLE KEYS */;
+/*!40000 ALTER TABLE `version` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2019-03-21 15:52:48

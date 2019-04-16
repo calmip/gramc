@@ -1,0 +1,44 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if not erreurs == null %}
+    <section>
+        <div class="message erreur">
+
+            <h2>Envoi de la demande pas possible actuellement</h2>
+            Votre demande de rallonge pour le projet {{  projet }} (session {{ session }}) ne <strong>peut pas</strong> être envoyée pour expertise en l'état.<br>
+            Merci de la compléter
+            {% for erreur in erreurs %}
+            <p>ERREUR: {{ erreur }}</p>
+            {% endfor %}
+        </div>
+        <a class="lien_actif" href="{{ path( 'rallonge_consulter', { 'id': rallonge.idRallonge } )}}" title="Retourner à la rallonge">Retourner</a>
+    </section>
+    {% else %}
+
+    <section>
+        <h2>Projet {{ projet }}, session {{   session }}: Confirmation d'envoi d'une demande de rallonge</h2>
+        <div class="message warning">
+            <h2>Attention</h2>Vous êtes sur le point d'envoyer votre demande pour expertise.<br>
+
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'consulter_projet', { 'id' : projet } ) }}" title="Annuler et retourner à votre projet">ANNULER</a>
+                </li>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'rallonge_envoyer', { 'id': rallonge.idRallonge } ) }}" title="Envoyer votre demande à l'expert">ENVOYER</a>
+                </li>
+            </ul>
+        </nav>
+
+    </section>
+
+
+{% endif %}
+
+
+
+{% endblock %}

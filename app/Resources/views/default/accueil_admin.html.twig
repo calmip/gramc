@@ -1,0 +1,23 @@
+{% extends 'default/base.html.twig' %}
+
+{% import "default/macros.html.twig" as gramcmacros %} 
+
+       
+{# ######################################################################### #}
+
+{% block body %}
+<section>
+    <h3 class="center">Les utilisateurs</h3>
+    {{ gramcmacros.menu(menu1) }}
+    <h3 class="center">Les projets</h3>
+    {{ gramcmacros.menu(menu3) }}
+    <h3 class="center">Les sessions</h3>
+    {{ gramcmacros.menu(menu2) }}
+    <h3 class="center">Les thématiques</h3>
+    {{ gramcmacros.menu(menu4) }}
+    <h3 class="center">Bilans et statistiques</h3>
+    {{ gramcmacros.menu(menu5) }}
+    <h3 class="center">Maintenance</h3>
+    {{ gramcmacros.menu(menu6) }}
+</section>
+{% endblock body %}

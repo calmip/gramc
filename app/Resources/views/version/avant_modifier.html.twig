@@ -1,0 +1,25 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+    <section>
+        <h2>Projet {{ version.projet }}, session {{ version.session }}: Complétez votre demande</h2>
+        <div class="message warning">
+            <h2>Attention</h2>Votre demande est incomplète<br>
+
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'projet_accueil' ) }}" title="Annuler et retourner à vos projets">Revenir à vos projets</a>
+                </li>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'modifier_version', { 'id': version.idVersion } ) }}" title="Compléter votre demande">Compléter votre demande</a>
+                </li>
+            </ul>
+        </nav>
+
+    </section>
+
+
+{% endblock %}

@@ -1,0 +1,14 @@
+Bonjour
+
+L'expertise de la demande de rallonge n° {{ object |raw }}, projet {{ object.version.projet  |raw }} (resp {{ object.version.responsable  |raw }}) a été traitée.
+
+Cette demande a été {% if( object.validation == true ) %}ACCEPTÉE{% else %}REFUSÉE{% endif %}.
+
+Commentaire de l'expert à destination du comité d'attribution:
+{{ object.commentaireInterne |raw }}
+
+Maintenant, le(la) président(e) du comité d'attributions doit finaliser, éventuellement modifier, la réponse.
+
+Cordialement,
+- gramc -
+

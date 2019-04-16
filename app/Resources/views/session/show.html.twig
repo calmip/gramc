@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Session</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Typesession</th>
+                <td>{% if session.typeSession %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Commglobal</th>
+                <td>{{ session.commGlobal }}</td>
+            </tr>
+            <tr>
+                <th>Datedebutsession</th>
+                <td>{% if session.dateDebutSession %}{{ session.dateDebutSession|date('Y-m-d') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Datefinsession</th>
+                <td>{% if session.dateFinSession %}{{ session.dateFinSession|date('Y-m-d') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Etatsession</th>
+                <td>{{ session.etatSession }}</td>
+            </tr>
+            <tr>
+                <th>Idsession</th>
+                <td>{{ session.idSession }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('session_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('session_edit', { 'id': session.idSession }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

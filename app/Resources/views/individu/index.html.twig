@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Individus list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Creationstamp</th>
+                <th>Nom</th>
+                <th>Prenom</th>
+                <th>Mail</th>
+                <th>Admin</th>
+                <th>Expert</th>
+                <th>Responsable</th>
+                <th>Collaborateur</th>
+                <th>President</th>
+                <th>Idstatut</th>
+                <th>Desactive</th>
+                <th>Idindividu</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for individu in individus %}
+            <tr>
+                <td><a href="{{ path('individu_show', { 'id': individu.idIndividu }) }}">{{ individu.creationStamp|date('Y-m-d H:i:s') }}</a></td>
+                <td>{{ individu.nom }}</td>
+                <td>{{ individu.prenom }}</td>
+                <td>{{ individu.mail }}</td>
+                <td>{% if individu.admin %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.expert %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.responsable %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.collaborateur %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.president %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.statut %}Yes{% else %}No{% endif %}</td>
+                <td>{% if individu.desactive %}Yes{% else %}No{% endif %}</td>
+                <td>{{ individu.idIndividu }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('individu_show', { 'id': individu.idIndividu }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('individu_edit', { 'id': individu.idIndividu }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('individu_new') }}">Create a new individu</a>
+        </li>
+    </ul>
+{% endblock %}

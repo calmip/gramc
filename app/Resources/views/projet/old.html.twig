@@ -1,0 +1,52 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+{% endblock myjavascripts %}
+
+
+{% block menu %}
+{% endblock menu %}
+
+{% block before_body %}
+{% endblock before_body %}
+
+{% block body %}
+
+<br>
+
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+
+<br>
+{% if ( not projets_effaces == null ) %}
+    <h3>Projets qui viennent d'être effacés :</h3>
+    {% for projet in projets_effaces %}
+    {{ projet }}&nbsp
+    {% endfor %}
+    <br>
+{% endif %}
+
+
+{% if ( journal == true ) %}
+    <h3>Les données du journal qui datent de plus de {{ old_journal }} an ont été effacées</h3>
+    <br>
+{% endif %}
+
+{% if ( not individus_effaces == null ) %}
+    <h3>Utilisateurs qui viennent d'être effacés :</h3>
+    {% for utilisateur in  individus_effaces %}
+    {{ utilisateur.mail }}&nbsp;({{ utilisateur.prenom }}&nbsp;{{ utilisateur.nom }} )&nbsp;-&nbsp;
+    {% endfor %}
+    <br>
+{% endif %}
+
+{% if ( not utilisateurs_a_effacer == null ) %}
+    <h3>Utilisateurs sans aucun projet qui peuvent être effacés :</h3>
+    {% for utilisateur in utilisateurs_a_effacer %}
+    {{ utilisateur.mail }}&nbsp;({{ utilisateur.prenom }}&nbsp;{{ utilisateur.nom }}) <br />
+    {% endfor %}
+{% endif %}
+<br><br>
+{% endblock %}

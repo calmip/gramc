@@ -1,0 +1,25 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+    <section>
+        <h2>Projet {{ version.projet }}, session {{ version.session }}: Confirmation de suppression</h2>
+        <div class="message warning">
+            <h2>Attention</h2>Vous êtes sur le point de supprimer un projet ou la dernière version d'un projet.<br>
+
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'projet_accueil' ) }}" title="Annuler et retourner à votre projet">ANNULER</a>
+                </li>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'version_supprimer', { 'id': version.idVersion, 'rtn' : rtn } ) }}" title="Supprimer le projet ou la dernière version">SUPPRIMER</a>
+                </li>
+            </ul>
+        </nav>
+
+    </section>
+
+
+{% endblock %}

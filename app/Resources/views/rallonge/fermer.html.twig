@@ -1,0 +1,29 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+    <div class="message info">
+        <h2>Demande enregistrée</h2>
+        Vous venez d'enregistrer une demande de rallonge de ressources pour le projet {{ projet }} (session {{ session}})<br>
+        {% if not erreurs == null %}
+        <strong>Attention</strong> Vous devez corriger ces erreurs avant envoyer cette demande aux experts !
+        {% else %}
+        <strong>Attention</strong> Vous n'avez pas encore envoyé cette demande aux experts !
+        {% endif %}
+    </div>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    <a class="lien_actif" href="{{ path( 'rallonge_consulter', { 'id': rallonge.idRallonge } )}}" title="Retourner à la rallonge">Retourner</a>
+
+</section>
+
+
+{% endblock %}

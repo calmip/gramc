@@ -1,0 +1,32 @@
+{% extends 'default/base.html.twig' %}
+
+{% form_theme form _self %} 
+
+{% block choice_widget_expanded %}
+    <div {{ block('widget_container_attributes') }}>
+    {% for child in form %}
+        
+        {{- form_widget(child) -}}
+        {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+       </br>
+    {% endfor %}
+    </div>
+{% endblock choice_widget_expanded %}
+
+
+{% block body %}
+<section>
+
+    <h2>Affectation de l'expert  {{ individu }} à une ou plusieurs thématiques</h2>
+    <p><em>Cocher une ou plusieurs cases pour associer cet expert aux thématiques correspondantes.</em></p>
+
+    <p>
+    {{ form_start(form) }}
+    <fieldset>{{ form_widget(form.thematique) }}</fieldset>
+    {{ form_widget(form.submit) }}{{ form_widget(form.reset) }}
+    {{ form_end(form) }}
+    </p>
+        
+</section>
+
+{% endblock body %}

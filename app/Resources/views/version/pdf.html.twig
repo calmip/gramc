@@ -1,0 +1,25 @@
+{% extends 'projet/consulter.html.twig' %}
+
+
+{% block header %}
+{% endblock header %}
+
+{% block fil_ariane %}
+{% endblock fil_ariane %}
+
+{% block menu %}
+<img src="{{  absolute_url(asset('icones/logo.png') ) }}" alt="logo" />
+{% endblock menu %}
+
+{% block before_body %}
+<h2>
+    Projet : {{ projet }} (session {{ session }})
+    <br>
+    <small><em>{{ version.getMetaEtat }}</em></small>
+</h2>
+
+{% endblock before_body %}
+
+{% block footer %}
+{% endblock footer %}
+ 

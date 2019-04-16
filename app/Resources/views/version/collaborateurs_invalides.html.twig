@@ -1,0 +1,15 @@
+{% extends 'default/base.html.twig' %}
+
+
+
+{% block body %}
+
+<h2>Modifier la liste des collaborateurs - projet {{ projet }} (session {{ session }})</h2>
+<div class="message info">
+<strong>Erreur :</strong>
+Vos modifications de la liste des collaborateurs n'ont pas été sauvegardées parce que les données ne sont pas complètes.
+Veuillez remplir tous les champs.
+</div>
+
+<a href="{{ path('modifier_collaborateurs', { 'id': version.idVersion }) }}" >Retour à la liste des collaborateurs</a>
+{% endblock %}

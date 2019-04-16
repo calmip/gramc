@@ -1,0 +1,37 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+<script  src="{{ asset('js/gerer_publis.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{% block body %}
+
+<section>
+
+<h1>Modifier une publication</h1>
+<div class="message info">
+    Merci de renseigner à l'aide de ce formulaire les informations sur les publications pour lesquelles les moyens de calcul {{mesoc}} ont été utilisés,<br>
+    Si vous renseignez l'oid, il sera simple d'aller sur le site du journal correspondant.<br>
+    D'autre part, si cette publication a été déposée sur un site en accès libre (OATAO, HAL etc.), merci de renseigner <strong>aussi</strong> l'url correspondante
+</div>
+
+<table  class="projet" id="publi_projets" >
+    <thead>
+        <tr><th>Liste des projets associés à cette publication</th></tr>
+    </thead>
+    <tbody><tr><td>
+    {% for projet in publication.projet %}
+         &nbsp;{{ projet }}
+    {% endfor %}
+    </td></tr></tbody>
+</table>
+
+{% include('publication/form.html.twig') %}
+
+{{ form_start(delete_form) }}
+<input type="submit" value="Retirer cette publication de la liste des publications associées au projet {{ projet }}">
+{{ form_end(delete_form) }}
+
+<br>            
+<a class="modification"href="{{ path('gerer_publications',{'id' : projet.idProjet }) }}" title="liste des publications du projet {{ projet }}">Retour vers la liste des publications du projet {{ projet }}</a> 
+{% endblock body  %}

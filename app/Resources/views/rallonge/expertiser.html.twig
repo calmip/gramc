@@ -1,0 +1,142 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+    <script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
+{% endblock myjavascripts %}
+
+{%- block choice_widget_expanded -%}
+    {%- for child in form %}
+        {{- form_widget(child) -}}
+        {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+    {% endfor -%}
+{%- endblock choice_widget_expanded -%}
+
+{% form_theme edit_form _self %}
+
+{# ######################################################################### #}
+
+{% block body %}
+
+<section>
+
+    <h1>Saisie de l'expertise de la demande de rallonge {{  rallonge }}</h1>
+
+
+    <div class="message warning">
+        <h2>ATTENTION</h2>
+        Vous ne saisissez ici que des <strong>suggestions</strong> de réponse. Le président finalisera ensuite votre réponse, il pourra:
+        <ul>
+            <li>Compléter le commentaire interne au comité</li>
+            <li>Modifier le nombre d'heures attribuées</li>
+            <li>Ajouter un commentaire qui sera envoyé au responsable du projet.</li>
+        </ul>
+        Lorsque vous cliquerez sur <strong>ENVOYER</strong>, seuls le président et les admins seront notifiés
+    </div>
+
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Titre</th>
+            </tr>
+            <tr>
+                <td class="center">{{ rallonge.version.prjTitre }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Nombre d'heures demandées</th>
+            </tr>
+            <tr>
+                <td class="center">{{ rallonge.demHeures }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="menu_expertiser" class="center">
+        <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation de l'année dernière" title="Visualiser la consommation de l'année dernière"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
+        <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation de cette année" title="Visualiser la consommation de cette année"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneeCour })) }}" />
+        <a href="{{ path('consulter_version', { 'id' : rallonge.version.projet.idProjet, 'version' : rallonge.version.idVersion } ) }}" target="_blank"><img class="bouton_poussoir" src="{{ asset('icones/consulter64.png') }}" title="Consulter le projet initial" alt="Consulter le projet initial" /></a>
+        <a href="{{ path('rallonge_consulter', { 'id' : rallonge.idRallonge } ) }}" target="_blank"><img style="background-color:grey" class="bouton_poussoir" src="{{ asset('icones/rallonge64.png') }}" title="Consulter la demande de rallonge" alt="Consulter la demande de rallonge" /></a>
+    </div>
+
+    <div class="message warning">
+        <h2>Note sur les heures de rallonge</h2>
+        1/ Les heures sont comptées en heures normalisées.<br>
+        2/ Elles viennent en <strong>supplément</strong> des heures qui ont déjà été attribuées
+    </div>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {# ############################################################################ #}
+
+    {{ form_start(edit_form) }}
+
+    <fieldset>
+        <legend>Expertise</legend>
+
+        <p>
+            <strong>Validation :</strong>{{ form_widget(edit_form.validation ) }}
+        </p>
+
+        <div class="message info">
+            <h2>Commentaire pour le comité</h2>
+            Ce commentaire restera au sein du comité d'attribution
+        </div>
+
+        <p class="center">
+            <label for="comm_interne">Commentaire interne</label>
+            <br>{{ form_widget(edit_form.commentaireInterne, { 'attr': { 'rows' : 10, 'cols' : 50 } }) }}
+        </p>
+
+        <p>
+            <label for="nb_heures_att">Nombre d'heures attribuées</label>
+            {{ form_widget(edit_form.nbHeuresAtt ) }}
+        </p>
+
+
+    </fieldset>
+
+    {# ############################################################################ #}
+
+    <fieldset>
+        <legend>Sauvegardez vos modifications</legend>
+            {{ form_widget(edit_form.enregistrer) }}
+            <input value="Annuler" name="Annuler" type="reset">
+            {{ form_widget(edit_form.envoyer) }}
+    </fieldset>
+    {{ form_end(edit_form) }}
+
+    <div id="graph_1" class="graphique"></div>
+    <div id="graph_2" class="graphique"></div>
+
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

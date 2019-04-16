@@ -1,0 +1,20 @@
+{% block body %}
+
+<h2>Attention !!!</h2>
+
+<div class="message warning">
+
+<h2>Attention !!!</h2>
+Un projet <strong>fermé</strong> ne <strong>peut pas être réouvert !</strong><br />
+
+
+<em><strong>Êtes-vous sûr de vouloir fermer le projet {{ projet.idProjet }} ?</strong></em><br />
+
+<form method="post" action="" >
+    <input type="submit" id="confirm_oui" name="confirmation" value="OUI" />
+    <input type="submit" id="confirm_non" name="confirmation" value="NON" />
+</form>
+
+</div>
+  
+{% endblock %}

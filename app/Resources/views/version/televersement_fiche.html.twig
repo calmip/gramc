@@ -1,0 +1,46 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block body %}
+
+<section>
+    <h2>Téléversement de la ficher projet</h2>
+    <div class="message warning">Le fichier doit être <strong>un pdf de taille inférieure à 1 Mo</strong></div>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not resultat == null %}
+        <div class="message info">
+        {% for res in resultat %}
+        <p>INFO: {{ res }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+
+{{ form_start( form  )  }}
+
+<p><label><strong>Fiche projet à téléverser à téléverser </strong>{{ form_widget( form.file ) }}</p>
+<p><input name="submit" value="Téléverser" type="submit"></p>
+
+{{ form_end(form) }}
+
+{% if( not ( version == null ) and  not ( version.projet == null )   ) %}
+<nav>
+    <ul>
+        <li>
+            <a class="lien_actif" href="{{  path('consulter_projet', { 'id': version.projet.idProjet }) }}" }}" title="">Retourner à la page du projet {{  version.projet }}</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+</section>
+
+{% endblock body %}

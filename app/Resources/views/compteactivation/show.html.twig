@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Compteactivation</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Stamp</th>
+                <td>{% if compteActivation.stamp %}{{ compteActivation.stamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Key</th>
+                <td>{{ compteActivation.key }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('compteactivation_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('compteactivation_edit', { 'id': compteActivation.key }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

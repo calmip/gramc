@@ -1,0 +1,32 @@
+{% extends 'default/base.html.twig' %}
+{% form_theme edit_form with ['form_table_layout.html.twig', _self] %}
+
+{% block body %}
+    <h1>Caractéristiques de la session {{ session }}</h1>
+
+    {{ form_start(edit_form) }}
+        <table>
+        <tr>
+            <td>{{ form_label(edit_form.dateDebutSession) }}</td>
+            <td>{{ form_widget(edit_form.dateDebutSession) }}</td>
+        </tr>
+        <tr>
+            <td>{{ form_label(edit_form.dateFinSession) }}</td>
+            <td>{{ form_widget(edit_form.dateFinSession) }}</td>
+        </tr>
+        <tr>
+            <td>{{ form_label(edit_form.hParAnnee) }}</td>
+            <td>{{ form_widget(edit_form.hParAnnee) }}</td>
+        </tr>
+        <tr>
+            <td>{{ form_label(edit_form.president) }}</td>
+            <td>{{ form_widget(edit_form.president) }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ form_widget(edit_form.submit) }}{{ form_widget(edit_form.reset) }}</td>
+        </tr>
+        </table>       
+    {{ form_end(edit_form) }}
+
+{% endblock %}

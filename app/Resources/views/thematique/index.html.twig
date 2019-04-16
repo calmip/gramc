@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Thematiques list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Libellethematique</th>
+                <th>Idthematique</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for thematique in thematiques %}
+            <tr>
+                <td><a href="{{ path('thematique_show', { 'id': thematique.idThematique }) }}">{{ thematique.libelleThematique }}</a></td>
+                <td>{{ thematique.idThematique }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('thematique_show', { 'id': thematique.idThematique }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('thematique_edit', { 'id': thematique.idThematique }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('thematique_new') }}">Create a new thematique</a>
+        </li>
+    </ul>
+{% endblock %}

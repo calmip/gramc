@@ -1,0 +1,17 @@
+{% extends 'default/base.html.twig' %}
+{% block body %}
+
+<h2>Attention !!!</h2>
+
+<div class="message warning">
+
+<em><strong>Êtes-vous sûr de vouloir faire revenir en édition {{ version.idVersion }} ?</strong></em><br />
+
+<form method="post" action="" >
+    <input type="submit" id="confirm_oui" name="confirmation" value="OUI" />
+    <input type="submit" id="confirm_non" name="confirmation" value="NON" />
+</form>
+
+</div>
+
+{% endblock %}

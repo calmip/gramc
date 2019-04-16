@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Expertise" table="expertise">
+    <indexes>
+      <index name="version_expertise_fk" columns="id_version"/>
+      <index name="expert_expertise_fk" columns="id_expert"/>
+      <index name="id_version" columns="id_version"/>
+      <index name="id_expert" columns="id_expert"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="id_version_2" columns="id_version,id_expert"/>
+    </unique-constraints>
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="validation" type="boolean" column="validation" nullable="false">
+      <options>
+        <option name="default">1</option>
+      </options>
+    </field>
+    <field name="nbHeuresAtt" type="integer" column="nb_heures_att" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <field name="commentaireInterne" type="text" column="commentaire_interne" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="commentaireExterne" type="text" column="commentaire_externe" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="definitif" type="boolean" column="definitif" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="nbHeuresAttEte" type="integer" column="nb_heures_att_ete" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <many-to-one field="idVersion" target-entity="Version" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_version" referenced-column-name="id_version"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idExpert" target-entity="Individu" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_expert" referenced-column-name="id_individu"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

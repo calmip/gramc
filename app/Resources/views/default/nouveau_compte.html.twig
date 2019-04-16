@@ -1,0 +1,36 @@
+{# app/Resources/views/default/nouveau_compte.html.twig #}
+{% extends 'default/base.html.twig' %}
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+{% block body %}
+
+<section>
+
+<h2>Vos accès à la plateforme d'attribution des ressources</h2>
+
+<div class="message warning"> 
+
+    <em>
+    Bonjour. La fédération d'identité-recherche vous a authentifié.
+    <br />
+    <strong>Mais nous ne savons pas qui vous êtes !</strong></em>
+
+</div>
+
+{{ form_start(form) }}
+{{ form_widget(form) }} 
+{{ form_end(form) }}
+
+<div class="message warning">
+
+    <h2>REMARQUE IMPORTANTE</h2>
+    Si vous avez déjà des projets sur {{mesoc}}, merci d'entrer <strong>la même adresse mail</strong>
+    que les autres années. Sinon, vous risquez de ne pas retrouver vos projets<br />
+    Si ce message n'est pas clair, veuillez nous écrire:
+        <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>.
+
+</div>
+
+</section>
+
+{% endblock body %}

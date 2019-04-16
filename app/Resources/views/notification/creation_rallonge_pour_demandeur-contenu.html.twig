@@ -1,0 +1,13 @@
+Bonjour {{object.version.responsable.prenom|raw }} {{object.version.responsable.nom|raw }}
+
+Votre demande de rallonge de ressources de calcul pour le projet {{ object.version.projet |raw }} (session {{ object.version.session |raw }}) sur {{mesoc}} vient d'être créée.
+
+Vous devez maintenant:
+        - Vous connecter à votre espace demandeur sur notre plateforme d'attribution des ressources:
+          {{ absolute_url( path('rallonge_consulter', { 'id' : object })) |raw }}
+        - Remplir complètement la demande,
+        - Envoyer votre demande en expertise
+
+Cordialement,
+
+L'équipe {{mesoc}}

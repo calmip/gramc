@@ -1,0 +1,9 @@
+Bonjour {{ responsable.prenom |raw }} {{ responsable.nom |raw }}
+
+Vous recevez ce mail car vous êtes responsable du ou des projets suivants: {% for p in projets %}{{p|raw }} {%endfor%}.
+
+Afin de compléter votre dossier, merci de téléverser la *fiche projet* signée par le directeur du laboratoire et le responsable du projet.
+Nous vous rappelons que  l'attribution des heures de calcul est conditionnée par la présence de cette fiche projet.
+
+Nous vous en remercions par avance,
+L'équipe {{mesoc}}.",

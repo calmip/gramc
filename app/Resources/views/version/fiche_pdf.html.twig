@@ -1,0 +1,69 @@
+{% extends 'default/base.html.twig' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% block mystyles %}
+        <link href="{{ absolute_url(asset('css/fiche.css'))  }}" rel="stylesheet" type="text/css" media="screen" />
+{% endblock mystyles %}
+
+{% block javascripts %}
+{% endblock javascripts %}
+
+{% block fil_ariane %}
+{% endblock fil_ariane %}
+
+{% block menu %}
+{% endblock menu %}
+
+{% block before_body %}
+{% endblock before_body %}
+
+{% block datatables %}
+{% endblock datatables %}
+
+{% block body %}
+{# <img src="{{ asset('icones/logo.png') }}" alt="logo" /> #}
+
+<h1>{{mesoc}} - Session d'attribution {{ session }}</h1>
+<hr class="retour" />
+
+<h2>{{ projet.titre }}</h2>
+
+<table>
+    <tbody>
+        <tr><th>Projet</th><td>{{ projet }}</td></tr>
+        <tr><th>Heures demandées</th><td>{{ version.demHeures }} heures monoprocesseur</td></tr>
+        <tr><th>Responsable</th><td>{{ version.responsable }}</td></tr>
+        <tr><th>Courriel</th><td>{{ version.responsable.mail }}</td></tr>
+        <tr><th>Laboratoire</th><td>{{ version.labo }}</td></tr>
+    </tbody>
+</table>
+
+<h3>Résumé du projet (extrait)</h3>
+<p>{{ version.prjResume }}</p>
+
+<div class="encadrement">
+<h3>Politique de confidentialité</h3>
+<p>
+{{mesoc}} se réserve le droit de publier sur son site Web les informations figurant sur cette fiche,
+à savoir le nom et le laboratoire du responsable du projet, ainsi que le résumé ci-dessus.
+<br/>
+Toutes les autres informations seront traitées de manière confidentielle par le Comité d'attribution, y compris le rapport
+annuel d'activité si le responsable du projet en fait la demande
+</p>
+</div>
+{% endblock body %}
+
+{% block footer %}
+<p class="nomprenom"><strong>Responsable: prénom, nom :</strong> __________________________________</p>
+<p class="signature"><strong>Signature</strong></p>
+<p class="nomprenom"><strong>Direction: prénom, nom :</strong> _____________________________________<br /><strong>Fonction:</strong> _____________________________________</p>
+<p class="signature"><strong>Date, signature et cachet du laboratoire</strong></p>
+<br><br><br><br>
+<hr />
+<p class="foot">Merci de téléverser cette fiche signée par la direction du laboratoire<br />{{ absolute_url('/') }}</p>
+{% endblock footer %}

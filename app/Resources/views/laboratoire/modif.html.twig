@@ -1,0 +1,35 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<section>
+<h2>Modification d'un laboratoire</h2>
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+    {{ gramcmacros.info('',"Le numéro d'ordre permet de <strong>trier</strong> les laboratoires à votre convenance. Si vous ne spécifiez rien, ils seront triés
+        en ordre alphabétique du nom") }}
+
+    
+    {{ form_start(edit_form) }}
+    <table>
+        <tr>
+            <th>{{ form_label(edit_form.numeroLabo) }}</th>
+            <td>{{ form_widget(edit_form.numeroLabo) }}</td>
+        </tr>
+        <tr>
+            <th>{{ form_label(edit_form.acroLabo) }}</th>
+            <td>{{ form_widget(edit_form.acroLabo) }}</td>
+        </tr>
+        <tr>
+            <th>{{ form_label(edit_form.nomLabo) }}</th>
+            <td>{{ form_widget(edit_form.nomLabo) }}</td>
+        </tr>
+        <tr>
+            <th></th>
+            <td>{{ form_widget(edit_form.submit) }}{{ form_widget(edit_form.reset) }}</td>
+        </tr>    
+    </table>
+    {{ form_end(edit_form) }}
+
+</section>
+
+{% endblock body %}

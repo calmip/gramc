@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Session" table="session">
+    <indexes>
+      <index name="etat_session" columns="etat_session"/>
+      <index name="id_president" columns="id_president"/>
+    </indexes>
+    <id name="idSession" type="string" column="id_session" length="3">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="typeSession" type="boolean" column="type_session" nullable="false"/>
+    <field name="commGlobal" type="text" column="comm_global" length="65535" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="dateDebutSession" type="date" column="date_debut_session" nullable="false"/>
+    <field name="dateFinSession" type="date" column="date_fin_session" nullable="true"/>
+    <field name="etatSession" type="integer" column="etat_session" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <many-to-one field="idPresident" target-entity="Individu" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_president" referenced-column-name="id_individu"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

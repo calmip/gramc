@@ -1,0 +1,14 @@
+Bonjour {{  object.responsable.prenom |raw }} {{ object.responsable.nom |raw }}
+Votre demande de projet test pour {{mesoc}} a bien été reçue.
+
+Votre numéro de projet    : {{ object.projet.idProjet |raw }}
+Nombre d'heures demandées : {{ object.demHeures |raw }}
+
+Vous pouvez retrouver votre projet sur la page suivante :
+{{ absolute_url(path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
+
+Nous vous répondrons dans les meilleurs délais.
+
+Cordialement,
+
+L'équipe {{mesoc}}

@@ -1,0 +1,69 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+<script  src="{{ asset('js/gerer_publis.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{% block body %}
+
+<section>
+
+<h1>Publications associées au projet {{ projet }}</h1>
+<div class="message info">
+    Merci de renseigner à l'aide de ce formulaire les publications pour lesquelles les moyens de calcul {{mesoc}} ont été utilisés, dans le cadre du projet {{ projet }} et ce,
+    <strong>quelque soit l'année</strong><br>
+    Si vous renseignez l'oid, il sera simple d'aller sur le site du journal correspondant.<br>
+    D'autre part, si cette publication a été déposée sur un site en accès libre (OATAO, HAL etc.), merci de renseigner <strong>aussi</strong> l'url correspondante
+</div>
+
+<section>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+
+<div>
+    <table  class="projet" id="publis_projet" >
+    <thead>
+        <tr>
+            <th colspan="2"></th>
+            <th>Réference</th>
+            <th>Année</th>
+            <th>doi</th>
+            <th>URL pour accès ouvert</th>
+        
+        </tr>
+    </thead>
+    
+    <tbody>
+    {% for publication in publications %}
+        <tr>
+            <td>
+                <a class="suppression" href="{{ path('supprimer_publication',{'id' : publication.idPubli, 'projet' : projet.idProjet }) }}" title="Supprimer">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
+            </td>
+            <td>
+                <a class="modification" href="{{ path('modifier_publication',{'id' : publication.idPubli , 'projet' : projet.idProjet}) }}" title="Modifier le publication">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
+            </td>
+            <td>{{ publication.refbib }}</td>
+            <td>{% if( publication.annee > 0 ) %}{{ publication.annee }}{% endif %}</td>
+            {# <td>{{ publication.idPubli }}</td> #}
+            <td>
+                {% if( not publication.doi == '' ) %}
+                    <a href="http://dx.doi.org/{{ publication.doi }}" target="_blank">{{ publication.doi | truncate(20)}}</a>
+                {% endif %}
+            </td>
+            <td>{% if( publication.openUrl != null ) %}<a href="{{ publication.openUrl }}">{{ publication.openUrl | truncate(20) }}</a>{% endif %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    
+    </table>
+</div>
+    
+</section>
+
+{% include('publication/form.html.twig') %}<br>
+          
+<a class="modification"href="{{ path('consulter_projet',{'id' : projet.idProjet }) }}" title="Consulter le projet {{ projet }}">Retour vers le projet {{ projet }}</a> 
+
+{% endblock body  %}

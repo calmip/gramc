@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Individu" table="individu">
+    <indexes>
+      <index name="id_labo" columns="id_labo"/>
+      <index name="id_statut" columns="id_statut"/>
+      <index name="id_etab" columns="id_etab"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="mail" columns="mail"/>
+    </unique-constraints>
+    <id name="idIndividu" type="integer" column="id_individu">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="creationStamp" type="datetime" column="creation_stamp" nullable="false">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>
+    <field name="nom" type="string" column="nom" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prenom" type="string" column="prenom" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="mail" type="string" column="mail" length="200" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="admin" type="boolean" column="admin" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="expert" type="boolean" column="expert" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="responsable" type="boolean" column="responsable" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="collaborateur" type="boolean" column="collaborateur" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="president" type="boolean" column="president" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="idStatut" type="boolean" column="id_statut" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="desactive" type="boolean" column="desactive" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <many-to-one field="idLabo" target-entity="Laboratoire" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_labo" referenced-column-name="id_labo"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idEtab" target-entity="Etablissement" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_etab" referenced-column-name="id_etab"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-many field="idThematique" target-entity="Thematique" mapped-by="idExpert" fetch="LAZY"/>
+  </entity>
+</doctrine-mapping>

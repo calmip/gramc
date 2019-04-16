@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Collaborateurprojettest" table="collaborateurProjetTest">
+    <indexes>
+      <index name="id_coll_labo" columns="id_coll_labo"/>
+      <index name="id_coll_statut" columns="id_coll_statut"/>
+      <index name="id_coll_etab" columns="id_coll_etab"/>
+      <index name="collaborateur_collaborateurprojetTest_fk" columns="id_collaborateur"/>
+      <index name="id_projet_test" columns="id_projet_test"/>
+      <index name="id_collaborateur" columns="id_collaborateur"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="id_projet_test_2" columns="id_projet_test,id_collaborateur"/>
+    </unique-constraints>
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="responsable" type="boolean" column="responsable" nullable="false"/>
+    <field name="login" type="boolean" column="login" nullable="false"/>
+    <field name="idCollStatut" type="boolean" column="id_coll_statut" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <many-to-one field="idProjetTest" target-entity="Projettest" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_projet_test" referenced-column-name="id_projet_test"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idCollLabo" target-entity="Laboratoire" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_coll_labo" referenced-column-name="id_labo"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idCollEtab" target-entity="Etablissement" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_coll_etab" referenced-column-name="id_etab"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idCollaborateur" target-entity="Individu" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_collaborateur" referenced-column-name="id_individu"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

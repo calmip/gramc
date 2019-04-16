@@ -1,0 +1,8 @@
+Bonjour {{ responsable.prenom |raw }} {{ responsable.nom |raw }}
+
+Vous recevez ce mail car vous êtes responsable du ou des projets suivants: {% for p in projets %}{{p|raw }} {%endfor%}.
+Or vous n'avez pas encore renouvelé ce ou ces projets pour la session {{ session |raw }}.
+Nous vous rappelons que vous avez jusqu'à la date du {{ session.dateFinSession|date('d-m-Y') |raw }} pour renouveler votre projet.
+
+Cordialement,
+L'équipe {{mesoc}}.

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Version" table="version">
+    <indexes>
+      <index name="etat_version" columns="etat_version"/>
+      <index name="id_session" columns="id_session"/>
+      <index name="id_projet" columns="id_projet"/>
+      <index name="prj_id_thematique" columns="prj_id_thematique"/>
+    </indexes>
+    <id name="idVersion" type="string" column="id_version" length="9">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="etatVersion" type="integer" column="etat_version" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjLLabo" type="string" column="prj_l_labo" length="300" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjTitre" type="string" column="prj_titre" length="150" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demHeures" type="integer" column="dem_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="attrHeures" type="integer" column="attr_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="consHeures" type="integer" column="cons_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjSousThematique" type="string" column="prj_sous_thematique" length="100" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjFinancement" type="string" column="prj_financement" length="100" nullable="true">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjGenciMachines" type="string" column="prj_genci_machines" length="60" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjGenciCentre" type="string" column="prj_genci_centre" length="60" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjGenciHeures" type="string" column="prj_genci_heures" length="30" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjResume" type="text" column="prj_resume" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjExpose" type="text" column="prj_expose" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjJustifRenouv" type="text" column="prj_justif_renouv" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjAlgorithme" type="text" column="prj_algorithme" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjConception" type="boolean" column="prj_conception" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjDeveloppement" type="boolean" column="prj_developpement" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjParallelisation" type="boolean" column="prj_parallelisation" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjUtilisation" type="boolean" column="prj_utilisation" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjFiche" type="blob" column="prj_fiche" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjFicheVal" type="boolean" column="prj_fiche_val" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="codeNom" type="string" column="code_nom" length="150" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeLangage" type="string" column="code_langage" length="30" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeLicence" type="text" column="code_licence" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="codeUtilSurMach" type="text" column="code_util_sur_mach" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="codeHeuresPJob" type="string" column="code_heures_p_job" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeRamPCoeur" type="string" column="code_ram_p_coeur" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeRamPart" type="string" column="code_ram_part" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeEffParal" type="string" column="code_eff_paral" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="codeVolDonnTmp" type="string" column="code_vol_donn_tmp" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="demLogiciels" type="text" column="dem_logiciels" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demBib" type="text" column="dem_bib" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demPostTrait" type="string" column="dem_post_trait" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="demFormMaison" type="text" column="dem_form_maison" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demFormAutres" type="text" column="dem_form_autres" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="libelleThematique" type="string" column="libelle_thematique" length="200" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="attrAccept" type="boolean" column="attr_accept" nullable="false">
+      <options>
+        <option name="default">1</option>
+      </options>
+    </field>
+    <field name="numero" type="integer" column="numero" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="id" type="integer" column="id" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="annee" type="integer" column="annee" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="rapConf" type="integer" column="rap_conf" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="majInd" type="integer" column="maj_ind" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="majStamp" type="datetime" column="maj_stamp" nullable="false">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>
+    <field name="sondVolDonnPerm" type="string" column="sond_vol_donn_perm" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="sondDureeDonnPerm" type="string" column="sond_duree_donn_perm" length="15" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="prjFicheLen" type="integer" column="prj_fiche_len" nullable="false">
+      <options>
+        <option name="unsigned"/>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="penalHeures" type="integer" column="penal_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="attrHeuresEte" type="integer" column="attr_heures_ete" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="sondJustifDonnPerm" type="text" column="sond_justif_donn_perm" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demFormAutresAutres" type="text" column="dem_form_autres_autres" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <many-to-one field="prjThematique" target-entity="Thematique" fetch="LAZY">
+      <join-columns>
+        <join-column name="prj_id_thematique" referenced-column-name="id_thematique"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idSession" target-entity="Session" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_session" referenced-column-name="id_session"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idProjet" target-entity="Projet" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_projet" referenced-column-name="id_projet"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

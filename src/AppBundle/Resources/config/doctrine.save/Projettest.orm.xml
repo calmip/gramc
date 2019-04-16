@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Projettest" table="projetTest">
+    <indexes>
+      <index name="etat_projet_test" columns="etat_projet_test"/>
+      <index name="id_session" columns="id_session"/>
+      <index name="prj_id_thematique" columns="prj_id_thematique"/>
+    </indexes>
+    <id name="idProjetTest" type="string" column="id_projet_test" length="6">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="etatProjetTest" type="integer" column="etat_projet_test" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjLLabo" type="string" column="prj_l_labo" length="300" nullable="false">
+      <options>
+        <option name="fixed"/>
+        <option name="default"/>
+      </options>
+    </field>
+    <field name="prjTitre" type="string" column="prj_titre" length="150" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="demHeures" type="integer" column="dem_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="attrHeures" type="integer" column="attr_heures" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <field name="prjJustificatif" type="text" column="prj_justificatif" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="attrAccept" type="boolean" column="attr_accept" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <many-to-one field="prjThematique" target-entity="Thematique" fetch="LAZY">
+      <join-columns>
+        <join-column name="prj_id_thematique" referenced-column-name="id_thematique"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idSession" target-entity="Session" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_session" referenced-column-name="id_session"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

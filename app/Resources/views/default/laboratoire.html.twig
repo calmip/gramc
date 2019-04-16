@@ -1,0 +1,16 @@
+{# app/Resources/views/default/accueil.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+{% block body %}
+
+{% if new %}
+<h1>Ajouter un nouveau laboratoire</h1>
+{% else %}
+<h1>Modifier un laboratoire</h1>
+{% endif %}
+
+{{ form(form) }}
+
+{% endblock body %}

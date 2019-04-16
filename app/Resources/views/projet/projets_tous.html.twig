@@ -1,0 +1,264 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/projets_experts.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{% block body %}
+
+<section>
+    <h1>Projets enregistrés (toutes années)</h1>
+
+    <form action="{{ path('projet_tous_csv') }}">
+        <input type="submit" value="Télécharger en csv" />
+    </form></p>
+
+    <div id="bilan_legende"><div id="bilan">
+        <table>
+            <tbody>
+                <tr><th colspan="3">Etats des projets</th></tr>
+                {% if( etat_projet.edition > 0 ) %}
+                <tr>
+                    <th>Projets en édition</th>
+                    <td>{{ etat_projet.edition }}</td>
+                    <td><input class="cb" id="edition" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.expertise > 0 ) %}
+                <tr>
+                    <th>Projets en expertise</th>
+                    <td>{{ etat_projet.expertise }}</td>
+                    <td><input class="cb" id="expertise" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.accepte > 0 ) %}
+                <tr>
+                    <th>Projets acceptés</th>
+                    <td>{{ etat_projet.accepte }}</td>
+                    <td><input class="cb" id="accepte" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.refuse > 0 ) %}
+                <tr>
+                    <th>Projets refusés</th>
+                    <td>{{ etat_projet.refuse }}</td>
+                    <td><input class="cb" id="refuse" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.actif > 0 ) %}
+                <tr>
+                    <th>Projets actifs</th>
+                    <td>{{ etat_projet.actif }}</td>
+                    <td><input class="cb" id="actif" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.nouvelle_version_demandee > 0 ) %}
+                <tr>
+                    <th>Nouvelle version demandée</th>
+                    <td>{{ etat_projet.nouvelle_version_demandee }}</td>
+                    <td><input class="cb" id="nouvelle_version_demandee" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.en_sursis > 0 ) %}
+                <tr>
+                    <th>Projets en sursis</th>
+                    <td>{{ etat_projet.en_sursis }}</td>
+                    <td><input class="cb" id="en_sursis" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.termine > 0 ) %}
+                <tr>
+                    <th>Projets terminés</th>
+                    <td>{{ etat_projet.termine }}</td>
+                    <td><input class="cb" id="termine" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.annule > 0 ) %}
+                <tr>
+                    <th>Projets annulés</th>
+                    <td>{{ etat_projet.annule }}</td>
+                    <td><input class="cb" id="annule" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.en_standby > 0 ) %}
+                <tr>
+                    <th>Projets en standby</th>
+                    <td>{{ etat_projet.en_standby }}</td>
+                    <td><input class="cb" id="en_standby" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                {% if( etat_projet.en_attente > 0 ) %}
+                <th>Projets en attente</th>
+                    <td>{{ etat_projet.en_attente }}</td>
+                    <td><input class="cb" id="en_attente" checked="checked" type="checkbox"></td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th>Total</th>
+                    <td>{{ etat_projet.total }}</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th colspan="3">Etats des projets test</th>
+                </tr>
+                {% if( etat_projet.edition_test > 0 ) %}
+                <tr>
+                    <th>Projets en édition</th>
+                    <td>{{ etat_projet.edition_test }}</td>
+                    <td><input type="checkbox" class="cb" id="edition_demande_test" checked="checked" />
+                </tr>
+                {% endif %}
+                {% if( etat_projet.expertise_test > 0 ) %}
+                <tr>
+                    <th>Projets en expertise</th>
+                    <td>{{ etat_projet.expertise_test }}</td>
+                    <td><input type="checkbox" class="cb" id="edition_expertise_test" checked="checked" />
+                </tr>
+                {% endif %}
+{#                {% if( etat_projet.accepte_test > 0 ) %}
+                <tr>
+                    <th>Projets acceptés</th>
+                    <td>{{ etat_projet.accepte_test }}</td>
+                    <td><input type="checkbox" class="cb" id="accepte_test" checked="checked" />
+                </tr>
+                {% endif %}
+                {% if( etat_projet.refuse_test > 0 ) %}
+                <tr>
+                    <th>Projets refusés</th>
+                    <td>{{ etat_projet.refuse_test }}</td>
+                    <td><input type="checkbox" class="cb" id="refuse_test" checked="checked" />
+                </tr>
+                {% endif %}
+#}
+                {% if( etat_projet.en_attente_test > 0 ) %}
+                <tr>
+                    <th>Projets en attente</th>
+                    <td>{{ etat_projet.en_attente_test }}</td>
+                    <td><input type="checkbox" class="cb" id="en_attente_test" checked="checked" />
+                </tr>
+                {% endif %}
+                {% if( etat_projet.actif_test > 0 ) %}
+                <tr>
+                    <th>Projets actifs</th>
+                    <td>{{ etat_projet.actif_test }}</td>
+                    <td><input type="checkbox" class="cb" id="actif_test" checked="checked" />
+                </tr>
+                {% endif %}
+                {% if( etat_projet.termine_test > 0 ) %}
+                <tr>
+                    <th>Projets terminés</th>
+                    <td>{{ etat_projet.termine_test }}</td>
+                    <td><input type="checkbox" class="cb" id="termine_test" checked="checked" />
+                </tr>
+                {% endif %}
+                {% if( etat_projet.annule_test > 0 ) %}
+                <tr>
+                    <th>Projets annulés</th>
+                    <td>{{ etat_projet.annule_test }}</td>
+                    <td><input type="checkbox" class="cb" id="annule_test" checked="checked" />
+                </tr>
+                {% endif %}
+                <tr>
+                    <th>Total</th>
+                    <td>{{ etat_projet.total_test }}</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div></div>
+
+    <div id="projets"><div id="projets_tous_wrapper" class="dataTables_wrapper no-footer">
+        <table id="projets_tous" class="dataTable no-footer" role="grid">
+            <thead>
+                <tr role="row">
+                    <th class="sorting_asc" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 0px;" aria-sort="ascending" aria-label=": activate to sort column descending"></th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 69px;" aria-label="Numéro: activate to sort column ascending">N°</th>
+                    <th class="sorting_disabled" rowspan="1" colspan="1" style="width: 0px;" aria-label=""></th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" aria-label="Etat: activate to sort column ascending" title="Etat" >E</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 157px;" aria-label="Titre: activate to sort column ascending">Titre</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 136px;" aria-label="Thématique: activate to sort column ascending">Thématique</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 178px;" aria-label="Responsable: activate to sort column ascending">Responsable</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 108px;" aria-label="Laboratoire: activate to sort column ascending">Laboratoire</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 73px;" aria-label="Nb de versions: activate to sort column ascending">Nb de versions</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 75px;" aria-label="Dernière session: activate to sort column ascending">Dernière session</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 66px;" aria-label="H dem (cumul): activate to sort column ascending">H dem (cumul)</th>
+                    <th class="sorting" tabindex="0" aria-controls="projets_tous" rowspan="1" colspan="1" style="width: 66px;" aria-label="H attr (cumul): activate to sort column ascending">H attr (cumul)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in data %}
+                <tr role="row" class="odd">
+
+                    <td class="sorting_1">
+                    {% if( item.etat == 'EN_STANDBY' and not ( item.etat_version == 'EDITION_EXPERTISE' ) ) %}
+                        <a class="fermeture" href="{{ path('fermer_projet', { 'id': item.projet.idProjet }) }}?" title="Fermer le projet">
+                            <img src="{{ asset('icones/process-stop.png') }}" alt="Fermer">
+                        </a>
+                    {% endif %}
+
+                    </td>
+                    <td>{{ item.projet.idProjet }}</td>
+                    <td>
+                        <a href="{{ path('consulter_projet', { 'id': item.projet.idProjet }) }}" title="Consulter le projet">
+                            <img src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
+                        </a>
+                    </td>
+
+                    {% if( item.projet.isProjetTest() == true ) %}
+                        <td class="{{ item.etat|lower }}_test">
+                    {% else %}
+                        <td class="{{ item.etat|lower }}">
+                    {% endif %}
+                    {#
+                            {% if( item.etat == 'NOUVELLE_EDITION_DEMANDE' or item.etat == 'EN_STANDBY' ) %}
+                                {{ item.etat }}<br />{{ item.etat_version|lower }}
+                            {% else %}
+                                {{ item.etat }}
+                            {% endif %}
+                    #}
+                            {{ gramcmacros.metagraph(item.projet.metaetat) }}
+                        </td>
+
+                    <td>
+                        {% if( item.version != null) %}{{ gramcmacros.afftitre(item.version.prjtitre) }}{% endif %}
+                    </td>
+                    {% if( item.version != null and item.version.prjThematique != null ) %}
+                    <td class="t{{ item.version.prjThematique.idThematique }}">{{ item.version.prjThematique }}
+                    {% else %}
+                    <td>
+                    {% endif %}
+                    </td>
+                    <td>
+                        {% if( item.responsable != null) %}
+                        <a class="sudo" href="{{ path('sudo',  { 'id': item.responsable.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                        <a href="mailto:{{ item.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ item.responsable.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                        {{ item.responsable.prenom }} {{ item.responsable.nom }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if( item.version != null) %}<span title="{{ item.version.PrjLLabo }}">{{ item.version.acroLaboratoire }}</span>{% endif %}
+                    </td>
+                    <td>{{ item.count }}</td>
+                    <td>{% if( item.version != null) %}{{ item.version.session.idSession }}{% endif %}</td>
+                    <td>{{ item.dem }}</td>
+                    <td>{{ item.attr }}</td>{#
+                    #}
+                </tr>
+                {% endfor %}
+           </tbody>
+        </table>
+        </div></div>
+
+ <div id="formulaire_confirmation"></div>
+ </section>
+{% endblock %}

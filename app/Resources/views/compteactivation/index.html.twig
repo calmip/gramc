@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Compteactivations list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Stamp</th>
+                <th>Key</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for compteActivation in compteActivations %}
+            <tr>
+                <td><a href="{{ path('compteactivation_show', { 'id': compteActivation.key }) }}">{{ compteActivation.stamp|date('Y-m-d H:i:s') }}</a></td>
+                <td>{{ compteActivation.key }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('compteactivation_show', { 'id': compteActivation.key }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('compteactivation_edit', { 'id': compteActivation.key }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('compteactivation_new') }}">Create a new compteActivation</a>
+        </li>
+    </ul>
+{% endblock %}

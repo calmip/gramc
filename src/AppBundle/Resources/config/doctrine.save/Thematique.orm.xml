@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Thematique" table="thematique">
+    <id name="idThematique" type="integer" column="id_thematique">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="libelleThematique" type="string" column="libelle_thematique" length="200" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idMetaThematique" type="integer" column="id_meta_thematique" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+    <many-to-many field="idExpert" target-entity="Individu" inversed-by="idThematique" fetch="LAZY">
+      <join-table name="thematiqueexpert">
+        <join-columns>
+          <join-column name="id_thematique" referenced-column-name="id_thematique"/>
+        </join-columns>
+        <inverse-join-columns>
+          <join-column name="id_expert" referenced-column-name="id_individu"/>
+        </inverse-join-columns>
+      </join-table>
+    </many-to-many>
+  </entity>
+</doctrine-mapping>

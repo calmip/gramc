@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Etablissements list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Libelleetab</th>
+                <th>Idetab</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for etablissement in etablissements %}
+            <tr>
+                <td><a href="{{ path('etablissement_show', { 'id': etablissement.idEtab }) }}">{{ etablissement.libelleEtab }}</a></td>
+                <td>{{ etablissement.idEtab }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('etablissement_show', { 'id': etablissement.idEtab }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('etablissement_edit', { 'id': etablissement.idEtab }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('etablissement_new') }}">Create a new etablissement</a>
+        </li>
+    </ul>
+{% endblock %}

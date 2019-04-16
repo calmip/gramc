@@ -1,0 +1,27 @@
+{# ################################################################ #}
+{# Affichage des méta etats par une icône, utilisé essentiellement  #}
+{# par demandeur.html.twig et rallonge/affectation.html.twig        #}
+{# --> cf. aussi le fichier macros.html.twig                        #}
+{# ################################################################ #}
+
+{% macro meta_etat_graphique(etat) %}
+    {% if etat == 'EXPERTISE' %}
+    <img src="{{ asset('icones/expertise.png') }}"  alt="en expertise" title="En cours d'expertise" />
+    {% elseif etat == 'EDITION' %}
+    <img src="{{ asset('icones/working.png') }}"  alt="en cours" title="En cours de conception, N'OUBLIEZ PAS D'ENVOYER EN EXPERTISE !" />
+    {% elseif etat == 'ATTENTE' %}
+    <img src="{{ asset('icones/attente.png') }}"  alt="attente" title="En attente" />
+    {% elseif etat == 'REFUSE' %}
+    <img src="{{ asset('icones/inactif.png') }}"  alt="refusé" title="Désolé, votre projet ou rallonge a été refusé par le comité d'attribution" />
+    {% elseif etat == 'ACCEPTE'  %}
+    <img src="{{ asset('icones/actif.png') }}"  alt="accepté" title="Projet ou rallonge accepté par le comité d'attribution" />
+    {% elseif etat == 'ANNULE'  %}
+    <img src="{{ asset('icones/inactif.png') }}"  alt="annulé" title="Cette version de projet a été annulée pour cette session" />
+    {% elseif etat == 'NONRENOUVELE'  %}
+    <img src="{{ asset('icones/nonrenouvele.png') }}"  alt="non renouvelé" title="Si vous ne demandez pas un renouvellement, vous ne pourrez plus calculer au titre de ce projet" />
+    {% elseif etat == 'STANDBY' %}
+    <img src="{{ asset('icones/standby.png') }}"  alt="attente" title="En attente, renouvellement possible" />
+    {% elseif etat == 'TERMINE' %}
+    <img src="{{ asset('icones/term.png') }}" alt="terminé" title="Terminé" />
+    {% endif %}
+{% endmacro meta_etat_graphique %}

@@ -1,0 +1,59 @@
+{# app/Resources/views/default/profil.html.twig #}
+{% extends 'default/base.html.twig' %}
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+
+{# ################################################################################################### #}
+
+{% block text_widget %}
+<input type="text" {{ block('widget_attributes') }} size="45" value="{{ value }}" >
+{% endblock %}
+
+{% block email_widget %}
+<input type="email" {{ block('widget_attributes') }} size="45" value="{{ value }}" >
+{% endblock %}
+
+{% block _individu_mail_label %}
+<label for="mail">Courriel <span class="attention">institutionnel:</span> </label>
+{% endblock %}
+
+{% block _individu_sauvegarder_widget %}
+{{ block('submit_widget') }}
+<button type="reset" id="individu_reset">Effacer</button>
+{% endblock %}
+
+{% block _individu_idLabo_widget %}
+{{ block('choice_widget') }}
+
+    <div class="message info">
+        <em>Si votre laboratoire ne figure pas dans la liste,
+            <a href="mailto:{{ mailadmin }}?Subject=Nouveau%20laboratoire%20à%20introduire%20dans%20gramc%20!&amp;body=Bonjour
+            %0D%0AMerci%20d'ajouter%20à%20la%20base%20de%20données%20le%20laboratoire%20suivant:
+            %0D%0ASIGLE:%20
+            %0D%0ANOM%20COMPLET:
+            %0D%0ACordialement,">
+            <strong> cliquez ici</strong></a>
+            pour faire la demande
+        </em>, ou envoyez un courriel à {{ mailadmin }})
+    </div>
+{% endblock  %}
+
+{# ################################################################################################### #}
+
+{% block body %}
+
+<section><h2>Changer mon profil</h2>
+
+<div class="message warning"><em>Veuillez s'il vous plaît renseigner complètement votre profil</em></div>
+
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+
+{% endif %}
+
+{% endblock %}
+

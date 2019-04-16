@@ -1,0 +1,18 @@
+Bonjour
+
+Une demande de rallonge de ressources {{mesoc}} a été reçue de {{  app.user |raw }}.
+Adresse: {{ app.user.mail |raw }}
+
+Cette demande a été transférée pour information aux adresses suivantes: {{ liste_mail_destinataires |raw }}
+ainsi qu'au président du comité d'attributions.
+
+Numéro de session        : {{ object.version.session |raw }}
+Numéro de projet         : {{ object.version.projet |raw }}
+Numéro de rallonge       : {{ object |raw }}
+Nombre d'heures demandées: {{ object.demHeures |raw }}
+
+En tant que président(e) du comité d'attribution, il vous appartient maintenant
+d'affecter un(e) expert à cette demande.
+
+Cordialement,
+- gramc -

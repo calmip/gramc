@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Params list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Cle</th>
+                <th>Val</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for param in params %}
+            <tr>
+                <td><a href="{{ path('param_show', { 'id': param.id }) }}">{{ param.cle }}</a></td>
+                <td>{{ param.val }}</td>
+                <td>{{ param.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('param_show', { 'id': param.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('param_edit', { 'id': param.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('param_new') }}">Create a new param</a>
+        </li>
+    </ul>
+{% endblock %}

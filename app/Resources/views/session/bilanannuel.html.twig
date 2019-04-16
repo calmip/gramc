@@ -1,0 +1,32 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+    <h2>Générer et télécharger le bilan annuel</h2>
+
+    {{ form_start(form) }}
+        {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+    {{ form_end(form) }}
+
+    <br />
+
+    <form action="{{ path('bilan_annuel_csv', {'annee': annee }) }}">
+        <input type="submit" value="Bilan annuel {{ annee }} en csv" />
+    </form>
+
+    <br />
+
+    <form action="{{ path('bilan_annuel_labo_csv', {'annee': annee }) }}">
+        <input type="submit" value="Bilan par labo {{ annee }} en csv" />
+    </form>
+
+    <br />
+
+    <form action="{{ path('projet_resumes', {'annee': annee }) }}">
+        <input type="submit" value="Afficher les résumés des projets de l'année {{ annee }}" />
+    </form>
+
+</section>
+
+{% endblock body %}

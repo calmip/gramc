@@ -1,0 +1,37 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/service_container.html
+parameters:
+#    parameter_name: value
+
+services:
+#    service_name:
+#        class: AppBundle\Directory\ClassName
+#        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
+     app.init_controller:
+       class: AppBundle\Controller\InitController
+       arguments: ["@doctrine.orm.entity_manager","@kernel"]
+
+     app.gramc_user_provider:
+       class: AppBundle\Security\User\GramcUserProvider
+       arguments: ["@doctrine.orm.entity_manager"]
+       
+     app.user_checker:
+       class: AppBundle\Security\User\UserChecker
+
+     app.test_user_provider:
+       class: AppBundle\Security\User\TestUserProvider
+
+     app.exception_listener:
+        class: AppBundle\EventListener\ExceptionListener
+        arguments: ['@router','@logger','@session']
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+            
+     app.gramc_date:
+        class: AppBundle\Utils\GramcDateWrapper
+        arguments: ['@kernel']
+
+     app.initialize:
+        class: AppBundle\Utils\AppBundleInitialize
+        arguments: ['@kernel']
+        

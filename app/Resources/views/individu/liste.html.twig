@@ -1,0 +1,121 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/gerer_utilisateurs.js') }}"></script> 
+{% endblock myjavascripts %}
+
+
+{% block body %}
+
+<section>
+
+    {# ################################################################################## #}
+
+    <h1>Utilisateurs de gramc</h1>
+    
+    <div class="message warning">
+        <h2>AVERTISSEMENT</h2>
+        Si la case <strong>Filtrer sur tous les utilisateurs</strong>
+        est décochée, seuls les utilisateurs qui peuvent se connecter, qui sont admins ou experts, seront considérés.
+        <br />
+        <strong>On peut restreindre l'affichage</strong> en entrant un filtre sur les adresses mail
+    </div>
+    
+    {{ form_start(form) }}
+    {{ form_row(form.all) }}
+    <div>{{ form_row(form.filtre) }}{{ form_row(form.filtrer) }}</div>
+    
+    <nav><ul><li>
+        <a id="ajout" class="lien_actif" href="{{ path('individu_ajouter') }}?" title="Créer un utilisateur">Nouvel utilisateur</a>
+        <div class="infobulleok" data-title="Créer un utilisateur">
+            <img src="{{ asset('icones/q16.png') }}" alt="?" />
+        </div>
+    </li></ul></nav>
+    
+   
+
+    {# ################################################################################## #}
+    
+    <div id="bilan_legende"><div id="bilan">
+    
+    <table>
+        <tr>
+            <th colspan="2">Utilisateurs</th>
+        </tr>
+        <tr>
+            <th>Total</th>
+            <td>{{ total }}</td>
+        </tr>
+        <tr>
+            <th>Actifs</th>
+            <td>{{ actifs }}</td>
+        </tr>
+        <tr>
+            <th>Responsables</th>
+            <td>{{ responsables }}</td>
+        </tr>
+        <tr>
+            <th>Collaborateurs</th>
+            <td>{{ collaborateurs }}</td>
+        </tr>
+    </table>
+
+
+    <table>
+        <tr>
+            <th colspan="2">Fournisseurs d'identité</th>
+        </tr>
+        {% for key,value in idps %}
+            <tr>
+            <th>{{ key }}</th>
+            <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    
+    </div></div>
+    
+   {# ################################################################################## #}
+
+    <div id="projets"><table id="utilisateurs">
+        <thead>
+            <tr>
+                <th colspan="3">rm prf Sudo</th>
+                <th colspan="1">
+                    Activé
+                </th>
+                <th colspan="1">
+                    Expert
+                </th>
+                <th colspan="1">
+                    Admin
+                </th>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Courriel</th>
+                <th>Idp</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for individu in individus %}
+            <tr>
+               {% include 'individu/ligne.html.twig' %} 
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table></div>
+    
+    {# ################################################################################## #}
+
+     {{ form_end(form)  }}
+    
+    <div id="formulaire_profil"></div>
+    <div id="formulaire_thematiques"></div>
+    
+</section>
+
+
+{% endblock %}

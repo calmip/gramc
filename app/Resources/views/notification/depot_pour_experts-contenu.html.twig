@@ -1,0 +1,13 @@
+Bonjour
+
+Une demande d'attributions de ressources {{mesoc}} a été reçue de {{ object.responsable.prenom |raw }} {{ object.responsable.nom |raw }}.
+Adresse: {{ app.user.mail |raw }}
+
+Cette demande a été transférée pour information aux adresses suivantes: {{ liste_mail_destinataires |raw }}
+
+Numéro de session   : {{ object.session |raw }}
+Numéro de projet    : {{ object.projet |raw }}
+Retrouver le projet : {{ absolute_url(path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
+
+Cordialement,
+- gramc -

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Parametres" table="parametres">
+    <id name="cptProjet" type="integer" column="cpt_projet">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="decalageDate" type="smallint" column="decalage_date" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="activationAgeMax" type="integer" column="activation_age_max" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="cptProjettest" type="integer" column="cpt_projetTest" nullable="false">
+      <options>
+        <option name="unsigned">1</option>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

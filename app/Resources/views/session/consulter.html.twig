@@ -1,0 +1,30 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+    <h1>Session {{session}}</h1>
+
+    <table>
+        <tbody>
+<!--            <tr>
+                <th>Typesession</th>
+                <td>{% if session.typeSession %}Yes{% else %}No{% endif %}</td>
+            </tr> -->
+            <tr>
+                <th>Début le </th>
+                <td>{% if session.dateDebutSession %}{{ session.dateDebutSession|date('Y-m-d') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Fin le </th>
+                <td>{% if session.dateFinSession %}{{ session.dateFinSession|date('Y-m-d') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Commentaire</th>
+                <td><small>{{ session.commGlobal | e | nl2br}}</small></td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+
+{% endblock %}

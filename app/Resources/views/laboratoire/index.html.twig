@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Laboratoires list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Numerolabo</th>
+                <th>Acrolabo</th>
+                <th>Nomlabo</th>
+                <th>Idlabo</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for laboratoire in laboratoires %}
+            <tr>
+                <td><a href="{{ path('laboratoire_show', { 'id': laboratoire.idLabo }) }}">{{ laboratoire.numeroLabo }}</a></td>
+                <td>{{ laboratoire.acroLabo }}</td>
+                <td>{{ laboratoire.nomLabo }}</td>
+                <td>{{ laboratoire.idLabo }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('laboratoire_show', { 'id': laboratoire.idLabo }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('laboratoire_edit', { 'id': laboratoire.idLabo }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('laboratoire_new') }}">Create a new laboratoire</a>
+        </li>
+    </ul>
+{% endblock %}

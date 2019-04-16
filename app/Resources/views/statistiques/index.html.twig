@@ -1,0 +1,106 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block menu %}
+{{ gramcmacros.menu(menu) }}
+{% endblock menu %}
+
+{% block body %}
+
+<section>
+
+
+
+<h1>Statistiques de l'année {{ annee }}</h1>
+
+{{ form_start(form) }}
+{{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+{{ form_end(form) }}
+<br />
+
+{# <div style="float: left;"> #}
+<div>
+
+
+{# <p style="float:right;"><button name="format" value="csv">Télécharger en csv</button></p> #}
+
+
+
+
+<table id="tab_nb_projets_total_annee">
+    <tbody>
+        <tr>
+            <th colspan="3">Bilan des projets</th>
+        </tr>
+        <tr>
+            <th rowspan="3">Nombre de projets</th><th class="left">Projets renouvelés</th><td>{{ num_projets_renouvelles }}</td>
+        </tr>
+        <tr>
+            <th class="left">Nouveaux projets</th><td>{{ num_projets_nouveaux }}</td>
+        </tr>
+        <tr>
+            <th class="left">Total</th><td>{{ num_projets }}</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+<table><tbody>
+    <tr><th colspan="2">Bilan des collaborateurs</th></tr>
+    <tr><th class="left">Nombre de collaborateurs</th><td>{{ num_individus }}</td></tr>
+    <tr><th class="left">Nombre de collaborateurs uniques</th><td>{{ num_individus_uniques }}</td></tr>
+</tbody></table>
+
+<table id="tab_heures_calcul_total_annee"><tbody>
+    <tr>
+        <th colspan="3">Consommation de l'année {{ annee }}</th>
+    </tr>
+    <tr>
+        <th rowspan="3">Projets renouvelés</th>
+        <th class="left">Demandées</th>
+        <td>{{ (heures_renouvelles.demHeures + heures_renouvelles.rallongeDemHeures )|number_format(0, ',', ' ') }}</td>
+    </tr>
+    <tr>
+        <th class="left">Attribuées</th>
+        <td>{{ ( heures_renouvelles.attrHeures + heures_renouvelles.rallongeAttrHeures ) |number_format(0, ',', ' ')}}</td>
+    </tr>
+    <tr>
+        <th class="left">Consommées</th>
+        <td>{{ conso_renouvelles |number_format(0, ',', ' ') }}</td>
+    </tr>
+    <tr>
+        <th rowspan="3">Nouveaux projets</th>
+        <th class="left">Demandées</th>
+        <td>{{ (heures_nouveaux.demHeures + heures_nouveaux.rallongeDemHeures )|number_format(0, ',', ' ')}}</td>
+    </tr>
+    <tr>
+        <th class="left">Attribuées</th>
+        <td>{{ (heures_nouveaux.attrHeures + heures_nouveaux.rallongeAttrHeures ) |number_format(0, ',', ' ') }}</td>
+    </tr>
+    <tr>
+        <th class="left">Consommées</th><td>{{ conso_nouveaux |number_format(0, ',', ' ') }}</td>
+    </tr>
+    <tr>
+        <th rowspan="3">Total</th>
+        <th class="left">Demandées</th>
+        <td>{{ (heures_tous.demHeures + heures_tous.rallongeDemHeures )|number_format(0, ',', ' ')}}</td>
+    </tr>
+    <tr>
+        <th class="left">Attribuées</th>
+        <td>{{ (heures_tous.attrHeures + heures_tous.rallongeAttrHeures)|number_format(0, ',', ' ') }}</td>
+    </tr>
+    <tr>
+        <th class="left">Consommées</th>
+        <td>{{ ( conso_renouvelles +  conso_nouveaux )|number_format(0, ',', ' ')  }}</td>
+    </tr>
+</tbody>
+</table>
+
+</div>
+
+
+</section>
+
+
+{% endblock %}

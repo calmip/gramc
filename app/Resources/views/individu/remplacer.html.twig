@@ -1,0 +1,81 @@
+{% extends 'default/base.html.twig' %}
+
+{# ################################################################################################### #}
+
+{% block myjavascripts %}
+<script  src="{{ asset('js/mail_autocomplete.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{# ################################################################################################### #}
+
+
+{% block body %}
+
+    <h2>Remplacer l'utilisateur {{ individu }} par un autre utilisateur</h2>
+
+    {% if not erreurs == null %}
+        <div class="message erreur">
+        {% for erreur in erreurs %}
+        <p>ERREUR: {{ erreur }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="message warning">
+    <h2>Attention</h2>
+    <p>L'utilisateur <strong>{{ individu }}</strong> est présent dans certaines structures de données, avant de le supprimer nous devons
+    transférer ces données à un autre utilisateur</p>
+    </div>
+
+    {% if not CollaborateurVersion == null %}
+        <div class="message info"><h3>Collaborateur dans des projets</h3>
+        <p>
+        {% for item in CollaborateurVersion %}
+        {{ item.version }}
+        {% endfor %}
+        </p>
+        </div>
+    {% endif %}
+
+    {% if not Expertise == null %}
+        <div class="message info"><h3>Expert de certaines versions de projets</h3>
+        <p>
+        {% for item in Expertise %}
+        {{ item.version }}
+        {% endfor %}
+        </p>
+        </div>
+    {% endif %}
+
+    {% if not Rallonge == null %}
+        <div class="message info">
+        {% for item in Rallonge %}
+        <p>Expert de l'expertise de la rallonge : {{ item }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not Session == null %}
+        <div class="message info">
+        {% for item in Session %}
+        <p>Président de la session : {{ item }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+
+    {% if not Thematique == null %}
+        <div class="message info">
+        {% for item in Thematique %}
+        <p>Expert de la thématique : {{ item }}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="center" >
+    {{ form_start(form) }}
+    {{ form_widget(form, { 'attr': { 'class': 'mail ui-autocomplete-input', 'size' : '70' ,'data-mail_autocomplete': path('mail_autocomplete') }}) }}
+    {{ form_end(form) }}
+    </div>
+
+{% endblock %}

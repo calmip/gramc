@@ -1,0 +1,172 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if rallonges | length > 0 %}
+    <section>
+    <h2>Demandes de rallonges (session en cours)</h2>
+    <table id="RALLONGE" class="projet">
+        <thead>
+            <tr>
+                <th>Projet</th>
+                <th>&nbsp;</th>
+                <th>Titre</th>
+                <th>Demande</th>
+                <th>Attribution</th>
+                <th>Conso</th>
+                <th>Responsable</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for rallonge in rallonges %}
+            <tr>
+                <td>{{ rallonge.projet }}</td>
+                <td>
+                    <a href="{{ path('consulter_projet', { 'id' : rallonge.projet.idProjet } ) }}">
+                        <img src="{{ asset('icones/consulter.png') }}" alt="Projet" title="Lire le projet" class="bouton_poussoir">
+                    </a>
+                </td>
+                <td>{{ rallonge.version.prjTitre }}</td>
+                <td>{{ rallonge.version.demHeures }}</td>
+                <td>{{ rallonge.version.attrHeures }}</td>
+                <td>{{ rallonge.version.conso }}</td>
+                <td>{{ rallonge.version.responsable }}</td>
+            </tr>
+            {% for item in rallonge.rallonges %}
+            <tr>
+                <td>{{ item.idRallonge }}</td>
+                <td><a href="{{ path('rallonge_expertiser', { 'id' : item.idRallonge } ) }}">
+                    <img src="{{ asset('icones/modifier.png') }}" alt="Projet" title="Expertiser la demande" class="bouton_poussoir">
+                    </a>
+                </td>
+                <td>&nbsp;</td>
+                <td>{{ item.demHeures }}</td>
+                <td>{{ item.attrHeures }}</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            {% endfor %}   
+    {% endfor %}
+        </tbody>
+    </table>
+    </section>
+{% endif %}
+
+{# ################################################################### #}
+
+{% for expertises_thematique in expertises_by_thematique %}
+    <section>
+        {% if expertises_thematique.expertises | length > 0 %}
+        <h2>Thématique {{ expertises_thematique.thematique }}</h2>
+            <table id="THEM" class="projet">
+                <thead>
+                     <tr>
+                        <th>Projet</th>
+                        <th>&nbsp;</th>
+                        <th>Thématique</th>
+                        <th>Titre</th>
+                        <th>Demande</th>
+                        <th>Responsable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for expertise in expertises_thematique.expertises %}
+                    <tr>
+                        <td>{{ expertise.projetId }}</td>
+                        <td>
+                            {% if( expertise.expert == true ) %}
+                                <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
+                                <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                            {% else %}
+                                <a href="{{ path('consulter_projet', { 'id' : expertise.projetId } ) }}">
+                                <img src="{{ asset('icones/consulter.png') }}" alt="Expertiser" title="Lire le projet" class="bouton_poussoir"></a>
+                            {% endif %}
+                        </td>
+                        <td>{{ expertise.thematique }}</td>
+                        <td>{{ expertise.titre }}</td>
+                        <td>{{ expertise.demHeures }}</td>
+                        <td>{{ expertise.responsable }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+{% endfor %}
+
+{# ################################################################### #}
+
+{% if( not ( expertises_hors_thematique == null ) ) %}
+<section>
+    <h2>Autres thématiques</h2>
+    <table id="HORS_THEM" class="projet">
+    <thead>
+            <tr>
+                <th>Projet</th>
+                <th>&nbsp;</th>
+                <th>Thématique</th>
+                <th>Titre</th>
+                <th>Demande</th>
+                <th>Responsable</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for expertise in expertises_hors_thematique %}
+                    <tr>
+                        <td>{{ expertise.projetId }}</td>
+                        <td>
+                            <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
+                            <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                        </td>
+                        <td>{{ expertise.thematique }}</td>
+                        <td>{{ expertise.titre }}</td>
+                        <td>{{ expertise.demHeures }}</td>
+                        <td>{{ expertise.responsable }}</td>
+                    </tr>
+                {% endfor %}
+        </tbody>
+    </table>
+    <hr>
+</section>
+{% endif %}
+
+{% if( not ( old_expertises == null ) ) %}
+<section>
+    <h2>Anciennes expertises</h2>
+    <table id="old_expertises">
+    <thead>
+        <tr>
+            <th>Projet</th>
+            <th>Session</th>
+            <th>&nbsp;</th>
+            <th>Thématique</th>
+            <th>Titre</th>
+            <th>Demande</th>
+            <th>Attribution</th>
+            <th>Responsable</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for expertise in old_expertises %}
+        <tr>
+            <td>{{ expertise.projetId }}</td>
+            <td>{{ expertise.sessionId }}</td>
+            <td>
+                <a href="{{ path('consulter_version', { 'id' : expertise.projetId, 'version' : expertise.versionId } ) }}">
+                    <img src="{{ asset('icones/consulter.png') }}" alt="Expertiser" title="Lire le projet" class="bouton_poussoir">
+                </a>
+            </td>
+            <td>{{ expertise.thematique }}</td>
+            <td>{{ expertise.titre }}</td>
+            <td>{{ expertise.demHeures }}</td>
+            <td>{{ expertise.attrHeures }}</td>
+            <td>{{ expertise.responsable }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    <hr>
+</section>
+{% endif %}
+
+{% endblock %}

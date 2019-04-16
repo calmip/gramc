@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Sessions list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Typesession</th>
+                <th>Commglobal</th>
+                <th>Datedebutsession</th>
+                <th>Datefinsession</th>
+                <th>Etatsession</th>
+                <th>Idsession</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for session in sessions %}
+            <tr>
+                <td><a href="{{ path('session_show', { 'id': session.idSession }) }}">{{ session.typeSession }}</a></td>
+                <td>{{ session.commGlobal }}</td>
+                <td>{% if session.dateDebutSession %}{{ session.dateDebutSession|date('Y-m-d') }}{% endif %}</td>
+                <td>{% if session.dateFinSession %}{{ session.dateFinSession|date('Y-m-d') }}{% endif %}</td>
+                <td>{{ session.etatSession }}</td>
+                <td>{{ session.idSession }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('session_show', { 'id': session.idSession }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('session_edit', { 'id': session.idSession }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('session_new') }}">Create a new session</a>
+        </li>
+    </ul>
+{% endblock %}

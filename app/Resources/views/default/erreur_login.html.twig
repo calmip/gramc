@@ -1,0 +1,18 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+    <div class="message warning">
+    {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %}
+        <h2>Erreur de SuDo</h2>Vous ne pouvez pas faire SuDo sur cet utilisateur</div>
+    {% else %}
+        <h2>Erreur de déconnexion</h2>Vous ne devez pas accéder cette page directement, vous n'êtes pas déconnecté</div>
+    {% endif %}
+{% else %}
+    <div class="message warning">
+    <h2>Erreur de connexion</h2>Votre connexion a été réfusée</div>
+{% endif %}
+
+{% endblock body %}
+

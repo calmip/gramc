@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Journals list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Idindividu</th>
+                <th>Gramcsessid</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Stamp</th>
+                <th>Ip</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for journal in journals %}
+            <tr>
+                <td><a href="{{ path('journal_show', { 'id': journal.id }) }}">{{ journal.idIndividu }}</a></td>
+                <td>{{ journal.gramcSessId }}</td>
+                <td>{{ journal.type }}</td>
+                <td>{{ journal.message }}</td>
+                <td>{% if journal.stamp %}{{ journal.stamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+                <td>{{ journal.ip }}</td>
+                <td>{{ journal.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('journal_show', { 'id': journal.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('journal_edit', { 'id': journal.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('journal_new') }}">Create a new journal</a>
+        </li>
+    </ul>
+{% endblock %}

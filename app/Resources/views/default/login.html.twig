@@ -1,0 +1,16 @@
+{# app/Resources/views/default/profil.html.twig #}
+{% extends 'default/base.html.twig' %}
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+
+
+{% block body %}
+
+{{ form_start(form) }}
+    {{ form_errors(form) }}
+    {{ form_widget(form.data) }}
+{{ form_end(form) }}
+
+
+{% endblock %}
+

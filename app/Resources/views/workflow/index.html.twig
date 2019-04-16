@@ -1,0 +1,36 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+    <h1>Sessions d'attribution</h1>
+    
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+
+    <table id="sessions">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>état</th>
+                <th>signal</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for session in sessions %}
+            <tr>
+                <td><a href="{{ path('worklow_modifier_session', { 'id': session.idSession }) }}">{{ session.idSession }}</a></td>
+                <td>
+                    {{ form_start( etat_view_forms[session.getIdSession]) }}
+                    {{ form_widget( etat_view_forms[session.getIdSession].etat) }}
+                    {{ form_end( etat_view_forms[session.getIdSession]) }}
+                </td>
+                <td>
+                    {{ form_start( signal_view_forms[session.getIdSession]) }}
+                    {{ form_widget( signal_view_forms[session.getIdSession].signal) }}
+                    {{ form_end( signal_view_forms[session.getIdSession]) }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

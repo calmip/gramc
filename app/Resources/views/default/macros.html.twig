@@ -1,0 +1,154 @@
+{# ################################################## #}
+{# Quelques constantes (PAS JOLI, PROVISOIRE)         #}
+
+{% import _self as macros %}
+
+{% macro img_consulter() %}{{ asset('icones/consulter.png') }}{% endmacro %}
+{% macro img_supprimer() %}{{ asset('icones/petitdelete.png') }}{% endmacro %}
+{% macro img_modifier() %}{{ asset('icones/modifier.png') }}{% endmacro %}
+
+
+
+{% macro ko(text) %}
+    <div class="infobulleko" data-title="{{ text }}" >
+    <img src="{{ asset('icones/q16.png') }}" alt="?" />
+    </div>
+{% endmacro %}
+
+{# ################################################## #}
+
+{% macro inactif(link,title,message) %}
+    {% import _self as macros %}
+    <a  class="lien_inactif"
+     {% if(  app.debug ) %} href="{{ path( link ) }}" {% endif %}
+    title="{{ title }}">{{ title }}</a>
+{{ macros.ko(message) }}
+{% endmacro %}
+
+{# ################################################## #}
+
+{% macro actif(link,title,message) %}
+    <a  class="lien_actif" href="{{ path( link ) }}" title="{{ title }}">{{ title }}</a>
+    <div class="infobulleok" data-title="{{ message|default('Vous pouvez y accéder') }}" >
+        <img src="{{ asset('icones/q16.png') }}" alt="?" />
+    </div>
+{% endmacro %}
+
+{# ################################################## #}
+{# Affichage d'un menu à partir d'un array d'array  (cf. lib/navigation.php)
+#}
+
+{% macro menu(menu) %}
+<nav>
+    <ul>
+        {% for item in menu %}
+        {% if item.ok %}
+        <li><a class="lien_actif" title="{{ item.commentaire }}"
+                {% if item.param is defined %}
+                    href="{{ path(item.name, { 'id' : item.param }) }}"
+                {% elseif item.params is defined %}
+                    href="{{ path(item.name, item.params) }}"
+                {% else %}
+                    href="{{ path(item.name) }}"
+                {% endif %}
+            >{{ item.lien }}</a>
+            <div class="infobulleok" data-title="{{ item.commentaire }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
+        </li>
+        {% else %}
+        <li><a class="lien_inactif"
+            {% if  app.debug %}
+                {% if item.param is defined %}
+                    href="{{ path(item.name, { 'id' : item.param }) }}"
+                {% elseif item.params is defined %}
+                    href="{{ path(item.name, item.params) }}"
+                {% else %}
+                    href="{{ path(item.name) }}"
+                {% endif %}
+            {% endif %}
+            title="{{ item.commentaire }} - {{ item.raison }}">{{ item.lien }}</a>
+            <div class="infobulleko" data-title="{{ item.commentaire }} - {{ item.raison }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endmacro %}
+
+
+{# ################################################## #}
+{# Affichage d'un menu à partir d'un array de texte
+   Les items sont générés par la fonction generer_lien (cf. lib/navigation.php)
+   Pas très esprit mvc, mais rend le portage vers twig beaucoup plus simple !
+#}
+{#
+{% macro menu(menu)%}
+<nav>
+    <ul>
+        {% for item in menu %}
+        <li>{{ item|raw }}</li>
+        {% endfor %}
+    </ul>
+</nav>
+{% endmacro %}
+#}
+
+{# ################################################# #}
+{# Affichages de messages d'information, de warning, d'erreur (cf. lib/notifications.php) #}
+
+{% macro info(titre,msg) %}
+<div class="message info"><h2>{{ titre }}</h2>
+<p>{{ msg|raw }}</p>
+</div>
+{% endmacro %}
+
+{% macro warning(titre,msg) %}
+<div class="message warning"><h2>{{ titre }}</h2>
+<p>{{ msg|raw }}</p>
+</div>
+{% endmacro %}
+
+{% macro erreur(titre,msg) %}
+<div class="message erreur"><h2>{{ titre }}</h2>
+<p>{{ msg|raw }}</p>
+</div>
+{% endmacro %}
+
+{# ################################################# #}
+{# Portage de chaines.php                            #}
+{# ################################################# #}
+
+{% macro nbsp(chaine) %}
+{% for c in chaine|split(' ') %}{{ c }}&nbsp;{% endfor %}
+{% endmacro %}
+
+{% macro tronquer_chaine(chaine,longueur) %}
+{% if chaine|length > longueur %}<span title="{{ chaine }}">{{ chaine|slice(0,longueur) }}...</span>{% else %}{{ chaine }}{% endif %}
+{% endmacro %}
+
+{% macro parse_libelle_acro(libelle) %}
+{{ libelle|split(' - ')|first }}
+{% endmacro %}
+
+{% macro parse_libelle_l(libelle) %}
+{{ libelle|split(' - ')|last }}
+{% endmacro %}
+
+{# #################################################### #}
+{# Affichage des méta etats par une icône               #}
+{# --> cf. aussi le fichier macros_graphiques.html.twig #}
+{# #################################################### #}
+
+{% macro metagraph(etat) %}
+{% set src=asset('icones/%ETAT%')|replace({'%ETAT%' : etat|lower}) %}
+<span class="invisible">{{etat}}</span><img src="{{src}}.png" alt="{{etat}}" title="{{etat}}" />
+{% endmacro %}
+
+{# ################################################# #}
+{# Affichage d'un titre de version ou de projet      #}
+{# ################################################# #}
+
+{% macro afftitre(titre) %}
+    {% import _self as macros %}
+    <span title="{{ titre }}">{{ macros.tronquer_chaine(titre,20) }}</span>
+{% endmacro %}
+

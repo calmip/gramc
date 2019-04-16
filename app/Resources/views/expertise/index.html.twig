@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+{{ form_start(form) }}
+{{ form_widget( form ) }}
+{{ form_end(form) }}
+
+    <h1>Expertises list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Validation</th>
+                <th>Nbheuresatt</th>
+                <th>Commentaireinterne</th>
+                <th>Commentaireexterne</th>
+                <th>Definitif</th>
+                <th>Nbheuresattete</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for expertise in expertises %}
+            <tr>
+                <td><a href="{{ path('expertise_show', { 'id': expertise.id }) }}">{{ expertise.validation }}</a></td>
+                <td>{{ expertise.nbHeuresAtt }}</td>
+                <td>{{ expertise.commentaireInterne }}</td>
+                <td>{{ expertise.commentaireExterne }}</td>
+                <td>{% if expertise.definitif %}Yes{% else %}No{% endif %}</td>
+                <td>{{ expertise.nbHeuresAttEte }}</td>
+                <td>{{ expertise.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('expertise_show', { 'id': expertise.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('expertise_edit', { 'id': expertise.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('expertise_new') }}">Create a new expertise</a>
+        </li>
+    </ul>
+{% endblock %}

@@ -1,0 +1,81 @@
+{# app/Resources/views/default/exception_accueil.html.twig #}
+
+
+{# ################################################## #}
+
+{% macro actif(link,title,message) %}
+        <a  class="lien_actif" href="{{ path( link ) }}" title="{{ title }}">{{ title }}</a>
+        
+ {% endmacro %}
+
+{# ################################################## #}
+   
+{% import _self as macros %}
+
+{% block body %}
+<section>
+<h1>Bienvenue sur la plateforme d'attribution de ressources de {{mesoc}}</h1>
+
+<nav><ul>
+
+{# link demandeur #}
+
+{% if is_granted('ROLE_DEMANDEUR') %}
+<li>
+    {{ macros.actif('accueil_demandeur','Demandeur',"Allez à l'espace demandeur !") }}
+</li>    
+{% endif %}
+
+{# link expert #}
+
+{% if is_granted('ROLE_EXPERT') %}
+<li>
+    {{ macros.actif('accueil_expert','Expert',"Allez à l'espace expert !") }}
+</li>     
+{% endif %}
+
+
+{# link administrateur #}
+
+{% if is_granted('ROLE_ADMIN') %}
+<li>
+    {{ macros.actif('accueil_administrateur','Administrateur',"Allez à l'espace administrateur !") }}
+</li>    
+{% endif %}
+
+
+{# link aide #}
+
+<li><a  class="lien_actif" href=" {{ path('aide') }} " title="">Aide</a></li>
+
+</ul></nav>
+
+{# message #}
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+
+<div class="message info"><h2>Informations</h2>
+
+{{ block ('message') }}
+
+<br>
+En attendant,
+ <strong>vous pouvez demander un supplément de ressources</strong>
+ pour votre projet en écrivant à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a><br />
+Si vous ne connaissez pas encore {{mesoc}}, vous pouvez demander un <strong>projet&nbsp;test</strong>
+en écrivant à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>
+
+</div>
+
+{% else %}
+
+<div class="message info"><h2>Démarrage</h2>
+Merci de cliquer sur connexion en haut à droite de l'écran pour démarrer.<br />
+Vous devrez utiliser les identifiants de votre établissement d'appartenance.
+(Si vous ne comprenez pas ce message, merci de <em>prendre contact avec nous</em>)
+</div>
+
+{% endif %}
+</section>
+<br>
+{% endblock %}

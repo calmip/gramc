@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Expertisetest" table="expertiseTest">
+    <indexes>
+      <index name="id_expert" columns="id_expert"/>
+      <index name="num_projetTest" columns="id_projet_test"/>
+    </indexes>
+    <id name="idProjetTest" association-key="true"/>
+    <field name="validation" type="boolean" column="validation" nullable="false">
+      <options>
+        <option name="default">1</option>
+      </options>
+    </field>
+    <field name="nbHeuresAtt" type="integer" column="nb_heures_att" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="commentaireInterne" type="text" column="commentaire_interne" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="commentaireExterne" type="text" column="commentaire_externe" length="65535" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="definitif" type="boolean" column="definitif" nullable="false">
+      <options>
+        <option name="default">0</option>
+      </options>
+    </field>
+    <one-to-one field="idProjetTest" target-entity="Projettest" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_projet_test" referenced-column-name="id_projet_test"/>
+      </join-columns>
+    </one-to-one>
+    <many-to-one field="idExpert" target-entity="Individu" fetch="LAZY">
+      <join-columns>
+        <join-column name="id_expert" referenced-column-name="id_individu"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

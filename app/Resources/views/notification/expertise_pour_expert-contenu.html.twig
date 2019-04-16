@@ -1,0 +1,21 @@
+Bonjour
+
+L'expertise du projet {{ object.projet |raw }} (resp {{ object.responsable |raw }}) a été correctement envoyée.
+
+La demande a été {% if( object.expertise[0].validation == true ) %}ACCEPTÉE{% else %}REFUSÉE{% endif %}.
+
+Le nombre d'heures demandées  est : {{ object.demHeures |raw }}
+Le nombre d'heures attribuées est : {{ object.expertise[0].nbHeuresAtt |raw }}
+{% if object.expertise[0].nbHeuresAttEte>0 %}
+Le nombre d'heures attribuées pour l'été est : {{ object.expertise[0].nbHeuresAttEte |raw }}
+{% endif %}
+URL du projet                    : {{ absolute_url(path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
+
+Votre commentaire :
+{{ object.expertise[0].commentaireExterne |raw }}
+
+Votre commentaire à destination du comité d'attribution:
+{{ object.expertise[0].commentaireInterne |raw }}
+
+Cordialement,
+L'équipe {{mesoc}}

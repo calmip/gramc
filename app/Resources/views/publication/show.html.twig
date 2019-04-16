@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Publication</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Refbib</th>
+                <td>{{ publication.refbib }}</td>
+            </tr>
+            <tr>
+                <th>Doi</th>
+                <td>{{ publication.doi }}</td>
+            </tr>
+            <tr>
+                <th>Openurl</th>
+                <td>{{ publication.openUrl }}</td>
+            </tr>
+            <tr>
+                <th>Annee</th>
+                <td>{{ publication.annee }}</td>
+            </tr>
+            <tr>
+                <th>Idpubli</th>
+                <td>{{ publication.idPubli }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('publication_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('publication_edit', { 'id': publication.idPubli }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

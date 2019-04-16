@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Versions list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Etatversion</th>
+                <th>Prjllabo</th>
+                <th>Prjtitre</th>
+                <th>Demheures</th>
+                <th>Attrheures</th>
+                <th>Consheures</th>
+                <th>Prjsousthematique</th>
+                <th>Prjfinancement</th>
+                <th>Prjgencimachines</th>
+                <th>Prjgencicentre</th>
+                <th>Prjgenciheures</th>
+                <th>Prjresume</th>
+                <th>Prjexpose</th>
+                <th>Prjjustifrenouv</th>
+                <th>Prjalgorithme</th>
+                <th>Prjconception</th>
+                <th>Prjdeveloppement</th>
+                <th>Prjparallelisation</th>
+                <th>Prjutilisation</th>
+                <th>Prjfiche</th>
+                <th>Prjficheval</th>
+                <th>Codenom</th>
+                <th>Codelangage</th>
+                <th>Codelicence</th>
+                <th>Codeutilsurmach</th>
+                <th>Codeheurespjob</th>
+                <th>Coderampcoeur</th>
+                <th>Coderampart</th>
+                <th>Codeeffparal</th>
+                <th>Codevoldonntmp</th>
+                <th>Demlogiciels</th>
+                <th>Dembib</th>
+                <th>Demposttrait</th>
+                <th>Demformmaison</th>
+                <th>Demformautres</th>
+                <th>Libellethematique</th>
+                <th>Attraccept</th>
+                <th>Numero</th>
+                <th>Id</th>
+                <th>Annee</th>
+                <th>Rapconf</th>
+                <th>Majind</th>
+                <th>Majstamp</th>
+                <th>Sondvoldonnperm</th>
+                <th>Sonddureedonnperm</th>
+                <th>Prjfichelen</th>
+                <th>Penalheures</th>
+                <th>Attrheuresete</th>
+                <th>Sondjustifdonnperm</th>
+                <th>Demformautresautres</th>
+                <th>Idversion</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for version in versions %}
+            <tr>
+                <td><a href="{{ path('version_show', { 'id': version.idVersion }) }}">{{ version.etatVersion }}</a></td>
+                <td>{{ version.prjLLabo }}</td>
+                <td>{{ version.prjTitre }}</td>
+                <td>{{ version.demHeures }}</td>
+                <td>{{ version.attrHeures }}</td>
+                <td>{{ version.consHeures }}</td>
+                <td>{{ version.prjSousThematique }}</td>
+                <td>{{ version.prjFinancement }}</td>
+                <td>{{ version.prjGenciMachines }}</td>
+                <td>{{ version.prjGenciCentre }}</td>
+                <td>{{ version.prjGenciHeures }}</td>
+                <td>{{ version.prjResume }}</td>
+                <td>{{ version.prjExpose }}</td>
+                <td>{{ version.prjJustifRenouv }}</td>
+                <td>{{ version.prjAlgorithme }}</td>
+                <td>{% if version.prjConception %}Yes{% else %}No{% endif %}</td>
+                <td>{% if version.prjDeveloppement %}Yes{% else %}No{% endif %}</td>
+                <td>{% if version.prjParallelisation %}Yes{% else %}No{% endif %}</td>
+                <td>{% if version.prjUtilisation %}Yes{% else %}No{% endif %}</td>
+                <td>{{ version.prjFiche }}</td>
+                <td>{% if version.prjFicheVal %}Yes{% else %}No{% endif %}</td>
+                <td>{{ version.codeNom }}</td>
+                <td>{{ version.codeLangage }}</td>
+                <td>{{ version.codeLicence }}</td>
+                <td>{{ version.codeUtilSurMach }}</td>
+                <td>{{ version.codeHeuresPJob }}</td>
+                <td>{{ version.codeRamPCoeur }}</td>
+                <td>{{ version.codeRamPart }}</td>
+                <td>{{ version.codeEffParal }}</td>
+                <td>{{ version.codeVolDonnTmp }}</td>
+                <td>{{ version.demLogiciels }}</td>
+                <td>{{ version.demBib }}</td>
+                <td>{{ version.demPostTrait }}</td>
+                <td>{{ version.demFormMaison }}</td>
+                <td>{{ version.demFormAutres }}</td>
+                <td>{{ version.libelleThematique }}</td>
+                <td>{% if version.attrAccept %}Yes{% else %}No{% endif %}</td>
+                <td>{{ version.numero }}</td>
+                <td>{{ version.id }}</td>
+                <td>{{ version.annee }}</td>
+                <td>{{ version.rapConf }}</td>
+                <td>{{ version.majInd }}</td>
+                <td>{% if version.majStamp %}{{ version.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+                <td>{{ version.sondVolDonnPerm }}</td>
+                <td>{{ version.sondDureeDonnPerm }}</td>
+                <td>{{ version.prjFicheLen }}</td>
+                <td>{{ version.penalHeures }}</td>
+                <td>{{ version.attrHeuresEte }}</td>
+                <td>{{ version.sondJustifDonnPerm }}</td>
+                <td>{{ version.demFormAutresAutres }}</td>
+                <td>{{ version.idVersion }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('version_show', { 'id': version.idVersion }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('version_edit', { 'id': version.idVersion }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('version_new') }}">Create a new version</a>
+        </li>
+    </ul>
+{% endblock %}

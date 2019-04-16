@@ -1,0 +1,17 @@
+{# app/Resources/views/default/connexion_dbg.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+    {% block body %}
+    
+    <div id="section"><h2>Connexion à la plateforme</h2>
+    <div class="message info"><h2>ATTENTION</h2>
+    <strong><em>Authentification uniquement pour debug</em></strong></div>
+    
+    {{ form_start(form) }}
+    Votre adresse mail: {{ form_widget(form.mail) }}
+    {{ form_end(form) }}
+    
+    {% endblock %}
+ 

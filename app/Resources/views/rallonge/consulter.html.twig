@@ -1,0 +1,58 @@
+{% extends 'default/base.html.twig' %}
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+
+{{ parent() }}
+
+<script   src="{{ asset('js/compteur_caracteres.js') }}" ></script>
+
+{% endblock myjavascripts %}
+
+{% block body %}
+
+{{ gramcmacros.menu(menu) }}
+
+
+<section>
+
+    <h1>Demande de rallonge pour le projet {{ projet }} (session {{ session }})</h1>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th class="horiz">Nombre d'heures demandées</th>
+                <td>{{ rallonge.demHeures }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Justification scientifique de la demande</th>
+            </tr>
+            <tr>
+                <td>{{ rallonge.prjJustifRallonge }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Commentaire du président</th>
+            </tr>
+            <tr>
+                <td>{{ rallonge.commentaireExterne }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+</section>
+
+
+
+   
+{% endblock %}

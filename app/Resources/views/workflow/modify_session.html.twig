@@ -1,0 +1,39 @@
+{% extends 'default/base.html.twig' %}
+{% form_theme session_form with ['form_table_layout.html.twig', _self] %}
+
+{% block body %}
+    <h2>Envoyer un signal à la session {{ session }}</h2>
+
+    {{ form_start(session_form) }}
+    <table>
+        <tbody>
+            <tr>
+                <td>{{ form_label(session_form.signal) }}</td>
+                <td>{{ form_widget(session_form.signal) }}</td>
+            </tr>
+            <tr>
+                <td>{{ form_label(session_form.submit) }}</td>
+                <td>{{ form_widget(session_form.submit) }}</td>
+            </tr>
+         </tbody>
+    </table>
+    {{ form_end(session_form) }}
+
+    <h2>Changer l'état de la session {{ session }}, état actuel est {{ session.getLibelleEtat }} ({{ session.getEtatSession }})</h2>
+    
+    {{ form_start(etat_form) }}
+   <table>
+        <tbody>
+            <tr>
+                <td>{{ form_label(etat_form.etat) }}</td>
+                <td>{{ form_widget(etat_form.etat) }}</td>
+            </tr>
+            <tr>
+                <td>{{ form_label(etat_form.submit) }}</td>
+                <td>{{ form_widget(etat_form.submit) }}</td>
+            </tr>
+         </tbody>
+    </table>
+    {{ form_end(etat_form) }} 
+    
+{% endblock %}

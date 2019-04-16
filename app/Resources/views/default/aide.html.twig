@@ -1,0 +1,77 @@
+{# app/Resources/views/default/aide.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<h1>Le processus d'attribution de {{mesoc}}</h1>
+<p>
+  L'attribution des heures de calcul sur le supercalculateur de {{mesoc}} est conditionnée pour tout projet par&nbsp;:</p>
+  <ol>
+  <li> la validation de la demande de ressources par le <strong>Comité d'Attribution de {{mesoc}}</strong> (ne pas oublier de cliquer sur "envoyer à l'expert" lorsque vous aurez rempli votre formulaire projet.</li>
+  <li> le(a) responsable scientifique du projet doit être <strong>un membre permanent</strong> d'un laboratoire académique situé en Midi-Pyrénées.</li>
+  <li> le téléversement à travers l'application web, que ce soit pour un nouveau projet ou un renouvellement, de la <strong>fiche projet</strong>, <strong>signée par le directeur du laboratoire</strong> et <strong> le responsable du projet</strong></li>
+  </ol>
+<p>Pour plus de détails, voir les <a href="{{mesoc_attrib}}">règles détaillées de nos appels d'offre </a></p>
+
+<h2>Fiche Projet</h2>
+
+<p>Pour tout projet (nouveau ou renouvellement) vous disposez dans l'interface de gestion de ce projet d'un bouton vous permettant de télécharger la fiche résumé de votre projet: <strong> Fiche Projet</strong>
+  <br> Une fois téléchargée, cette fiche résumé doit être <strong>signée par le directeur du laboratoire</strong> et <strong> le responsable du projet</strong>, puis numérisée pour être téléversée et associée à votre demande en cours (nouveau projet ou renouvellement). (La fiche Projet joue le rôle du VISA pour les demandes DARI).
+</p>
+
+<h2>Envoyer à l'expert</h2>
+
+<p>Seul le <strong>Responsable</strong> du projet a la possibilité de cliquer sur le bouton "envoyer à l'expert".
+<br /> Une demande non envoyée à l'expert ne sera pas prise en compte (faites bien attention aux dates de début et de fin de session).
+</p>
+
+<h2>Rapport d'Activité</h2>
+<p> A tout moment, et en particulier lors d'une demande de <strong>renouvellement</strong>, le responsable du projet peut téléverser le rapport d'activité associé. Durant la phase d'édition du projet,
+  il peut faire le téléversement plusieurs fois,  mais à chaque nouveau téléversement le fichier précédent sera écrasé.</p>
+  <ul>
+  <li> <strong>Cependant</strong>, lorsque la demande a été transmise à l'expert et jusqu' à la fin de l'expertise, il n'est pas possible de téléverser un nouveau rapport d'activité.</li>
+  <li> Le rapport est <strong> OBLIGATOIRE</strong> lors d'une demande de renouvellement en session principale <strong>A</strong>.</li>
+  <li> Il n'est pas demandé lors de la session complémentaire B.</li>
+  </ul>
+
+  <h2>Les sessions</h2>
+<p>
+  Deux sessions d'appel à projet sont programmées chaque année:</p>
+  <ol>
+	<li>La session A est la session principale qui permet de demander des ressources pour l'année à venir, du 1er Janvier au 31 décembre.</li>
+	<li>La session B est la session complémentaire et permet de demander des ressources pour l'année en cours du 1er Juillet au 31 décembre.</li>
+  </ol>
+<p> Dans GRAMC <strong>16A</strong> fait référence à la session principale <strong>A</strong> pour des ressources demandées pour l'année 2016, et  <strong>16B</strong>
+  fait référence à la session complémentaire <strong>B</strong> pour des ressources demandées pour l'année <strong>2016</strong>.
+</p>
+
+<h2>Les Publications</h2>
+<p>
+  <ol>
+   <li>Les publications liées à votre (vos) projet(s) {{mesoc}} doivent mentionner le soutien de <strong>{{mesoc}}</strong> : <a href="{{mesoc_merci}}"> voir ici</a>.</li>
+   <li>Merci de signaler ces publications dans l'application GRAMC (Référence bibliographique, DOI, lien vers un site web): vous pouvez le faire à tout moment tout au long de la vie de chacun de vos (votre) projet(s) {{mesoc}}, et en particulier lors d'un <strong>renouvellement</strong>. </li>
+  </ol>
+</p>
+
+<h2>Les Rallonges</h2>
+<p>
+  <ol>
+	<li>
+	  Lorsque votre quota d'heures cpu a été atteint, il est possible de faire une demande <strong>exceptionnelle</strong> d'augmentation de votre quota ("rallonge"): pour cela, veuillez envoyer un courriel à 
+          {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<tt>{{ init.mail_replace(mailadmin) }}</tt>{% endif %}, vous pourrez ensuite renseigner le formulaire de demande dans l'application gramc.
+	</li>
+	<li> Informations et <strong>Bonnes pratiques</strong> concernant les Rallonges:
+	<ul>
+	  <li> Une rallonge concerne un <strong>projet actif</strong>, qui a été <strong>validé</strong> par le Comité d'Attribution pour
+	  <strong>l'année en cours (1er Janvier - 31 décembre)</strong>, lors d'une session A ou B</li>
+	  <li> Les heures ajoutées seront utilisables jusqu'au 31 Décembre de l'année en cours.</li>
+	  <li> <strong>Une seule rallonge peut être demandée</strong> par session d'attribution.</li>
+	  <li> La demande de rallonge est soumise à <strong>expertise</strong> par le Comité d'Attribution et <strong>validation</strong> par le Président du Comité d'Attribution.
+	  Cette demande doit être dûment explicitée et argumentée.</li>
+	  <li> Une demande de rallonge peut être faite lorsque le <strong>niveau de consommation des heures cpu</strong> est élevé (> 90%), pas la peine d'attendre que votre projet soit bloqué.</li>
+	  <li> Un quota d'heures cpu atteint <strong>ne nécessite pas obligatoirement</strong> une demande de rallonge...</li>
+	 </ul>
+        </li>
+  </ol>
+  </p>
+  <br>
+  {% endblock %}

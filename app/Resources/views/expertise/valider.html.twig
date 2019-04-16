@@ -1,0 +1,63 @@
+{% extends 'default/base.html.twig' %}
+
+{# ############################################################################################################################ #}
+
+{% block body %}
+
+<section>
+    <h1>Confirmation d'envoi de l'expertise</h1>
+
+    <div class="message info">Merci de vérifier votre expertise avant envoi définitif</div>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Numéro de projet</th>
+                <td>{{ expertise.version.projet }}</td>
+            </tr>
+            <tr>
+                <th>Validation</th>
+                <td>
+                    <strong>
+                        {% if( expertise.validation == 0 ) %}
+                        REFUSE ET FERMER LE PROJET
+                        {% elseif( expertise.validation == 2 ) %}
+                        REFUSE JUSTE POUR CETTE SESSION
+                        {% elseif( expertise.validation == 1 ) %}
+                        ACCEPTE
+                        {% endif %}
+                    </strong>
+                </td>
+            </tr>
+            <tr>
+                <th>Heures attribuées</th>
+                <td>{{ expertise.nbHeuresAtt}}</td>
+            </tr>
+            <tr>
+                <th>Commentaire interne</th>
+                <td>{{ expertise.commentaireInterne }}</td>
+            </tr>
+            <tr>
+                <th>Commentaire envoyé au responsable</th>
+                <td>{{ expertise.commentaireExterne }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="message info">
+        <h2>Notifications</h2>
+        <p>Si le projet est <strong>accepté</strong>,
+        un courriel sera envoyé au responsable de projet avec votre commentaire et le commentaire de session du président<br>
+        Si vous avez cliqué sur <strong>Refuser définitivement</strong>, le courriel sera envoyé au <strong>président du comité d'attribution</strong> qui prendra contact avec le responsable de projet</br>
+        Si vous avez cliqué sur <strong>Refuser pour cette session</strong>, aucune heure ne sera attribuée au projet, mais le projet pour être
+        renouvelé lors d'une prochaine session.</p>
+    </div>
+
+        <div class="message warning">
+            <strong>Confirmez-vous cette expertise ? </strong><br>
+            {{ form_start(edit_form)  }}
+            {{ form_widget(edit_form)  }}
+            {{ form_end(edit_form) }}
+        </div>
+    </section>
+{% endblock %}

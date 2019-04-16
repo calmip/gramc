@@ -1,0 +1,232 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Version</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Etatversion</th>
+                <td>{{ version.etatVersion }}</td>
+            </tr>
+            <tr>
+                <th>Prjllabo</th>
+                <td>{{ version.prjLLabo }}</td>
+            </tr>
+            <tr>
+                <th>Prjtitre</th>
+                <td>{{ version.prjTitre }}</td>
+            </tr>
+            <tr>
+                <th>Demheures</th>
+                <td>{{ version.demHeures }}</td>
+            </tr>
+            <tr>
+                <th>Attrheures</th>
+                <td>{{ version.attrHeures }}</td>
+            </tr>
+            <tr>
+                <th>Consheures</th>
+                <td>{{ version.consHeures }}</td>
+            </tr>
+            <tr>
+                <th>Prjsousthematique</th>
+                <td>{{ version.prjSousThematique }}</td>
+            </tr>
+            <tr>
+                <th>Prjfinancement</th>
+                <td>{{ version.prjFinancement }}</td>
+            </tr>
+            <tr>
+                <th>Prjgencimachines</th>
+                <td>{{ version.prjGenciMachines }}</td>
+            </tr>
+            <tr>
+                <th>Prjgencicentre</th>
+                <td>{{ version.prjGenciCentre }}</td>
+            </tr>
+            <tr>
+                <th>Prjgenciheures</th>
+                <td>{{ version.prjGenciHeures }}</td>
+            </tr>
+            <tr>
+                <th>Prjresume</th>
+                <td>{{ version.prjResume }}</td>
+            </tr>
+            <tr>
+                <th>Prjexpose</th>
+                <td>{{ version.prjExpose }}</td>
+            </tr>
+            <tr>
+                <th>Prjjustifrenouv</th>
+                <td>{{ version.prjJustifRenouv }}</td>
+            </tr>
+            <tr>
+                <th>Prjalgorithme</th>
+                <td>{{ version.prjAlgorithme }}</td>
+            </tr>
+            <tr>
+                <th>Prjconception</th>
+                <td>{% if version.prjConception %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Prjdeveloppement</th>
+                <td>{% if version.prjDeveloppement %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Prjparallelisation</th>
+                <td>{% if version.prjParallelisation %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Prjutilisation</th>
+                <td>{% if version.prjUtilisation %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Prjfiche</th>
+                <td>{{ version.prjFiche }}</td>
+            </tr>
+            <tr>
+                <th>Prjficheval</th>
+                <td>{% if version.prjFicheVal %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Codenom</th>
+                <td>{{ version.codeNom }}</td>
+            </tr>
+            <tr>
+                <th>Codelangage</th>
+                <td>{{ version.codeLangage }}</td>
+            </tr>
+            <tr>
+                <th>Codelicence</th>
+                <td>{{ version.codeLicence }}</td>
+            </tr>
+            <tr>
+                <th>Codeutilsurmach</th>
+                <td>{{ version.codeUtilSurMach }}</td>
+            </tr>
+            <tr>
+                <th>Codeheurespjob</th>
+                <td>{{ version.codeHeuresPJob }}</td>
+            </tr>
+            <tr>
+                <th>Coderampcoeur</th>
+                <td>{{ version.codeRamPCoeur }}</td>
+            </tr>
+            <tr>
+                <th>Coderampart</th>
+                <td>{{ version.codeRamPart }}</td>
+            </tr>
+            <tr>
+                <th>Codeeffparal</th>
+                <td>{{ version.codeEffParal }}</td>
+            </tr>
+            <tr>
+                <th>Codevoldonntmp</th>
+                <td>{{ version.codeVolDonnTmp }}</td>
+            </tr>
+            <tr>
+                <th>Demlogiciels</th>
+                <td>{{ version.demLogiciels }}</td>
+            </tr>
+            <tr>
+                <th>Dembib</th>
+                <td>{{ version.demBib }}</td>
+            </tr>
+            <tr>
+                <th>Demposttrait</th>
+                <td>{{ version.demPostTrait }}</td>
+            </tr>
+            <tr>
+                <th>Demformmaison</th>
+                <td>{{ version.demFormMaison }}</td>
+            </tr>
+            <tr>
+                <th>Demformautres</th>
+                <td>{{ version.demFormAutres }}</td>
+            </tr>
+            <tr>
+                <th>Libellethematique</th>
+                <td>{{ version.libelleThematique }}</td>
+            </tr>
+            <tr>
+                <th>Attraccept</th>
+                <td>{% if version.attrAccept %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Numero</th>
+                <td>{{ version.numero }}</td>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <td>{{ version.id }}</td>
+            </tr>
+            <tr>
+                <th>Annee</th>
+                <td>{{ version.annee }}</td>
+            </tr>
+            <tr>
+                <th>Rapconf</th>
+                <td>{{ version.rapConf }}</td>
+            </tr>
+            <tr>
+                <th>Majind</th>
+                <td>{{ version.majInd }}</td>
+            </tr>
+            <tr>
+                <th>Majstamp</th>
+                <td>{% if version.majStamp %}{{ version.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Sondvoldonnperm</th>
+                <td>{{ version.sondVolDonnPerm }}</td>
+            </tr>
+            <tr>
+                <th>Sonddureedonnperm</th>
+                <td>{{ version.sondDureeDonnPerm }}</td>
+            </tr>
+            <tr>
+                <th>Prjfichelen</th>
+                <td>{{ version.prjFicheLen }}</td>
+            </tr>
+            <tr>
+                <th>Penalheures</th>
+                <td>{{ version.penalHeures }}</td>
+            </tr>
+            <tr>
+                <th>Attrheuresete</th>
+                <td>{{ version.attrHeuresEte }}</td>
+            </tr>
+            <tr>
+                <th>Sondjustifdonnperm</th>
+                <td>{{ version.sondJustifDonnPerm }}</td>
+            </tr>
+            <tr>
+                <th>Demformautresautres</th>
+                <td>{{ version.demFormAutresAutres }}</td>
+            </tr>
+            <tr>
+                <th>Idversion</th>
+                <td>{{ version.idVersion }}</td>
+            </tr>
+            <tr>
+                <th>Politique</th>
+                <td>{{ version.politique }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('version_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('version_edit', { 'id': version.idVersion }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

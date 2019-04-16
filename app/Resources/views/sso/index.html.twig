@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Ssos list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Eppn</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sso in ssos %}
+            <tr>
+                <td><a href="{{ path('sso_show', { 'id': sso.eppn }) }}">{{ sso.eppn }}</a></td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('sso_show', { 'id': sso.eppn }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('sso_edit', { 'id': sso.eppn }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('sso_new') }}">Create a new sso</a>
+        </li>
+    </ul>
+{% endblock %}

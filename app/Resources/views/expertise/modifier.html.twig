@@ -1,0 +1,183 @@
+{% extends 'default/base.html.twig' %}
+
+{% block myjavascripts %}
+    <script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
+{% endblock myjavascripts %}
+
+{% block choice_widget_expanded %}
+    <br>
+    <input id="form_validation_0" name="form[validation]" class="validation" value="1"  checked=""  type="radio">
+    <label class="validation" for="valide">Accepter</label>
+    <br>
+
+    <input  id="form_validation_1" name="form[validation]" class="validation" value="2" type="radio" >
+    <label class="validation" for="refus">Refuser pour cette session<br>
+        <small> (NOTE: Vous attribuez <strong>ZERO HEURES</strong> pour cette session <strong>SEULEMENT</strong>)</small>
+    </label>
+    <br>
+
+    <input id="form_validation_2" name="form[validation]" class="validation" value="0"  type="radio" >
+    <label class="validation" for="refus">Refuser définitivement le projet<br>
+    <small> (NOTE: Le projet sera marqué comme <strong>TERMINE</strong>, il ne pourra plus être renouvelé)</small>
+    </label>
+    <br>
+
+{% endblock choice_widget_expanded %}
+
+{% form_theme edit_form _self %}
+
+{# ############################################################################################################################ #}
+
+{% block body %}
+<section id="expertise">
+
+    <h2>Saisie de l'expertise du projet {{ version.projet }}</h2>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Titre</th>
+            </tr>
+            <tr>
+                <td class="center">{{ version.prjTitre }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th>Heures demandées</th>
+            </tr>
+            <tr>
+                <td class="center">{{ version.demHeures }}
+                {% if toomuch %} <img src="{{ asset('icones/attention16.png') }}" alt="Demande trop forte, cf. règles d'attribution" title="Demande trop forte, cf. règles d'attribution" /> {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="menu_expertiser" class="center">
+        {% if not version.projet.projettest and not version.isNouvelle %}
+        <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation de l'année dernière" title="Visualiser la consommation de l'année dernière"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
+            {% if version.session.libelleTypeSession == 'B' %}
+            <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+            alt="Consommation de cette année" title="Visualiser la consommation de cette année"
+            data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneeCour })) }}" />
+            {% endif %}
+        {% endif %}
+        {% if ( version.hasRapport  and not ( version.isNouvelle ) ) %}
+        <a href="{{ path('rapport', { 'id' : version.idVersion }) }}">
+            <img class="bouton_poussoir" src="{{ asset('icones/pdf64.png') }}" alt="pdf" title="Rapport d'activité">
+        {%  endif %}
+
+        <a href="{{ path('consulter_projet', { 'id' : expertise.version.projet.idProjet } ) }}" target="_blank">
+        <img class="bouton_poussoir" src="{{ asset('icones/consulter64.png') }}" title="Consulter le projet" alt="Consulter le projet" />
+        </a>
+    </div>
+
+   {{ form_start(edit_form) }}
+    {% if( expertise.definitif == true ) %}
+        <div class="message erreur">
+            <h2>EXPERTISE DÉJÀ ENVOYEE</h2>
+                <p>Votre expertise a déjà été envoyée, vous ne pouvez plus la modifier.</p>
+        </div>
+    {# session en edition expertise #}
+    {% elseif( not session_edition and not version.projet.isProjetTest)  %}
+        <div class="message info">
+            <h2>Commentaire de session</h2>
+                <p><em>Ce commentaire, écrit par le président du comité d'attribution, sera envoyé aux responsables des projets avec le résultat de votre expertise</em></p>
+                <hr />
+                <p>{{ session.commGlobal | e | nl2br}}</p>
+        </div>
+    {% elseif not version.projet.isProjetTest %}
+        <div class="message warning">
+            <h2>EXPERTISE EN EDITION SEULEMENT</h2>
+                <p>Tant que le comité d'attribution ne s'est pas réuni vous ne pouvez pas envoyer votre expertise.
+                Vous pouvez cependant l'éditer et la sauvegarder</p>
+        </div>
+    {% endif %}
+
+    <table  class="projet">
+        <tbody>
+            <tr>
+                <th class="horiz">Validation</th>
+                <td>{{ form_widget(edit_form.validation)  }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {#
+    {% if erreur==1 %}
+        <div class="message erreur"><p>ERREUR: Vous n'avez pas rempli les deux champs de commentaire</p></div>
+    {% elseif erreur==2 %}
+        <div class="message erreur"><p>ERREUR: Si vous n'attribuez pas d'heure, cliquez sur "Refuser pour cette session"</p></div>
+    {% elseif erreur==3 %}
+        <div class="message erreur"><p>ERREUR: Vous ne pouvez pas attribuer plus d'heures pour l'été que pour la session</p></div>
+    {% endif %}
+    #}
+
+    {% if not erreurs == null %}
+    <div class="message erreur">
+    {% for erreur in erreurs %}
+    <p>ERREUR: {{ erreur }}</p>
+    {% endfor %}
+    </div>
+    {% endif %}
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th class="horiz"><label>Commentaire</label><br><small>Ce commentaire sera envoyé au responsable du projet</small></th>
+                <td>{{ form_widget(edit_form.commentaireExterne,{ 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 100 } }) }}
+            </tr>
+        </tbody>
+    </table>
+
+   <table class="projet">
+        <tbody>
+            <tr><th class="horiz"><label>Commentaire pour le comité</label><br>
+                    <small>Ce commentaire restera au sein du comité d'attribution</small>
+                </th>
+                <td>{{ form_widget(edit_form.commentaireInterne,{ 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 100 } }) }}
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th class="horiz">
+                    <label for="nb_heures_att">Nombre d'heures attribuées</label><br>
+                    {% if version.projettest %}<small>pour cette année</small>{% else %}<small>pour cette session</small>{% endif %}
+                </th>
+                <td>{{ form_widget(edit_form.nbHeuresAtt) }}</td>
+            </tr>
+            {% if session.typesession==true and not version.projet.projettest %}
+            <tr>
+                <th class="horiz"><label for="nb_heures_att_ete">Parmi ces heures, Nombre d'heures attribuées pour l'été</label><br>
+                <small>Il s'agit d'allouer des heures qui doivent être utilisées avant la fin de l'été, faute de quoi elles pourront être récupérées</small>
+                </th>
+                <td>{{ form_widget(edit_form.nbHeuresAttEte) }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+<div id="quitter">
+        {% if( expertise.definitif == false ) %}
+            {{ form_widget(edit_form.enregistrer) }}
+            {% if( not session_edition ) %}{{ form_widget(edit_form.envoyer) }}{% endif %}
+        {% endif %}
+        {{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
+</div>
+
+{{ form_end(edit_form) }}
+
+<div id="graph_1" class="graphique"></div>
+<div id="graph_2" class="graphique"></div>
+
+</section>
+{% endblock %}

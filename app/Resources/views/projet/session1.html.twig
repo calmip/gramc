@@ -1,0 +1,91 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+    <h2>Générer et télécharger le bilan de session</h2>
+   
+    
+
+    
+    {{ form_start(form) }}
+        {{ form_widget(form.session) }}{{ form_widget(form.submit) }}
+    {{ form_end(form) }}
+    
+    <br>
+
+    <form action="{{ path('bilan_session_csv', {'id': idSession }) }}">
+        <input type="submit" value="Générer le bilan de la session {{ idSession }} en csv" />
+    </form>
+
+    
+
+</section>
+<hr>
+
+<section>
+
+    <h2>Réponses au questionnaire (session {{ idSession }})</h2>
+
+    
+    <form action="{{ path('questionnaire_csv', {'id': idSession } ) }}">
+            <input type="submit" value="Télécharger en csv" />
+    </form>
+    
+
+    <br>
+
+    <div id="projets"><table id="bilan_session">
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th></th>
+                <th>titre</th>
+                <th>Thématique</th>
+                <th>Responsable</th>
+                <th>Laboratoire</th>
+                <th>Langage</th>
+                <th>Nom du code</th>
+                <th>Licence du code</th>
+                <th>Heure/job</th>
+                <th>Ram/coeur</th>
+                <th>Ram partagée</th>
+                <th>Efficacité parallèle</th>
+                <th>Données temporaires</th>
+                <th>Post-traitement</th>
+                <th>Données permanentes</th>
+                {# <th>Durée</th> #}
+                
+            </tr>
+        </thead>
+        <tbody>
+        {% for version in versions %}
+        <tr>
+            <td>{{ version.idVersion }}</td>
+            <td>
+                <a href="{{ path('projet_show', { 'id': version.projet.idProjet }) }}" title="Consulter le projet">
+                <img src="{{ asset('icones/consulter.png') }}" alt="consulter" /></a>
+            </td>
+            <td>{{ version.prjTitre }}</td>
+            <td>{{ version.prjThematique }}</td>
+            <td>{{ version.responsable }}</td>
+            <td>{{ version.labo }}</td>
+            <td>{{ version.codeLangage }}</td>
+            <td>{{ version.codeNom }}</td>
+            <td>{{ version.codeLicence }}</td>
+            <td>{{ version.codeHeuresPJob }}</td>
+            <td>{{ version.codeRamPCoeur }}</td>
+            <td>{{ version.codeRamPart }}</td>
+            <td>{{ version.codeEffParal }}</td>
+            <td>{{ version.codeVolDonnTmp }}</td>
+            <td>{{ version.demPostTrait }}</td>
+            <td>{{ version.sondVolDonnPerm }}</td>
+            {# <td>{{ version.sondDureeDonnPerm }}</td> #}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+
+</section>
+
+{% endblock body %}

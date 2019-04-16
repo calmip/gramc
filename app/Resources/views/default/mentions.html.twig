@@ -1,0 +1,59 @@
+{# app/Resources/views/default/mentions.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<h1>Charte de protection des données</h1>
+<p>{{mesoc}} dispose de moyens informatiques (application gramc) pour la gestion des demandes de ressources de calcul ainsi que le suivi de la consommation des différents projets. </p>A cet effet, {{mesoc}} utilise des données personnelles concernant ses utilisateurs ou les collaborateurs de projets enregistrés.
+<strong>{{mesoc}} n'utilise pas et ne collecte pas de données sensibles</strong> (au sens du R.G.P.D.)</p>
+
+<h2>Collecte des données</h2>
+<p>Les données personnelles détenues par {{mesoc}} ont été communiquées:</p>
+<ul>
+<li>Par les utilisateurs eux-mêmes lorsqu'ils ouvrent un compte sur l'application gramc</li>
+<li>Par un collaborateur d'un projet enregistré</li>
+</ul>
+
+<p>Par ailleurs, les actions effectuées par les utilisateurs connectés sont inscrites dans un journal.</p>
+
+<h2>Usage des données</h2>
+<p>Le nom du ou de la responsable du projet, ainsi que le résumé en anglais, figurent dans le rapport d'activité annuel de {{mesoc}}. Voir l'onglet "Description scientifique"
+du formulaire projet</p>
+
+<p>Les autres informations enregistrées par l'application gramc sont réservées à l'usage de {{mesoc}}. Les données sont accessibles uniquement:</p>
+<ul>
+  <li>Aux membres du Comité d'Attribution, afin d'expertiser les données. Chaque expert a accès aux données des projets qu'il doit expertiser et à elles seules</li>
+  <li>Aux collaborateurs des projets enregistrés dans l'application gramc. Chaque utilisateur n'a accès qu'aux projets dont il est collaborateur.</li>
+  <li>Aux personnes identifiées comme "administrateurs de l'application gramc" (c'est-à-dire les membres de l'équipe {{mesoc}}). Les enregistrements du journal ne sont accessibles
+  qu'aux administrateurs.</li>
+</ul>
+
+<p>Les données personnelles enregistrées par gramc ne sont pas partagées avec des tiers non autorisés. L'application est par ailleurs hébergée sur les serveurs de l'I.N.P.</p>
+
+<h2>Portabilité des données</h2>
+<p>Chaque responsable ou collaborateur de projet peut télécharger le contenu de son projet au format pdf.</p>
+
+<h2>Protection des données</h2>
+<p>{{mesoc}} s'engage à protéger la sécurité, la confidentialité et l’intégrité des données personnelles gérées par l'application gramc,
+par la mise en œuvre de mesures techniques et organisationnelles.</p>
+
+<h2>Durée de vie des données</h2>
+<p>Les données qui ne sont plus utiles au traitement depuis plus de 5 ans sont régulièrement supprimées. Il s'agit des données suivantes:</p>
+<ul>
+<li>Projets terminés depuis plus de 5 ans</li>
+<li>Expertises de ces projets</li>
+<li>Utilisateurs ne participant plus à des projets enregistrés dans gramc.</li>
+<li>Experts n'ayant plus d'expertises enregistrées.</li>
+<li>Enregistrements du journal datés de plus de 5 ans.</li>
+</ul>
+
+<h2>Déclaration auprès de la CNIL</h2>
+<p>Ces traitements ont fait l'objet d'une déclaration auprès du Service Informatique et Libertés du C.N.R.S., enregistrée sous le numéro 2-16028/UMS3667.</p>
+
+<h2>Droits de communication, modification, suppression</h2>
+<p>Conformément aux articles 39 et suivants de la loi n° 78-17 du 6 janvier 1978 modifiée en 2004 relative à l'informatique, aux fichiers et aux libertés, toute personne peut
+ obtenir communication et, le cas échéant, rectification ou suppression des informations la concernant, en s'adressant à {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<tt>{{ init.mail_replace(mailadmin) }}</tt>{% endif %}
+</p>
+
+<h2>Mise à jour de la charte de protection des données</h2>
+<p>La présente charte peut être mise à jour périodiquement et sans préavis. Dernière mise à jour = 28 Août 2018</p>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+{% endblock myjavascripts %}
+
+
+{% block menu %}
+{% endblock menu %}
+
+{% block before_body %}
+{% endblock before_body %}
+
+{% block body %}
+
+<h1>Télécharger un modèle de rapport d'activité</h1>
+
+<div class="message info">
+    <h2>Un modèle pour le rapport d'activité</h2>
+    Merci de télécharger et de suivre le modèle avant d'écrire votre rapport d'activité<br><strong>ATTENTION:</strong>
+     Votre rapport ne doit pas être plus long que 5 pages <strong>au maximum</strong>
+</div>
+
+Choisir le format de fichier:
+<a href="{{ asset('rm/modele_de_rapport.docx') }}"  type="application/vnd.openxmlformats-officedocument.wordprocessingml.document" media="screen">docx</a>
+<a href="{{ asset('rm/modele_de_rapport.odt') }}"  type="application/vnd.oasis.opendocument.text" media="screen">odt</a>
+<a href="{{ asset('rm/modele_de_rapport.rtf') }}"  type="application/rtf" media="screen">rtf</a>
+
+{% endblock %}

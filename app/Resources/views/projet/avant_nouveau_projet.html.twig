@@ -1,0 +1,28 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+    <div class="message warning">
+        <h2>Création ou renouvellement ?</h2>
+        <p>Il apparait que vous collaborez déjà à un ou plusieurs projets {{mesoc}}.<br>
+            Vous voudrez <strong>renouveler un projet</strong> si vous souhaitez demander de nouvelles ressources de calcul pour
+            <strong>poursuivre le même objectif scientifique</strong>.<br>
+            Vous voudrez <strong>créer un nouveau projet</strong> si vous avez besoin de ressources de calcul pour
+            <strong>atteindre un nouvel objectif scientifique</strong>.<br>
+             Merci de préciser votre choix:
+        </p>
+    
+        <ul>
+            {% for projet in renouvelables %}
+            <li>
+               <a href="{{ path('consulter_projet', { 'id' : projet.idProjet } ) }}"> Renouveler {{ projet }}</a>
+                {% if( not projet.derniereVersion.prjTitre == null ) %}({{ projet.derniereVersion.prjTitre }}){% endif %}
+            </li>
+            {% endfor %}
+            <li><a href="{{ path('nouveau_projet', { 'type' : 'P' } ) }}">Nouveau projet</a></li>
+        </ul>
+    </div>
+</section>
+
+{% endblock body %}

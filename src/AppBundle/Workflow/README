@@ -1,0 +1,25 @@
+
+Les principes du Workflow :
+
+1/ il y a un workflow indépendant pour les sessions
+
+2/ les session envoient uniquement des signaux du début et de la fin de la session
+2a/ chaque session envoit ces signaux uniquement aux versions qui lui sont associées
+2b/ une session envoit le signal du début de la session à tous les projets et les projets propagent ce signal ( pour traiter le passage A -> B )
+2c/ une session envoit le signal de la fin de la session à tous les projets et les projets ne propagent pas ce signal
+
+3/ le projet n'a que 3 états : RENOUVELABLE, NON_RENOUVELABLE et TERMINE
+
+3a/ un projet test est directement NON_RENOUVELABLE
+3b/ un projet passe du RENOUVELABLE vers NON_RENOUVELABLE uniquement quand une version est rejeté d'une manière définitive CLK_VAL_EXP_KO
+3c/ un projet NON_RENOUVELABLE passe vers TERMINE quand sa version est rejeté ou sa session terminée
+3d/ tout projet passe vers TERMINE s'il est arrêté par CLK_FERM
+
+
+4/ la version a son propre workflow indépendant du projet qui ne fait que propager la plupart des signaux vers elle
+
+4a/ les signaux de l'utilisateur sont envoyés au projet qui les propage vers les versions
+4b/ un signal de l'utilisateur ne modifie que la dernière version sauf pour le signal CLK_VAL_EXP_OK qui fait passer toutes les versions
+    actives du projet vers l'état NOUVELLE_VERSION_DEMANDEE
+4c/ le début d'une nouvelle session fait passer une version en état NOUVELLE_VERSION_DEMANDEE vers TERMINE 
+4e/ une version en état EDITION_DEMANDE passe vers TERMINE si elle reçoit le signal du début d'une session, ce n'est pas le cas pour l'état EDITION_TEST    

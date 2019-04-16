@@ -1,0 +1,69 @@
+# To get started with security, check out the documentation:
+# http://symfony.com/doc/current/security.html
+security:
+    providers:
+        gramc_provider:
+             id: app.gramc_user_provider
+                # if you're using multiple entity managers
+                # manager_name: customer
+        in_memory:
+            memory:
+                users:
+                    consoupload:
+                       password: "%password_consoupload%"
+                       roles: 'ROLE_ADMIN'
+        #user_provider:
+        #    id: app.user_provider
+    encoders:
+        Symfony\Component\Security\Core\User\User: plaintext
+
+
+    firewalls:
+        # disables authentication for assets and the profiler, adapt it according to your needs
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+            switch_user: true
+        activation:
+            pattern:    ^/login/activation
+            switch_user: true
+            anonymous: ~
+        secured:
+            pattern:    ^/login/connexion
+            context: global_security_context
+            user_checker: app.user_checker
+            switch_user: true
+            remote_user:
+                 provider : gramc_provider
+                 user:  REDIRECT_REMOTE_USER
+        consoupload:
+            pattern:   ^/adminux
+            http_basic:
+                  provider: in_memory
+
+        main:
+            pattern:    ^/
+            context: global_security_context
+            user_checker: app.user_checker
+            switch_user: true
+            #security: false
+            #provider: gramc_provider
+            #switch_user: true
+            anonymous: ~
+            #remote_user:
+            #    provider: gramc_provider
+            #    user: REMOTE_USER
+            #logout:
+            #    path:   /deconnexion
+            #    target: /deconnected
+    access_control:
+        - { path: ^/none, roles: ROLE_DEMANDEUR }
+
+
+            # activate different ways to authenticate
+
+            # http_basic: ~
+            # http://symfony.com/doc/current/book/security.html#a-configuring-how-your-users-will-authenticate
+
+            # form_login: ~
+            # http://symfony.com/doc/current/cookbook/security/form_login_setup.html

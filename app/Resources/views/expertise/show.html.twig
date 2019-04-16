@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Expertise</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Validation</th>
+                <td>{% if expertise.validation %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Nbheuresatt</th>
+                <td>{{ expertise.nbHeuresAtt }}</td>
+            </tr>
+            <tr>
+                <th>Commentaireinterne</th>
+                <td>{{ expertise.commentaireInterne }}</td>
+            </tr>
+            <tr>
+                <th>Commentaireexterne</th>
+                <td>{{ expertise.commentaireExterne }}</td>
+            </tr>
+            <tr>
+                <th>Definitif</th>
+                <td>{% if expertise.definitif %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Nbheuresattete</th>
+                <td>{{ expertise.nbHeuresAttEte }}</td>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <td>{{ expertise.id }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('expertise_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('expertise_edit', { 'id': expertise.id }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

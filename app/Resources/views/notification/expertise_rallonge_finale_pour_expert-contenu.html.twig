@@ -1,0 +1,14 @@
+Bonjour
+
+L'expertise de la demande de rallonge {{ object |raw }}  de  {{ object.version.responsable  |raw }} pour le projet {{ object.version.projet  |raw }} a été traitée.
+
+Cette demande a été {% if( object.validation == true ) %}ACCEPTÉE{% else %}REFUSÉE{% endif %}.
+
+Le nombre d'heures demandées est  : {{ object.demHeures |raw }}
+Le nombre d'heures attribuées est : {{ object.nbHeuresAtt |raw }}
+
+Votre commentaire (éventuellement amendé par le président) à destination du comité d'attribution:
+{{ object.commentaireInterne |raw }}
+
+Commentaire du président envoyé aux demandeurs:
+{{ object.commentaireExterne |raw }}

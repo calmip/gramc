@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Template</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Sujet</th>
+                <td>{{ template.sujet }}</td>
+            </tr>
+            <tr>
+                <th>Contenu</th>
+                <td>{{ template.contenu }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ template.nom }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('templates_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('templates_edit', { 'id': template.nom }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

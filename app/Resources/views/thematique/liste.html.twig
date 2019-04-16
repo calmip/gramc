@@ -1,0 +1,34 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<section>
+    <h1>Thématiques utilisables par les projets gramc</h1>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+
+    <table id="general" >
+    <thead>
+    <tr>
+    <th colspan="2">&nbsp;</th><th>Libellé</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for thema in thematiques %}
+        <tr>
+            <td>
+                <a class="suppression" href="{{ path('supprimer_thematique',{'id' : thema.idThematique }) }}" title="Supprimer">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
+            </td>
+            <td>
+                <a class="modification" href="{{ path('modifier_thematique',{'id' : thema.idThematique }) }}" title="Modifier le libellé">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
+            </td>
+            <td>{{ thema.libelleThematique }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+</section>
+
+{% endblock body  %}

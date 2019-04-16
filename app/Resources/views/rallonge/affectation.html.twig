@@ -1,0 +1,174 @@
+{% extends 'default/base.html.twig' %}
+
+{% import "projet/macros_graphiques.html.twig" as macros_graphiques %}
+
+
+{% block body %}
+
+<h1>Affectation des experts aux demandes de rallonges
+    {% if( session2 == null ) %}
+        (session {{ session1 }})
+    {% else %}
+        (sessions {{ session1 }}, {{ session2 }})
+    {% endif %}
+</h1>
+
+<div id="bilan_legende">
+    <div id="bilan">
+        <table>
+            <tbody>
+                <tr>
+                    <th colspan="2">Demandes</th>
+                </tr>
+                <tr>
+                    <th>Nombre de demandes</th>
+                    <td>{{ nbDemandes }}</td>
+                </tr>
+                <tr>
+                    <th>Heures demandées</th>
+                    <td>{{ nbDemHeures }}</td>
+                </tr>
+                <tr>
+                    <th>Heures attribuées</th>
+                    <td>{{ nbAttHeures }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<form name="affecter_les_experts" method="post">
+<div id="projets">
+    <table id="affecte_experts">
+        <thead>
+            <tr>
+                <th>N/R</th>
+                <th>Numéro</th>
+                <th>&nbsp;</th>
+                <th>Etat</th>
+                <th>titre</th>
+                <th>Thématique</th>
+                <th>Responsable</th>
+                <th>Laboratoire</th>
+                <th>Affecté</th>
+                <th>Expert</th>
+                <th>Demande</th>
+                <th>Attribution</th>
+                <th>Conso</th>
+                {% if ( app.debug == true ) %}
+                <th>Etat prj</th>
+                <th>Etat version</th>
+                <th>Etat rallonge</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for projet in projets %}
+            <tr>
+                {% if ( projet.NR == "" ) %}
+                <td class="renouv">&nbsp;</td>
+                {% else %}
+                 <td class="nouveau"><strong>{{ projet.NR }}</strong></td>
+                {% endif %}
+                <td>{{ projet.projet }}</td>
+                <td>
+                    <a href="{{ path('consulter_projet', { 'id' : projet.projet.idProjet } ) }}" title="consulter le projet">
+                    <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}">
+                    </a>
+                </td>
+                <td rowspan="{{ projet.rowspan }}">{{ macros_graphiques.meta_etat_graphique( projet.etat ) }}</td>
+                <td rowspan="{{ projet.rowspan }}">{{ projet.titre }}</td>
+                <td rowspan="{{ projet.rowspan }}">{{ projet.thematique }}</td>
+
+                <td rowspan="{{ projet.rowspan }}">
+                    {% if( projet.responsable != null ) %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': projet.responsable.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                    <a href="mailto:{{ projet.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ projet.responsable.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                    {{ projet.responsable.prenom }} {{ projet.responsable.nom }}
+                    {% endif %}
+                </td>
+
+
+                
+                <td rowspan="{{ projet.rowspan }}">{{ projet.labo }}</td>
+                <td rowspan="{{ projet.rowspan }}">
+                    {% if( projet.affecte is defined and projet.affecte == true ) %}
+                        <img src="{{ asset('icones/actif.png') }}" alt="Choix du président" titre="Affecté par le président">
+                    {% endif %}
+                </td>
+                <td>
+                    {% if( projet.expert!= null ) %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': projet.expert.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                    <a href="mailto:{{ projet.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ projet.expert.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                    {{ projet.expert.prenom }} {{ projet.expert.nom }}
+                    {% endif %}
+
+                </td>
+                <td>{{ projet.version.demHeures }}</td>
+                <td>{{ projet.version.attrHeures }}</td>
+                <td rowspan="{{ projet.rowspan }}">{{ projet.conso }}</td>
+                {% if ( app.debug == true ) %}
+                <td>{{ projet.libelleEtatProjet }}</td>
+                <td>{{ projet.libelleEtatVersion }}</td>
+                <td></td>
+                {% endif %}
+            </tr>
+                {% for rallonge in projet.rallonges %}
+                <tr>
+                <td><strong>R</strong></td>
+                <td>{{ rallonge.idRallonge }}</td>
+                <td>
+                    {% if( rallonge.finalisable == true ) %}
+                        <a href="{{ path('avant_rallonge_finaliser', { 'id' : rallonge.idRallonge } ) }}" title="finaliser la réponse">
+                        <img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}">
+                        </a>
+                    {% else %}
+                        <a href="{{ path('rallonge_consulter', { 'id' : rallonge.idRallonge } ) }}" title="consulter la demande">
+                        <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}">
+                        </a>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if( rallonge.expert!= null ) %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': rallonge.expert.id }) }}?" title="Changer d'identité">
+                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                    <a href="mailto:{{ rallonge.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ rallonge.expert.mail }}">
+                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+                    {{ rallonge.expert.prenom }} {{ rallonge.expert.nom }}
+                    {% endif %}
+
+                    {% if( rallonge.libelleEtatRallonge == 'EDITION_EXPERTISE' or rallonge.libelleEtatRallonge == 'DESAFFECTE' ) %}
+                    {{ form_widget( projet.form[rallonge.idRallonge].expert ) }}
+                    {% endif %}
+                    
+                </td>
+                <td>{{ rallonge.demHeures }}</td>
+                <td>{{ rallonge.attrHeures }}</td>
+                {% if ( app.debug == true ) %}
+                <td></td>
+                <td></td>
+                <td>{{ rallonge.libelleEtatRallonge }}</td>
+                {% endif %}
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div id="bouton_affecter"><input value="Affecter les experts" type="submit"></div>
+</form>
+
+
+
+
+
+
+
+
+
+{% endblock %}

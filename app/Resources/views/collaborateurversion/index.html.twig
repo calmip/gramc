@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Collaborateurversions list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Responsable</th>
+                <th>Login</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for collaborateurVersion in collaborateurVersions %}
+            <tr>
+                <td><a href="{{ path('collaborateurversion_show', { 'id': collaborateurVersion.id }) }}">{{ collaborateurVersion.responsable }}</a></td>
+                <td>{% if collaborateurVersion.login %}Yes{% else %}No{% endif %}</td>
+                <td>{{ collaborateurVersion.id }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('collaborateurversion_show', { 'id': collaborateurVersion.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('collaborateurversion_edit', { 'id': collaborateurVersion.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('collaborateurversion_new') }}">Create a new collaborateurVersion</a>
+        </li>
+    </ul>
+{% endblock %}

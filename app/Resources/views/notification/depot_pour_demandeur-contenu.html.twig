@@ -1,0 +1,15 @@
+Bonjour {{  object.responsable.prenom |raw }} {{ object.responsable.nom |raw }}
+Votre demande de ressources pour {{mesoc}} a bien été reçue.
+
+Numéro de session         : {{  object.session |raw }}
+Votre numéro de projet    : {{ object.projet |raw }}
+Nombre d'heures demandées : {{ object.demHeures |raw }}
+
+Vous pouvez retrouver votre projet sur la page suivante :
+{{ absolute_url( path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
+
+Nous vous répondrons dans les meilleurs délais.
+
+Cordialement,
+
+L'équipe {{mesoc}}

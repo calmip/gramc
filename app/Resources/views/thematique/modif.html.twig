@@ -1,0 +1,49 @@
+{% extends 'default/base.html.twig' %}
+
+{# {% form_theme edit_form _self %} #}
+
+{% block choice_widget_expanded %}
+    <div {{ block('widget_container_attributes') }}>
+    <table>
+    {%- for child in form %}
+        <tr>
+        <th>{{- form_widget(child) -}}</th>
+        <th>{{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}<th>
+       </tr>
+    {% endfor -%}
+    </table>
+    </div>
+{% endblock choice_widget_expanded %}
+
+
+{% block body %}
+<section>
+<h2>Modification d'une thématique</h2>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+    
+    {{ form_start(edit_form) }}
+    
+    <table>
+        <tr>
+            <th>Libellé</th>
+            <td>{{ form_widget(edit_form.libelleThematique) }}</td>
+        </tr>
+        <tr>
+            <th>Meta Thématique</th>
+            <td>{{ form_widget(edit_form.metaThematique) }}</td>
+        </tr>
+        <tr>
+            <th>Experts</th>
+            <td>{{ form_widget(edit_form.expert) }}</td>
+        </tr>
+        <tr>
+            <th></th>
+            <td>{{ form_widget(edit_form.submit) }}{{ form_widget(edit_form.reset) }}</td>
+        </tr>    
+    </table>
+    {{ form_end(edit_form) }}
+</section>
+
+{% endblock body %}

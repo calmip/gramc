@@ -1,0 +1,47 @@
+
+{# app/Resources/views/default/profil.html.twig #}
+{% extends 'default/base.html.twig' %}
+{% form_theme form with ['form_table_layout.html.twig', _self] %}
+
+
+{% block body %}
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+
+<section><h2>Changer mon profil</h2><p><em>Veuillez s'il vous plait renseigner complètement votre profil</em></p>
+
+{{ form_start(form) }}
+    {{ form_errors(form) }}
+<table id="profil"><tr>
+<tr>
+<th>{{ form_label(form.prenom) }}<th class="gauche" >{{ form_errors(form.prenom) }} {{ form_widget(form.prenom, { 'attr': {'size': '45'} }) }}
+<tr>
+<th>{{ form_label(form.nom) }}<th class="gauche">{{ form_errors(form.nom) }} {{ form_widget(form.nom, { 'attr': {'size': '45'}}  ) }}
+<tr>
+<th>
+    <label for="mail">Courriel <span class="attention">institutionnel:</span> </label>
+<th class="gauche">{{ form_errors(form.mail) }} {{ form_widget(form.mail , { 'attr': {'size': '45'}}  ) }}
+<tr>
+<th>{{ form_label(form.idLabo) }}<th class="gauche">{{ form_widget(form.idLabo) }}
+    <div class="message info">
+        <em>Si votre laboratoire ne figure pas dans la liste,
+            <a href="mailto:xxx@xxx.fr?Subject=Nouveau%20laboratoire%20à%20introduire%20dans%20gramc%20!&amp;body=Bonjour
+            %0D%0AMerci%20d'ajouter%20à%20la%20base%20de%20données%20le%20laboratoire%20suivant:
+            %0D%0ASIGLE:%20
+            %0D%0ANOM%20COMPLET:
+            %0D%0ACordialement,">
+            <strong> cliquez ici</strong></a>
+            pour faire la demande
+        </em>, ou envoyez un courriel à xxx@xxx.fr)
+    </div>
+        
+<tr>
+<th>{{ form_label(form.idEtab) }}<th class="gauche">{{ form_widget(form.idEtab) }}
+<tr>
+<th>{{ form_label(form.idStatut) }}<th class="gauche">{{ form_widget(form.idStatut) }}
+<tr>
+<th><th class="gauche">{{ form_widget(form.sauvegarder ) }}{{ form_widget(form.reset ) }}
+</table>
+{{ form_end(form) }}
+
+{% endif %}
+{% endblock %}

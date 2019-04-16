@@ -1,0 +1,20 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+
+    <div class="message info">Votre expertise a bien été envoyée</div>  
+    
+    <nav>
+        <ul>
+            <li>
+                <a class="lien_actif" href="{{ path('expertise_liste') }}" title="retourner à votre liste des expertises">RETOUR</a>
+            </li>
+        </ul>
+    </nav>
+    
+</section>    
+
+
+{% endblock %}

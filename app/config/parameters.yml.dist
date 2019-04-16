@@ -1,0 +1,104 @@
+# This file is a "template" of what your parameters.yml file should look like
+# Set parameters here that may be different on each deployment target of the app, e.g. development, staging, production.
+# http://symfony.com/doc/current/best_practices/configuration.html#infrastructure-related-configuration
+parameters:
+    database_host:     127.0.0.1
+    database_port:     ~
+    database_name:     symfony
+    database_user:     root
+    database_password: ~
+    # You should uncomment this if you want use pdo_sqlite
+    # database_path: "%kernel.root_dir%/data.db3"
+
+    # mot de passe pour upload des consommations à partir du supercalculateur
+    password_consoupload: MOTDEPASSE
+
+    #
+    mailer_transport:  smtp
+    mailer_host:       127.0.0.1
+    mailer_user:       ~
+    mailer_password:   ~
+
+    # A secret key that's used to generate certain security-related tokens
+    secret:            ThisTokenIsNotSoSecretChangeIt
+
+    # Bonnes adresses
+    # nom du mésocentre (pour affichage uniquement)
+    mesoc: CALMIP
+    # url du site web
+    mesoc_web: https://www.calmip.univ-toulouse.fr
+    # url des cgus
+    mesoc_cgu: https://www.calmip.univ-toulouse.fr/cgu
+    # url de la page décrivant la visu
+    mesoc_visu: https://www.calmip.univ-toulouse.fr/spip/spip.php?article463
+    # url du document décrivant les règles d'attribution
+    mesoc_attrib: https://www.calmip.univ-toulouse.fr/spip/spip.php?article19
+    # url du document décrivant le format des remerciements
+    mesoc_merci: https://www.calmip.univ-toulouse.fr/spip/spip.php?article337
+    
+    # Si l'attribution (+ rallonges) d'un projet est supérieure à ce seuil (gros projet),
+    # la demande en B ne devrait pas être supérieure à la moitié de l'attribution !
+    # Si c'est le cas on mettra un petit signal d'attention dans divers écrans
+    attrib_seuil_a: 600000
+
+    # Récupération d'heures au printemps, cf. règle 4 (ce ne sont que des suggestions, il y a un bouton pour faire la récupération)
+    recup_attrib_seuil: 300000  # On ne récupère rien pour les ayant une attribution plus faible
+    recup_conso_seuil:  30      # Si la conso est inférieure à ce seuil (%), on récupèrera des heures
+    recup_attrib_quant: 50      # Partie de l'attribution à récupérer: 50% = On récupère la moitié des heures attribuées initialement
+
+    # recup_printemps_d, recup_printemps_f: Mois d'affichage des heures récupérables au printemps [Début, Fin(
+    # Par défaut: de Mai (inclus) à Août (exclus)
+    # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
+    recup_printemps_d: 5
+    recup_printemps_f: 8
+
+    # recup_automne_d, recup_automne_f: Mois d'affichage des heures récupérables à l'automne [Début, Fin(
+    # Par défaut: Septembre uniquement
+    # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
+    recup_automne_d: 9
+    recup_automne_f: 10
+
+    # conso_seuil_1/2: Limites utilisées par les voyants de consommation et par l'écran de projets par année (%)
+    conso_seuil_1: 70
+    conso_seuil_2: 90
+
+    # Taille max d'une figure téléversée
+    max_fig_width: 800
+    max_fig_height: 400
+
+    # nb de pages max d'un rapport d'activité
+    max_page_nb: 5
+
+    signature_directory: '%kernel.root_dir%/../data/f'
+    rapport_directory: '%kernel.root_dir%/../data/rapports'
+    fig_directory: '%kernel.root_dir%/../data/fig'
+    heures_projet_test: 5000
+
+    # L'adresse générique "admins" (au sens administratifs, pas technique)
+    mailadmin: admin.calmip@univ-toulouse.fr
+
+    # L'adresse From lorsqu'on envoie un mail
+    mailfrom: ne-pas-repondre@calmip.univ-toulouse.fr
+
+    # liste d'admins Unix du supercalculateur
+    # TODO - Remplacer par un Rôle !!!
+    unixadmins: ['admin1@exemple.com','admin2@exemple.com']
+
+    # Bouton Nettoyer le journal: on garde les enregistrements plus récents que ce nombre (en années)
+    old_journal: 5
+
+#IDP
+    IDPprod: {
+              'CNRS' : 'https://janus.cnrs.fr/idp',
+              'Université de Toulouse 3 Paul Sabatier' : 'https://shibboleth.ups-tlse.fr/idp/shibboleth',
+              'Comptes CRU' : 'urn:mace:cru.fr:federation:sac',
+              'INPT - Institut National Polytechnique de Toulouse' : 'https://idp.inp-toulouse.fr/idp/shibboleth',
+              'AUTRE' : 'WAYF'
+             }
+
+#    IDPdev :    {
+#                'Université de Toulouse 3 Paul Sabatier' : 'https://shibboleth.ups-tlse.fr/idp/shibboleth',
+#                'Comptes CRU - entreprises'  : 'urn:mace:cru.fr:federation:sac',
+#                'AUTRE' : 'WAYF'
+#                }
+

@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Thematique</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Libellethematique</th>
+                <td>{{ thematique.libelleThematique }}</td>
+            </tr>
+            <tr>
+                <th>Idthematique</th>
+                <td>{{ thematique.idThematique }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('thematique_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('thematique_edit', { 'id': thematique.idThematique }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

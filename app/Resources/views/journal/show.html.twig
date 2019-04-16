@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Journal</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Idindividu</th>
+                <td>{{ journal.idIndividu }}</td>
+            </tr>
+            <tr>
+                <th>Gramcsessid</th>
+                <td>{{ journal.gramcSessId }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ journal.type }}</td>
+            </tr>
+            <tr>
+                <th>Message</th>
+                <td>{{ journal.message }}</td>
+            </tr>
+            <tr>
+                <th>Stamp</th>
+                <td>{% if journal.stamp %}{{ journal.stamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Ip</th>
+                <td>{{ journal.ip }}</td>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <td>{{ journal.id }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('journal_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('journal_edit', { 'id': journal.id }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}
