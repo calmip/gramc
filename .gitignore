@@ -6,6 +6,9 @@
 *.bkp
 *.tar
 *.tgz
+var/cache
+var/logs
+var/sessions
 data/*
 *#
 *~

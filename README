@@ -34,17 +34,19 @@ a2enmod rewrite
 </location>
 
 5/ Répertoire data: 
+   - Créer le répertoire data: 
+     tar xfz data-dist.tar.gz
    - Ne DOIT PAS être exporté par apache (cf. le point 4/ ci-dessus)
    - peut appartenir à root 
    - Les sous-répertoires data/* doivent appartenir à www-data (ou le user qui exécute apache) 
      et www-data doit pouvoir écrire dedans:
+     chown root.root data
      chown -R www-data.www-data data/*
 
 6/ Répertoires nécessaires à symfony:
    www-data doit avoir le droit d'écrire dedans:
-   var/cache
-   var/logs
-   var/sessions
+   mkdir var/cache var/logs var/sessions
+   chown www-data.www-data var/cache var/logs var/sessions
 
 7.a/ Fichier parameters.yml:
    cd app/config
@@ -55,7 +57,7 @@ a2enmod rewrite
       Et pour finir les idp "préférés" (dépend du mésocentre)
       
 7.b/ Bannière:
-   Déposer votre fichier de bannière dans Web/icones/banniere.png (cf. banniere.png.dist pour un modèle)
+   Déposer votre fichier de bannière dans web/icones/banniere.png (cf. banniere.png.dist pour un modèle)
  
 8.a/ Installation d'une base de donnees déjà en exploitation sur une instance de développement:
    cd gramc

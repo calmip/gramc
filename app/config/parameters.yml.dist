@@ -69,9 +69,12 @@ parameters:
     # nb de pages max d'un rapport d'activité
     max_page_nb: 5
 
-    signature_directory: '%kernel.root_dir%/../data/f'
+    # divers répertoires 
+    signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'
-    fig_directory: '%kernel.root_dir%/../data/fig'
+    fig_directory: '%kernel.root_dir%/../data/figures'
+
+    # Nombre d'heures pouvant être demandées pour un projet test
     heures_projet_test: 5000
 
     # L'adresse générique "admins" (au sens administratifs, pas technique)
@@ -82,12 +85,20 @@ parameters:
 
     # liste d'admins Unix du supercalculateur
     # TODO - Remplacer par un Rôle !!!
-    unixadmins: ['admin1@exemple.com','admin2@exemple.com']
+    unixadmins: ['emmanuel.courcelle@inp-toulouse.fr']
 
     # Bouton Nettoyer le journal: on garde les enregistrements plus récents que ce nombre (en années)
     old_journal: 5
 
-#IDP
+# IDP
+#
+# POUR AJOUTER DES ETABLISSEMENTS A CETTE LISTE:
+#    1/ Cliquer sur le nom de l'établissement à partir du wayf standard de la fédération
+#    2/ En même temps surveiller le fichier access.log d'apache
+#    3/ On récupère une ligne de ce type:
+#       XXX.XXX.XXX.XXX - - [12/Apr/2016:14:52:21 +0200] "GET /Shibboleth.sso/Login?SAMLDS=1&target=ss%3Amem%3A837e1d65be89ecf2be...9b5329&entityID=https%3A%2F%2Fvmfetid.iamm.fr%2Fidp%2Fshibboleth HTTP/1.1" 302 1960...
+#       L'url recherché figure sous le nom entityID, il n'y a plus qu'à la décoder: %3A => :, %2F => /
+#        
     IDPprod: {
               'CNRS' : 'https://janus.cnrs.fr/idp',
               'Université de Toulouse 3 Paul Sabatier' : 'https://shibboleth.ups-tlse.fr/idp/shibboleth',
