@@ -90,6 +90,10 @@ parameters:
     # Bouton Nettoyer le journal: on garde les enregistrements plus récents que ce nombre (en années)
     old_journal: 5
 
+    # Adresse mail pour le dev: drop-bd-recharge-pour-debug.php va modifier toutes les adresses mail:
+    #                           prenom.nom@univ-machin.fr ===> devt1+prenom.nom_univ-machin.fr@exemple.com
+    maildevt: devt1@exemple.com
+
 # IDP
 #
 # POUR AJOUTER DES ETABLISSEMENTS A CETTE LISTE:

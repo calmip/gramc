@@ -35,7 +35,7 @@ echo "recrée la BD et remplit à partir de ".$file_name."\n";
 restore_database($file_name);
 
 echo "modif adresses mail\n";
-modif_mail(DATABASE_NAME);
+modif_mail();
 
 echo "Appelle bin/console de Symfony\n";
 console_update();
@@ -46,23 +46,24 @@ fixtures();
 echo "That's REALLY all Folks\n";
 
 
-/************
- * Remplace l'include init.php puis config.php
- ***************/
+/*************************************************************
+ * Initialise certaines constantes a partir de parameters.yml
+ *************************************************************/
  function init() {
     $f_params = '../app/config/parameters.yml';
     $params= yaml_parse_file($f_params);
+    define('DATABASE_HOST', $params['parameters']['database_host']);
     define('DATABASE_USER', $params['parameters']['database_user']);
     define('DATABASE_PASSWORD', $params['parameters']['database_password']);
     define('DATABASE_NAME', $params['parameters']['database_name']);
+    define('MAIL_DEVT', $params['parameters']['maildevt']);
  }
 
 
 
 
 /**********
- * @brief Appeler bin/console pour recréer le schéma de B.D. avec Symfony
- *
+ * Appelle bin/console pour recréer le schéma de B.D. avec Symfony *
  **************/
 function console()
 {
@@ -71,8 +72,7 @@ function console()
 }
 
 /**********
- * @brief Appeler bin/console pour modifier le schéma de B.D. si nécessaire
- *
+ * Appelle bin/console pour modifier le schéma de B.D. si nécessaire *
  **************/
 function console_update()
 {
@@ -83,7 +83,7 @@ function console_update()
 }
 
 /**********
- * @brief Appeler bin/console fixtures avec Symfony
+ * Appeller bin/console fixtures avec Symfony
  *
  **************/
 function fixtures()
@@ -95,7 +95,7 @@ function fixtures()
 
 /**********
  * @brief Remplir la BD à partir du fichier créé précédemment par mysqldump
- *        On commande par désactiver les FOREIGN KEY sinon ça ne marche pas
+ *        On commence par désactiver les FOREIGN KEY sinon ça ne marche pas
  *
  * @param $file Le fichier (temporaire) créé par mysldump
  *
@@ -133,6 +133,27 @@ function majbd()
     passthru('php majbd.php');
 }
 
+/**
+ * requete_mysql_1: Appelle la requête passée en paramètres en travaillant proprement
+ *                  Renvoie le résultat
+ *
+ ****/
+function requete_mysql_1($sql) {
+    $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME);
+
+    /* check connection */
+    if ($mysqli->connect_errno) {
+        printf("Connect failed: %s\n", $mysqli->connect_error());
+        exit();
+    }
+
+    if ($mysqli->real_query($sql)) {
+        $res = $mysqli->store_result();
+        return $res;
+    } else {
+        return [];
+    }
+}
 
 /**
  * requete_mysql: Appelle la requête passée en paramètres
@@ -183,21 +204,17 @@ function replace_sql($sql,$values) {
 }
 
 /**
- * @brief Modifier tous les mail de la table individu: toto@titi.fr ==> toto_titi_fr@truc.calmip.univ-toulouse.fr
- *        On peut alors utiliser postfix pour envoyer tous les mails à truc.calmip.univ-toulouse.fr
- *
- * @param Sous-domaine bidon à ajouter au domaine calmip
+ * @brief Modifier tous les mail de la table individu: toto@titi.fr ==> devt1+gramc_toto_titi.fr@exemple.com
+ *        (cf. parameters.yml.dist)
+ *        tous les mails arriveront chez devt1@exemple.com
  *
  */
-function modif_mail($sousdom) {
-    if ($sousdom=='gramc') {
-        $mailsousdom='gramc';
-    } else {
-        $mailsousdom='gramc-'.$sousdom;
-    }
+function modif_mail() {
+
+    $a_maildevt = explode('@',MAIL_DEVT,2);
 
     // Lecture de individus
-    $individus = requete_mysql("SELECT id_individu,mail,admin FROM individu");
+    $individus = requete_mysql_1("SELECT id_individu,mail,admin FROM individu");
 
     // écriture du mail modifié
     $ecriture = "UPDATE individu SET mail=?1 WHERE mail=?2";
@@ -211,10 +228,13 @@ function modif_mail($sousdom) {
 
     $f_sql = "tmp.sql";
     $fh_sql = fopen($f_sql,"w");
-    foreach ($individus as $i) {
+
+    while ($i = $individus->fetch_row()) {
         $mail = $i[1];
+       // echo '#'.$i[1].'#'."\n";
+
         $new_mail = str_replace('@','_',$mail);
-        $new_mail .= '@'.$mailsousdom.'.calmip.univ-toulouse.fr';
+        $new_mail = $a_maildevt[0] . '+gramc_' . $new_mail . '@' . $a_maildevt[1];
 
         fwrite($fh_sql,replace_sql($ecriture,[$new_mail,$mail]).";\n");
         // Pour un admin
