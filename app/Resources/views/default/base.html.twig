@@ -172,6 +172,9 @@
                 <span class="petit">gramc {{ version_gramc }} {{ init.mail_replace(mailadmin) }}</span>
             {% endif %}
             <span class="petit"><a href="{{ path('mentions_legales') }}" title="Lire les mentions légales">Mentions légales</a></span>
+            {% if mesoc_cgu != null %}
+            <span class="petit"><a href="{{ mesoc_cgu }}" title="Lire les cgu du calculateur">cgu</a></span>
+            {% endif %}
 
         </footer>
 
