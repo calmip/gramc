@@ -59,14 +59,14 @@ use AppBundle\Entity\Version;
 
 /**
  * Individu controller.
- * 
- * @Security("has_role('ROLE_ADMIN')") 
+ *
+ * @Security("has_role('ROLE_ADMIN')")
  * @Route("individu")
  */
 class IndividuController extends Controller
 {
 
-    
+
     /**
      * Supprimer utilisateur
      *
@@ -78,7 +78,7 @@ class IndividuController extends Controller
         $em = $this->getDoctrine()->getManager();
         $em->remove($individu);
         $em->flush();
-        return $this->redirectToRoute('individu_gerer'); 
+        return $this->redirectToRoute('individu_gerer');
     }
 
     /**
@@ -102,7 +102,7 @@ class IndividuController extends Controller
                  ])
             ->getForm();
 
-        
+
         $CollaborateurVersion       =   AppBundle::getRepository(CollaborateurVersion::class)->findBy(['collaborateur' => $individu]);
         $CompteActivation           =   AppBundle::getRepository(CompteActivation ::class)->findBy(['individu' => $individu]);
         $Expertise                  =   AppBundle::getRepository(Expertise ::class)->findBy(['expert' => $individu]);
@@ -117,11 +117,11 @@ class IndividuController extends Controller
 
         // utilisateur peu actif peut être effacé
 
-        if(  $CollaborateurVersion == null && $Expertise == null 
+        if(  $CollaborateurVersion == null && $Expertise == null
               && $Rallonge == null && $Session == null )
                 {
                 $em = AppBundle::getManager();
-                
+
                 foreach( $individu->getThematique() as $item )
                     {
                     $em->persist( $item );
@@ -130,38 +130,38 @@ class IndividuController extends Controller
 
                 foreach ( $CompteActivation  as $item )
                     $em->remove($item);
-                
-                
+
+
                 foreach ( $Sso  as $item )
                     $em->remove($item);
 
                 Functions::infoMessage('Utilisateur ' . $individu . ' (' .  $individu->getIdIndividu() . ') directement effacé ');
-                
+
                 $em->remove($individu);
-                
+
                 $em->flush();
                 return $this->redirectToRoute('individu_gerer');
                 }
- 
+
         // utilisateur actif doit être remplacé
-        
+
         $form->handleRequest($request);
         if( $form->isSubmitted() && $form->isValid() )
             {
             $mail  =   $form->getData()['mail'];
             $new_individu   =   AppBundle::getRepository(Individu::class)->findOneBy(['mail'=>$mail]);
-            
+
             if( $new_individu != null )
                 {
                 $em = AppBundle::getManager();
-                
+
                 foreach( $individu->getThematique() as $item )
                     {
                     $em->persist( $item );
                     $item->getExpert()->removeElement( $individu );
                     }
-                
-               
+
+
 
                 foreach ( $CollaborateurVersion  as $item )
                     {
@@ -175,31 +175,31 @@ class IndividuController extends Controller
                     $item->setExpert( $new_individu );
 
                  foreach ( $Rallonge  as $item )
-                    $item->setExpert( $new_individu );   
-                    
+                    $item->setExpert( $new_individu );
+
                 foreach ( $Journal  as $item )
                     $item->setIndividu( $new_individu );
-                
+
                 foreach ( $Session  as $item )
                     $item->setPresident( $new_individu );
-                
+
                 /*
                 foreach ( $Version  as $item )
                     $item->setMajInd( $new_individu );
                 */
-                
+
                 foreach ( $CompteActivation  as $item )
                     $em->remove($item);
-                
-                
+
+
                 foreach ( $Sso  as $item )
                     $em->remove($item);
-                    
+
                 Functions::infoMessage('Utilisateur ' . $individu . '(' .  $individu->getIdIndividu()
                     . ') remplacé par ' . $new_individu . ' (' .  $new_individu->getIdIndividu() . ')' );
-                
+
                 $em->remove($individu);
-                
+
                 $em->flush();
                 return $this->redirectToRoute('individu_gerer');
                 }
@@ -221,9 +221,9 @@ class IndividuController extends Controller
                 'individu'               =>  $individu,
                 'Thematique'             =>  $Thematique->toArray(),
                 ]
-                ); 
+                );
     }
-    
+
      /**
      * Deletes a individu entity.
      *
@@ -263,10 +263,12 @@ class IndividuController extends Controller
     }
 
      /**
-     * Attirbue le rôle PRESIDENT.
+     * Attribue le rôle PRESIDENT.
+     *
+     * CET ECRAN EST SUPPRIME - REMPLACE PAR LA COLONNE PRESIDENT DANS LE TABLEAU DES UTILISATEURS !
      *
      * @Route("/president", name="individu_president")
-     * @Security("has_role('ROLE_ADMIN')") 
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function presidentAction(Request $request)
@@ -274,8 +276,8 @@ class IndividuController extends Controller
     $choices = AppBundle::getRepository(Individu::class)->getPresidentiables();
     $presidents = [];
     foreach( $choices as $choice )
-        if( $choice->getPresident() ) $presidents[] = $choice;  
-        
+        if( $choice->getPresident() ) $presidents[] = $choice;
+
     $form = AppBundle::createFormBuilder()
             ->add('president',   EntityType::class,
                     [
@@ -290,24 +292,24 @@ class IndividuController extends Controller
             ->add('submit', SubmitType::class,
                  [
                  'label' => "Définir les présidents pour l'application",
-                 ] 
+                 ]
                  )
             ->getForm();
 
     $form->handleRequest($request);
     if( $form->isSubmitted() && $form->isValid() )
         {
-        $em =  AppBundle::getManager(); 
+        $em =  AppBundle::getManager();
         $presidents = $form->getData()['president'];
-        
+
         //return new Response( Functions::show( $presidents->toArray() ) );
         foreach( $choices as $choice )          $choice->setPresident( false );
         foreach( $presidents as $president )    $president->setPresident( true );
-        
+
         AppBundle::getManager()->flush();
-            
+
         }
-        
+
      return $this->render('individu/president.html.twig',
             [
             'form' => $form->createView(),
@@ -382,7 +384,7 @@ class IndividuController extends Controller
         ));
     }
 
-   
+
 
     /**
      * Creates a form to delete a individu entity.
@@ -415,9 +417,9 @@ class IndividuController extends Controller
         $em->persist($individu);
         $em->flush($individu);
 
-        return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );    
+        return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
     }
-    
+
     /**
      * Displays a form to edit an existing individu entity.
      *
@@ -429,7 +431,7 @@ class IndividuController extends Controller
         $editForm = $this->createForm('AppBundle\Form\IndividuType', $individu);
 
         $editForm->handleRequest($request);
-        
+
         if ($editForm->isSubmitted() /*&& $editForm->isValid()*/)
             {
             $this->getDoctrine()->getManager()->flush();
@@ -454,9 +456,9 @@ class IndividuController extends Controller
     {
         $individu = new Individu();
         $editForm = $this->createForm('AppBundle\Form\IndividuType', $individu);
-        
+
         $editForm->handleRequest($request);
-        
+
         if ($editForm->isSubmitted() /*&& $editForm->isValid()*/)
             {
             $individu->setCreationStamp( new \DateTime() );
@@ -489,7 +491,7 @@ class IndividuController extends Controller
         if ($request->isXmlHttpRequest())
             return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
         else
-            return $this->redirectToRoute('individu_gerer');   
+            return $this->redirectToRoute('individu_gerer');
     }
 
     /**
@@ -510,7 +512,121 @@ class IndividuController extends Controller
         else
            return $this->redirectToRoute('individu_gerer');
     }
-    
+
+     /**
+     * Devenir Obs
+     *
+     * @Route("/{id}/devenir_obs", name="devenir_obs")
+     * @Method("GET")
+     */
+    public function devenirObsAction(Request $request, Individu $individu)
+    {
+        $individu->setObs(true);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+            return $this->redirectToRoute('individu_gerer');
+    }
+
+    /**
+     * Cesser d'être Obs
+     *
+     * @Route("/{id}/plus_obs", name="plus_obs")
+     * @Method("GET")
+     */
+    public function plusObsAction(Request $request, Individu $individu)
+    {
+        $individu->setObs(false);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+           return $this->redirectToRoute('individu_gerer');
+    }
+
+     /**
+     * Devenir Sysadmin
+     *
+     * @Route("/{id}/devenir_sysadmin", name="devenir_sysadmin")
+     * @Method("GET")
+     */
+    public function devenirSysadminAction(Request $request, Individu $individu)
+    {
+        $individu->setSysadmin(true);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+            return $this->redirectToRoute('individu_gerer');
+    }
+
+    /**
+     * Cesser d'être Sysadmin
+     *
+     * @Route("/{id}/plus_sysadmin", name="plus_sysadmin")
+     * @Method("GET")
+     */
+    public function plusSysadminAction(Request $request, Individu $individu)
+    {
+        $individu->setSysadmin(false);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+           return $this->redirectToRoute('individu_gerer');
+    }
+
+    /**
+     * Devenir President
+     *
+     * @Route("/{id}/devenir_president", name="devenir_president")
+     * @Method("GET")
+     */
+    public function devenirPresidentAction(Request $request, Individu $individu)
+    {
+        $individu->setPresident(true);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+            return $this->redirectToRoute('individu_gerer');
+    }
+
+    /**
+     * Cesser d'être President
+     *
+     * @Route("/{id}/plus_president", name="plus_president")
+     * @Method("GET")
+     */
+    public function plusPresidentAction(Request $request, Individu $individu)
+    {
+        $individu->setPresident(false);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($individu);
+        $em->flush($individu);
+
+        if ($request->isXmlHttpRequest())
+            return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
+        else
+           return $this->redirectToRoute('individu_gerer');
+    }
+
     /**
      * Devenir Expert
      *
@@ -523,7 +639,7 @@ class IndividuController extends Controller
         $em = $this->getDoctrine()->getManager();
         $em->persist($individu);
         $em->flush($individu);
-        
+
         if ($request->isXmlHttpRequest())
             return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
         else
@@ -543,13 +659,13 @@ class IndividuController extends Controller
         $em->persist($individu);
 
         Functions::noThematique($individu);
-                
+
         $em->flush();
 
-        return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );  
+        return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
     }
 
-    
+
      /**
      * Activer
      *
@@ -562,7 +678,7 @@ class IndividuController extends Controller
         $em = $this->getDoctrine()->getManager();
         $em->persist($individu);
         $em->flush($individu);
-        
+
         if ($request->isXmlHttpRequest())
             return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
         else
@@ -583,17 +699,17 @@ class IndividuController extends Controller
 
         $ssos = $individu->getSso();
         foreach( $ssos as $sso ) $em->remove($sso);
-        
+
         $em->persist($individu);
         $em->flush($individu);
 
         if ($request->isXmlHttpRequest())
             return $this->render('individu/ligne.html.twig', [ 'individu' => $individu ] );
         else
-            return $this->redirectToRoute('individu_gerer');  
-       
+            return $this->redirectToRoute('individu_gerer');
+
     }
-    
+
     /**
      * SUDO
      *
@@ -604,7 +720,7 @@ class IndividuController extends Controller
     {
     if( ! AppBundle::isGranted('ROLE_PREVIOUS_ADMIN') )
             {
-            Functions::infoMessage("Controller : connexion de l'utilisateur " . $individu . ' en SUDO ');  
+            Functions::infoMessage("Controller : connexion de l'utilisateur " . $individu . ' en SUDO ');
             return new RedirectResponse($this->generateUrl('accueil',[ '_switch_user' => $individu->getId() ]) );
             }
         else
@@ -626,13 +742,13 @@ class IndividuController extends Controller
             ->add('thematique', EntityType::class,
                 [
                 'multiple' => true,
-                'expanded' => true, 
+                'expanded' => true,
                 'class' => 'AppBundle:Thematique',
                 ])
             ->add('submit',SubmitType::class, ['label' => 'modifier' ])
             ->add('reset',ResetType::class, ['label' => 'reset' ])
             ->getForm();
-                
+
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid())
@@ -640,7 +756,7 @@ class IndividuController extends Controller
             // thématiques && Doctrine ManyToMany
             $all_thematiques = AppBundle::getRepository(Thematique::class)->findAll();
             $my_thematiques = $individu->getThematique();
-            
+
             foreach($all_thematiques as $thematique )
                 {
                 if( $my_thematiques->contains( $thematique ) )
@@ -664,7 +780,7 @@ class IndividuController extends Controller
      * Autocomplete mail
      *
      * @Route("/mail_autocomplete", name="mail_autocomplete")
-     * @Security("has_role('ROLE_DEMANDEUR')") 
+     * @Security("has_role('ROLE_DEMANDEUR')")
      * @Method({"POST","GET"})
      */
     public function mailAutocompleteAction(Request $request)
@@ -674,21 +790,21 @@ class IndividuController extends Controller
             ->createNamedBuilder('autocomplete_form', FormType::class, [])
             ->add('mail', TextType::class, [ 'required' => true, 'csrf_protection' => false] )
             ->getForm();
-            
+
         $form->handleRequest($request);
-        
+
         if ( $form->isSubmitted() ) // nous ne pouvons pas ajouter $form->isValid() et nous ne savons pas pourquoi
             {
              if ( array_key_exists('mail',$form->getData() ) )
                 $data   =   AppBundle::getRepository(Individu::class)->liste_mail_like( $form->getData()['mail'] );
             else
                 $data  =   [ ['mail' => 'Problème avec AJAX dans IndividuController:mailAutocompleteAction' ] ];
-            
+
             $output = [];
             foreach( $data as $item )
                 if( array_key_exists('mail', $item ))
                     $output[]   =   $item['mail'];
-             
+
             $response = new Response(json_encode( $output ) );
             $response->headers->set('Content-Type', 'application/json');
             return $response;
@@ -697,9 +813,9 @@ class IndividuController extends Controller
         // on complète le reste des informations
 
         $collaborateur    = new \AppBundle\Utils\IndividuForm();
-        $form = $this->createForm('AppBundle\Form\IndividuFormType', $collaborateur, ['csrf_protection' => false]);            
+        $form = $this->createForm('AppBundle\Form\IndividuFormType', $collaborateur, ['csrf_protection' => false]);
         $form->handleRequest($request);
-        
+
         if (  $form->isSubmitted()  && $form->isValid() )
             {
             $individu = AppBundle::getRepository(Individu::class)->findOneBy(['mail' => $collaborateur->getMail() ]);
@@ -713,8 +829,8 @@ class IndividuController extends Controller
                 if($individu->getLabo()   != null   )   $collaborateur->setLaboratoire  (   $individu->getLabo()    );
                 if($individu->getEtab()   != null   )   $collaborateur->setEtablissement(   $individu->getEtab()    );
                 if($individu->getId()     != null   )   $collaborateur->setId           (   $individu->getId()    );
-                $form = $this->createForm('AppBundle\Form\IndividuFormType', $collaborateur, ['csrf_protection' => false]);   
-                
+                $form = $this->createForm('AppBundle\Form\IndividuFormType', $collaborateur, ['csrf_protection' => false]);
+
                 return $this->render('version/collaborateurs_ligne.html.twig', [ 'form' => $form->createView() ] );
                 }
             else
@@ -749,7 +865,7 @@ class IndividuController extends Controller
                $users = $em->getRepository(Individu::class)->getActiveUsers();
 
             $pattern = '/' . $form->getData()['filtre'] . '/';
-            
+
             $individus = [];
             foreach( $users as $individu )
                 if( preg_match ( $pattern, $individu->getMail() ) )
@@ -769,10 +885,10 @@ class IndividuController extends Controller
             {
                 if( $individu->getResponsable() == true )  $responsables++;
                 if( $individu->getCollaborateur() == true ) $collaborateurs++;
-                
+
                 $individu_ssos = $individu->getSso()->toArray();
                 if( count( $individu_ssos ) > 0 && $individu->getDesactive() == false ) $actifs++;
-                
+
                 $idps = array_merge( $idps,
                     array_map(
                         function($value)
@@ -787,7 +903,7 @@ class IndividuController extends Controller
                         , $individu_ssos ) );
             }
         $idps = array_count_values ( $idps );
-        
+
         return $this->render('individu/liste.html.twig',
             [
             'idps'  => $idps,

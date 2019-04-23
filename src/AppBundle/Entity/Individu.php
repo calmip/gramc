@@ -101,6 +101,20 @@ const LIBELLE_STATUT =
     /**
      * @var boolean
      *
+     * @ORM\Column(name="sysadmin", type="boolean", nullable=false)
+     */
+    private $sysadmin = false;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="obs", type="boolean", nullable=false)
+     */
+    private $obs = false;
+
+    /**
+     * @var boolean
+     *
      * @ORM\Column(name="expert", type="boolean", nullable=false)
      */
     private $expert = false;
@@ -133,7 +147,7 @@ const LIBELLE_STATUT =
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_statut", referencedColumnName="id_statut")
      * })
-     */ 
+     */
     private $statut;
 
     /**
@@ -185,30 +199,30 @@ const LIBELLE_STATUT =
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="\AppBundle\Entity\Session", mappedBy="president")
-     */     
+     */
     private $session;
-    
+
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="\AppBundle\Entity\Sso", mappedBy="individu")
-     */     
+     */
     private $sso;
-    
-    
+
+
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="\AppBundle\Entity\CollaborateurVersion", mappedBy="collaborateur")
-     */     
+     */
     private $collaborateurVersion;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="\AppBundle\Entity\CompteActivation", mappedBy="individu")
-     */     
+     */
     private $compteActivation;
 
 
@@ -216,13 +230,13 @@ const LIBELLE_STATUT =
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="\AppBundle\Entity\Expertise", mappedBy="expert")
-     */     
+     */
     private $expertise;
 
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     * 
+     *
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Journal", mappedBy="individu")
      */
     private $journal;
@@ -238,7 +252,7 @@ const LIBELLE_STATUT =
     }
 
     //////////////////////////////////////////
-    
+
     public function __toString()
         {
         if(  $this->getPrenom() != null ||  $this->getNom() != null)
@@ -248,20 +262,20 @@ const LIBELLE_STATUT =
         else
             return 'sans prénom, nom et mail';
         }
-    
+
     ////////////////////////////////////////////////////////////////////////////
 
     /* Pour verifier que deux classes sont égales, utiliser cet interface et pas == ! */
     public function isEqualTo(UserInterface $user)
     {
-        
+
         if ( $user == null || !$user instanceof Individu) return false;
-    
+
         if ($this->idIndividu !== $user->getId())
             return false;
         else
-            return true;   
-    
+            return true;
+
     }
 
     public function getId()         {   return $this->idIndividu;}
@@ -270,32 +284,53 @@ const LIBELLE_STATUT =
     public function getSalt()       {   return null;}
     public function getPassword()   {   return null;}
     public function eraseCredentials(){}
-    
+
+    /* LES ROLES DEFINIS DANS L'APPLICATION
+     *     - ROLE_DEMANDEUR = Peut demander des ressoureces - Le minimum
+     *     - ROLE_ADMIN     = Peut paramétrer l'application et intervenir dans les projets ou le workflow
+     *     - ROLE_OBS       = Peut tout observer, mais ne peut agir
+     *     - ROLE_EXPERT    = Peut être affecté à un projet pour expertise
+     *     - ROLE_PRESIDENT = Peut affecter les experts à des projets
+     *     - ROLE_SYSADMIN  = Administrateur système, est observateur et reçoit certains mails
+     *     - ROLE_ALLOWED_TO_SWITCH = Peut changer d'identité (kifkif admin - A supprimer ?)
+     */
     public function getRoles()
     {
-        
+
         $roles[] = 'ROLE_DEMANDEUR';
-        
+
         if( $this->getAdmin() == true )
         {
             $roles[] = 'ROLE_ADMIN';
+            $roles[] = 'ROLE_OBS';
             $roles[] = 'ROLE_ALLOWED_TO_SWITCH';
         }
-        
+
         if( $this->getPresident() == true )
-            {
+        {
             $roles[] = 'ROLE_PRESIDENT';
             $roles[] = 'ROLE_EXPERT';
-            }
+        }
         elseif( $this->getExpert() == true )
             $roles[] = 'ROLE_EXPERT';
-        
+
+        if ( $this->getObs() == true )
+        {
+            $roles[] = 'ROLE_OBS';
+        }
+
+        if ( $this->getSysadmin() == true )
+        {
+            $roles[] = 'ROLE_SYSADMIN';
+            $roles[] = 'ROLE_OBS';
+        }
+
         return $roles;
     }
 
- //////////////////////////////////////////////////////////////////////////////////////////////////////   
+ //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   
+
     /**
      * Constructor
      */
@@ -421,6 +456,34 @@ const LIBELLE_STATUT =
     }
 
     /**
+     * Set sysadmin
+     *
+     * @param boolean $sysadmin
+     *
+     * @return Individu
+     */
+    public function setSysadmin($sysadmin)
+    {
+        $this->sysadmin = $sysadmin;
+
+        return $this;
+    }
+
+    /**
+     * Set obs
+     *
+     * @param boolean $obs
+     *
+     * @return Individu
+     */
+    public function setObs($obs)
+    {
+        $this->obs = $obs;
+
+        return $this;
+    }
+
+    /**
      * Get admin
      *
      * @return boolean
@@ -428,6 +491,26 @@ const LIBELLE_STATUT =
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    /**
+     * Get sysadmin
+     *
+     * @return boolean
+     */
+    public function getSysadmin()
+    {
+        return $this->sysadmin;
+    }
+
+    /**
+     * Get obs
+     *
+     * @return boolean
+     */
+    public function getObs()
+    {
+        return $this->obs;
     }
 
     /**
@@ -734,7 +817,7 @@ const LIBELLE_STATUT =
         return $this->sso;
     }
 
-  
+
 
     /**
      * Add collaborateurVersion
@@ -847,8 +930,8 @@ const LIBELLE_STATUT =
     public function addJournal(\AppBundle\Entity\Journal $journal)
     {
         if (!$this->journal->contains($journal))
-           $this->journal[] = $journal; 
-            
+           $this->journal[] = $journal;
+
         return $this;
     }
 
@@ -865,7 +948,7 @@ const LIBELLE_STATUT =
     /**
       * Get journal
       *
-      * @return \Doctrine\Common\Collections\Collection 
+      * @return \Doctrine\Common\Collections\Collection
       */
     public function getJournal()
     {
@@ -881,7 +964,7 @@ const LIBELLE_STATUT =
 
     public function getEtablissement()
     {
-        $server =  Request::createFromGlobals()->server; 
+        $server =  Request::createFromGlobals()->server;
         if(  $server->has('REMOTE_USER') || $server->has('REDIRECT_REMOTE_USER') )
             {
             if( $server->has('REMOTE_USER') )           $eppn =  $server->get('REMOTE_USER');
@@ -901,7 +984,7 @@ const LIBELLE_STATUT =
     }
 
     ////
-    
+
     public function isPermanent()
     {
     $statut = $this->getStatut();

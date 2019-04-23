@@ -87,7 +87,7 @@ class GramcSessionController extends Controller
     public function adminAccueilAction()
     {
         $menu1[]= Menu::individu_gerer();
-        $menu1[]= Menu::presidents();
+        //$menu1[]= Menu::presidents();
 
         $menu2[]= Menu::gerer_sessions();
         $menu2[]= Menu::bilan_session();
@@ -112,7 +112,7 @@ class GramcSessionController extends Controller
             $menu6[]= Menu::avancer();
 
         $menu6[]= Menu::nettoyer();
-        
+
         return $this->render('default/accueil_admin.html.twig',['menu1' => $menu1,
                                                                 'menu2' => $menu2,
                                                                 'menu3' => $menu3,
@@ -120,7 +120,7 @@ class GramcSessionController extends Controller
                                                                 'menu5' => $menu5,
                                                                 'menu6' => $menu6 ]);
     }
-    
+
     /**
      * @Route("/mentions_legales", name="mentions_legales" )
      */
@@ -136,7 +136,7 @@ class GramcSessionController extends Controller
     {
         return $this->render('default/aide.html.twig');
     }
-    
+
      /**
      * @Route("/", name="accueil" )
      *
@@ -217,7 +217,7 @@ class GramcSessionController extends Controller
 
              if( $old_individu->isFromLaboRegional() != $individu->isFromLaboRegional() && $individu->isFromLaboRegional == false )
                  Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $individu . " cesse d'être d'un labo regional !!");
-                            
+
             $new_statut = $individu->getStatut();
             $old_statut = $old_individu->getStatut();
             if( $new_statut != $old_statut )
@@ -229,7 +229,7 @@ class GramcSessionController extends Controller
             if( $new_laboratoire != $old_laboratoire )
                 Functions::noticeMessage(__METHOD__ . ':' . __LINE__ . " " . $individu . " a changé son laboratoire de " . $old_laboratoire
                 . " vers " . $new_laboratoire );
-            
+
             $em = $this->getDoctrine()->getManager();
             $em->persist($individu);
             $em->flush();
@@ -322,7 +322,7 @@ class GramcSessionController extends Controller
 		    $eppn = "";
                 if( $server->has('REMOTE_USER') ) $eppn =  $server->get('REMOTE_USER');
                 if( $server->has('REDIRECT_REMOTE_USER') ) $eppn =  $server->get('REDIRECT_REMOTE_USER');
-		
+
                 $em = $this->getDoctrine()->getManager();
 
                 $compteactivation = $this->getDoctrine()
@@ -331,14 +331,14 @@ class GramcSessionController extends Controller
 
                 if( !  $compteactivation )
                        return new Response('<pre> Activation error for this key </pre>');
-		
+
                 $sso = new Sso();
                 $sso->setEppn( $eppn );
                 $individu = $compteactivation->getIndividu();
                 $sso->setIndividu( $individu );
-		
+
                 $em->remove($compteactivation);
-		
+
                 if( AppBundle::getRepository(Sso::class)->findOneBy( [ 'eppn' => $eppn ] ) == null )
                     $em->persist($sso);
                 else
@@ -714,7 +714,7 @@ class GramcSessionController extends Controller
             $mtime = filemtime( $dir . '/' . $filename );
             $ctime = filectime( $dir . '/' . $filename );
             //$atime = max ( [ $atime, $mtime, $ctime ] );
-            
+
             $diff  = intval( ($time - $mtime) / 60 );
             $min   = $diff % 60;
             $heures= intVal($diff/60);
@@ -734,9 +734,9 @@ class GramcSessionController extends Controller
                 }
             elseif( ! array_key_exists( '_security_consoupload', $_SESSION['_sf2_attributes'] ) )
                 Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème avec le fichier session " . $filename );
-                
+
             }
-            
+
     $_SESSION = $save;
     return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
     }
