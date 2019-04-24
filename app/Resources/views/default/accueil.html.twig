@@ -34,7 +34,7 @@
 {# link administrateur #}
 
 <li>
-{% if is_granted('ROLE_ADMIN') %}
+{% if is_granted('ROLE_OBS') %}
     {{ gramcmacros.actif('admin_accueil','Administrateur',"Allez à l'espace administrateur !") }}
 {% else %}
      {{ gramcmacros.inactif('admin_accueil','Administrateur',
@@ -68,7 +68,7 @@
 {{ block ('message') }}
 <p>En attendant, <strong>vous pouvez demander un supplément de ressources</strong>
  pour votre projet en écrivant à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a><br />
- 
+
 {% if projet_test %}
 Si vous ne connaissez pas encore {{mesoc}}, vous pouvez demander un <strong>projet&nbsp;test</strong>
 (cliquer sur le lien Demandeur)

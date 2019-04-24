@@ -110,7 +110,7 @@
         <td><input type="checkbox" class="cb" id="avec_expert" checked="checked" /></td>
     </tr>
     {% endif %}
-    
+
     {% if( nombreEditionTest > 0 ) %}
     <tr>
         <th>Projets test en édition</th>
@@ -143,7 +143,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreAttente > 0 ) %}
     <tr>
         <th>Projets en attente</th>
@@ -152,7 +152,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreActif > 0 ) %}
     <tr>
         <th>Projets actifs</th>
@@ -161,7 +161,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreNouvelleDem > 0 ) %}
     <tr>
         <th>Projets dont le renouvellement est accepté</th>
@@ -170,16 +170,16 @@
      </tr>
      {% endif %}
 
-    {#  
+    {#
     {% if( nombreTermine > 0 ) %}
     <tr>
         <th>Projets terminés</th>
         <td>{{ nombreTermine }}</td>
         <td><input type="checkbox" class="cb" id="nbTermine" checked="checked" /></td>
      </tr>
-     {% endif %}    
+     {% endif %}
     #}
-      
+
     {% if( nombreAnnule > 0 ) %}
     <tr>
         <th>Projets annulés</th>
@@ -187,7 +187,7 @@
         <td><input type="checkbox" class="cb" id="annule" checked="checked" /></td>
      </tr>
      {% endif %}
-         
+
 </table>
 
 </div></div>
@@ -274,8 +274,10 @@
             </td>
             <td>
                 {% if( version.responsable != null ) %}
+                {% if ( is_granted('ROLE_ADMIN') ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                {% endif %}
                 <a href="mailto:{{ version.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ version.responsable.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                 {{ version.responsable.prenom }} {{ version.responsable.nom }}
@@ -291,8 +293,10 @@
             </td>
             {% if( version.expert != null ) %}
             <td class="avec_expert" >
+                {% if ( is_granted('ROLE_ADMIN') ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                {% endif %}
                 <a href="mailto:{{ version.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ version.expert.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                 {{ version.expert.prenom }} {{ version.expert.nom }}

@@ -7,7 +7,9 @@
 
 
 {% block menu %}
+{% if is_granted('ROLE_ADMIN') %}
 {{ gramcmacros.menu(menu) }}
+{% endif %}
 {% endblock menu %}
 
 {% block before_body %}
@@ -206,8 +208,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
         <td>{% if (user.login == true) %}
                {% if user.loginname==null %}
                   <img src="{{ asset('icones/attention16.png') }}" alt="Compte non encore créé" title="compte non encore créé" />
-               {% else %} 
-                  <tt>{{ user.loginname }}</tt> 
+               {% else %}
+                  <tt>{{ user.loginname }}</tt>
                {% endif %}
             {% else %}  - {% endif %}</td>
         <td>{{ user.Collaborateur.prenom }}</td>

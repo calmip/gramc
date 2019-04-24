@@ -69,14 +69,14 @@ class AdminuxController extends Controller
      {
         $conso_repository = AppBundle::getRepository(Compta::class);
         $em = AppBundle::getManager();
-    
+
         $putdata = fopen("php://input", "r");
         //$input = [];
-        
+
         while ( $ligne  =   fgetcsv($putdata) )
             {
             if( sizeof( $ligne ) < 5 ) continue; // pour une ligne erronée ou incomplète
-                
+
             $date       =   $ligne[0]; // 2019-02-05
             $date       =   new \DateTime( $date . "T00:00:00");
             $loginname  =   $ligne[1]; // login
@@ -102,30 +102,30 @@ class AdminuxController extends Controller
                 }
 
             $conso  =   $ligne[4]; // consommation
-            
+
             if( array_key_exists( 5, $ligne ) )
                 $quota  =   $ligne[5]; // quota
             else
                 $quota  =   -1;
 
-            
+
             $compta->setConso( $conso );
             $compta->setQuota( $quota );
-            
+
             //$input[]    =   $compta;
             //return new Response( Functions::show( $ligne ) );
             }
-            
+
         try {
             $em->flush();
-            }   
+            }
         catch (\Exception $e)
             {
             return new Response('KO');
             }
-            
+
         //return new Response( Functions::show( $conso_repository->findAll() ) );
-        
+
         return $this->render('consommation/conso_update_batch.html.twig');
     }
 
@@ -260,9 +260,9 @@ class AdminuxController extends Controller
     if( $individu == null )
         $error[]    =   'No Individu ' . $idIndividu;
 
-    if ( $error != [] )    
+    if ( $error != [] )
         return new Response( json_encode( ['KO' => $error ]) );
-        
+
      $versions = $projet->getVersion();
      foreach( $versions as $version )
         if( $version->getEtatVersion() == Etat::ACTIF)
@@ -276,7 +276,7 @@ class AdminuxController extends Controller
                     return new Response(json_encode('OK'));
                     }
                 }
-      return new Response(json_encode( ['KO' => 'No user found' ]));  
+      return new Response(json_encode( ['KO' => 'No user found' ]));
      }
 
     /**
@@ -290,19 +290,19 @@ class AdminuxController extends Controller
    $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
    if( $projet == null )
         return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
-        
-   
+
+
    $versions    = $projet->getVersion();
    $output      =   [];
    $idProjet    =   $projet->getIdProjet();
-   
+
    foreach( $versions as $version )
         if( $version->getEtatVersion() == Etat::ACTIF)
              foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
                 {
                 if( $collaborateurVersion->getLogin() == false )
                     continue;
-                    
+
                 $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
                 if( $collaborateur != null )
                     {
@@ -349,7 +349,7 @@ class AdminuxController extends Controller
 
         if ($msg != "")
         {
-            $dest = AppBundle::getParameter('unixadmins');
+            $dest = Functions::mailUsers( [ 'S' ], null);
             Functions::sendMessage('notification/quota_check-sujet.html.twig','notification/quota_check-contenu.html.twig',[ 'MSG' => $msg ],$dest);
         }
 

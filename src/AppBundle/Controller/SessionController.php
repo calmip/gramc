@@ -50,7 +50,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
  * Session controller.
  *
  * @Route("session")
- * @Security("has_role('ROLE_ADMIN')")
+ * @Security("has_role('ROLE_OBS')")
  */
 class SessionController extends Controller
 {
@@ -58,6 +58,7 @@ class SessionController extends Controller
     /**
      * Lists all session entities.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/", name="session_index")
      * @Method("GET")
      */
@@ -95,13 +96,13 @@ class SessionController extends Controller
         else
         {
             AppBundle::getSession()->remove('SessionCourante');
-    
+
             $session_courante       =   Functions::getSessionCourante();
             $etat_session_courante  =   $session_courante->getEtatSession();
             $workflow   = new SessionWorkflow();
-    
+
             //
-    
+
             if(  $etat_session_courante == Etat::ACTIF )
                 $menu[] =   [
                             'ok' => true,
@@ -117,9 +118,9 @@ class SessionController extends Controller
                             'commentaire'=> 'Pas possible de créer une nouvelle session',
                             'raison'    => "La session courante n'est pas encore active",
                             ];
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session_courante) )
                 {
                 $menu[] =
@@ -155,9 +156,9 @@ class SessionController extends Controller
                              'raison' => "La saisie a déjà démarré pour cette session",
                              ];
                 }
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session_courante)  )
                  $menu[] =  [
                             'ok' => true,
@@ -182,9 +183,9 @@ class SessionController extends Controller
                             'raison' => "La saisie est déjà terminée pour cette session",
                             ];
             //
-    
+
              if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-    
+
                 $menu[] =  [
                             'ok' => true,
                             'name' => 'envoyer_expertises',
@@ -205,11 +206,11 @@ class SessionController extends Controller
                         $item['raison'] = "La session n'est pas dans un état qui permet les envois";
                    $menu[]  =   $item;
                 }
-    
+
             //
-    
+
             $mois = GramcDate::get()->format('m');
-    
+
             if( $mois != 1 && $mois != 6 && $mois != 7 && $mois != 12 )
                 $menu[] =   [
                             'ok' => false,
@@ -262,6 +263,7 @@ class SessionController extends Controller
     /**
      * Creates a new session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/ajouter", name="ajouter_session")
      * @Method({"GET", "POST"})
      */
@@ -292,6 +294,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/modify", name="modifier_session")
      * @Method({"GET", "POST"})
      */
@@ -325,6 +328,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/terminer_saisie", name="terminer_saisie")
      * @Method("GET")
      */
@@ -350,6 +354,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/activer", name="activer_session")
      * @Method("GET")
      */
@@ -433,6 +438,7 @@ class SessionController extends Controller
     /**
      *
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/demarrer_saisie", name="demarrer_saisie")
      * @Method("GET")
      */
@@ -460,6 +466,7 @@ class SessionController extends Controller
     /**
      * Creates a new session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/new", name="session_new")
      * @Method({"GET", "POST"})
      */
@@ -486,6 +493,7 @@ class SessionController extends Controller
     /**
      * Finds and displays a session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/show", name="session_show")
      * @Method("GET")
      */
@@ -502,6 +510,7 @@ class SessionController extends Controller
     /**
      * Meme chose que show, mais présenté "à la gramc"
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/consulter", name="consulter_session")
      * @Method("GET")
      */
@@ -518,6 +527,7 @@ class SessionController extends Controller
     /**
      * Displays a form to edit an existing session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/edit", name="session_edit")
      * @Method({"GET", "POST"})
      */
@@ -543,6 +553,7 @@ class SessionController extends Controller
     /**
      * Displays a form to edit an existing session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/commentaires", name="session_commentaires")
      * @Method({"GET", "POST"})
      */
@@ -599,6 +610,7 @@ class SessionController extends Controller
     /**
      * Deletes a session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}", name="session_delete")
      * @Method("DELETE")
      */
@@ -621,6 +633,7 @@ class SessionController extends Controller
     /**
      * Creates a form to delete a session entity.
      *
+     * @security("hasRole('ROLE_ADMIN')")
      * @param Session $session The session entity
      *
      * @return \Symfony\Component\Form\Form The form
@@ -638,7 +651,7 @@ class SessionController extends Controller
     {
         $annee = GramcDate::get()->format('y');   // 15 pour 2015
         $mois  = GramcDate::get()->format('m');   // 5 pour mai
-    
+
         if ($mois<7)
         {
             $id_session = $annee.'B';
@@ -649,7 +662,7 @@ class SessionController extends Controller
             $id_session = $annee+1 .'A';
             $type = 0;
         }
-    
+
         return [ 'id' => $id_session, 'type' => $type ];
     }
 
@@ -658,7 +671,6 @@ class SessionController extends Controller
     ////////////////////////////////////////////////////////////////////
 
     /**
-     *
      *
      * @Route("/bilan", name="bilan_session")
      * @Method({"GET","POST"})
@@ -676,7 +688,6 @@ class SessionController extends Controller
     }
 
     /**
-     *
      *
      * @Route("/bilan_annuel", name="bilan_annuel")
      * @Method({"GET","POST"})

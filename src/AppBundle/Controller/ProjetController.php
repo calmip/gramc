@@ -65,9 +65,11 @@ function cmpProj($a,$b) { return intval($a['annee']) < intval($b['annee']); }
 /**
  * Projet controller.
  *
- * @Security("has_role('ROLE_ADMIN')")
+ * @Security("has_role('ROLE_OBS')")
  * @Route("projet")
  */
+ // Tous ces controleurs sont exécutés au moins par OBS, certains par ADMIN seulement
+ // et d'autres par DEMANDEUR
 
 class ProjetController extends Controller
 {
@@ -94,6 +96,7 @@ class ProjetController extends Controller
     /**
      * Delete old data.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/old", name="projet_nettoyer")
      * @Method({"GET","POST"})
      */
@@ -435,6 +438,7 @@ class ProjetController extends Controller
     /**
      * fermer un projet
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/fermer", name="fermer_projet")
      * @Method({"GET","POST"})
      */
@@ -462,6 +466,7 @@ class ProjetController extends Controller
     /**
      * back une version
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/back", name="back_version")
      * @Method({"GET","POST"})
      */
@@ -492,6 +497,7 @@ class ProjetController extends Controller
     /**
      * fwd une version
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/fwd", name="fwd_version")
      * @Method({"GET","POST"})
      */
@@ -509,7 +515,7 @@ class ProjetController extends Controller
                 $projetWorkflow = new ProjetWorkflow();
                 if( $projetWorkflow->canExecute( Signal::CLK_VAL_DEM, $version->getProjet() ) )
                      $projetWorkflow->execute( Signal::CLK_VAL_DEM, $version->getProjet());
-                
+
                 // TODO il faut ajouter des notifications !!!!
                 }
             return $this->redirectToRoute('projet_session'); // NON - on ne devrait jamais y arriver !
@@ -551,7 +557,7 @@ class ProjetController extends Controller
         $nombreNouvelleDem      =   0;
         $nombreTermine          =   0;
         $nombreAnnule           =   0;
-        
+
 
         $termine        =   Etat::getEtat('TERMINE');
         $nombreTermines =   0;
@@ -601,7 +607,7 @@ class ProjetController extends Controller
                     $nombreTermine++;
             elseif( $etat == Etat::ANNULE )
                     $nombreAnnule++;
-        
+
             $items[]    =
                     [
                     'version'       =>  $version,
@@ -736,7 +742,7 @@ class ProjetController extends Controller
         $paa = Functions::projetsParAnnee($annee,$isRecupPrintemps, $isRecupAutomne);
         $projets = $paa[0];
         $total   = $paa[1];
-        
+
         // Les sessions de l'année - On considère que le nombe d'heures pas année est fixé par la session A de l'année
         // donc on ne peut pas changer de machine en cours d'année.
         // ça va peut-être changer un jour, ça n'est pas terrible !
@@ -836,7 +842,7 @@ class ProjetController extends Controller
 
     /**
      * download rapport
-     * @Security("has_role('ROLE_DEMANDEUR') or has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_DEMANDEUR') or has_role('ROLE_OBS')")
      * @Route("/{id}/rapport/{annee}", defaults={"annee"=0}, name="rapport")
      * @Method("GET")
      */
@@ -844,14 +850,14 @@ class ProjetController extends Controller
     {
         if( ! Functions::projetACL( $version->getProjet() ) )
             Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
-            
+
         if ($annee == 0 )
             $filename = $version->getRapport();
         else
             $filename = $version->getRapport( $annee );
 
         //return new Response($filename);
-            
+
         if(  file_exists( $filename ) )
             {
             return Functions::pdf( file_get_contents ($filename ) );
@@ -867,7 +873,7 @@ class ProjetController extends Controller
      * download signature
      *
      * @Route("/{id}/signature", name="signature")
-     * @Security("has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_OBS')")
      * @Method("GET")
      */
     public function signatureAction(Version $version, Request $request)
@@ -943,6 +949,7 @@ class ProjetController extends Controller
     /**
      * Lists all projet entities.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/gerer", name="gerer_projets")
      * @Method("GET")
      */
@@ -957,6 +964,7 @@ class ProjetController extends Controller
 
     /**
      * Creates a new projet entity.
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/new", name="projet_new")
      * @Method({"GET", "POST"})
      */
@@ -1430,11 +1438,11 @@ class ProjetController extends Controller
     $menu[] =   Menu::telechargement_fiche( $version );
     $menu[] =   Menu::televersement_fiche( $version );
     $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
-    
+
     $etat_version = $version->getEtatVersion();
     if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
         $menu[] =   Menu::televerser_rapport_annee( $version );
-        
+
     $menu[] =   Menu::gerer_publications( $projet );
 
     $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
@@ -1510,6 +1518,7 @@ class ProjetController extends Controller
     /**
      * Displays a form to edit an existing projet entity.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/edit", name="projet_edit")
      * @Method({"GET", "POST"})
      */
@@ -1535,6 +1544,7 @@ class ProjetController extends Controller
     /**
      * Deletes a projet entity.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}", name="projet_delete")
      * @Method("DELETE")
      */
@@ -1556,7 +1566,7 @@ class ProjetController extends Controller
      * Creates a form to delete a projet entity.
      *
      * @param Projet $projet The projet entity
-     *
+     * @Security("has_role('ROLE_ADMIN')")
      * @return \Symfony\Component\Form\Form The form
      */
     private function createDeleteForm(Projet $projet)

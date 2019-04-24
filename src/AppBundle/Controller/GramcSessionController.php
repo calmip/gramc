@@ -81,7 +81,7 @@ class GramcSessionController extends Controller
 {
     /**
      * @Route("/admin/accueil",name="admin_accueil")
-     * @Security("has_role('ROLE_ADMIN') or has_role('ROLE_PRESIDENT')")
+     * @Security("has_role('ROLE_OBS') or has_role('ROLE_PRESIDENT')")
     **/
 
     public function adminAccueilAction()
@@ -258,9 +258,12 @@ class GramcSessionController extends Controller
 
         $experts    = AppBundle::getRepository(Individu::class)->findBy( ['expert' => true ] );
         $admins     = AppBundle::getRepository(Individu::class)->findBy( ['admin' => true ] );
-        $responsables       =  static::elements( AppBundle::getRepository(Individu::class)->getCollaborateurs(true) );
-        $collaborateurs     =  static::elements( AppBundle::getRepository(Individu::class)->getCollaborateurs(false) );
-        $users      = array_unique( array_merge( $admins, $experts, $responsables , $collaborateurs) );
+        $obs        = AppBundle::getRepository(Individu::class)->findby( ['obs' => true ] );
+        $sysadmins  = AppBundle::getRepository(Individu::class)->findby( ['sysadmin' => true ] );
+        $responsables   =  static::elements( AppBundle::getRepository(Individu::class)->getCollaborateurs(true) );
+        $collaborateurs =  static::elements( AppBundle::getRepository(Individu::class)->getCollaborateurs(false) );
+        $users          = array_unique( array_merge( $admins, $experts, $obs, $sysadmins, $responsables , $collaborateurs) );
+        sort($users);
 
         $form = $this->createFormBuilder($user )
         ->add('mail', EntityType::class,

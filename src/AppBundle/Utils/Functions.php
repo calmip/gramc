@@ -382,7 +382,17 @@ class Functions
                         $users  =  array_merge( $users, $new_users );
                         }
                     break;
-                case 'P': //président
+                case 'S': // sysadmin
+                    $new_users  =  AppBundle::getRepository(Individu::class)->findBy(['sysadmin'  =>  true ]);
+                    if(  $new_users == null )
+                        Functions::warningMessage(__METHOD__ . ":"  . __LINE__ .' Aucun sysadmin !');
+                    else
+                        {
+                        if( ! is_array( $new_users ) ) $new_users = $new_users->toArray();
+                        $users  =  array_merge( $users, $new_users );
+                        }
+                    break;
+                 case 'P': //président
                     $new_users  =   AppBundle::getRepository(Individu::class)->findBy(['president'  =>  true ]);
                     if(  $new_users == null )
                         Functions::warningMessage(__METHOD__ . ":" .  __LINE__ .' Aucun président !');
@@ -659,7 +669,7 @@ class Functions
 
     public static function projetACL(\AppBundle\Entity\Projet $projet)
     {
-        if (  AppBundle::isGranted('ROLE_ADMIN') ||  AppBundle::isGranted('ROLE_PRESIDENT'))
+        if (  AppBundle::isGranted('ROLE_OBS') ||  AppBundle::isGranted('ROLE_PRESIDENT'))
             return true;
         else
             return self::userProjetACL($projet);

@@ -238,8 +238,10 @@
                     </td>
                     <td>
                         {% if( item.responsable != null) %}
+                        {% if is_granted('ROLE_ADMIN') %}
                         <a class="sudo" href="{{ path('sudo',  { 'id': item.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                        {% endif %}
                         <a href="mailto:{{ item.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ item.responsable.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                         {{ item.responsable.prenom }} {{ item.responsable.nom }}
