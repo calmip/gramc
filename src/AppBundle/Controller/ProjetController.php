@@ -35,6 +35,7 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
 use AppBundle\Entity\CompteActivation;
 use AppBundle\Entity\Journal;
+use AppBundle\Entity\Compta;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -1077,22 +1078,106 @@ class ProjetController extends Controller
     if( ! Functions::projetACL( $projet ) )
             Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    \JpGraph\JpGraph::load();
-    \JpGraph\JpGraph::module('line');
-
     if( $annee == null )
         {
         $version    =   $projet->derniereVersion();
         $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
 
+    $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
+
+    \JpGraph\JpGraph::load();
+    \JpGraph\JpGraph::module('line');
+    \JpGraph\JpGraph::module('date');
+
+
+        $cpu = [];
+        $gpu = [];
+        $xdata = [];
+        $quota = [];
+        $somme = [];
+    
+        foreach( $db_data as $item )
+        {
+            if( $item->getRessource()== 'gpu' )
+                $gpu[] = $item->getConso();
+            elseif( $item->getRessource()== 'cpu' )
+                {
+                $cpu[] = $item->getConso();
+                $quota[] = $item->getQuota();
+                $xdata[] = $item->getDate()->getTimestamp();
+                }
+            else
+                continue;
+        }
+
+        foreach( $cpu as $id => $item )
+            $somme[$id] = $cpu[$id] + $gpu[$id];
+    
+        // Create the new graph
+        $graph = new \Graph(540,300);
+        
+        //$graph = new \Graph(600,400);
+        // Slightly larger than normal margins at the bottom to have room for
+        // the x-axis labels
+        $graph->SetMargin(70,40,30,130);
+     
+        // Fix the Y-scale to go between [0,100] and use date for the x-axis
+        $graph->SetScale('datlin',0,100);
+        $graph->SetScale('datlin');
+        $graph->xaxis->scale->SetDateFormat("d-m-y");
+        
+        $graph->SetTickDensity( \TICKD_SPARSE, \TICKD_SPARSE );
+        //$graph->xaxis->scale->AdjustForDST(false);
+        $graph->xaxis->scale->SetDateAlign(\DAYADJ_1);
+        //$graph->xaxis->scale->ticks->Set(8,2);
+        //$graph->title->Set("Example on Date scale");
+     
+        // Set the angle for the labels to 90 degrees
+        $graph->xaxis->SetLabelAngle(90);
+     
+        $line = new \LinePlot($cpu,$xdata);
+        //$line->SetLegend('Year 2005');
+        $line->SetFillColor('lightblue@0.5');
+        $graph->Add($line);
+        
+        $line = new \LinePlot($gpu,$xdata);
+        //$line->SetLegend('Year 2005');
+        $line->SetFillColor('lightblue@0.5');
+        $graph->Add($line);
+
+         $line = new \LinePlot($somme,$xdata);
+        //$line->SetLegend('Year 2005');
+        $line->SetFillColor('lightblue@0.5');
+        $graph->Add($line);
+        
+        $line = new \LinePlot($quota,$xdata);
+        //$line->SetLegend('Year 2005');
+        $line->SetFillColor('lightblue@0.5');
+        $graph->Add($line);
+        
+        ob_start();
+        $graph->Stroke();
+        $image_data = ob_get_contents();
+        ob_end_clean();
+
+        $image = base64_encode($image_data);
+
+    $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
+    $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
+
+    return new Response($body);
+
+
+    
+    ////////////////////////////////////////////////
+    //return new Response();
     $consommation = AppBundle::getRepository(Consommation::class)->findOneBy(
                         [
                         'projet' => $projet,
                         'annee' => $annee
                         ]
                     );
-
     if( $consommation == null )
         return new Response("Pas de consommation pour le projet " . $projet . " durant l'année " . $annee);
 
