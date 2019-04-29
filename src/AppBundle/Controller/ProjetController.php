@@ -1086,33 +1086,119 @@ class ProjetController extends Controller
 
     $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
 
+    
+    $debut = new \DateTime( $annee . '-01-01');
+    $debut = $debut->getTimestamp();
+    $fin   = new \DateTime( $annee . '-12-31');
+    $fin   = $fin->getTimestamp();
+
+    /*
+    $dates =[];
+    foreach( $db_data as $item )
+        $dates[ $item->getDate()->getTimestamp() ] = $item->getDate()->format("d F Y");
+    */
+
+    //return new Response( Functions::show( $dates ) );
+    
+    
+    $structured_data = [];
+
+    foreach( $db_data as $item )
+        {
+        $key = $item->getDate()->getTimestamp();
+        if( $key < $debut || $key > $fin ) continue;
+        
+        if ( array_key_exists (  $key , $structured_data ) )
+            {
+            $structured_data[$key][$item->getRessource()] = $item->getConso();
+            $quota1 = $structured_data[$key]['quota'];
+            $quota2 = $item->getQuota();
+            if( $quota1 != $quota2 )
+                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
+            $structured_data[$key]['quota'] = $quota2;
+            }
+        else
+            {
+            $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
+            $structured_data[$key] = $data;
+            
+            }
+        }
+
+    // je remplis des trous gpu ou cpu et je test s'il y a cpu et qpu
+
+    $no_cpu = true;
+    $no_gpu = true;
+    $no_quota = true;
+
+    foreach( $structured_data as $key => $item )
+        {
+        if( ! array_key_exists ( 'gpu' , $item ) )
+            $structured_data[$key]['gpu'] = 0;
+        elseif ( $structured_data[$key]['gpu']  > 0 )
+            $no_gpu = false;
+        if ( ! array_key_exists ( 'cpu' , $item ) )
+            $structured_data[$key]['cpu'] = 0;
+        elseif ( $structured_data[$key]['cpu'] > 0 )
+            $no_cpu = false;
+        if ( ! array_key_exists ( 'quota' , $item ) )
+            $structured_data[$key]['quota'] = 0;
+        elseif ( $structured_data[$key]['quota'] > 0 )
+            $no_quota = false;
+        $structured_data[$key]['somme'] = $structured_data[$key]['cpu'] + $structured_data[$key]['gpu'];
+        }
+
+    // recherche de la remise à zéro dans les 20 premiers jours
+
+    $remise_a_zero = null;
+    $i = 20;
+    $somme_precedente = 0;
+
+    foreach( $structured_data as $key => $item )
+        {
+        if ( $i < 0 )   break;
+        if ( $somme_precedente > $structured_data[$key]['somme'] )
+            {
+            $remise_a_zero = $key;
+            break;
+            }
+        $somme_precedente = $structured_data[$key]['somme'];
+        }
+
+    // annulation avant la remise à zéro
+
+    foreach( $structured_data as $key => $item )
+        {
+        if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
+        $structured_data[$key]['gpu'] = 0;
+        $structured_data[$key]['cpu'] = 0;
+        $structured_data[$key]['quota'] = 0;
+        $structured_data[$key]['somme'] = 0;
+        }
+
+    // création des tables
+
+    $cpu = [];
+    $gpu = [];
+    $xdata = [];
+    $quota = [];
+    $somme = [];
+
+    foreach( $structured_data as $key => $item )
+        {
+        $xdata[]    =   $key;
+        $cpu[]      =   $structured_data[$key]['cpu'];
+        $gpu[]      =   $structured_data[$key]['gpu'];
+        $somme[]      =   $structured_data[$key]['somme'];
+        $quota[]      =   $structured_data[$key]['quota'];
+        }
+        
+    
+
     \JpGraph\JpGraph::load();
     \JpGraph\JpGraph::module('line');
     \JpGraph\JpGraph::module('date');
 
-
-        $cpu = [];
-        $gpu = [];
-        $xdata = [];
-        $quota = [];
-        $somme = [];
-    
-        foreach( $db_data as $item )
-        {
-            if( $item->getRessource()== 'gpu' )
-                $gpu[] = $item->getConso();
-            elseif( $item->getRessource()== 'cpu' )
-                {
-                $cpu[] = $item->getConso();
-                $quota[] = $item->getQuota();
-                $xdata[] = $item->getDate()->getTimestamp();
-                }
-            else
-                continue;
-        }
-
-        foreach( $cpu as $id => $item )
-            $somme[$id] = $cpu[$id] + $gpu[$id];
     
         // Create the new graph
         $graph = new \Graph(540,300);
@@ -1136,25 +1222,44 @@ class ProjetController extends Controller
         // Set the angle for the labels to 90 degrees
         $graph->xaxis->SetLabelAngle(90);
      
+        if( $no_cpu == false )
+        {
         $line = new \LinePlot($cpu,$xdata);
-        //$line->SetLegend('Year 2005');
-        $line->SetFillColor('lightblue@0.5');
+        $line->SetLegend('CPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("green");
         $graph->Add($line);
+        }
         
+        if( $no_gpu == false )
+        {
         $line = new \LinePlot($gpu,$xdata);
-        //$line->SetLegend('Year 2005');
-        $line->SetFillColor('lightblue@0.5');
+        $line->SetLegend('GPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("blue");
         $graph->Add($line);
+        }
 
-         $line = new \LinePlot($somme,$xdata);
-        //$line->SetLegend('Year 2005');
-        $line->SetFillColor('lightblue@0.5');
+        if( $no_gpu == false && $no_cpu  == false )
+        {
+        $line = new \LinePlot($somme,$xdata);
+        $line->SetLegend('GPU + CPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("black");
         $graph->Add($line);
+        }
         
+        if( $no_quota == false )
+        {
         $line = new \LinePlot($quota,$xdata);
-        //$line->SetLegend('Year 2005');
-        $line->SetFillColor('lightblue@0.5');
+        $line->SetLegend('Quota');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("red");
         $graph->Add($line);
+        }
+        
+        $graph ->legend->Pos( 0.05,0.05,"right" ,"center");
+        $graph-> legend-> SetColumns(4);
         
         ob_start();
         $graph->Stroke();

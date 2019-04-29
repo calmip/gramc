@@ -23,7 +23,8 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             'SELECT c
             FROM AppBundle:Compta c
             WHERE c.loginname = :loginname
-            AND c.date BETWEEN :debut AND :fin
+            AND c.date >= :debut
+            AND c.date <= :fin
             ORDER BY c.date ASC'
         )
         ->setParameter('loginname', lcfirst($projet->getIdProjet() ) )
