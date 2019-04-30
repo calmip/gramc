@@ -15,6 +15,10 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
 {
 
     public function conso(Projet $projet, $annee)
+    /* Renvoie les données de conso d'un projet sur une année
+     * On ne s'intéresse qu'aux lignes de type 2, c'est-à-dire "group"
+     * Les données de type 1 (user) sont ignorées
+     */
     {
         $debut = new \DateTime( $annee . '-01-01');
         $fin   = new \DateTime( $annee . '-12-31');
@@ -23,6 +27,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             'SELECT c
             FROM AppBundle:Compta c
             WHERE c.loginname = :loginname
+            AND c.type = 2
             AND c.date >= :debut
             AND c.date <= :fin
             ORDER BY c.date ASC'
