@@ -235,6 +235,14 @@ div.projet .field {
 
 }
 
+/* Table page projets par session */
+table#table_projets_session img.conso {
+	width: 15px;
+}
+table#table_projets_session a {
+	text-decoration: none;
+}
+
 /* div de classe publis */
 div.publis {
 	width: 90%;
@@ -938,6 +946,7 @@ div.ui-dialog {
 	border : none;
 	background : none;
 }
+
 
 #affecte_experts select {
 	width: 150px;
