@@ -3,9 +3,11 @@
 
 {% block myjavascripts %}
 <script  type="text/javascript" src="{{ asset('js/projets_experts.js') }}" ></script>
+<script  type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
 {% endblock myjavascripts %}
 
 {% block body %}
+<div id="dialog-compta"></div>
 <section>
     <h2>Projets de la session {{ session }}</h2>
 
@@ -198,7 +200,7 @@
             <th title="Nouveaux projets">N</th>
             <th></th>
             <th>N°</th>
-            <th></th>
+            <th>&nbsp;</th>
             <th title="Etat">E</th>
             <th>titre</th>
             <th>Thématique</th>
@@ -248,14 +250,17 @@
             <td>{{ version.projet.idProjet }}</td>
             <td>
                 <a href="{{ path('consulter_version', { 'id': version.projet.idProjet, 'version': version.idVersion }) }}" title="Consulter le projet">
-                <img src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
-                </a>
+                <img src="{{ asset('icones/consulter.png') }}" alt="Consulter" /></a>
                 {% if( version.projet.derniereVersion.isEdited ) %}
                    <a href="{{ path('version_avant_supprimer',
-                    { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
-                       <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" />
-                   </a>
+                   { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
+                   <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>
                 {% endif %}
+                <img id="bconso_{{ version.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
+                title="{{ version.projet.idProjet }}: Evolution de la consommation pour {{version.anneeSession}}" alt="{{ version.projet.idProjet }}: Evolution de la consommation pour {{version.anneeSession}}"
+                    data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : version.anneeSession })) }}" />
+
+ 
             </td>
            	 <td class="{{ version.projet.metaEtat | lower }}">{{ gramcmacros.metagraph(version.projet.metaetat) }}</td>
             <td>

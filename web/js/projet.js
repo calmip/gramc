@@ -55,12 +55,12 @@ $( document ).ready(function() {
 		})
 	.done(function(data)
 	    {
-	    $('#dialog').html(data);
-	    $('#dialog').dialog({autoOpen: false, modal: false });
-	    $('#dialog').dialog( "option", "title", img_alt );
-	    $('#dialog').dialog( "option", "height", 'auto' );
-	    $('#dialog').dialog( "option", "width", 'auto' );
-	    $('#dialog').dialog('open');
+	    $('#dialog-compta').html(data);
+	    $('#dialog-compta').dialog({autoOpen: false, modal: false });
+	    $('#dialog-compta').dialog( "option", "title", img_alt );
+	    $('#dialog-compta').dialog( "option", "height", 'auto' );
+	    $('#dialog-compta').dialog( "option", "width", 'auto' );
+	    $('#dialog-compta').dialog('open');
 	    })
 	});
     

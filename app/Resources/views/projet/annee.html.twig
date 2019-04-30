@@ -9,7 +9,7 @@
 
 {% block body %}
 
-<div id="dialog"></div>
+<div id="dialog-compta"></div>
 
 <section>
     <h2>Projets de l'année {{ annee }}</h2>
@@ -266,7 +266,7 @@
                 </td>
                 <td class="w15">
                     <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
-                    title="Evolution de la consommation" alt="Evolution de la consommation"
+                    title="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}" alt="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}"
                     data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
                 </td>
                 <td class="w170">
