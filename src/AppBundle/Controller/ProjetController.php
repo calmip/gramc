@@ -35,6 +35,7 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
 use AppBundle\Entity\CompteActivation;
 use AppBundle\Entity\Journal;
+use AppBundle\Entity\Compta;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -1077,22 +1078,211 @@ class ProjetController extends Controller
     if( ! Functions::projetACL( $projet ) )
             Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    \JpGraph\JpGraph::load();
-    \JpGraph\JpGraph::module('line');
-
     if( $annee == null )
         {
         $version    =   $projet->derniereVersion();
         $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
 
+    $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
+
+    
+    $debut = new \DateTime( $annee . '-01-01');
+    $debut = $debut->getTimestamp();
+    $fin   = new \DateTime( $annee . '-12-31');
+    $fin   = $fin->getTimestamp();
+
+    /*
+    $dates =[];
+    foreach( $db_data as $item )
+        $dates[ $item->getDate()->getTimestamp() ] = $item->getDate()->format("d F Y");
+    */
+
+    //return new Response( Functions::show( $dates ) );
+    
+    
+    $structured_data = [];
+
+    foreach( $db_data as $item )
+        {
+        $key = $item->getDate()->getTimestamp();
+        if( $key < $debut || $key > $fin ) continue;
+        
+        if ( array_key_exists (  $key , $structured_data ) )
+            {
+            $structured_data[$key][$item->getRessource()] = $item->getConso();
+            $quota1 = $structured_data[$key]['quota'];
+            $quota2 = $item->getQuota();
+            if( $quota1 != $quota2 )
+                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
+            $structured_data[$key]['quota'] = $quota2;
+            }
+        else
+            {
+            $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
+            $structured_data[$key] = $data;
+            
+            }
+        }
+
+    // je remplis des trous gpu ou cpu et je test s'il y a cpu et qpu
+
+    $no_cpu = true;
+    $no_gpu = true;
+    $no_quota = true;
+
+    foreach( $structured_data as $key => $item )
+        {
+        if( ! array_key_exists ( 'gpu' , $item ) )
+            $structured_data[$key]['gpu'] = 0;
+        elseif ( $structured_data[$key]['gpu']  > 0 )
+            $no_gpu = false;
+        if ( ! array_key_exists ( 'cpu' , $item ) )
+            $structured_data[$key]['cpu'] = 0;
+        elseif ( $structured_data[$key]['cpu'] > 0 )
+            $no_cpu = false;
+        if ( ! array_key_exists ( 'quota' , $item ) )
+            $structured_data[$key]['quota'] = 0;
+        elseif ( $structured_data[$key]['quota'] > 0 )
+            $no_quota = false;
+        $structured_data[$key]['somme'] = $structured_data[$key]['cpu'] + $structured_data[$key]['gpu'];
+        }
+
+    // recherche de la remise à zéro dans les 20 premiers jours
+
+    $remise_a_zero = null;
+    $i = 20;
+    $somme_precedente = 0;
+
+    foreach( $structured_data as $key => $item )
+        {
+        if ( $i < 0 )   break;
+        if ( $somme_precedente > $structured_data[$key]['somme'] )
+            {
+            $remise_a_zero = $key;
+            break;
+            }
+        $somme_precedente = $structured_data[$key]['somme'];
+        }
+
+    // annulation avant la remise à zéro
+
+    foreach( $structured_data as $key => $item )
+        {
+        if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
+        $structured_data[$key]['gpu'] = 0;
+        $structured_data[$key]['cpu'] = 0;
+        $structured_data[$key]['quota'] = 0;
+        $structured_data[$key]['somme'] = 0;
+        }
+
+    // création des tables
+
+    $cpu = [];
+    $gpu = [];
+    $xdata = [];
+    $quota = [];
+    $somme = [];
+
+    foreach( $structured_data as $key => $item )
+        {
+        $xdata[]    =   $key;
+        $cpu[]      =   $structured_data[$key]['cpu'];
+        $gpu[]      =   $structured_data[$key]['gpu'];
+        $somme[]      =   $structured_data[$key]['somme'];
+        $quota[]      =   $structured_data[$key]['quota'];
+        }
+        
+    
+
+    \JpGraph\JpGraph::load();
+    \JpGraph\JpGraph::module('line');
+    \JpGraph\JpGraph::module('date');
+
+    
+        // Create the new graph
+        $graph = new \Graph(540,300);
+        
+        //$graph = new \Graph(600,400);
+        // Slightly larger than normal margins at the bottom to have room for
+        // the x-axis labels
+        $graph->SetMargin(70,40,30,130);
+     
+        // Fix the Y-scale to go between [0,100] and use date for the x-axis
+        $graph->SetScale('datlin',0,100);
+        $graph->SetScale('datlin');
+        $graph->xaxis->scale->SetDateFormat("d-m-y");
+        
+        $graph->SetTickDensity( \TICKD_SPARSE, \TICKD_SPARSE );
+        //$graph->xaxis->scale->AdjustForDST(false);
+        $graph->xaxis->scale->SetDateAlign(\DAYADJ_1);
+        //$graph->xaxis->scale->ticks->Set(8,2);
+        //$graph->title->Set("Example on Date scale");
+     
+        // Set the angle for the labels to 90 degrees
+        $graph->xaxis->SetLabelAngle(90);
+     
+        if( $no_cpu == false )
+        {
+        $line = new \LinePlot($cpu,$xdata);
+        $line->SetLegend('CPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("green");
+        $graph->Add($line);
+        }
+        
+        if( $no_gpu == false )
+        {
+        $line = new \LinePlot($gpu,$xdata);
+        $line->SetLegend('GPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("blue");
+        $graph->Add($line);
+        }
+
+        if( $no_gpu == false && $no_cpu  == false )
+        {
+        $line = new \LinePlot($somme,$xdata);
+        $line->SetLegend('GPU + CPU');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("black");
+        $graph->Add($line);
+        }
+        
+        if( $no_quota == false )
+        {
+        $line = new \LinePlot($quota,$xdata);
+        $line->SetLegend('Quota');
+        //$line->SetFillColor('lightblue@0.5');
+        $line->SetColor("red");
+        $graph->Add($line);
+        }
+        
+        $graph ->legend->Pos( 0.05,0.05,"right" ,"center");
+        $graph-> legend-> SetColumns(4);
+        
+        ob_start();
+        $graph->Stroke();
+        $image_data = ob_get_contents();
+        ob_end_clean();
+
+        $image = base64_encode($image_data);
+
+    $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
+    $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
+
+    return new Response($body);
+
+
+    
+    ////////////////////////////////////////////////
+    //return new Response();
     $consommation = AppBundle::getRepository(Consommation::class)->findOneBy(
                         [
                         'projet' => $projet,
                         'annee' => $annee
                         ]
                     );
-
     if( $consommation == null )
         return new Response("Pas de consommation pour le projet " . $projet . " durant l'année " . $annee);
 
