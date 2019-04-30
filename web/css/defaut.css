@@ -857,7 +857,7 @@ canvas {
 	font-style: italic;
 }
 
-/* Dialogue .graphique (courbes de consommation) */
+/* Dialogue graphique (courbes de consommation) */
 div.ui-dialog {
 	box-shadow: 10px 10px 5px #888888;
 }
@@ -865,7 +865,10 @@ div.ui-dialog {
 #graph0,#graph1,#graph2,#graph3,#graph4,#graph5,#graph6,#graph7,#graph8  {
 	background-color: silver;
 }
-
+/* TODO - Passer plutôt par des classes et homogéniser tout ça, c'est le bordel */
+#dialog-compta img,#graph_1 img, #graph_2 img {
+	width: 100%;
+}
 
 
 #tab_incoh_utilisateurs_statut a, #tab_pb_login a, #tab_incoh_utilisateurs_etablissement a{

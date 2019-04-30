@@ -60,11 +60,11 @@
     <div id="menu_expertiser" class="center">
         {% if not version.projet.projettest and not version.isNouvelle %}
         <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
-        alt="Consommation de l'année dernière" title="Visualiser la consommation de l'année dernière"
+        alt="Consommation de l'année dernière ({{anneePrec}})" title="Visualiser la consommation de l'année dernière ({{anneePrec}})"
         data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
             {% if version.session.libelleTypeSession == 'B' %}
             <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
-            alt="Consommation de cette année" title="Visualiser la consommation de cette année"
+            alt="Consommation de cette année ({{anneeCour}})" title="Visualiser la consommation de cette année ({{anneeCour}})"
             data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneeCour })) }}" />
             {% endif %}
         {% endif %}
