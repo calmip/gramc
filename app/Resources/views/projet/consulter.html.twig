@@ -67,7 +67,16 @@
 </div>
 {%  endif %}
 
+<div class="lien-pdf">
+    <img id="bconso" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation {{version.getAnneeSession}}" title="Visualiser la consommation {{version.getAnneeSession}}"
+        data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : version.getAnneeSession })) }}"/>
+</div>
 
+{# Pour les graphiques de conso #}
+<div id="dialog-compta"></div>
+
+{# Pour les figures #}
 <div id="dialog"></div>
 
 <h2>
