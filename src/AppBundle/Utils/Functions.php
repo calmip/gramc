@@ -847,18 +847,21 @@ class Functions
             {
             if( file_exists( $dir ) && is_file( $dir ) ) unlink( $dir );
             mkdir( $dir );
-            Functions::warningMessage("fig_directory " . $dir . " cré !");
+            Functions::warningMessage("fig_directory " . $dir . " créé !");
             }
 
     $dir  .= '/'. $version->getProjet()->getIdProjet();
+    //Functions::debugMessage($dir);
 
     if( ! is_dir ( $dir ) )
             {
+
             if( file_exists( $dir ) && is_file( $dir ) ) unlink( $dir );
             mkdir( $dir );
             }
 
     $dir  .= '/'. $version->getIdVersion();
+    //Functions::debugMessage($dir);
 
     if( ! is_dir ( $dir ) )
             {
