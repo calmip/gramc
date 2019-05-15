@@ -484,6 +484,8 @@ class IndividuController extends Controller
     public function devenirAdminAction(Request $request, Individu $individu)
     {
         $individu->setAdmin(true);
+        $individu->setObs(false);    // Pas la peine d'être Observateur si on est admin !
+
         $em = $this->getDoctrine()->getManager();
         $em->persist($individu);
         $em->flush($individu);
@@ -522,6 +524,7 @@ class IndividuController extends Controller
     public function devenirObsAction(Request $request, Individu $individu)
     {
         $individu->setObs(true);
+        $individu->setAdmin(false); // Si on devient Observateur on n'est plus admin !
         $em = $this->getDoctrine()->getManager();
         $em->persist($individu);
         $em->flush($individu);
