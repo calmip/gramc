@@ -256,9 +256,16 @@
                    { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
                    <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>
                 {% endif %}
-                <img id="bconso_{{ version.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
-                title="{{ version.projet.idProjet }}: Evolution de la consommation pour {{version.anneeSession}}" alt="{{ version.projet.idProjet }}: Evolution de la consommation pour {{version.anneeSession}}"
-                    data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : version.anneeSession })) }}" />
+                {% if( not version.isNouvelle() ) %}
+                    {% if version.typeSession=='A' %}
+                        {% set annee_conso = version.anneeSession - 1 %}
+                    {% else %}
+                        {% set annee_conso = version.anneeSession %}
+                    {% endif %}
+                    <img id="bconso_{{ version.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
+                    title="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}" alt="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}"
+                        data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : annee_conso })) }}" />
+                {% endif %}
 
  
             </td>
@@ -318,7 +325,6 @@
                 <td>-</td>
                 {% endif %}
             {% if( showRapport ==true ) %}
-
                 {% if( version.isNouvelle() ) %}
                     <td  class="rapport_activite">N/A
                 {% elseif version.sizeRapport == 0 %}
@@ -327,7 +333,6 @@
                     <td  class="rapport_activite">
                     <a href="{{ path('rapport',  { 'id': version.idVersion }) }}?">
                     <img src="{{ asset('icones/pdf.png') }}" alt="Fichier pdf" /></a>
-                    {# <small>({{ version.prjFicheLen }}K)</small> #}
                     <small>({{ version.sizeRapport }}K)</small>
                 {% endif %}
                 </td>
