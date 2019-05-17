@@ -152,20 +152,35 @@
     </tbody>
 </table>
 
+{% set conso_cpu = version.projet.consoressource('cpu') %}
+{% set conso_gpu = version.projet.consoressource('gpu') %}
+{% set conso     = conso_cpu[0] + conso_gpu[0] %}
+{% set quota     = conso_cpu[1]                %}
+{% if  quota != 0 %} {% set consop=100.0*conso/quota %}
+{% else           %} {% set consop=0                 %}
+{% endif %}
+                
 <table class="projet">
 <tbody>
         <tr>
             <th class="horiz">Quota machine d'heures allouées pour {{ session.getAnneeSession() + 2000 }} <br>
             </th>
-            <td>{{ version.data.quota }}</td>
+            <td>{# {{ version.data.quota }} #}{{quota}}</td>
         </tr>
         <tr>
             <th class="horiz">Nombre d'heures consommées<br>
                 <span class="petit">depuis le début de {{ session.getAnneeSession() + 2000 }}</span>
             </th>
-            <td>{{ version.data.conso }}
+            {# TODOPOLITIQUE #}
+            <td>{# {{ version.data.conso }}
                 {% if(version.getQuota > 0) %}
                     ({{ (version.data.conso * 100 / version.data.quota) |number_format(1)}} %)
+                {% endif %}
+                <br /> #}
+
+                {{ conso }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
+                {% if conso_gpu[0] != 0 %}
+                - cpu={{conso_cpu[0]}} gpu={{conso_gpu[0]}} ({{(100*conso_cpu[0]/conso)|number_format(1)}}% {{(100*conso_gpu[0]/conso)|number_format(1)}}%)
                 {% endif %}
             </td>
         </tr>

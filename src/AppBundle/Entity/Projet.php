@@ -32,6 +32,7 @@ use AppBundle\Utils\Functions;
 use AppBundle\Entity\Version;
 use AppBundle\Entity\Expertise;
 use AppBundle\Entity\CollaborateurVersion;
+use AppBundle\Utils\GramcDate;
 
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -717,7 +718,45 @@ class Projet
     return null;
     }
 
-    // calcul de la consommation à partir de la table Consommation
+    // calcul de la consommation et du quota d'une ressource à partir de la table compta
+    // Si $annee==null -> On prend l'annee courante
+    // Si $annee==annee courante -> On prend l'info à la DATE DU JOUR
+    // Si $annee==autre année    -> On prend l'info au 31 Décembre
+    // Renvoie [ $conso, $quota ]
+    // NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
+    public function getConsoRessource($ressource, $annee=null)
+    {
+        $annee_courante = GramcDate::get()->showYear();
+        if ($annee==null) $annee = $annee_courante;
+        if ($annee==$annee_courante) 
+        {
+            $date = new \DateTime();
+        } 
+        else 
+        {
+            $date = new \DateTime( $annee . '-12-31');
+        }
+        $loginName = strtolower($this->getIdProjet());
+        $conso     = 0;
+        $quota     = 0;
+        $consop    = 0;
+        $compta    = AppBundle::getRepository(Compta::class)->findOneBy(
+                                                [
+                                                    'date'      => $date,
+                                                    'ressource' => $ressource,
+                                                    'loginname' => $loginName,
+                                                    'type'      => 2
+                                                ]);
+        if ($compta != null)
+        {
+            $conso = $compta->getConso();
+            $quota = $compta->getQuota();
+        }
+        
+        return [$conso, $quota];
+    }
+            
+    // TODOCONSOMMATION - calcul de la consommation à partir de la table Consommation
     public function getConso($annee)
     {
         $consommation   =   $this->getConsommation($annee);
@@ -737,6 +776,7 @@ class Projet
         }
         return $conso;
     }
+    
     public function getConsommation($annee)
     {
         return AppBundle::getRepository(Consommation::class)->findOneBy(

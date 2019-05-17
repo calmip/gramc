@@ -2913,7 +2913,7 @@ class Version
     }
 
     // calcul de la consommation à partir de la table Consommation juste pour une session
-
+    // TODOCONSOMMATION - Est  utilisé seulement pour les statistiques
     public function getConsoSession()
     {
         $consommation   =   $this->getConsommation();
