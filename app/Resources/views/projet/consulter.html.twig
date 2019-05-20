@@ -152,8 +152,8 @@
     </tbody>
 </table>
 
-{% set conso_cpu = version.projet.consoressource('cpu') %}
-{% set conso_gpu = version.projet.consoressource('gpu') %}
+{% set conso_cpu = version.projet.consoressource('cpu',version.anneesession) %}
+{% set conso_gpu = version.projet.consoressource('gpu',version.anneesession) %}
 {% set conso     = conso_cpu[0] + conso_gpu[0] %}
 {% set quota     = conso_cpu[1]                %}
 {% if  quota != 0 %} {% set consop=100.0*conso/quota %}
@@ -177,7 +177,6 @@
                     ({{ (version.data.conso * 100 / version.data.quota) |number_format(1)}} %)
                 {% endif %}
                 <br /> #}
-
                 {{ conso }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
                 {% if conso_gpu[0] != 0 %}
                 - cpu={{conso_cpu[0]}} gpu={{conso_gpu[0]}} ({{(100*conso_cpu[0]/conso)|number_format(1)}}% {{(100*conso_gpu[0]/conso)|number_format(1)}}%)
