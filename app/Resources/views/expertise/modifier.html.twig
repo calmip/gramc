@@ -67,7 +67,7 @@
         </a>
         {%  endif %}
         <a href="{{ path('consulter_publications', { 'id' : version.projet }) }}"  target="_blank" >
-            <img class="bouton_poussoir" src="{{ asset('icones/pdf64.png') }}" alt="Publications" title="Publications associées au projet version.idProjet" />
+            <img class="bouton_poussoir" src="{{ asset('icones/publis.png') }}" alt="Publications" title="Publications associées au projet version.idProjet" />
         </a>
 
         {% if not version.projet.projettest and not version.isNouvelle %}
