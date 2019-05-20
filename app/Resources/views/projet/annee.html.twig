@@ -194,6 +194,18 @@
 
 </div>
 
+{#
+<div class="lien-pdf">
+    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
+        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee })) }}"/>
+</div>
+<div class="lien-pdf">
+    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
+        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee })) }}"/>
+</div>
+#}
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
