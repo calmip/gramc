@@ -1006,6 +1006,15 @@ class Functions
      * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
      *
      */
+    private function ppa_conso(&$p,&$annee) {
+        $conso_cpu = $p['p']->getConsoRessource('cpu',$annee);
+        $conso_gpu = $p['p']->getConsoRessource('gpu',$annee);
+        $p['c'] = $conso_cpu[0]+$conso_gpu[0];
+        $p['g'] = $conso_gpu[0];
+        $p['q'] = $conso_gpu[1];
+        $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+    }
+    
     public function projetsParAnnee($annee,$isRecupPrintemps=false,$isRecupAutomne=false)
     {
         // Données consolidées
@@ -1058,6 +1067,8 @@ class Functions
         }
 
         $projets= [];
+
+        // Boucle sur les versions de la session A
         foreach ( $versions_A as $v)
         {
             $p_id = $v->getProjet()->getIdProjet();
@@ -1107,29 +1118,56 @@ class Functions
                 }
             }
 
-            $c = $consommation_repo->getConsommation($p['p'],$annee);
-            if ( $c == null)
-            {
-                $p['c'] = 0;
-                $p['q'] = 0;
-                $p['cp']= 0;
-                $p['recuperable'] = 0;
-            } else {
-                $p['c']      = $c->conso();
-                $p['q']      = $c->getLimite();
-                $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
 
-                if ($isRecupPrintemps==true) {
-                    $p['recuperable'] = SessionController::calc_recup_heures_printemps($c->conso(),intval($p['attrib'])+intval($p['r']));
-                    $total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-                } else {
-                    $p['recuperable'] = 0;
-                }
-                $total['consoHeuresP'] += $c->conso();
+            //$c = $consommation_repo->getConsommation($p['p'],$annee);
+            //if ( $c == null)
+            //{
+                //$p['c'] = 0;
+                //$p['q'] = 0;
+                //$p['cp']= 0;
+                //$p['recuperable'] = 0;
+            //} else {
+                //$p['c']      = $c->conso();
+                //$p['q']      = $c->getLimite();
+                //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+
+                //if ($isRecupPrintemps==true) {
+                    //$p['recuperable'] = SessionController::calc_recup_heures_printemps($c->conso(),intval($p['attrib'])+intval($p['r']));
+                    //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
+                //} else {
+                    //$p['recuperable'] = 0;
+                //}
+                //$total['consoHeuresP'] += $c->conso();
+            //}
+
+//            $p['c'] = 0;
+//            $p['q'] = 0;
+  //          $p['g'] = 0;
+    //        $p['cp']= 0;
+//            $conso_cpu = $p['p']->getConsoRessource('cpu',$annee);
+//            $conso_gpu = $p['p']->getConsoRessource('gpu',$annee);
+//            $p['c'] = $conso_cpu[0]+$conso_gpu[0];
+//            $p['g'] = $conso_gpu[0];
+//            $p['q'] = $conso_gpu[1];
+//            $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+
+            // La conso
+            Functions::ppa_conso($p,$annee);
+            $total['consoHeuresP'] += $p['c'];
+
+            // Récup de Printemps
+            if ($isRecupPrintemps==true) {
+                $p['recuperable'] = SessionController::calc_recup_heures_printemps($p['c'],intval($p['attrib'])+intval($p['r']));
+                $total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
+            } else {
+                $p['recuperable'] = 0;
             }
 
             $projets[$p_id] = $p;
+
         }
+        
+        // Boucle sur les versions de la session B        
         foreach ( $versions_B as $v)
         {
             $p_id = $v->getProjet()->getIdProjet();
@@ -1143,19 +1181,20 @@ class Functions
                 $p['penal_a'] = 0;
                 $p['r']  = 0;
                 $p['attrib'] = 0;
-                $c           = $consommation_repo->getConsommation($p['p'],$annee);
-                if ( $c == null)
-                {
-                    $p['c'] = 0;
-                    $p['q'] = 0;
-                    $p['cp']= 0;
-                } else {
-                    $p['c']      = $c->conso();
-                    $total['consoHeuresP'] += $c->conso();
-                    $p['q']      = $c->getLimite();
-                    $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
-                }
-            }
+                //$c           = $consommation_repo->getConsommation($p['p'],$annee);
+                //if ( $c == null)
+                //{
+                    //$p['c'] = 0;
+                    //$p['q'] = 0;
+                    //$p['cp']= 0;
+                //} else {
+                    //$p['c']      = $c->conso();
+                    //$total['consoHeuresP'] += $c->conso();
+                    //$p['q']      = $c->getLimite();
+                    //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+                //}
+                //        $total['consoHeuresP'] += $p['c'];
+}
             $p['vb']      = $v;
             $rallonges    = $v->getRallonge();
             foreach ($rallonges as $r)
@@ -1184,9 +1223,6 @@ class Functions
             $p['penal_b'] = $v->getPenalHeures();
             $p['attrib'] -= $p['penal_b'];
 
-            // Pour le calcul des pénalités d'Automne
-            $p['attrete'] = $v->getAttrHeuresEte();
-
             if ($v->getEtatVersion() != Etat::EDITION_DEMANDE ) {
                 $total['demHeuresP']  += $v->getDemHeures();
                 $total['attrHeuresP'] += $v->getAttrHeures();
@@ -1196,27 +1232,46 @@ class Functions
                 $total['attrHeuresP'] -= $v->getPenalHeures();
             }
 
-            $c = $consommation_repo->getConsommation($p['p'],$annee);
-            if ( $c == null)
-            {
-                $p['c'] = 0;
-                $p['q'] = 0;
-                $p['cp']= 0;
-                $p['recuperable'] = 0;
-                $p['consoete']    = 0;
-            } else {
-                $p['c']      = $c->conso();
-                $p['q']      = $c->getLimite();
-                $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+            // La conso
+            Functions::ppa_conso($p,$annee);
+            $total['consoHeuresP'] += $p['c'];
 
-                if ($isRecupAutomne==true) {
-                    $p['consoete']    = $c->getM08()-$c->getM06();
-                    $p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
-                    $total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-                } else {
-                    $p['recuperable'] = 0;
-                }
+            // Pour le calcul des pénalités d'Automne
+            $p['attrete'] = $v->getAttrHeuresEte();
+
+            // TODO -> Penalites d'automne !
+            if ($isRecupAutomne==true) {
+                //$p['consoete']    = $c->getM08()-$c->getM06();
+                //$p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
+                //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
+                $p['recuperable'] = 0;
+            } else {
+                $p['recuperable'] = 0;
             }
+            
+
+            //$c = $consommation_repo->getConsommation($p['p'],$annee);
+            //if ( $c == null)
+            //{
+                //$p['c'] = 0;
+                //$p['q'] = 0;
+                //$p['cp']= 0;
+                //$p['recuperable'] = 0;
+                //$p['consoete']    = 0;
+            //} else {
+                //$p['c']      = $c->conso();
+                //$p['q']      = $c->getLimite();
+                //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+
+                //if ($isRecupAutomne==true) {
+                    //$p['consoete']    = $c->getM08()-$c->getM06();
+                    //$p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
+                    //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
+                //} else {
+                    //$p['recuperable'] = 0;
+                //}
+            //}
+            //$p['g'] = 3000000;
             $projets[$p_id] = $p;
         }
 

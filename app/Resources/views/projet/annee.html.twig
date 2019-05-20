@@ -197,7 +197,7 @@
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+4*15+3*170+11*80+ 19*20 + 20 + 20 %}
+{% set width=45+4*15+3*170+12*80+ 19*20 + 20 + 20 %}
 {% if isRecupPrintemps %}
    {% set width=80+45 + 2*20 + 35 + width %}
 {% endif %}
@@ -227,6 +227,7 @@
                 <th class="w80">Quota</th>
                 <th class="w80">Conso (h)</th>
                 <th class="w80">Conso (%)</th>
+                <th class="w80">Conso gpu</th>
                 {% if isRecupPrintemps %}
                     <th class="w80">Récupérables (h)</th>
                     <th class="w45">Récup</th>
@@ -341,6 +342,9 @@
                 </td>
                 <td class="w80" >
                     {{ "%5.1f" | format(prj_array.cp) }}
+                </td>
+                <td class="w80" >
+                    {{prj_array.g}}
                 </td>
 
                    {# Pénalités de printemps: On récupère des heures sur les sessions 'A' uniquement                #}

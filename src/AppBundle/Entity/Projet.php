@@ -734,7 +734,7 @@ class Projet
         } 
         else 
         {
-            $date = new \DateTime( $annee . '-12-31');
+            $date = new \DateTime( $annee . '-12-30');
         }
         $loginName = strtolower($this->getIdProjet());
         $conso     = 0;
