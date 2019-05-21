@@ -63,7 +63,7 @@
         </a>
         {% if ( version.hasRapport  and not ( version.isNouvelle ) ) %}
         <a href="{{ path('rapport', { 'id' : version.idVersion }) }}"  target="_blank">
-            <img class="bouton_poussoir" src="{{ asset('icones/pdf64.png') }}" alt="pdf" title="Rapport d'activité" />
+            <img class="bouton_poussoir" src="{{ asset('icones/pdf64.png') }}" alt="pdf" title="Rapport d'activité {{version.anneeRapport}}" />
         </a>
         {%  endif %}
         <a href="{{ path('consulter_publications', { 'id' : version.projet }) }}"  target="_blank" >

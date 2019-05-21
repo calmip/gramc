@@ -29,7 +29,8 @@
             <td>{% if( publication.annee > 0 ) %}{{ publication.annee }}{% endif %}</td>
             <td>
                 {% if( not publication.doi == '' ) %}
-                    <a href="http://dx.doi.org/{{ publication.doi }}" target="_blank">{{ publication.doi | truncate(20)}}</a>
+                    {% set doi = publication.doi|replace({'http://dx.doi.org/':'','http://doi.org/':'','https://dx.doi.org/':'','https://doi.org/':''}) %}
+                    <a href="https://dx.doi.org/{{ doi }}" target="_blank">{{ publication.doi | truncate(20)}}</a>
                 {% endif %}
             </td>
             <td>{% if( publication.openUrl != null ) %}<a href="{{ publication.openUrl }}">{{ publication.openUrl | truncate(20) }}</a>{% endif %}</td>

@@ -34,12 +34,12 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ demHeures }}</td>
+        <td>{{ demHeures|number_format(0, ',', ' ') }}</td>
         <td>&nbsp;</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ attrHeures }}</td>
+        <td>{{ attrHeures|number_format(0, ',', ' ') }}</td>
         <td>&nbsp;</td>
     </tr>
     <tr>
@@ -314,7 +314,7 @@
             </td>
             <td>{{ version.demHeures }}</td>
             <td>{{ version.attrHeures }}</td>
-            <td>{{ version.getConso() }}</td>
+            <td>{{ version.conso }}</td>
                 {% if version.issigne %}
                 <td class="prj_fiche_val">
                     <a href="{{ path('signature',  { 'id': version.idVersion }) }}?">

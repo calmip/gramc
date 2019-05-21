@@ -113,7 +113,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ versionPrec.data.getDemHeuresRallonge + versionPrec.data.getDemHeures }}</td>
+            <td>{{ (versionPrec.data.getDemHeuresRallonge + versionPrec.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -121,7 +121,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ version.data.getDemHeuresRallonge + version.data.getDemHeures }}
+            <td>{{ (version.data.getDemHeuresRallonge + version.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
             {% if toomuch %} <img src="{{ asset('icones/attention16.png') }}" alt="Demande trop forte, cf. règles d'attribution" title="Demande trop forte, cf. règles d'attribution" /> {% endif %}
             </td>
         </tr>
@@ -137,7 +137,7 @@
             <th class="horiz">Nombre d'heures attribuées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getDemHeures - versionPrec.data.penalHeures }}</td>
+            <td>{{ (versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getDemHeures - versionPrec.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -145,8 +145,8 @@
             <th class="horiz">Nombre d'heures attribuées session {{ session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ version.data.attrHeuresRallonge + version.data.attrHeures - version.data.penalHeures }}
-            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
+            <td>{{ (version.data.attrHeuresRallonge + version.data.attrHeures - version.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
+            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte }}|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
             </td>
         </tr>
     </tbody>
@@ -165,7 +165,7 @@
         <tr>
             <th class="horiz">Quota machine d'heures allouées pour {{ session.getAnneeSession() + 2000 }} <br>
             </th>
-            <td>{# {{ version.data.quota }} #}{{quota}}</td>
+            <td>{{quota|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw}}</td>
         </tr>
         <tr>
             <th class="horiz">Nombre d'heures consommées<br>
@@ -177,9 +177,9 @@
                     ({{ (version.data.conso * 100 / version.data.quota) |number_format(1)}} %)
                 {% endif %}
                 <br /> #}
-                {{ conso }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
+                {{ conso|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
                 {% if conso_gpu[0] != 0 %}
-                - cpu={{conso_cpu[0]}} gpu={{conso_gpu[0]}} ({{(100*conso_cpu[0]/conso)|number_format(1)}}% {{(100*conso_gpu[0]/conso)|number_format(1)}}%)
+                - cpu={{conso_cpu[0]|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw}} gpu={{conso_gpu[0]|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw}} ({{(100*conso_cpu[0]/conso)|number_format(1)}}% {{(100*conso_gpu[0]/conso)|number_format(1)}}%)
                 {% endif %}
             </td>
         </tr>
@@ -502,11 +502,11 @@ Le laboratoire associé au projet est le laboratoire du responsable
 <tbody>
         <tr>
             <th class="horiz">Nombre d'heures demandées</th>
-            <td>{{  version.demHeures }}</td>
+            <td>{{  version.demHeures|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         <tr>
             <th class="horiz">Nombre d'heures attribuées</th>
-            <td>{{  expertise.nbHeuresAtt }}</td>
+            <td>{{  expertise.nbHeuresAtt|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
 {% if not is_granted('ROLE_ADMIN') %}
         <tr>
@@ -536,11 +536,11 @@ Le laboratoire associé au projet est le laboratoire du responsable
 {% for r in version.rallonge %}
         <tr>
             <th class="horiz">Nombre d'heures demandées</th>
-            <td>{{  r.demHeures }}</td>
+            <td>{{  r.demHeures|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         <tr>
             <th class="horiz">Nombre d'heures attribuées</th>
-            <td>{{  r.nbHeuresAtt }}</td>
+            <td>{{  r.nbHeuresAtt|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
 {% if not is_granted('ROLE_ADMIN') %}
         <tr>
