@@ -1,0 +1,46 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block body %}
+
+<section>
+
+<h1>Publications associées au projet {{ projet }}</h1>
+
+<section>
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+<div>
+    <table  class="projet" id="publis_projet" >
+    <thead>
+        <tr>
+            <th>Réference</th>
+            <th>Année</th>
+            <th>doi</th>
+            <th>URL pour accès ouvert</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+    {% for publication in publications %}
+        <tr>
+            <td>{{ publication.refbib }}</td>
+            <td>{% if( publication.annee > 0 ) %}{{ publication.annee }}{% endif %}</td>
+            <td>
+                {% if( not publication.doi == '' ) %}
+                    {% set doi = publication.doi|replace({'http://dx.doi.org/':'','http://doi.org/':'','https://dx.doi.org/':'','https://doi.org/':''}) %}
+                    <a href="https://dx.doi.org/{{ doi }}" target="_blank">{{ publication.doi | truncate(20)}}</a>
+                {% endif %}
+            </td>
+            <td>{% if( publication.openUrl != null ) %}<a href="{{ publication.openUrl }}">{{ publication.openUrl | truncate(20) }}</a>{% endif %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    
+    </table>
+</div>
+    
+</section>
+          
+{% endblock body  %}

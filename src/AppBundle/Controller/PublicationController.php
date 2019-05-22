@@ -72,61 +72,77 @@ class PublicationController extends Controller
      * @Security("has_role('ROLE_DEMANDEUR')")
      */
     public function gererAction(Projet $projet, Request $request)
-        {
+    {
         $publication    = new Publication();
         $form = $this->createForm('AppBundle\Form\PublicationType', $publication);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid() )
-            {
+        {
             if( $publication->getIdPubli() != null )
-                {
+            {
                 Functions::noticeMessage( "PublicationController gererAction : La publication " . $publication->getIdPubli() . " est partagée par plusieurs projets");
                 $old = AppBundle::getRepository(Publication::class)->find( $publication->getIdPubli() );
                 if( $old->getRefbib() != $publication->getRefbib() )
-                    {
+                {
                     Functions::warningMessage("Changement de REFBIB de la publication " . $publication->getIdPubli() );
                     $old->setRefbib( $publication->getRefbib() );
-                    }
+                }
                 
                 if( $old->getDoi() != $publication->getDoi() )
-                    {
+                {
                     Functions::warningMessage("Changement de DOI de la publication " . $publication->getIdPubli() );
                     $old->setDoi( $publication->getDoi() );
-                    }
+                }
 
-                 if( $old->getOpenUrl() != $publication->getOpenUrl() )
-                    {
+                if( $old->getOpenUrl() != $publication->getOpenUrl() )
+                {
                     Functions::warningMessage("Changement de OpenUrl de la publication " . $publication->getIdPubli() );
                     $old->setOpenUrl( $publication->getOpenUrl() );
-                    }
+                }
 
-                 if( $old->getAnnee() != $publication->getAnnee() )
-                    {
+                if( $old->getAnnee() != $publication->getAnnee() )
+                {
                     Functions::warningMessage("Changement d'année de la publication " . $publication->getIdPubli() );
                     $old->setAnnee( $publication->getAnnee() );
-                    }
+                }
                 
                 $publication = $old;
-                }
+            }
                 
             $projet->addPubli( $publication );
             $publication->addProjet( $projet );
             Functions::sauvegarder( $publication );
             Functions::sauvegarder( $projet );
-            }
+        }
 
         $form = $this->createForm('AppBundle\Form\PublicationType', new Publication() ); // on efface le formulaire
             
         return $this->render( 'publication/liste.html.twig',
-            [
+        [
             'publications' => $projet->getPubli(),
             'form'  => $form->createView(),
             'projet'    => $projet,
-            ]
-            );
-        }
+        ]
+        );
+    }
+
+    /**
+     * @Route("/{id}/consulter",name="consulter_publications" )
+     * @Security("has_role('ROLE_EXPERT')")
+     */
+    public function consulterAction(Projet $projet, Request $request)
+    {
+            
+        return $this->render( 'publication/consulter.html.twig',
+        [
+            'publications' => $projet->getPubli(),
+            'projet'    => $projet,
+        ]
+        );
+    }
+
     /**
      * Creates a new publication entity.
      *
@@ -194,6 +210,7 @@ class PublicationController extends Controller
             'delete_form' => $deleteForm->createView(),
         ));
     }
+
 
     /**
      * Displays a form to edit an existing publication entity.

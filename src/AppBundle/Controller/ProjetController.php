@@ -1066,140 +1066,217 @@ class ProjetController extends Controller
     }
 
     /**
-     * Montre projets d'un utilisateur
+     * Affichage graphique de la consommation d'un projet
      *
      * @Route("/{id}/conso/{annee}", name="projet_conso")
      * @Method("GET")
      * @Security("has_role('ROLE_DEMANDEUR')")
      */
+    
     public function consoAction(Projet $projet, $annee = null)
     {
 
-    if( ! Functions::projetACL( $projet ) )
-            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+        // Seuls les collaborateurs du projet ont accès à la consommation
+        if( ! Functions::projetACL( $projet ) )
+                Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    if( $annee == null )
+        // Si année non spécifiée on prend l'année la plus récente du projet    
+        if( $annee == null )
         {
-        $version    =   $projet->derniereVersion();
-        $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
+            $version    =   $projet->derniereVersion();
+            $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
-
-    $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
-
-    
-    $debut = new \DateTime( $annee . '-01-01');
-    $debut = $debut->getTimestamp();
-    $fin   = new \DateTime( $annee . '-12-31');
-    $fin   = $fin->getTimestamp();
-
-    /*
-    $dates =[];
-    foreach( $db_data as $item )
-        $dates[ $item->getDate()->getTimestamp() ] = $item->getDate()->format("d F Y");
-    */
-
-    //return new Response( Functions::show( $dates ) );
-    
-    
-    $structured_data = [];
-
-    foreach( $db_data as $item )
-        {
-        $key = $item->getDate()->getTimestamp();
-        if( $key < $debut || $key > $fin ) continue;
         
-        if ( array_key_exists (  $key , $structured_data ) )
+        $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
+
+        // Conversion: tableau d'objets => tableau de tableaux
+        $debut = new \DateTime( $annee . '-01-01');
+        $debut = $debut->getTimestamp();
+        $fin   = new \DateTime( $annee . '-12-31');
+        $fin   = $fin->getTimestamp();
+        
+        $structured_data = [];
+        
+        // Si pas de données (nouveau projet par ex) on les crée artificiellement
+        if (count($db_data) === 0) 
+        {
+            $structured_data[$debut]['quota'] = 1;
+            $structured_data[$fin]['quota'] = 1;
+        }
+        else 
+        {
+            foreach( $db_data as $item )
             {
-            $structured_data[$key][$item->getRessource()] = $item->getConso();
-            $quota1 = $structured_data[$key]['quota'];
-            $quota2 = $item->getQuota();
-            if( $quota1 != $quota2 )
-                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
-            $structured_data[$key]['quota'] = $quota2;
+                $key = $item->getDate()->getTimestamp();
+                if( $key < $debut || $key > $fin ) continue;
+                
+                if ( array_key_exists (  $key , $structured_data ) )
+                {
+                    $structured_data[$key][$item->getRessource()] = $item->getConso();
+                    if ($projet != null) 
+                    {
+                        $quota1 = $structured_data[$key]['quota'];
+                        $quota2 = $item->getQuota();
+                        if( $quota1 != $quota2 )
+                        {
+                            Functions::errorMessage( __METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
+                        }
+                        $structured_data[$key]['quota'] = $quota2;
+                    }
+                }
+                else
+                {
+                    if ( $projet != null)
+                    {
+                        $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
+                    }
+                    $structured_data[$key] = $data;
+                }
             }
-        else
+        }
+        
+        return $this->dessineGraphique($structured_data,$projet, $annee);
+    }
+
+    /**
+     * Affichage graphique de la consommation de TOUS les projets
+     *
+     * @Route("/{ressource/{ressource}/tousconso/{annee}", name="tous_projets_conso")
+     * @Method("GET")
+     * @Security("has_role('ROLE_ADMIN')")
+     */
+    
+    public function tousconsoAction($ressource,$annee)
+    {
+    
+        $db_data = AppBundle::getRepository(Compta::class)->consoTotale( $annee );
+        
+        $structured_data = [];
+        
+        // Si pas de données on les crée artificiellement
+        if (count($db_data) === 0) 
+        {
+            $structured_data[$debut]['quota'] = 1;
+            $structured_data[$fin]['quota'] = 1;
+        }
+        else 
+        {
+            $debut = new \DateTime( $annee . '-01-01');
+            $debut = $debut->getTimestamp();
+            $fin   = new \DateTime( $annee . '-12-31');
+            $fin   = $fin->getTimestamp();
+            foreach( $db_data as $item )
             {
-            $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
-            $structured_data[$key] = $data;
+                $key = $item['date']->getTimestamp();
+                $res = $item['ressource'];
+                if( $key < $debut || $key > $fin ) continue;
+                if ($res == $ressource)
+                {
+                    $structured_data[$key][$res] = $item['conso'];
+                }
+                else
+                {
+                    $structured_data[$key][$res] = 0;
+                }
+            }
+        }
+        
+        return $this->dessineGraphique($structured_data,null, $annee);
+    }
+
+    private function dessineGraphique($structured_data, $projet, $annee)
+    /* Affichage graphique, appelé par consoAction ou tousconsoAction
+     * Si projet = null, on affiche la somme de tous les projets
+     * Dans ce cas on n'a pas d'informations de quotas
+     */ 
+    {
+    
+        // je remplis des trous gpu ou cpu et je teste s'il y a cpu et qpu
+        $no_cpu = true;
+        $no_gpu = true;
+        $no_quota = true;
+    
+        foreach( $structured_data as $key => $item )
+        {
+            if( ! array_key_exists ( 'gpu' , $item ) )
+                $structured_data[$key]['gpu'] = 0;
+            elseif ( $structured_data[$key]['gpu']  > 0 )
+                $no_gpu = false;
+            if ( ! array_key_exists ( 'cpu' , $item ) )
+                $structured_data[$key]['cpu'] = 0;
+            elseif ( $structured_data[$key]['cpu'] > 0 )
+                $no_cpu = false;
             
-            }
-        }
-
-    // je remplis des trous gpu ou cpu et je test s'il y a cpu et qpu
-
-    $no_cpu = true;
-    $no_gpu = true;
-    $no_quota = true;
-
-    foreach( $structured_data as $key => $item )
-        {
-        if( ! array_key_exists ( 'gpu' , $item ) )
-            $structured_data[$key]['gpu'] = 0;
-        elseif ( $structured_data[$key]['gpu']  > 0 )
-            $no_gpu = false;
-        if ( ! array_key_exists ( 'cpu' , $item ) )
-            $structured_data[$key]['cpu'] = 0;
-        elseif ( $structured_data[$key]['cpu'] > 0 )
-            $no_cpu = false;
-        if ( ! array_key_exists ( 'quota' , $item ) )
-            $structured_data[$key]['quota'] = 0;
-        elseif ( $structured_data[$key]['quota'] > 0 )
-            $no_quota = false;
-        $structured_data[$key]['somme'] = $structured_data[$key]['cpu'] + $structured_data[$key]['gpu'];
-        }
-
-    // recherche de la remise à zéro dans les 20 premiers jours
-
-    $remise_a_zero = null;
-    $i = 20;
-    $somme_precedente = 0;
-
-    foreach( $structured_data as $key => $item )
-        {
-        if ( $i < 0 )   break;
-        if ( $somme_precedente > $structured_data[$key]['somme'] )
+            // détection du quota, seulement si on affiche les données d'un seul projet                
+            if ( $projet != null)
             {
-            $remise_a_zero = $key;
-            break;
+                if ( ! array_key_exists ( 'quota' , $item ) )
+                    $structured_data[$key]['quota'] = 0;
+                elseif ( $structured_data[$key]['quota'] > 0 )
+                    $no_quota = false;
             }
-        $somme_precedente = $structured_data[$key]['somme'];
+            else
+            {
+                $structured_data[$key]['quota'] = 0;
+            }
+            
+            // Somme cpu + gpu = conso (comparée au quota)
+            $structured_data[$key]['somme'] = $structured_data[$key]['cpu'] + $structured_data[$key]['gpu'];
         }
+    
+        // recherche de la remise à zéro dans les 20 premiers jours
+        $remise_a_zero = null;
+        $i = 20;
+        $somme_precedente = 0;
 
-    // annulation avant la remise à zéro
-
-    foreach( $structured_data as $key => $item )
+        // Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
+        // Sauf qu'on remet les compteurs à zéro en début d'année
+        // Ici on détecte le jour de remise à zéro avant le 20 Janvier
+        // et on met à zéro tout ce qui précède
+        // Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal    
+        foreach( $structured_data as $key => $item )
         {
-        if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
-        $structured_data[$key]['gpu'] = 0;
-        $structured_data[$key]['cpu'] = 0;
-        $structured_data[$key]['quota'] = 0;
-        $structured_data[$key]['somme'] = 0;
+            if ( $i < 0 )   break;
+            if ( $somme_precedente > $structured_data[$key]['somme'] )
+            {
+                $remise_a_zero = $key;
+                break;
+            }
+            $somme_precedente = $structured_data[$key]['somme'];
+            $i--;
         }
-
-    // création des tables
-
-    $cpu = [];
-    $gpu = [];
-    $xdata = [];
-    $quota = [];
-    $somme = [];
-
-    foreach( $structured_data as $key => $item )
+    
+        // annulation avant la remise à zéro
+        foreach( $structured_data as $key => $item )
         {
-        $xdata[]    =   $key;
-        $cpu[]      =   $structured_data[$key]['cpu'];
-        $gpu[]      =   $structured_data[$key]['gpu'];
-        $somme[]      =   $structured_data[$key]['somme'];
-        $quota[]      =   $structured_data[$key]['quota'];
+            if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
+            $structured_data[$key]['gpu'] = 0;
+            $structured_data[$key]['cpu'] = 0;
+            $structured_data[$key]['quota'] = 0;
+            $structured_data[$key]['somme'] = 0;
         }
+    
+        // création des tables
+        $cpu = [];
+        $gpu = [];
+        $xdata = [];
+        $quota = [];
+        $somme = [];
+    
+        foreach( $structured_data as $key => $item )
+        {
+            $xdata[]    =   $key;
+            $cpu[]      =   $structured_data[$key]['cpu'];
+            $gpu[]      =   $structured_data[$key]['gpu'];
+            $somme[]    =   $structured_data[$key]['somme'];
+            $quota[]    =   $structured_data[$key]['quota'];
+        }
+    
+        \JpGraph\JpGraph::load();
+        \JpGraph\JpGraph::module('line');
+        \JpGraph\JpGraph::module('date');
+    
         
-    
-
-    \JpGraph\JpGraph::load();
-    \JpGraph\JpGraph::module('line');
-    \JpGraph\JpGraph::module('date');
-
-    
         // Create the new graph
         $graph = new \Graph(540,300);
         
@@ -1217,138 +1294,61 @@ class ProjetController extends Controller
         //$graph->xaxis->scale->AdjustForDST(false);
         $graph->xaxis->scale->SetDateAlign(\DAYADJ_1);
         //$graph->xaxis->scale->ticks->Set(8,2);
-        //$graph->title->Set("Example on Date scale");
      
         // Set the angle for the labels to 90 degrees
         $graph->xaxis->SetLabelAngle(90);
      
         if( $no_cpu == false )
         {
-        $line = new \LinePlot($cpu,$xdata);
-        $line->SetLegend('CPU');
-        //$line->SetFillColor('lightblue@0.5');
-        $line->SetColor("green");
-        $graph->Add($line);
+            $line = new \LinePlot($cpu,$xdata);
+            $line->SetLegend('CPU');
+            //$line->SetFillColor('lightblue@0.5');
+            $line->SetColor("green");
+            $graph->Add($line);
         }
         
         if( $no_gpu == false )
         {
-        $line = new \LinePlot($gpu,$xdata);
-        $line->SetLegend('GPU');
-        //$line->SetFillColor('lightblue@0.5');
-        $line->SetColor("blue");
-        $graph->Add($line);
+            $line = new \LinePlot($gpu,$xdata);
+            $line->SetLegend('GPU');
+            //$line->SetFillColor('lightblue@0.5');
+            $line->SetColor("blue");
+            $graph->Add($line);
         }
-
+    
         if( $no_gpu == false && $no_cpu  == false )
         {
-        $line = new \LinePlot($somme,$xdata);
-        $line->SetLegend('GPU + CPU');
-        //$line->SetFillColor('lightblue@0.5');
-        $line->SetColor("black");
-        $graph->Add($line);
+            $line = new \LinePlot($somme,$xdata);
+            $line->SetLegend('GPU + CPU');
+            //$line->SetFillColor('lightblue@0.5');
+            $line->SetColor("black");
+            $graph->Add($line);
         }
         
         if( $no_quota == false )
         {
-        $line = new \LinePlot($quota,$xdata);
-        $line->SetLegend('Quota');
-        //$line->SetFillColor('lightblue@0.5');
-        $line->SetColor("red");
-        $graph->Add($line);
+            $line = new \LinePlot($quota,$xdata);
+            $line->SetLegend('Quota');
+            //$line->SetFillColor('lightblue@0.5');
+            $line->SetColor("red");
+            $graph->Add($line);
         }
         
-        $graph ->legend->Pos( 0.05,0.05,"right" ,"center");
-        $graph-> legend-> SetColumns(4);
+        $graph->legend->Pos( 0.05,0.05,"right" ,"center");
+        $graph->legend->SetColumns(4);
         
         ob_start();
         $graph->Stroke();
         $image_data = ob_get_contents();
         ob_end_clean();
-
-        $image = base64_encode($image_data);
-
-    $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
-    $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
-
-    return new Response($body);
-
-
     
-    ////////////////////////////////////////////////
-    //return new Response();
-    $consommation = AppBundle::getRepository(Consommation::class)->findOneBy(
-                        [
-                        'projet' => $projet,
-                        'annee' => $annee
-                        ]
-                    );
-    if( $consommation == null )
-        return new Response("Pas de consommation pour le projet " . $projet . " durant l'année " . $annee);
-
-    $conso[]    =   0;
-    $quota[] =  $consommation->getLimite();
-    $affichage_max[]    =   $consommation->getLimite() * 1.1;
-    if( $consommation != null )
-            {
-            for ($i = 1; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        ${"methodName"} = 'getM0'.$i;
-                    else
-                        ${"methodName"} = 'getM'.$i;
-                $c = $consommation->${"methodName"}();
-                if( $c > 0 )
-                    {
-                    $conso[] = $c;
-                    }
-                $quota[] =  $consommation->getLimite();
-                }
-            }
-
-    $legende = [ '','jan','fév','mar','avr','mai','juin','juil','août','sept','oct','nov','déc' ];
-
-    $graph = new \Graph(800,400);
-	$graph->SetScale('textlin');
-	$graph->SetMargin(60,60,50,50);
-	$graph->SetMarginColor("silver");
-	$graph->SetFrame(true,'silver');
-	$graph->title->Set('Consommation du projet ' . $projet . " pour l'année " . $annee);
-	$graph->xgrid->Show();
-	$graph->xaxis->SetTickLabels($legende);
-
-    $constante_limite = new \LinePlot($quota);
-	$constante_limite->SetColor('#FF0000');
-	$constante_limite->SetLegend('Quotas');
-    $graph->Add($constante_limite);
-
-    $courbe = new \LinePlot($conso);
-    $courbe->SetLegend('Consommation');
-    $courbe->SetColor('#2E64FE');
-
-    //aide a l'affichage du graphique : affiche 10% de la conso max en plus
-	$aff_limite = new \LinePlot($affichage_max);
-	$aff_limite->SetColor('#FFFFFF');
-
-    $graph->Add($courbe);
-    $graph->Add($constante_limite);
-    $graph->Add($aff_limite);
-
-    $graph->legend->SetFrameWeight(1);
-	$graph->legend->SetLayout(1); // LEGEND_HOR
-	$graph->legend->SetPos(0.5,0.98,'center','bottom');
-
-    ob_start();
-    $graph->Stroke();
-    $image_data = ob_get_contents();
-    ob_end_clean();
-
-    $image = base64_encode($image_data);
-
-    $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
-    $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
-
-    return new Response($body);
+        $image = base64_encode($image_data);
+    
+        $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
+        $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
+    
+        return new Response($body);
+    
     }
 
     /**
