@@ -59,11 +59,11 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ total.demHeuresA }}</td>
+        <td>{{ total.demHeuresA|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresA }}</td>
+        <td>{{ total.attrHeuresA|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -72,11 +72,11 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ total.demHeuresB }}</td>
+        <td>{{ total.demHeuresB|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresB }}</td>
+        <td>{{ total.attrHeuresB|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -89,11 +89,11 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ total.demHeuresT }}</td>
+        <td>{{ total.demHeuresT|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresT }}</td>
+        <td>{{ total.attrHeuresT|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -106,11 +106,11 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ total.demHeuresR }}</td>
+        <td>{{ total.demHeuresR|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresR }}</td>
+        <td>{{ total.attrHeuresR|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -120,11 +120,11 @@
      <tr>
         {# Le id est important seulement pour faire fonctionner les boutons javascript !!! #}
         <th>Printemps</th>
-        {% if isRecupPrintemps %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesA }}</td>
+        {% if isRecupPrintemps %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesA|number_format(0, ',', ' ') }}</td>
     </tr>
      <tr>
         <th>Automne</th>
-        {% if isRecupAutomne %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesB }}</td>
+        {% if isRecupAutomne %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesB|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -137,15 +137,15 @@
     </tr>
      <tr>
         <th>Heures demandées</th>
-        <td>{{ total.demHeuresP }}</td>
+        <td>{{ total.demHeuresP|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresP }}</td>
+        <td>{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures consommées</th>
-        <td>{{ total.consoHeuresP }}</td>
+        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
     </tr>
  </table>
  <table>
@@ -154,17 +154,17 @@
     </tr>
      <tr>
         <th>Heures pour une année</th>
-        <td>{{ heures_par_an }}</td>
+        <td>{{ heures_par_an|number_format(0, ',', ' ') }}</td>
     </tr>
      <tr>
         <th>Heures déjà attribuées<br />(y compris rallonges et pénalités)</th>
-        <td id="stats_attribuees">{{ total.attrHeuresP }}</td>
+        <td id="stats_attribuees">{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures récupérables</th>
         <td id="stats_recuperables">
             {% if isRecupPrintemps or isRecupAutomne %}
-                {{ total.recupHeuresP }}
+                {{ total.recupHeuresP|number_format(0, ',', ' ') }}
             {% else %}
                 N/A
             {%endif%}
@@ -172,7 +172,7 @@
     </tr>
     <tr>
         <th>Heures consommées</th>
-        <td>{{ total.consoHeuresP }}</td>
+        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
     </tr>
     <tr>
         <th>Heures attribuables</th>
@@ -181,7 +181,7 @@
             {% if isRecupPrintemps %}
                 {% set attribuables = heures_par_an/2 - (total.attrHeuresP-total.consoHeuresP) %}
                 {% if attribuables>0 %}
-                    {{ attribuables }}
+                    {{ attribuables|number_format(0, ',', ' ') }}
                 {% else %}
                     0
                 {% endif %}
@@ -194,10 +194,20 @@
 
 </div>
 
+<div class="lien-pdf">
+    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
+        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee })) }}"/>
+</div>
+<div class="lien-pdf">
+    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
+        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee })) }}"/>
+</div>
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+4*15+3*170+11*80+ 19*20 + 20 + 20 %}
+{% set width=45+4*15+3*170+12*80+ 19*20 + 20 + 20 %}
 {% if isRecupPrintemps %}
    {% set width=80+45 + 2*20 + 35 + width %}
 {% endif %}
@@ -227,6 +237,7 @@
                 <th class="w80">Quota</th>
                 <th class="w80">Conso (h)</th>
                 <th class="w80">Conso (%)</th>
+                <th class="w80">Conso gpu</th>
                 {% if isRecupPrintemps %}
                     <th class="w80">Récupérables (h)</th>
                     <th class="w45">Récup</th>
@@ -329,7 +340,7 @@
                     {% endif %}
                 </td>
                 <td class="w80 penalite" >
-                    {{ prj_array.penal_a + prj_array.penal_b }}
+                    {{ (prj_array.penal_a + prj_array.penal_b) }}
                 </td>
                 <td class="w80 attr" >
                     {{prj_array.attrib }}
@@ -342,6 +353,9 @@
                 </td>
                 <td class="w80" >
                     {{ "%5.1f" | format(prj_array.cp) }}
+                </td>
+                <td class="w80" >
+                    {{prj_array.g}}
                 </td>
 
                    {# Pénalités de printemps: On récupère des heures sur les sessions 'A' uniquement                #}

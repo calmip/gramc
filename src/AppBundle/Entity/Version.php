@@ -2838,7 +2838,12 @@ class Version
        
     }
 
-    /* get rapport de l'année précédente */
+    /* Renvoie le chemin vers le rapport d'activité 
+     * 
+     * Si $annee==null, calcule l'année précédente l'année de la session
+     * (OK pour sessions de type A !)
+     * 
+     * */
     public function getRapport($annee = null)
     {
         $rapport_directory = AppBundle::getParameter('rapport_directory');
@@ -2847,18 +2852,18 @@ class Version
             $annee  = $this->getAnneeSession()-1;
             
         $dir    =  $rapport_directory;
-
         if( $dir == null )
-                {
-                Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " parameter rapport_directory absent !" );
-                return null;
-                }
+        {
+            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " parameter rapport_directory absent !" );
+            return null;
+        }
             
         $file   =  $dir . '/' . $annee . '/' . $annee . $this->getProjet()->getIdProjet() . '.pdf';
         if( file_exists( $file ) && ! is_dir( $file ) )
-                return $file;
+            return $file;
+
         else
-                Functions::warningMessage(__METHOD__ . ":" . __LINE__ . " fichier n'existe pas " . $file );
+            Functions::warningMessage(__METHOD__ . ":" . __LINE__ . " fichier n'existe pas " . $file );
             
         return null;
     }
@@ -2908,7 +2913,7 @@ class Version
     }
 
     // calcul de la consommation à partir de la table Consommation juste pour une session
-
+    // TODOCONSOMMATION - Est  utilisé seulement pour les statistiques
     public function getConsoSession()
     {
         $consommation   =   $this->getConsommation();

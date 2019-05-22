@@ -42,4 +42,30 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         return $db_data;
     }
     
+    public function consoTotale($annee)
+    /* Renvoie les données de conso de la somme de tous les types 2 cpu, tous les Type 2 gpu, etc.
+     * Se limite aux projets P* et T* (exclusion des projets E*)
+     */
+    {
+        $debut = new \DateTime( $annee . '-01-01');
+        $fin   = new \DateTime( $annee . '-12-31');
+        
+        $db_data = AppBundle::getManager()->createQuery(
+            'SELECT c.date,c.ressource,sum(c.conso) AS conso
+             FROM AppBundle:Compta c 
+             WHERE c.type = 2
+             AND c.date >= :debut
+	     AND c.date <= :fin
+	     AND ( c.loginname LIKE \'p%\' OR c.loginname LIKE \'t%\' )
+             GROUP BY c.date,c.ressource'
+        )
+        ->setParameter('debut',$debut)
+        ->setParameter('fin',$fin)
+        ->getResult();
+
+        if( $db_data == null || empty( $db_data ) ) return null;
+                        
+        return $db_data;
+
+    }
 }

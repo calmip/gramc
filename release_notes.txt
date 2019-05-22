@@ -1,0 +1,11 @@
+v 2.1.0
+-------
+    - Refonte des workflows
+    - Nettoyage du code
+    - Commit initial dans le nouveau dépôt et sur github
+    - Introduction de la table compta et de nouvelles données de comptabilité (heures cpu, heures gpu)
+
+v 2.2.0
+-------
+    - Refonte des graphiques de consommation: la résolution est à présent journalière, on affiche cpu + gpu
+
