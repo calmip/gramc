@@ -1121,15 +1121,12 @@ class ProjetController extends Controller
                         {
                             Functions::errorMessage( __METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
                         }
-                        $structured_data[$key]['quota'] = $quota2;
+                        //$structured_data[$key]['quota'] = $quota2;
                     }
                 }
                 else
                 {
-                    if ( $projet != null)
-                    {
-                        $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
-                    }
+                    $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
                     $structured_data[$key] = $data;
                 }
             }

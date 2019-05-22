@@ -18,6 +18,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
     /* Renvoie les données de conso d'un projet sur une année
      * On ne s'intéresse qu'aux lignes de type 2, c'est-à-dire "group"
      * Les données de type 1 (user) sont ignorées
+     * On ne s'intéresse qu'aux ressources 'cpu' ou 'gpu'
      */
     {
         $debut = new \DateTime( $annee . '-01-01');
@@ -30,6 +31,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             AND c.type = 2
             AND c.date >= :debut
             AND c.date <= :fin
+            AND (c.ressource = \'cpu\' OR c.ressource = \'gpu\')
             ORDER BY c.date ASC'
         )
         ->setParameter('loginname', lcfirst($projet->getIdProjet() ) )
