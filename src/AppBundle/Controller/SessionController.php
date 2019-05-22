@@ -1209,7 +1209,7 @@ class SessionController extends Controller
                     '"'. $version->getPrjThematique() .'"',
                     '"'.$version->getResponsable() .'"',
                     '"'.$version->getLabo().'"',
-                    ( $version->hasRapportActitive() == true ) ? 'OUI' : 'NON',
+                    ( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
                     ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
                     $dem_heures_prec,
                     $dem_heures_rallonge,
