@@ -1,11 +1,19 @@
+v 2.2.1
+-------
+    - Projets par année -> Une colonne gpu permet d'accéder à la consommation gpu projet par projet
+    - Projets par année -> Des boutons en bas à gauche permettent d'accéder à la conso globale de tous les projets, en cpu et en gpu
+    - Consultation des projets -> Infos sur gpus
+    - Expertise -> Les experts ont accès à la liste des publications
+    - Correction de bug -> On peut afficher la conso d'un projet non démarré sans avoir de message d'erreur
+
+v 2.2.0
+-------
+    - Refonte des graphiques de consommation: la résolution est à présent journalière, on affiche cpu + gpu
+
 v 2.1.0
 -------
     - Refonte des workflows
     - Nettoyage du code
     - Commit initial dans le nouveau dépôt et sur github
     - Introduction de la table compta et de nouvelles données de comptabilité (heures cpu, heures gpu)
-
-v 2.2.0
--------
-    - Refonte des graphiques de consommation: la résolution est à présent journalière, on affiche cpu + gpu
 
