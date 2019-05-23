@@ -1247,10 +1247,10 @@ class ProjetController extends Controller
         foreach( $structured_data as $key => $item )
         {
             if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
-            $structured_data[$key]['gpu'] = 0;
-            $structured_data[$key]['cpu'] = 0;
-            $structured_data[$key]['quota'] = 0;
-            $structured_data[$key]['somme'] = 0;
+            $structured_data[$key]['gpu'] = $structured_data[$remise_a_zero]['gpu'];
+            $structured_data[$key]['cpu'] = $structured_data[$remise_a_zero]['cpu'];
+            $structured_data[$key]['quota'] = $structured_data[$remise_a_zero]['quota'];
+            $structured_data[$key]['somme'] = $structured_data[$remise_a_zero]['somme'];
         }
     
         // création des tables
