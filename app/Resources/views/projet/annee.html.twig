@@ -269,7 +269,7 @@
                 <td class="w45">{{ projet.id }}</td>
                 <td class="w15">
                     {% set version=annee|slice(2,2) ~ 'A' ~ projet %}
-                    <a href="{{ path('consulter_version', { 'projet':projet,'id': version }) }}" title="Consulter le projet">
+                    <a href="{{ path('consulter_version', { 'id':projet.idprojet,'version': version }) }}" title="Consulter le projet">
                         <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
                     </a>
                 </td>
