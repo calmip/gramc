@@ -17,6 +17,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
     public function conso(Projet $projet, $annee)
     /* Renvoie les données de conso d'un projet sur une année
      * On ne s'intéresse qu'aux lignes de type 2, c'est-à-dire "group"
+     * On ne s'intéresse qu'aux ressources de type calcul, c-à-d cpu, gpu
      * Les données de type 1 (user) sont ignorées
      */
     {
@@ -27,6 +28,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             'SELECT c
             FROM AppBundle:Compta c
             WHERE c.loginname = :loginname
+            AND (c.ressource = \'cpu\' OR c.ressource=\'gpu\')
             AND c.type = 2
             AND c.date >= :debut
             AND c.date <= :fin
