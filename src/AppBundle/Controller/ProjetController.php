@@ -738,7 +738,7 @@ class ProjetController extends Controller
         $projets = $paa[0];
         $total   = $paa[1];
         
-        // Les sessions de l'année - On considère que le nombe d'heures pas année est fixé par la session A de l'année
+        // Les sessions de l'année - On considère que le nombre d'heures par année est fixé par la session A de l'année
         // donc on ne peut pas changer de machine en cours d'année.
         // ça va peut-être changer un jour, ça n'est pas terrible !
         $sessions = Functions::sessionsParAnnee($annee);
