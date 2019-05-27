@@ -17,6 +17,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
     public function conso(Projet $projet, $annee)
     /* Renvoie les données de conso d'un projet sur une année
      * On ne s'intéresse qu'aux lignes de type 2, c'est-à-dire "group"
+     * On ne s'intéresse qu'aux ressources de type calcul, c-à-d cpu, gpu
      * Les données de type 1 (user) sont ignorées
      */
     {
@@ -27,6 +28,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             'SELECT c
             FROM AppBundle:Compta c
             WHERE c.loginname = :loginname
+            AND (c.ressource = \'cpu\' OR c.ressource=\'gpu\')
             AND c.type = 2
             AND c.date >= :debut
             AND c.date <= :fin
@@ -68,4 +70,26 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         return $db_data;
 
     }
+    
+    /* Renvoie la conso d'un projet à une date donnée, éventuellement renvoie null 
+     * Peut être utile dans des fixtures de temps en temps
+     */
+    public function consoDateProjet(Projet $projet, \DateTime $date)
+    {
+        $db_data = AppBundle::getManager()->createQuery(
+            'SELECT c
+            FROM AppBundle:Compta c
+            WHERE c.loginname = :loginname
+            AND c.type = 2
+            AND c.date = :date'
+        )
+        ->setParameter('loginname', lcfirst($projet->getIdProjet() ) )
+        ->setParameter('date',$date)
+        ->getResult();            
+
+        if( $db_data == null || empty( $db_data ) ) return null;
+                        
+        return $db_data;
+    }
+
 }

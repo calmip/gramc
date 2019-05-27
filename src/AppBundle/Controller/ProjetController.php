@@ -738,7 +738,7 @@ class ProjetController extends Controller
         $projets = $paa[0];
         $total   = $paa[1];
         
-        // Les sessions de l'année - On considère que le nombe d'heures pas année est fixé par la session A de l'année
+        // Les sessions de l'année - On considère que le nombre d'heures par année est fixé par la session A de l'année
         // donc on ne peut pas changer de machine en cours d'année.
         // ça va peut-être changer un jour, ça n'est pas terrible !
         $sessions = Functions::sessionsParAnnee($annee);
@@ -1121,15 +1121,12 @@ class ProjetController extends Controller
                         {
                             Functions::errorMessage( __METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
                         }
-                        $structured_data[$key]['quota'] = $quota2;
+                        //$structured_data[$key]['quota'] = $quota2;
                     }
                 }
                 else
                 {
-                    if ( $projet != null)
-                    {
-                        $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
-                    }
+                    $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
                     $structured_data[$key] = $data;
                 }
             }
@@ -1250,10 +1247,10 @@ class ProjetController extends Controller
         foreach( $structured_data as $key => $item )
         {
             if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
-            $structured_data[$key]['gpu'] = 0;
-            $structured_data[$key]['cpu'] = 0;
-            $structured_data[$key]['quota'] = 0;
-            $structured_data[$key]['somme'] = 0;
+            $structured_data[$key]['gpu'] = $structured_data[$remise_a_zero]['gpu'];
+            $structured_data[$key]['cpu'] = $structured_data[$remise_a_zero]['cpu'];
+            $structured_data[$key]['quota'] = $structured_data[$remise_a_zero]['quota'];
+            $structured_data[$key]['somme'] = $structured_data[$remise_a_zero]['somme'];
         }
     
         // création des tables

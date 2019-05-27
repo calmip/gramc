@@ -1032,7 +1032,8 @@ class SessionController extends Controller
 
         $annee_cour     =   $session->getAnneeSession();
         $annee_prec     =   $annee_cour - 1;
-        $full_annee_prec    = 2000 + $annee_prec;
+        $full_annee_prec= 2000 + $annee_prec;
+        $full_annee_cour= 2000 + $annee_cour;
 
         $session_precedente_A   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
         $session_precedente_B   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
@@ -1061,7 +1062,7 @@ class SessionController extends Controller
             array_push($entetes,'Demandes '.$annee_cour.'A','Attributions '.$annee_cour.'A');
 
         array_push($entetes,'Demandes '.$id_session,'Attributions '.$id_session,"Quota $annee_prec",
-                                "Consommation $annee_conso","Consommation $annee_conso (%)");
+                                "Consommation $annee_conso","Conso gpu normalisée","Consommation $annee_conso (%)");
 
          // Si type B on ajoute la colonne Recupérable
         if ($type_session=='B') array_push($entetes,'Récupérables');
@@ -1089,6 +1090,7 @@ class SessionController extends Controller
             "attr_heures_cour"      =>  0,
             "quota"                 =>  0,
             "conso_an"              =>  0,
+            "conso_gpu"             =>  0,
             "recuperable"           =>  0,
             ];
         foreach  ($conso_flds as $m)    $totaux[$m] =   0;
@@ -1150,23 +1152,30 @@ class SessionController extends Controller
                 $version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
 
             if ($type_session=='A')
-                {
+            {
                 if      ( $version_precedente_A != null ) $consommation = $version_precedente_A->getConsommation();
                 elseif  ( $version_precedente_B != null ) $consommation = $version_precedente_B->getConsommation();
                 else    $consommation = null;
                 //return new Response( $consommation );
-                }
+            }
             else // ($type_session=='B')
-                {
-                if      ( $version != null ) $consommation = $version->getConsommation();
-                else    $consommation = null;
+            {
+                if      ( $version != null ) {
+                    $consommation = $version->getConsommation();
+                    $conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
                 }
+                else 
+                {
+                    $consommation = null;
+                    $conso_gpu    = 0;
+                }
+            }
 
             $dem_heure_cour     =   $version->getDemHeures();
             $attr_heure_cour    =   $version->getAttrHeures();
 
             if( $consommation != null )
-                {
+            {
                 $quota  =   $consommation->getLimite();
                 $m01    =   $consommation->getM01();
                 $m02    =   $consommation->getM02();
@@ -1180,7 +1189,7 @@ class SessionController extends Controller
                 $m10    =   $consommation->getM10();
                 $m11    =   $consommation->getM11();
                 $m12    =   $consommation->getM12();
-                }
+            }
             else
                 {
                 $quota  =   null;
@@ -1209,7 +1218,7 @@ class SessionController extends Controller
                     '"'. $version->getPrjThematique() .'"',
                     '"'.$version->getResponsable() .'"',
                     '"'.$version->getLabo().'"',
-                    ( $version->hasRapportActitive() == true ) ? 'OUI' : 'NON',
+                    ( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
                     ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
                     $dem_heures_prec,
                     $dem_heures_rallonge,
@@ -1227,6 +1236,7 @@ class SessionController extends Controller
                     $attr_heure_cour,
                     $quota,
                     ( $consommation != null ) ? $consommation->conso(): 0,
+                    $conso_gpu,
                     ( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
                     ]);
 
@@ -1254,6 +1264,7 @@ class SessionController extends Controller
             $totaux["attr_heures_A"]            +=  $attr_heures_A;
             $totaux["quota"]                    +=  $quota;
             $totaux["conso_an"]                 += ( $consommation != null ) ? $consommation->conso(): 0;
+            $totaux["conso_gpu"]                +=  $conso_gpu;
             $totaux["recuperable"]              +=  $recuperable;
 
             $totaux["m01"]  +=  $m01;
@@ -1290,6 +1301,7 @@ class SessionController extends Controller
                 $totaux["attr_heures_cour"],
                 $totaux["quota"],
                 $totaux["conso_an"],
+                $totaux["conso_gpu"],
                 '', // %
                 ]);
 
