@@ -42,8 +42,10 @@
     <form action="{{ path('projet_annee_csv', {'annee': annee }) }}">
         <input type="submit" value="Télécharger en csv pour l'année {{ annee }}" />
     </form>
-
-<hr />
+    <hr />
+    <div class="message info">
+        <p>Les heures gpu affichées sont des heures <strong>normalisées</strong></p>
+    </div>
 <div id="legende">
     <h3>Légende</h3>
     <span id="legende_conso_1">Consommation dépassant {{conso_seuil_1}} %</span><br />
@@ -207,7 +209,7 @@
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+4*15+3*170+12*80+ 19*20 + 20 + 20 %}
+{% set width=45+4*15+3*170+12*80+ 20*20 + 20 + 20 %}
 {% if isRecupPrintemps %}
    {% set width=80+45 + 2*20 + 35 + width %}
 {% endif %}

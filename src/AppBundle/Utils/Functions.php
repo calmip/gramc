@@ -1006,13 +1006,15 @@ class Functions
      * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
      *
      */
+     
+     // Ajoute les champs 'c','g','q', 'cp' au tableau $p
     private function ppa_conso(&$p,&$annee) {
         $conso_cpu = $p['p']->getConsoRessource('cpu',$annee);
         $conso_gpu = $p['p']->getConsoRessource('gpu',$annee);
-        $p['c'] = $conso_cpu[0]+$conso_gpu[0];
+        $p['c'] = $conso_cpu[0] + $conso_gpu[0];
+        $p['q'] = $conso_cpu[1];
         $p['g'] = $conso_gpu[0];
-        $p['q'] = $conso_gpu[1];
-        $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
+        $p['cp']= ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
     }
     
     public function projetsParAnnee($annee,$isRecupPrintemps=false,$isRecupAutomne=false)
@@ -1117,39 +1119,6 @@ class Functions
                     $total['attrHeuresT'] += $v->getAttrHeures();
                 }
             }
-
-
-            //$c = $consommation_repo->getConsommation($p['p'],$annee);
-            //if ( $c == null)
-            //{
-                //$p['c'] = 0;
-                //$p['q'] = 0;
-                //$p['cp']= 0;
-                //$p['recuperable'] = 0;
-            //} else {
-                //$p['c']      = $c->conso();
-                //$p['q']      = $c->getLimite();
-                //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
-
-                //if ($isRecupPrintemps==true) {
-                    //$p['recuperable'] = SessionController::calc_recup_heures_printemps($c->conso(),intval($p['attrib'])+intval($p['r']));
-                    //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-                //} else {
-                    //$p['recuperable'] = 0;
-                //}
-                //$total['consoHeuresP'] += $c->conso();
-            //}
-
-//            $p['c'] = 0;
-//            $p['q'] = 0;
-  //          $p['g'] = 0;
-    //        $p['cp']= 0;
-//            $conso_cpu = $p['p']->getConsoRessource('cpu',$annee);
-//            $conso_gpu = $p['p']->getConsoRessource('gpu',$annee);
-//            $p['c'] = $conso_cpu[0]+$conso_gpu[0];
-//            $p['g'] = $conso_gpu[0];
-//            $p['q'] = $conso_gpu[1];
-//            $p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
 
             // La conso
             Functions::ppa_conso($p,$annee);
