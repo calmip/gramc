@@ -1035,7 +1035,7 @@ class Functions
         $total['demHeuresT']  = 0;  // Heures demandées dans des projets tests
         $total['attrHeuresT'] = 0;  // Heures attribuées dans des projets tests
 
-        $total['demHeuresP']  = 0;  // Nombre d'heures demandées: A+B+Tests+Rallonges
+        $total['demHeuresP']  = 0;  // Nombre d'heures demandées: A+B+Rallonges
         $total['attrHeuresP'] = 0;  // Heures attribuées aux Projets: A+B+Tests+Rallonges-Pénalité
         $total['consoHeuresP']= 0;  // Heures consommées
         $total['recupHeuresP']= 0;  // Heures récupérables
@@ -1150,20 +1150,7 @@ class Functions
                 $p['penal_a'] = 0;
                 $p['r']  = 0;
                 $p['attrib'] = 0;
-                //$c           = $consommation_repo->getConsommation($p['p'],$annee);
-                //if ( $c == null)
-                //{
-                    //$p['c'] = 0;
-                    //$p['q'] = 0;
-                    //$p['cp']= 0;
-                //} else {
-                    //$p['c']      = $c->conso();
-                    //$total['consoHeuresP'] += $c->conso();
-                    //$p['q']      = $c->getLimite();
-                    //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
-                //}
-                //        $total['consoHeuresP'] += $p['c'];
-}
+            }
             $p['vb']      = $v;
             $rallonges    = $v->getRallonge();
             foreach ($rallonges as $r)
@@ -1192,18 +1179,19 @@ class Functions
             $p['penal_b'] = $v->getPenalHeures();
             $p['attrib'] -= $p['penal_b'];
 
-            if ($v->getEtatVersion() != Etat::EDITION_DEMANDE ) {
-                $total['demHeuresP']  += $v->getDemHeures();
-                $total['attrHeuresP'] += $v->getAttrHeures();
-                $total['demHeuresB']  += $v->getDemHeures();
-                $total['attrHeuresB'] += $v->getAttrHeures();
-                $total['penalitesB']  += $v->getPenalHeures();
-                $total['attrHeuresP'] -= $v->getPenalHeures();
-            }
+            $total['demHeuresP']  += $v->getDemHeures();
+            $total['attrHeuresP'] += $v->getAttrHeures();
+            $total['demHeuresB']  += $v->getDemHeures();
+            $total['attrHeuresB'] += $v->getAttrHeures();
+            $total['penalitesB']  += $v->getPenalHeures();
+            $total['attrHeuresP'] -= $v->getPenalHeures();
 
-            // La conso
-            Functions::ppa_conso($p,$annee);
-            $total['consoHeuresP'] += $p['c'];
+            // La conso (attention à ne pas compter deux fois la conso pour les projets déjà entamés !)
+            if ($v->isNouvelle())
+            {
+                Functions::ppa_conso($p,$annee);
+                $total['consoHeuresP'] += $p['c'];
+            }
 
             // Pour le calcul des pénalités d'Automne
             $p['attrete'] = $v->getAttrHeuresEte();
@@ -1217,30 +1205,7 @@ class Functions
             } else {
                 $p['recuperable'] = 0;
             }
-            
 
-            //$c = $consommation_repo->getConsommation($p['p'],$annee);
-            //if ( $c == null)
-            //{
-                //$p['c'] = 0;
-                //$p['q'] = 0;
-                //$p['cp']= 0;
-                //$p['recuperable'] = 0;
-                //$p['consoete']    = 0;
-            //} else {
-                //$p['c']      = $c->conso();
-                //$p['q']      = $c->getLimite();
-                //$p['cp']     = ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
-
-                //if ($isRecupAutomne==true) {
-                    //$p['consoete']    = $c->getM08()-$c->getM06();
-                    //$p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
-                    //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-                //} else {
-                    //$p['recuperable'] = 0;
-                //}
-            //}
-            //$p['g'] = 3000000;
             $projets[$p_id] = $p;
         }
 
