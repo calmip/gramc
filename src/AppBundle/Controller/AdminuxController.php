@@ -74,7 +74,7 @@ class AdminuxController extends Controller
         //$input = [];
         
         while ( $ligne  =   fgetcsv($putdata) )
-            {
+        {
             if( sizeof( $ligne ) < 5 ) continue; // pour une ligne erronée ou incomplète
                 
             $date       =   $ligne[0]; // 2019-02-05
@@ -92,14 +92,14 @@ class AdminuxController extends Controller
 
             $compta =  $conso_repository->findOneBy( [ 'date' => $date, 'loginname' =>  $loginname,  'ressource' => $ressource, 'type' => $type_nb ] );
             if ( $compta == null ) // new item
-                {
+            {
                 $compta = new Compta();
                 $compta->setDate( $date );
                 $compta->setLoginname( $loginname );
                 $compta->setRessource( $ressource );
                 $compta->setType( $type_nb );
                 $em->persist( $compta );
-                }
+            }
 
             $conso  =   $ligne[4]; // consommation
             
@@ -114,15 +114,16 @@ class AdminuxController extends Controller
             
             //$input[]    =   $compta;
             //return new Response( Functions::show( $ligne ) );
-            }
+        }
             
-        try {
+        try 
+        {
             $em->flush();
-            }   
+        }   
         catch (\Exception $e)
-            {
+        {
             return new Response('KO');
-            }
+        }
             
         //return new Response( Functions::show( $conso_repository->findAll() ) );
         
