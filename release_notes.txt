@@ -1,4 +1,14 @@
-v 2.2.1
+v 2.2.3 - 27 Mai 2019
+-------
+    - BUG Projets pas année: Consolidation des heures de conso résultat faux
+
+v 2.2.2 - 27 Mai 2019
+-------
+    - BUG Bilan de session en csv plantage
+    - BUG Affichage des graphiques de conosmmation mélange avec données de stockage
+    - Bilan de session -> conso gpu
+
+v 2.2.1 - 22 Mai 2019
 -------
     - Projets par année -> Une colonne gpu permet d'accéder à la consommation gpu projet par projet
     - Projets par année -> Des boutons en bas à gauche permettent d'accéder à la conso globale de tous les projets, en cpu et en gpu
@@ -6,11 +16,11 @@ v 2.2.1
     - Expertise -> Les experts ont accès à la liste des publications
     - Correction de bug -> On peut afficher la conso d'un projet non démarré sans avoir de message d'erreur
 
-v 2.2.0
+v 2.2.0 - 30 Avril 2019
 -------
     - Refonte des graphiques de consommation: la résolution est à présent journalière, on affiche cpu + gpu
 
-v 2.1.0
+v 2.1.0 - 16 Avril 2019
 -------
     - Refonte des workflows
     - Nettoyage du code
