@@ -38,7 +38,6 @@
 {% else %}
 <section>
 {% endif %}
-
 <div class="lien-pdf">
     <a href="{{ path('version_pdf', { 'id' : version.idVersion }) }}">
         <img src="{{ asset('icones/pdf32.png') }}" alt="pdf" title="Version pdf">
@@ -106,7 +105,7 @@
 
 <table class="projet">
     <tbody>
-        {% set versionPrec = version.versionPrecedente %}
+        {% set versionPrec = version.versionPrecedente1 %}
         {% if versionPrec != null %}
         {% if versionPrec.anneeSession == version.anneeSession %}
         <tr>
@@ -130,14 +129,14 @@
 
 <table class="projet">
     <tbody>
-        {% set versionPrec = version.versionPrecedente %}
+        {% set versionPrec = version.versionPrecedente1 %}
         {% if versionPrec != null %}
         {% if versionPrec.anneeSession == version.anneeSession %}
         <tr>
             <th class="horiz">Nombre d'heures attribuées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ (versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getDemHeures - versionPrec.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
+            <td>{{ (versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getAttrHeures - versionPrec.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
