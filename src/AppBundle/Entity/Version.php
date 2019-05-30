@@ -3106,19 +3106,40 @@ class Version
 
     public function versionPrecedente()
     {
-    // pas de version précédente
-    $versions   =  $this->getProjet()->getVersion();
-    if ( count( $versions ) <= 1 ) return null;
-
-    $versions   =   $versions->toArray();
-    usort($versions,
-            function(Version $b, Version $a){ return strcmp( $a->getIdVersion(), $b->getIdVersion()); }
-            );
-
-    //Functions::debugMessage( __METHOD__ .':'. __LINE__ . " version ID = " . $versions[1] );
-    return $versions[1];
+        // Contrairement au nom ne renvoie pas la version précédente, mais l'avant-dernière !!!
+        // La fonction versionPrecedente1() renvoie pour de vrai la version précédente
+        // TODO - Supprimer cette fonction, ou la renommer
+        $versions   =  $this->getProjet()->getVersion();
+        if ( count( $versions ) <= 1 ) return null;
+    
+        $versions   =   $versions->toArray();
+        usort($versions,
+                function(Version $b, Version $a){ return strcmp( $a->getIdVersion(), $b->getIdVersion()); }
+                );
+    
+        Functions::debugMessage( __METHOD__ .':'. __LINE__ . " version ID 0 1 = " . $versions[0]." " . $versions[1] );
+        return $versions[1];
     }
 
+    public function versionPrecedente1()
+    {
+        $versions   =  $this->getProjet()->getVersion() -> toArray();
+        // On trie les versions dans l'ordre croissant
+        usort($versions,
+            function(Version $a, Version $b){ return strcmp( $a->getIdVersion(), $b->getIdVersion()); }
+        );
+        $k = array_search($this->getIdVersion(),$versions);
+        if ($k===false || $k===0)
+        {
+            return null;
+        }
+        else
+        {
+            return $versions[$k-1];
+        }   
+    }        
+        
+  
     //////////////////////////////////////////////
 
     public function anneeRapport()

@@ -1,6 +1,10 @@
+v 2.2.4 - 30 Mai 2019
+---------------------
+    - BUG dans écran de consultation de projets (mélange entre sessions A et B)
+    
 v 2.2.3 - 27 Mai 2019
 -------
-    - BUG Projets pas année: Consolidation des heures de conso résultat faux
+    - BUG Projets par année: Consolidation des heures de conso résultat faux
 
 v 2.2.2 - 27 Mai 2019
 -------
