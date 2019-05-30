@@ -270,7 +270,8 @@
             {% endif %}
                 <td class="w45">{{ projet.id }}</td>
                 <td class="w15">
-                    <a href="{{ path('consulter_projet', { 'id': projet.idProjet }) }}" title="Consulter le projet">
+                    {% set version=annee|slice(2,2) ~ 'A' ~ projet %}
+                    <a href="{{ path('consulter_version', { 'id':projet.idprojet,'version': version }) }}" title="Consulter le projet">
                         <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
                     </a>
                 </td>
