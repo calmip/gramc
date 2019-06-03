@@ -93,7 +93,21 @@
 
 {% block body %}
 
+{% set conso_cpu = version.projet.consoressource('cpu',version.anneesession) %}
+{% set conso_gpu = version.projet.consoressource('gpu',version.anneesession) %}
+{% set conso     = conso_cpu[0] + conso_gpu[0] %}
+{% set quota     = conso_cpu[1]                %}
+{% if  quota != 0 %} {% set consop=100.0*conso/quota %}
+{% else           %} {% set consop=0                 %}
+{% endif %}
+
 <h3>I - Présentation générale</h3>
+
+{% if conso_gpu[0] > 0 %}
+<div class="message info">
+	<p>Les heures gpu sont affichées en heures <strong>normalisées</strong></p>
+</div>
+{% endif %}
 
 <table class="projet">
     <tbody>
@@ -151,14 +165,6 @@
     </tbody>
 </table>
 
-{% set conso_cpu = version.projet.consoressource('cpu',version.anneesession) %}
-{% set conso_gpu = version.projet.consoressource('gpu',version.anneesession) %}
-{% set conso     = conso_cpu[0] + conso_gpu[0] %}
-{% set quota     = conso_cpu[1]                %}
-{% if  quota != 0 %} {% set consop=100.0*conso/quota %}
-{% else           %} {% set consop=0                 %}
-{% endif %}
-                
 <table class="projet">
 <tbody>
         <tr>
@@ -228,8 +234,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
         <td>{% if (user.login == true) %}
                {% if user.loginname==null %}
                   <img src="{{ asset('icones/attention16.png') }}" alt="Compte non encore créé" title="compte non encore créé" />
-               {% else %} 
-                  <tt>{{ user.loginname }}</tt> 
+               {% else %}
+                  <tt>{{ user.loginname }}</tt>
                {% endif %}
             {% else %}  - {% endif %}</td>
         <td>{{ user.Collaborateur.prenom }}</td>
