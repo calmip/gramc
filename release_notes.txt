@@ -1,7 +1,12 @@
+v 2.2.5 - 3 Juin 2019
+---------------------
+    - BUG introduit par 2.2.4 dans l'écran de projets par année
+    - Page consulter.twig.html = Mention "heures gpu normalisées"
+
 v 2.2.4 - 30 Mai 2019
 ---------------------
-    - BUG dans écran de consultation de projets (mélange entre sessions A et B)
-    
+    - BUG dans écran de projets par année (mélange entre sessions A et B)
+
 v 2.2.3 - 27 Mai 2019
 -------
     - BUG Projets par année: Consolidation des heures de conso résultat faux

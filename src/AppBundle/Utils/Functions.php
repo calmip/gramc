@@ -1006,7 +1006,7 @@ class Functions
      * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
      *
      */
-     
+
      // Ajoute les champs 'c','g','q', 'cp' au tableau $p
     private function ppa_conso(&$p,&$annee) {
         $conso_cpu = $p['p']->getConsoRessource('cpu',$annee);
@@ -1016,7 +1016,7 @@ class Functions
         $p['g'] = $conso_gpu[0];
         $p['cp']= ($p['q']>0) ? (100.0 * $p['c']) / $p['q'] : 0;
     }
-    
+
     public function projetsParAnnee($annee,$isRecupPrintemps=false,$isRecupAutomne=false)
     {
         // Données consolidées
@@ -1135,8 +1135,8 @@ class Functions
             $projets[$p_id] = $p;
 
         }
-        
-        // Boucle sur les versions de la session B        
+
+        // Boucle sur les versions de la session B
         foreach ( $versions_B as $v)
         {
             $p_id = $v->getProjet()->getIdProjet();
@@ -1187,9 +1187,9 @@ class Functions
             $total['attrHeuresP'] -= $v->getPenalHeures();
 
             // La conso (attention à ne pas compter deux fois la conso pour les projets déjà entamés !)
+			Functions::ppa_conso($p,$annee);
             if ($v->isNouvelle())
             {
-                Functions::ppa_conso($p,$annee);
                 $total['consoHeuresP'] += $p['c'];
             }
 
