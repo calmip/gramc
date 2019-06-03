@@ -157,6 +157,7 @@ class Session
      * @return boolean
      */
     public function getTypeSession()
+    // retourne true pour une session B
     {
         return $this->typeSession;
     }
