@@ -131,8 +131,9 @@ class Menu
             $menu['raison'] = "Vous n'êtes pas connecté";
         elseif( AppBundle::getRepository(Projet::class)->countProjetsTestResponsable( AppBundle::getUser() ) > 0 )
             $menu['raison'] = "Vous êtes déjà responsable d'un projet test";
-        elseif( ! self::peut_creer_projets() )
-            $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
+        // manu, 11 jin 2019: tout le monde peut créer un projet test. Vraiment ???
+        //elseif( ! self::peut_creer_projets() )
+        //    $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
         elseif( $etat_session == Etat::EDITION_DEMANDE )
             $menu['raison'] = "Il n'est pas possible de créer un projet test en période d'attribution";
         else
@@ -149,7 +150,7 @@ class Menu
     public static function peut_creer_projets($user = null)
     {
     if( $user == null ) $user   =   AppBundle::getUser();
-    
+
     if( $user != null && $user->peut_creer_projets() )
         return true;
     else
@@ -744,7 +745,9 @@ class Menu
         }
         elseif( $version->isResponsable() == false )
             $menu['raison'] = "Seul le responsable du projet peut envoyer ce projet à l'expert";
-        elseif( $version->isResponsable() == true &&  ! static::peut_creer_projets() )
+
+        // manu - 11 juin 2019 - Tout le monde peut créer un projet test !
+        elseif( $isProjetTest == false && $version->isResponsable() == true &&  ! static::peut_creer_projets() )
             {
             $menu['raison'] = "Le responsable du projet n'a pas le droit de créer des projets";
             Functions::warningMessage(__METHOD__ . ':' . __LINE__ ." Le responsable " . AppBundle::getUser()
@@ -1016,7 +1019,7 @@ class Menu
 
     return $menu;
     }
-    
+
  ////////////////////////////////////////////////////////////////////////////
 
     public static function presidents()
@@ -1347,7 +1350,7 @@ class Menu
 
     return $menu;
     }
-    
+
  //////////////////////////////////////////////////////////////////////////
 
     public static function statistiques_laboratoire($annee = null)
