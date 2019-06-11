@@ -95,13 +95,13 @@ class SessionController extends Controller
         else
         {
             AppBundle::getSession()->remove('SessionCourante');
-    
+
             $session_courante       =   Functions::getSessionCourante();
             $etat_session_courante  =   $session_courante->getEtatSession();
             $workflow   = new SessionWorkflow();
-    
+
             //
-    
+
             if(  $etat_session_courante == Etat::ACTIF )
                 $menu[] =   [
                             'ok' => true,
@@ -117,9 +117,9 @@ class SessionController extends Controller
                             'commentaire'=> 'Pas possible de créer une nouvelle session',
                             'raison'    => "La session courante n'est pas encore active",
                             ];
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session_courante) )
                 {
                 $menu[] =
@@ -155,9 +155,9 @@ class SessionController extends Controller
                              'raison' => "La saisie a déjà démarré pour cette session",
                              ];
                 }
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session_courante)  )
                  $menu[] =  [
                             'ok' => true,
@@ -182,9 +182,9 @@ class SessionController extends Controller
                             'raison' => "La saisie est déjà terminée pour cette session",
                             ];
             //
-    
+
              if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-    
+
                 $menu[] =  [
                             'ok' => true,
                             'name' => 'envoyer_expertises',
@@ -205,11 +205,11 @@ class SessionController extends Controller
                         $item['raison'] = "La session n'est pas dans un état qui permet les envois";
                    $menu[]  =   $item;
                 }
-    
+
             //
-    
+
             $mois = GramcDate::get()->format('m');
-    
+
             if( $mois != 1 && $mois != 6 && $mois != 7 && $mois != 12 )
                 $menu[] =   [
                             'ok' => false,
@@ -250,11 +250,11 @@ class SessionController extends Controller
 
 
         return $this->render('session/gerer.html.twig',
-            [
+		[
             'menu'     => $menu,
             'sessions' => $sessions,
             //'sessions' => $new_sessions,
-            ]);
+		]);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -362,48 +362,53 @@ class SessionController extends Controller
 
         $sessions = AppBundle::getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
 
+		$ok = false;
         $mois = GramcDate::get()->format('m');
-
-
         if( $mois == 1 ||  $mois == 12 )
-            {
+		{
             if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session_courante) && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 foreach( $sessions as $session )
-                    {
+				{
                     if( $session->getIdSession() == $session_courante->getIdSession() )
                         continue;
 
                     $workflow   = new SessionWorkflow($session);
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
-                        $workflow->execute( Signal::CLK_SESS_FIN, $session);
-                    }
+                        $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
+				}
 
-                $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
+                $ok = $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
-            }
+			}
+		}
         elseif( $mois == 6 ||  $mois == 7 )
             if( $workflow->canExecute(Signal::CLK_SESS_DEB , $session_courante)  && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 //foreach( $sessions as $session )
                 //    {
                 //    $workflow   = new SessionWorkflow($session);
                 //    if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session) )
                 //        $workflow->execute( Signal::CLK_SESS_DEB, $session);
                 //    }
-                $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
+                $ok = $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
+			}
 
-        return $this->render('default/error.html.twig',
-                [
-                'message'   => "Impossible d'activer la session",
+		if ($ok==true)
+		{
+			return $this->redirectToRoute('gerer_sessions');
+		}
+		else
+		{
+	        return $this->render('default/error.html.twig',
+			[
+                'message'   => "Impossible d'activer la session, allez voir le journal !",
                 'titre'     =>  'Erreur',
-                ]);
+			]);
+		}
     }
+
     /**
      *
      * @Security("has_role('ROLE_ADMIN') or has_role('ROLE_PRESIDENT')")
@@ -638,7 +643,7 @@ class SessionController extends Controller
     {
         $annee = GramcDate::get()->format('y');   // 15 pour 2015
         $mois  = GramcDate::get()->format('m');   // 5 pour mai
-    
+
         if ($mois<7)
         {
             $id_session = $annee.'B';
@@ -649,7 +654,7 @@ class SessionController extends Controller
             $id_session = $annee+1 .'A';
             $type = 0;
         }
-    
+
         return [ 'id' => $id_session, 'type' => $type ];
     }
 
@@ -1164,7 +1169,7 @@ class SessionController extends Controller
                     $consommation = $version->getConsommation();
                     $conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
                 }
-                else 
+                else
                 {
                     $consommation = null;
                     $conso_gpu    = 0;
