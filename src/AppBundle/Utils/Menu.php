@@ -788,7 +788,7 @@ class Menu
 
     public static function affectation()
     {
-        $session = Functions::getSessionCourante();
+        //$session = Functions::getSessionCourante();
 
         $menu['name']        =   'affectation';
         $menu['lien']        =   "Affecter les experts ($session)";
@@ -819,7 +819,7 @@ class Menu
 
     public static function affectation_test()
     {
-        $session = Functions::getSessionCourante();
+        //$session = Functions::getSessionCourante();
 
         $menu['name']        =   'affectation_test';
         $menu['lien']        =   "Projets test";
@@ -878,7 +878,7 @@ class Menu
 
     public static function avancer()
     {
-    $session = Functions::getSessionCourante();
+    //$session = Functions::getSessionCourante();
     $menu['name']           =   'param_avancer';
     $menu['lien']           =   "Avancer dans le temps";
     $menu['commentaire']    =   "Vous ne pouvez pas avancer dans le temps";
@@ -1175,7 +1175,7 @@ class Menu
 
     public static function affectation_rallonges()
     {
-    $session = Functions::getSessionCourante();
+    //$session = Functions::getSessionCourante();
     $menu['name']           =   'rallonge_affectation';
     $menu['lien']           =   "Rallonge de ressources";
     $menu['commentaire']    =   "Affecter les experts pour les rallonges";

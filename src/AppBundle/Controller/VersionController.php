@@ -141,7 +141,7 @@ class VersionController extends Controller
             ]
             );
     }
-    
+
 
     /**
      * Supprimer version
@@ -157,7 +157,7 @@ class VersionController extends Controller
     if( Menu::modifier_version($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
             " parce que : " . Menu::modifier_version($version)['raison'] );
-    
+
     $em =   AppBundle::getManager();
     $etat = $version->getEtatVersion();
     if( $version->getProjet() == null )
@@ -167,7 +167,7 @@ class VersionController extends Controller
         }
     else
         $idProjet   =  $version->getProjet()->getIdProjet();
-        
+
 
     if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
         {
@@ -175,11 +175,11 @@ class VersionController extends Controller
             $em->remove( $collaborateurVersion );
         $workflow = new ProjetWorkflow();
         $workflow->execute( Signal::CLK_ERASE, $version->getProjet() );
-        
+
         $expertises = $version->getExpertise();
         foreach( $expertises as $expertise)
             $em->remove( $expertise );
-        
+
         $em->remove( $version );
         $em->flush();
         }
@@ -289,12 +289,12 @@ class VersionController extends Controller
     public function fichePdfAction(Version $version, Request $request)
     {
     $projet =  $version->getProjet();
-    
+
     // ACL
     if( Menu::telechargement_fiche($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de télécharger la fiche du projet " . $projet .
             " parce que : " . Menu::telechargement_fiche($version)['raison'] );
-    
+
     $session = $version->getSession();
 
     $html4pdf =  $this->render('version/fiche_pdf.html.twig',
@@ -329,7 +329,7 @@ class VersionController extends Controller
     if( Menu::televersement_fiche($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de téléverser la fiche du projet " . $projet .
             " parce que : " . Menu::telechargement_fiche($version)['raison'] );
-            
+
     $format_fichier = new \Symfony\Component\Validator\Constraints\File(
                 [
                 'mimeTypes'=> [ 'application/pdf' ],
@@ -396,7 +396,7 @@ class VersionController extends Controller
                 $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
                                  $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
 
-                // on marque le téléversement de la fiche projet                 
+                // on marque le téléversement de la fiche projet
                 $version->setPrjFicheVal(true);
                 AppBundle::getManager()->flush();
                 $resultat[] =   " La fiche du projet " . $projet . " pour la session " . $session . " téléversé ";
@@ -496,6 +496,10 @@ class VersionController extends Controller
      */
     public function changerResponsableAction(Version $version, Request $request)
     {
+
+	// Si changement d'état de la session alors que je suis connecté !
+	AppBundle::getSession()->remove('SessionCourante'); // remove cache
+
     // ACL
     $moi = AppBundle::getUser();
 
@@ -693,15 +697,15 @@ class VersionController extends Controller
     private static function validateIndividuForms( $individu_forms, $definitif = false )
     {
     foreach(  $individu_forms as  $individu_form )
-        {                
-        if( $definitif ==  true  &&  
+        {
+        if( $definitif ==  true  &&
                 ( $individu_form->getPrenom() == null   || $individu_form->getNom() == null
                 || $individu_form->getEtablissement() == null
                 || $individu_form->getLaboratoire() == null || $individu_form->getStatut() == null
                 )
             )   return false;
         }
-            
+
     if( $individu_forms != [] )
         return true;
     else
@@ -720,7 +724,7 @@ class VersionController extends Controller
                     {
                     $individu = AppBundle::getRepository(Individu::class)->find( $id );
                     //if( $individu_form->getMail()  == null )
-                    //    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . ' le mail du formulaire est null !');   
+                    //    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . ' le mail du formulaire est null !');
                     }
                 elseif( $individu_form->getMail() != null )
                     {
@@ -741,7 +745,7 @@ class VersionController extends Controller
                     Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu est array ' . Functions::show( $individu) );
                 elseif( $individu != null && $individu_form->getMail() != null && $individu_form->getMail() != $individu->getMail() )
                             Functions::errorMessage(__METHOD__ . ':' . __LINE__ ." l'adresse mails de l'utilisateur " .
-                            $individu . ' est incorrecte dans le formulaire :' . $individu_form->getMail() . ' != ' . $individu->getMail()); 
+                            $individu . ' est incorrecte dans le formulaire :' . $individu_form->getMail() . ' != ' . $individu->getMail());
                 elseif( $individu != null && $individu_form->getDelete() == true ) // supprimer un collaborateur
                     {
                     Functions::infoMessage(__METHOD__ . ':' . __LINE__ ." le collaborateur " .
@@ -768,7 +772,7 @@ class VersionController extends Controller
                         Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' utilisateur '
                             . $individu . ' existant juste modifié (ou pas)');
                         $version->modifierLogin( $individu, $individu_form->getLogin() );
-                        
+
                         // modification du labo du projet
                         if( $version->isResponsable( $individu ) )
                             $version->setLaboResponsable( $individu );
@@ -1035,7 +1039,7 @@ class VersionController extends Controller
                     if (is_file($old_f))
                        {
                        $rvl = copy( $old_f,$new_f );
-                       if ($rvl==false) 
+                       if ($rvl==false)
                            Functions::errorMessage("VersionController:erreur dans la fonction copy $old_f => $new_f");
                        }
                 }
@@ -1099,7 +1103,7 @@ class VersionController extends Controller
             'version'   => $version
             ]);
     }
-    
+
 
     /**
      * Displays a form to edit an existing version entity.
@@ -1725,7 +1729,7 @@ private static function redim_figure($image)
                 $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
                                  $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
 
-                // on marque le téléversement de la fiche projet                 
+                // on marque le téléversement de la fiche projet
                 $version = AppBundle::getRepository(Version::class)->findOneBy( ['projet' => $projet, 'session' => $session ] );
                 if( $version != null )
                     {
@@ -1734,7 +1738,7 @@ private static function redim_figure($image)
                     }
                 else
                     Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Il n'y a pas de version du projet " . $projet . " pour la session " . $session );
-                
+
                 $resultat[] =   " Fichier " . $filename . " téléversé";
                 }
             elseif( $type = "r" )
@@ -1747,7 +1751,7 @@ private static function redim_figure($image)
                 static::modifyRapport( $projet, $annee, $filename, false );
                 }
 
-           
+
             }
 
         }
@@ -1856,7 +1860,7 @@ private static function redim_figure($image)
                 ])
            ->getForm();
      //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
-    
+
      $form->handleRequest( $request );
 
      if( $form->isSubmitted() && $form->isValid() )
@@ -1871,9 +1875,9 @@ private static function redim_figure($image)
             return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
         else
             return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
-        
+
         $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
-        
+
         if(  ! file_exists( $dir ) )
             mkdir( $dir );
         elseif( ! is_dir(  $dir ) )
@@ -1881,7 +1885,7 @@ private static function redim_figure($image)
             unlink( $dir );
             mkdir( $dir );
             }
-        
+
         //$file->move( $dir, $version->getIdVersion() . ".pdf" );
         //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
         $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
@@ -1889,7 +1893,7 @@ private static function redim_figure($image)
         $filename = $dir . "/" . $filename;
 
         Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
-        
+
         //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
         // création de la table RapportActivite
         $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
@@ -1922,7 +1926,7 @@ private static function redim_figure($image)
     else
         return $form;
 
-     
+
 
     }
 
