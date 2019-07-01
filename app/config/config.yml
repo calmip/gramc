@@ -41,7 +41,7 @@ twig:
     strict_variables: "%kernel.debug%"
     globals:
        init: "@app.init_controller"
-       version_gramc: '2.2.5'
+       version_gramc: '2.2.6'
        mailadmin: '%mailadmin%'
        mesoc: '%mesoc%'
        mesoc_web: '%mesoc_web%'
