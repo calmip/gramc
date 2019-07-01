@@ -37,7 +37,7 @@ class Signal
     const CLK_VAL_DEM       = 10;
     const CLK_VAL_EXP_OK    = 11;
     const CLK_VAL_EXP_KO    = 12;
-    const CLK_VAL_EXP_CONT  = 13; // ni OK ni KO pour une session B
+    const CLK_VAL_EXP_CONT  = 13; // ni OK ni KO pour une session B: 0 heures mais on continue l'an prochain
     const CLK_ARR           = 14;
     const CLK_VAL_PRS       = 15;
 
