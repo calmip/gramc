@@ -667,139 +667,124 @@ class RallongeController extends Controller
      */
     public function affectationAction(Request $request)
     {
-    $sessions   =  AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
-    if ( isset( $sessions[0] ) )
-        $session1   =  $sessions[0];
-    else
-        $session1   =  null;
-    $session = $session1;
+	    $sessions   =  AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
+	    if ( isset( $sessions[0] ) )
+	        $session1   =  $sessions[0];
+	    else
+	        $session1   =  null;
+	    $session = $session1;
 
-    if ( isset( $sessions[1] ) )
+	    if ( isset( $sessions[1] ) )
         {
-        $session2   =  $sessions[1];
-        $session    =   $session2;
+	        $session2   =  $sessions[1];
+	        $session    =   $session2;
         }
-    else
-        $session2   =  null;
+	    else
+	        $session2   =  null;
 
-    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
-    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
+	    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
+	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
 
-    $idProjets = [];
-    foreach( $all_rallonges as $rallonge )
+	    $idProjets = [];
+	    foreach( $all_rallonges as $rallonge )
         {
-        $version = $rallonge->getVersion();
-        if( $version != null && $version->getProjet() != null )
+	        $version = $rallonge->getVersion();
+	        if( $version != null && $version->getProjet() != null )
             {
-            $projet         =   $version->getProjet();
-            $idProjet       =   $projet->getIdProjet();
-            $version        =   $projet->derniereVersion();
-            if( $version == null || $version->getEtatVersion() != Etat::ACTIF
-                    || $version->getEtatVersion() != Etat::NOUVELLE_VERSION_DEMANDEE )
-                        $version    =  $projet->versionActive();
-
-            $expert     =  $version->getExpert();
-            if( $expert == null )
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas d'expert ");
-            elseif( $expert->getExpert() == false )
+	            $projet         =   $version->getProjet();
+			    $idProjet       =   $projet->getIdProjet();
+	            $expert     =  $version->getExpert();
+	            if( $expert == null )
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas d'expert ");
+	            elseif( $expert->getExpert() == false )
                 {
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $expert . " n'est plus un expert ");
-                $expert == null;
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $expert . " n'est plus un expert ");
+	                $expert == null;
                 }
 
-            $labo       =  $version->getLabo();
-            if( $labo == null )
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de labo ");
+	            $labo       =  $version->getLabo();
+	            if( $labo == null )
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de labo ");
 
-            $titre      =  $version->getTitreCourt();
-            if( $titre == null )
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de titre ");
+	            $titre      =  $version->getTitreCourt();
+	            if( $titre == null )
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de titre ");
 
-            $responsable      =  $version->getResponsable();
-            if( $responsable == null )
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de responsable ");
+	            $responsable      =  $version->getResponsable();
+	            if( $responsable == null )
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de responsable ");
 
-            $thematique      =  $version->getPrjThematique();
-            if( $thematique == null )
-                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de thematique ");
+	            $thematique      =  $version->getPrjThematique();
+	            if( $thematique == null )
+	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de thematique ");
 
-            $idProjets[$rallonge->getIdRallonge()] =  $idProjet;
-            $projets[ $idProjet ]['projet']     = $projet;
-            $projets[ $idProjet ]['version']    = $version;
-            $projets[ $idProjet ]['expert']     = $expert;
-            $projets[ $idProjet ]['rallonges']  = [];
-            $projets[ $idProjet ]['forms']      = [];
-            $projets[ $idProjet ]['titre']      = $titre;
-            $projets[ $idProjet ]['responsable']= $responsable;
-            $projets[ $idProjet ]['labo']       = $labo;
-            $projets[ $idProjet ]['thematique'] = $thematique;
-            $projets[ $idProjet ]['etat']       = null;
-            $projets[ $idProjet ]['etatProjet']         = $projet->getEtatProjet();
-            $projets[ $idProjet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
-            $projets[ $idProjet ]['etatVersion']        = $version->getEtatVersion();
-            $projets[ $idProjet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
-            $projets[ $idProjet ]['conso']      = $projet->getConso(  $version->getAnneeSession() );
+	            $idProjets[$rallonge->getIdRallonge()] =  $idProjet;
+	            $projets[ $idProjet ]['projet']     = $projet;
+	            $projets[ $idProjet ]['version']    = $version;
+	            $projets[ $idProjet ]['expert']     = $expert;
+	            $projets[ $idProjet ]['rallonges']  = [];
+	            $projets[ $idProjet ]['forms']      = [];
+	            $projets[ $idProjet ]['titre']      = $titre;
+	            $projets[ $idProjet ]['responsable']= $responsable;
+	            $projets[ $idProjet ]['labo']       = $labo;
+	            $projets[ $idProjet ]['thematique'] = $thematique;
+	            $projets[ $idProjet ]['etat']       = null;
+	            $projets[ $idProjet ]['etatProjet']         = $projet->getEtatProjet();
+	            $projets[ $idProjet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
+	            $projets[ $idProjet ]['etatVersion']        = $version->getEtatVersion();
+	            $projets[ $idProjet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
+	            $projets[ $idProjet ]['conso']      = $projet->getConso(  $version->getAnneeSession() );
 
-            if( $version->isNouvelle() )
-                $projets[ $idProjet ]['NR']   =   'N';
-            else
-                $projets[ $idProjet ]['NR']   =   '';
+	            if( $version->isNouvelle() )
+	                $projets[ $idProjet ]['NR']   =   'N';
+	            else
+	                $projets[ $idProjet ]['NR']   =   '';
             }
         }
 
-    foreach( $all_rallonges as $rallonge )
+	    foreach( $all_rallonges as $rallonge )
         //if(  $rallonge->getEtatRallonge() != Etat::ANNULE )
             $projets[ $idProjets[$rallonge->getIdRallonge()] ]['rallonges'][$rallonge->getIdRallonge()] = $rallonge;
 
-    $nbDemandes = 0;
-    foreach( $projets as $key => $projet )
+	    $nbDemandes = 0;
+	    foreach( $projets as $key => $projet )
         {
-        foreach( $projet['rallonges'] as $rallonge )
+	        foreach( $projet['rallonges'] as $rallonge )
             {
-            $etatRallonge   =   $rallonge->getEtatRallonge();
-            $etatProjet     =   $projet['etat'];
-            if( $etatProjet != Etat::EDITION_DEMANDE ) $nbDemandes++;
-            if( $etatProjet ==  null || $etatProjet == Etat::ANNULE ||
-                $etatRallonge == Etat::EDITION_DEMANDE || $etatRallonge == Etat::EDITION_EXPERTISE )
+	            $etatRallonge   =   $rallonge->getEtatRallonge();
+	            $etatProjet     =   $projet['etat'];
+	            if( $etatProjet != Etat::EDITION_DEMANDE ) $nbDemandes++;
+	            if( $etatProjet ==  null || $etatProjet == Etat::ANNULE || $etatRallonge == Etat::EDITION_DEMANDE || $etatRallonge == Etat::EDITION_EXPERTISE )
+					$projets[$key]['etat'] =  $rallonge->getMetaEtat();
+	            elseif( $etatProjet == Etat::TERMINE && $etatRallonge== Etat::ACTIF )
                     $projets[$key]['etat'] =  $rallonge->getMetaEtat();
-            elseif( $etatProjet == Etat::TERMINE && $etatRallonge== Etat::ACTIF )
-                    $projets[$key]['etat'] =  $rallonge->getMetaEtat();
-            if( $rallonge->getExpert() == null )
-                $projets[$key]['affecte']   =   false;
-            else
-                $projets[$key]['affecte']   =   true;
+	            if( $rallonge->getExpert() == null )
+	                $projets[$key]['affecte']   =   false;
+	            else
+	                $projets[$key]['affecte']   =   true;
             }
-        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
+	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
         }
-
-    //return new Response(Functions::show( $projets) );
-
-    // debug
-    //$version0 = $versions[1];
-    //$versions = [ $version0 ];
-    //$version1 = $versions[0];
-    //$versions = [ $version0, $version1 ];
 
     ///////////////////////
 
-    $thematiques = [];
-    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
+	    $thematiques = [];
+	    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
         {
-        foreach( $thematique->getExpert() as $expert )
-            if( $expert->getExpert() == false )
+	        foreach( $thematique->getExpert() as $expert )
+	            if( $expert->getExpert() == false )
                 {
-                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
-                Functions::noThematique( $expert );
+	                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
+	                Functions::noThematique( $expert );
                 }
-        $thematiques[ $thematique->getIdThematique() ] =
-            ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
+	        $thematiques[ $thematique->getIdThematique() ] = ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
         }
 
     ///////////////////////
 
-    $experts = [];
-    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
-        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
+	    $experts = [];
+	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
+	        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
 
 
     ////////////////////////
@@ -808,25 +793,25 @@ class RallongeController extends Controller
         $nbAttHeures    =   0;
 
         foreach( $projets as $idProjet => $projet )
-            {
+		{
             foreach ( $projet['rallonges'] as $idRallonge => $rallonge )
-                {
+			{
                 $etatRallonge       = $rallonge->getEtatRallonge();
                 if( $etatRallonge != Etat::EDITION_DEMANDE && $etatRallonge != Etat::ANNULE )
-                    {
+				{
                     $nbDemHeures        +=  $rallonge->getDemHeures();
                     $nbAttHeures        +=  $rallonge->getAttrHeures();
-                    }
+				}
 
                 if(  $etatRallonge == Etat::EDITION_EXPERTISE || $etatRallonge == Etat::DESAFFECTE )
-                    {
+				{
                     $projets[$idProjet]['form'][$idRallonge]  = $rallonge->getExpertForm();
 
                     // traitement du formulaire d'affectation
                     $form = $projets[$idProjet]['form'][$idRallonge];
                     $form->handleRequest($request);
                     if( $form->isSubmitted()   && $form->isValid()  )
-                        {
+					{
                         $workflow = new RallongeWorkflow();
                         $expert     =   $form->getData()['expert'];
                         Functions::debugMessage(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " affectée à l'expert " . $expert);
@@ -837,31 +822,32 @@ class RallongeController extends Controller
                             $workflow->execute( Signal::CLK_AFFECTER, $rallonge );
                         else
                             $workflow->execute( Signal::CLK_DESAFFECTER, $rallonge );
-                        }
-                    $form = $projets[$idProjet]['form'][$idRallonge] = $form->createView();
-                    }
-                    
+					}
+	                    $form = $projets[$idProjet]['form'][$idRallonge] = $form->createView();
+				}
+
                 $expert = $rallonge->getExpert();
                 if( $expert != null )
                         $projets[$idProjet]['affecte']  =   true;
                 else
                         $projets[$idProjet]['affecte']  =   false;
-                }
-            }
+			}
+		}
+
         /* if( $forms['17BP17003'] == $forms['17BP17002'] )
             Functions::debugMessage( __METHOD__ . ' forms same' . Functions::show( $forms ) );
         else
             Functions::debugMessage( __METHOD__ . ' forms not same' . Functions::show( $forms ) ); */
 
         return $this->render('rallonge/affectation.html.twig',
-            [
+		[
             'projets'       => $projets,
             'session1'      => $session1,
             'session2'      => $session2,
             'nbDemandes'    => $nbDemandes,
             'nbDemHeures'   => $nbDemHeures,
             'nbAttHeures'   => $nbAttHeures,
-            ]);
+		]);
     }
 
     /**
