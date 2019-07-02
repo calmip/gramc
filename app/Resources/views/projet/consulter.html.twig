@@ -159,7 +159,7 @@
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
             <td>{{ (version.data.attrHeuresRallonge + version.data.attrHeures - version.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
-            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte }}|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
+            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte |number_format(0, ',', ' ')|replace({' ':'&nbsp;'}) |raw }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
             </td>
         </tr>
     </tbody>
