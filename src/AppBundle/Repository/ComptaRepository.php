@@ -44,8 +44,8 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         return $db_data;
     }
 
-    public function consoTotale($annee)
-    /* Renvoie les données de conso de la somme de tous les types 2 cpu, tous les Type 2 gpu, etc.
+    public function consoTotale($annee,$ressource)
+    /* Renvoie les données de conso de la somme de tous les types 2 de la ressource spécifiée
      * Se limite aux projets P* et T* (exclusion des projets E*)
      */
     {
@@ -57,12 +57,14 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
              FROM AppBundle:Compta c
              WHERE c.type = 2
              AND c.date >= :debut
-	     AND c.date <= :fin
-	     AND ( c.loginname LIKE \'p%\' OR c.loginname LIKE \'t%\' )
-             GROUP BY c.date,c.ressource'
+	         AND c.date <= :fin
+	         AND c.ressource = :ressource
+	         AND ( c.loginname LIKE \'p%\' OR c.loginname LIKE \'t%\' )
+             GROUP BY c.date'
         )
         ->setParameter('debut',$debut)
         ->setParameter('fin',$fin)
+        ->setParameter('ressource',$ressource)
         ->getResult();
 
         if( $db_data == null || empty( $db_data ) ) return null;

@@ -226,16 +226,16 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
             $query .=   "AND p.idProjet LIKE :Pannee ";
         elseif( $renouvel == Functions::ANCIENS )
             $query .=   "AND NOT ( p.idProjet LIKE :Pannee ) ";
-        
+
         $projets = $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             return $projets->getResult();
         else
-            return $projets->setParameter('Pannee', 'P' . $subAnnee . '%')->getResult();        
+            return $projets->setParameter('Pannee', 'P' . $subAnnee . '%')->getResult();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -247,17 +247,17 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) AND p.idProjet LIKE :Pannee ";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('Pannee', 'P' . $subAnnee . '%')
-        ->getResult();    
-        
+        ->getResult();
+
     }
 
-    
+
 ////////////////////////////////////////////////////////////////////////////////
 
      public function findAnciensProjetsAnnee($annee)
@@ -267,14 +267,14 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) AND NOT ( p.idProjet LIKE :Pannee )";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('Pannee', 'P' . $subAnnee . '%')
-        ->getResult();    
-        
+        ->getResult();
+
     }
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -285,13 +285,13 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) ";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
-        ->getSingleScalarResult();    
-        
+        ->getSingleScalarResult();
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -301,28 +301,28 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
      public function heuresProjetsAnnee($annee, $renouvel = Functions::TOUS )
     {
         $subAnnee = substr( strval($annee), -2 );
-        
+
         $query = "SELECT SUM(v.demHeures), SUM(v.attrHeures), SUM(v.penalHeures) FROM AppBundle:Version  v ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " JOIN AppBundle:Projet p WITH v.projet = p ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) ";
-        
+
         if( $renouvel == Functions::NOUVEAUX )
             $query .=   "AND p.idProjet LIKE :Pannee ";
         elseif( $renouvel == Functions::ANCIENS )
             $query .=   "AND NOT ( p.idProjet LIKE :Pannee ) ";
-    
+
         $heures = $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             $heures = $heures->getSingleResult();
         else
             $heures = $heures->setParameter('Pannee', 'P' . $subAnnee . '%')
                     ->getSingleResult();
-       
+
 
         $query = "SELECT SUM(r.demHeures), SUM(r.attrHeures) FROM AppBundle:Rallonge r ";
         $query .= " JOIN AppBundle:Version v WITH r.version = v ";
@@ -341,23 +341,23 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('true', true );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             $heures_rallonges = $heures_rallonges->getSingleResult();
         else
             $heures_rallonges = $heures_rallonges->setParameter('Pannee', 'P' . $subAnnee . '%')
                     ->getSingleResult();
-        
+
         return [
                 'demHeures'         => $heures[1],
                 'attrHeures'        => $heures[2],
                 'penalHeures'       => $heures[3],
                 'rallongeDemHeures'      => $heures_rallonges[1],
-                'rallongeAttrHeures'     => $heures_rallonges[2], 
+                'rallongeAttrHeures'     => $heures_rallonges[2],
                 ];
-        
+
         //return array_merge( $heures, $heures_rallonges );
-        
-        
+
+
     }
 
 
