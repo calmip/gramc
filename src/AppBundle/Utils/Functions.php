@@ -608,19 +608,7 @@ class Functions
         return static::calculConsommation($version->getConsommation() , false);
     }
 
-    public static function getProjetConsommation( Projet $projet, $annee = null, $pourcentage_flg = true  )
-    {
-        // si $annee == null $annee = GramcDate::get()->showYear()
-        return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommation($projet, $annee),$pourcentage_flg );
-    }
-
-// VIRE PAR MANU car 1/ Non utilise 2/ getConsommationTest a change de prototype (maintenant pareil que getConsommation)
-    //public static function getProjetTestConsommation( ProjetTest $projet, $pourcentage_flg = true  )
-    //{
-        //return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommationTest($projet),$pourcentage_flg );
-    //}
-
-
+	// En fait elle n'est utilisée qu'en interne
     public static function calculConsommation( $consommation, $pourcentage_flg = false )
     {
         $conso          =   0;

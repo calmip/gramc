@@ -1376,7 +1376,7 @@ class ProjetController extends Controller
     // projets responsable
     $projets_resp  = [];
     foreach ( $list_projets_resp as $projet )
-        {
+	{
         $versionActive  =   $projet->versionActive();
         if( $versionActive != null )
             $rallonges  =  $versionActive ->getRallonge();
@@ -1385,16 +1385,16 @@ class ProjetController extends Controller
         $projets_resp[]   =
             [
             'projet'    =>  $projet,
-            'conso'     =>  Functions::getProjetConsommation($projet),
+            'conso'     =>  $projet->getConsoP(),
             'rallonges' =>  $rallonges,
             'cpt_rall'  =>  count($rallonges),
             ];
-        }
+	}
 
     // projets collaborateur
     $projets_collab  = [];
     foreach ( $list_projets_collab as $projet )
-        {
+	{
         $versionActive  =   $projet->versionActive();
         if( $versionActive != null )
             $rallonges  =  $versionActive ->getRallonge();
@@ -1403,11 +1403,11 @@ class ProjetController extends Controller
         $projets_collab[]   =
             [
             'projet'    =>  $projet,
-            'conso'     =>  Functions::getProjetConsommation($projet, null, true),
+            'conso'     =>  $projet->getConsoP(),
             'rallonges' =>  $rallonges,
             'cpt_rall'  =>  count($rallonges),
             ];
-        }
+	}
 
     $menu[] = Menu::nouveau_projet();
     $menu[] = Menu::nouveau_projet_test();

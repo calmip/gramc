@@ -581,7 +581,7 @@ class Projet
 
     if( $collaborateurs == [] )
         $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
-    
+
     $derniereVersion = $this->derniereVersion();
     if( $derniereVersion == null )
         {
@@ -698,7 +698,7 @@ class Projet
         $version    =   $this->derniereVersion();
     else
         $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
-        
+
     if( $version != null )
         {
         $expertises =   $version->getExpertise()->toArray();
@@ -718,65 +718,142 @@ class Projet
     return null;
     }
 
-    // calcul de la consommation et du quota d'une ressource à partir de la table compta
-    // Si $annee==null -> On prend l'annee courante
-    // Si $annee==annee courante -> On prend l'info à la DATE DU JOUR
-    // Si $annee==autre année    -> On prend l'info au 31 Décembre
-    // Renvoie [ $conso, $quota ]
-    // NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
-    public function getConsoRessource($ressource, $annee=null)
+	/*
+	 * calcul de la consommation et du quota d'une ressource (cpu, gpu, work_space, etc.)
+	 *
+	 * param $ressource: La ressource
+	 * param $annee_ou_date    : L'année ou la date
+	 *       Si $annee_ou_date==null                -> On considère la date du jour
+	 *       Si $annee_ou_date est annee courante   -> On considère la date du jour
+	 *       Si $annee_ou_date est une autre année  -> On considère le 31 décembre de $annee_ou_date
+	 *       Si $annee_ou_date est une DateTime     -> On considère la date
+	 *
+	 * S'il n'y a pas de données à la date considérée, on renvoie [0,0]
+	 *
+	 * Renvoie [ $conso, $quota ]
+	 *
+	 * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos seront mesurées à hier
+	 *        Si on utilise avant 8h00 du matin toutes les consos sont à 0 !
+	 *
+	 */
+    public function getConsoRessource($ressource, $annee_ou_date=null)
     {
-        $annee_courante = GramcDate::get()->showYear();
-        if ($annee==null) $annee = $annee_courante;
-        if ($annee==$annee_courante) 
+		//return [0,0];
+        $annee_ou_date_courante = GramcDate::get()->showYear();
+        if ($annee_ou_date==$annee_ou_date_courante || $annee_ou_date===null)
         {
-            $date = new \DateTime();
-        } 
-        else 
-        {
-            $date = new \DateTime( $annee . '-12-31');
+            $date  = GramcDate::get();
+		}
+		elseif (is_object($annee_ou_date))
+		{
+			$date = $annee_ou_date;
+		}
+		else
+		{
+            $date = new \DateTime( $annee_ou_date . '-12-31');
         }
+
         $loginName = strtolower($this->getIdProjet());
         $conso     = 0;
         $quota     = 0;
-        $consop    = 0;
-        $compta    = AppBundle::getRepository(Compta::class)->findOneBy(
-                                                [
-                                                    'date'      => $date,
-                                                    'ressource' => $ressource,
-                                                    'loginname' => $loginName,
-                                                    'type'      => 2
-                                                ]);
-        if ($compta != null)
-        {
-            $conso = $compta->getConso();
-            $quota = $compta->getQuota();
-        }
-        
+		$comptaRepos = AppBundle::getRepository(Compta::class);
+
+		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' date = ' . $date->format("Y-m-d") . " loginname = " . $loginName . " ressource = ".$ressource );
+        $compta = $comptaRepos->findOneBy(
+			 [
+				 'date'      => $date,
+				 'ressource' => $ressource,
+				 'loginname' => $loginName,
+				 'type'      => 2
+			 ]);
+		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' compta = ' . print_r($compta, true));
+		if ($compta != null)
+		{
+			$conso = $compta->getConso();
+			$quota = $compta->getQuota();
+		}
+
         return [$conso, $quota];
     }
-            
-    // TODOCONSOMMATION - calcul de la consommation à partir de la table Consommation
-    public function getConso($annee)
-    {
-        $consommation   =   $this->getConsommation($annee);
-        $conso          =   0;
 
-        if( $consommation != null )
-        {
-            for ($i = 1; $i <= 12; $i++)
-            {
-                if( $i < 10 )
-                    $methodName = 'getM0'.$i;
-                else
-                    $methodName ='getM'.$i;
-                $c = $consommation->$methodName();
-                if( $c != null && $c > $conso ) $conso  =   $c;
-            }
-        }
-        return $conso;
+	/*
+	 * Renvoie la consommation seule (pas le quota) des ressources cpu + gpu
+	 *
+	 * param : $annee
+     * return: La consommation "calcul" pour l'année
+     *
+     */
+    public function getConso($annee_ou_date=null)
+    {
+		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
+		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
+		return $conso_gpu[0] + $conso_cpu[0];
     }
-    
+
+	/*
+	 * Renvoie la consommation seule en pourcentage des ressources cpu + gpu
+	 *
+	 * param : $annee
+     * return: La consommation "calcul" pour l'année en % du quota
+     *
+     */
+    public function getConsoP($annee_ou_date=null)
+    {
+		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
+		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
+		if ( $conso_cpu[1] <= 0 )
+		{
+			return 0;
+		}
+		else
+		{
+			return 100.0*($conso_gpu[0] + $conso_cpu[0])/$conso_cpu[1];
+		}
+    }
+
+	/*
+	 * Renvoie la consommation calcul (getConso() de l'année et du mois passés en paramètres (0..11)
+	 *
+	 */
+	public function getConsoMois($annee,$mois)
+	{
+		// Il y aura une erreur les années bissextiles, tant pis
+		$jours = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+		$now = GramcDate::get();
+		$annee_courante = $now->showYear();
+		$mois_courant   = $now->showMonth();
+		if ($annee==$annee_courante && $mois==$mois_courant)
+		{
+			$conso_fin = $this->getConso($now);
+		}
+		else
+		{
+			$conso_fin = $this->getConso("$annee-$mois-".$jours[$mois]);
+		}
+		$conso_debut = $this->getConso("$annee-$mois-01");
+		return ($conso_fin>$conso_debut?$conso_fin-$conso_debut:0);
+	}
+
+	/*
+	 * Renvoie le quota seul (pas la conso) des ressources cpu
+	 *
+	 * param : $annee
+     * return: La consommation "calcul" pour l'année
+     *
+     */
+    public function getQuota($annee=null)
+    {
+		$conso_cpu = $this->getConsoRessource('cpu',$annee);
+		return $conso_cpu[1];
+    }
+
+    /*
+     * param : $annee
+     * return: Un objet de type Consommation
+     *
+     * TODO - Cette fonction de bas niveau est-elle vraiement utile ?
+     */
     public function getConsommation($annee)
     {
         return AppBundle::getRepository(Consommation::class)->findOneBy(
@@ -836,7 +913,7 @@ class Projet
     $versions = [];
     if( $versionA != null ) $versions['A'] = $versionA;
     if( $versionB != null ) $versions['B'] = $versionB;
-    return $versions; 
+    return $versions;
     }
 
 }
