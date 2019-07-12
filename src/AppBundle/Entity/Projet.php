@@ -817,22 +817,51 @@ class Projet
 	 */
 	public function getConsoMois($annee,$mois)
 	{
-		// Il y aura une erreur les années bissextiles, tant pis
-		$jours = [31,28,31,30,31,30,31,31,30,31,30,31];
-
 		$now = GramcDate::get();
 		$annee_courante = $now->showYear();
 		$mois_courant   = $now->showMonth();
-		if ($annee==$annee_courante && $mois==$mois_courant)
+		$mois += 1;	// 0..11 -> 1..12 !
+
+		// 2019 - 2000 !
+		if ( ($annee==$annee_courante || abs($annee-$annee_courante)==2000) && $mois==$mois_courant)
 		{
 			$conso_fin = $this->getConso($now);
 		}
 		else
 		{
-			$conso_fin = $this->getConso("$annee-$mois-".$jours[$mois]);
+			// Pour décembre on mesure la consomation du 1er Janvier de l'année suivante !
+			if ($mois==12)
+			{
+				$d = strval($annee+1)."-01-01";
+				$conso_fin = $this->getConso(new \DateTime($d));
+				//AppBundle::getLogger()->error("koukou1 " . $this->getIdProjet() . "$d -> $conso_fin");
+			}
+			// Pour les autres mois on prend la conso du 1er du mois suivant
+			else
+			{
+				$m = strval($mois + 1);
+				$conso_fin = $this->getConso(new \DateTime($annee.'-'.$m.'-01'));
+			}
 		}
-		$conso_debut = $this->getConso("$annee-$mois-01");
-		return ($conso_fin>$conso_debut?$conso_fin-$conso_debut:0);
+
+		// Pour Janvier on prend zéro, pas la valeur au 1er Janvier
+		// La remise à zéro ne se fait jamais le 1er Janvier
+		if ($mois==1)
+		{
+			$conso_debut = 0;
+		}
+		else
+		{
+			$conso_debut = $this->getConso(new \DateTime("$annee-$mois-01"));
+		}
+		if ($conso_fin>$conso_debut)
+		{
+			return $conso_fin-$conso_debut;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/*
@@ -848,20 +877,20 @@ class Projet
 		return $conso_cpu[1];
     }
 
-    /*
-     * param : $annee
-     * return: Un objet de type Consommation
-     *
-     * TODO - Cette fonction de bas niveau est-elle vraiement utile ?
-     */
-    public function getConsommation($annee)
-    {
-        return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        [
-                                                        'annee'     => $annee,
-                                                        'projet'    => $this->getIdProjet()
-                                                        ]);
-    }
+    ///*
+     //* param : $annee
+     //* return: Un objet de type Consommation
+     //*
+     //* TODO - Cette fonction de bas niveau est-elle vraiment utile ?
+     //*/
+    //public function getConsommation($annee)
+    //{
+        //return AppBundle::getRepository(Consommation::class)->findOneBy(
+                                                        //[
+                                                        //'annee'     => $annee,
+                                                        //'projet'    => $this->getIdProjet()
+                                                        //]);
+    //}
 
     ///////////////////////////////////////////////////////////////////////////////
     //

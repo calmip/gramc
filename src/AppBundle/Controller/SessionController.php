@@ -1092,8 +1092,22 @@ class SessionController extends Controller
 
         $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
 
+        /*
+         * Calcul de la date pour savoir s'il y a des heures à récupérer
+         * Seulement utile pour la session B s'il y a une version du projet en session A
+         */
+        $date_recup = GramcDate::Get();
+        $d30j       = new \DateTime($annee_cour.'-06-30'); // Le 30 Juin
+      	// Si on est après le 30 juin on considère le 30 juin comme date de conso de référence
+      	// Si on est avant, on conisdère la date du jour
+      	// Evidemment elle ne devrait pas être trop éloignée du 30 juin sinon cela n'a pas trop de sens !
+        if ($date_recup > $d30j)
+        {
+			$date_recup = $d30j;
+		}
+
         foreach( $versions as $version )
-            {
+		{
             if( $session_precedente_A != null )
                 $version_precedente_A = AppBundle::getRepository(Version::class)
                             ->findOneVersion($session_precedente_A, $version->getProjet() );
@@ -1167,63 +1181,17 @@ class SessionController extends Controller
             $dem_heure_cour     =   $version->getDemHeures();
             $attr_heure_cour    =   $version->getAttrHeures();
 
-            //if ($type_session=='A')
-            //{
-                //if      ( $version_precedente_A != null ) $consommation = $version_precedente_A->getConsommation();
-                //elseif  ( $version_precedente_B != null ) $consommation = $version_precedente_B->getConsommation();
-                //else    $consommation = null;
-                ////return new Response( $consommation );
-            //}
-            //else // ($type_session=='B')
-            //{
-                //if      ( $version != null ) {
-                    //$consommation = $version->getConsommation();
-                    //$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
-                //}
-                //else
-                //{
-                    //$consommation = null;
-                    //$conso_gpu    = 0;
-                //}
-            //}
-
-            //if( $consommation != null )
-            //{
-                //$quota  =   $consommation->getLimite();
-                //$m01    =   $consommation->getM01();
-                //$m02    =   $consommation->getM02();
-                //$m03    =   $consommation->getM03();
-                //$m04    =   $consommation->getM04();
-                //$m05    =   $consommation->getM05();
-                //$m06    =   $consommation->getM06();
-                //$m07    =   $consommation->getM07();
-                //$m08    =   $consommation->getM08();
-                //$m09    =   $consommation->getM09();
-                //$m10    =   $consommation->getM10();
-                //$m11    =   $consommation->getM11();
-                //$m12    =   $consommation->getM12();
-            //}
-            //else
-                //{
-                //$quota  =   null;
-                //$m01    =   null;
-                //$m02    =   null;
-                //$m03    =   null;
-                //$m04    =   null;
-                //$m05    =   null;
-                //$m06    =   null;
-                //$m07    =   null;
-                //$m08    =   null;
-                //$m09    =   null;
-                //$m10    =   null;
-                //$m11    =   null;
-                //$m12    =   null;
-                //}
-
+			// Calcul des heures récupérables au printemps
             if( $version_courante_A != null )
-                $recuperable        =   static::calc_recup_heures_printemps( $version->getProjet()->getConso($annee_cour,6), $attr_heures_A);
+            {
+				// TODO - VERIFIER EN 2020 QUE CA MARCHE !
+				$conso_juin = $version->getProjet()->getConso($date_recup->format('Y-m-d'));
+                $recuperable        =   static::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
+			}
             else
+            {
                 $recuperable        =   0;
+			}
 
             $ligne =
                     [
@@ -1252,27 +1220,19 @@ class SessionController extends Controller
                     $conso,
                     $conso_gpu,
                     //( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
-                    ( $quota != 0 ) ? intval(round( $conso * 100 /$quota ) ): null,
+                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
                     ]);
 
-            if ($type_session=='B') $ligne[] =  $recuperable;
+	        if ($type_session=='B') $ligne[] =  $recuperable;
 
 			for ($m=0;$m<12;$m++)
 			{
-				$c       = $version->getProjet()->getConsoMois($annee_cour,$m);
+				$consmois= $version->getProjet()->getConsoMois($annee_cour,$m);
 				$index   = 'm' . ($m<10?'0':'') . $m;
-				$ligne[] = $c;
 
-				$totaux[$index] += $c;
+				$ligne[] = $consmois;
+				$totaux[$index] += $consmois;
 			};
-             //$ligne = array_merge( $ligne,
-                    //[
-                    //$m01,($m02-$m01 > 0) ? $m02-$m01: 0,( $m03-$m02 > 0 ) ? $m03-$m02 : 0,
-                    //($m04-$m03 > 0 ) ? $m04-$m03 : 0 ,( $m05-$m04 > 0 ) ? $m05-$m04 : 0,
-                    //($m06-$m05 > 0 ) ? $m06-$m05 : 0 , ( $m07-$m06 > 0 ) ? $m07-$m06 : 0,
-                    //( $m08 > $m07 ) ? $m08-$m07 : 0 ,( $m09 > $m08 ) ? $m09-$m08 : 0 ,
-                    //( $m10 > $m09 ) ? $m10-$m09 : 0,( $m11 > $m10 ) ? $m11-$m10 : 0 ,( $m12 > $m11 ) ? $m12-$m11 : 0,
-                    //]);
 
             $sortie     .=   join("\t",$ligne) . "\n";
 
@@ -1289,19 +1249,6 @@ class SessionController extends Controller
             $totaux["conso_an"]                 +=  $version->getConso(); //( $consommation != null ) ? $consommation->conso(): 0;
             $totaux["conso_gpu"]                +=  $conso_gpu;
             $totaux["recuperable"]              +=  $recuperable;
-
-            //$totaux["m01"]  +=  $m01;
-            //$totaux["m02"]  +=  ($m02-$m01 > 0) ? $m02-$m01: 0;
-            //$totaux["m03"]  +=  ( $m03-$m02 > 0 ) ? $m03-$m02 : 0;
-            //$totaux["m04"]  +=  ($m04-$m03 > 0 ) ? $m04-$m03 : 0;
-            //$totaux["m05"]  +=  ( $m05-$m04 > 0 ) ? $m05-$m04 : 0;
-            //$totaux["m06"]  +=  ($m06-$m05 > 0 ) ? $m06-$m05 : 0;
-            //$totaux["m07"]  +=  ( $m07-$m06 > 0 ) ? $m07-$m06 : 0;
-            //$totaux["m08"]  +=  ( $m08 > $m07 ) ? $m08-$m07 : 0;
-            //$totaux["m09"]  +=  ( $m09 > $m08 ) ? $m09-$m08 : 0;
-            //$totaux["m10"]  +=  ( $m10 > $m09 ) ? $m10-$m09 : 0;
-            //$totaux["m11"]  +=  ( $m11 > $m10 ) ? $m11-$m10 : 0;
-            //$totaux["m12"]  +=  ( $m12 > $m11 ) ? $m12-$m11 : 0;
 
             } // fin de la boucle principale
 

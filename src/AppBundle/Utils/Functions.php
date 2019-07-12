@@ -603,45 +603,45 @@ class Functions
 
     ////////////////////////////////////////////////
 
-    public static function getConsommation(Version $version)
-    {
-        return static::calculConsommation($version->getConsommation() , false);
-    }
+    //public static function getConsommation(Version $version)
+    //{
+        //return static::calculConsommation($version->getConsommation() , false);
+    //}
 
-	// En fait elle n'est utilisée qu'en interne
-    public static function calculConsommation( $consommation, $pourcentage_flg = false )
-    {
-        $conso          =   0;
+	//// En fait elle n'est utilisée qu'en interne
+    //public static function calculConsommation( $consommation, $pourcentage_flg = false )
+    //{
+        //$conso          =   0;
 
-        if( $consommation != null )
-            {
-            for ($i = 1; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        ${"methodName"} = 'getM0'.$i;
-                    else
-                        ${"methodName"} = 'getM'.$i;
-                    $c = $consommation->${"methodName"}();
-                    if( $c != null && $c > $conso ) $conso  =   $c;
-                   }
+        //if( $consommation != null )
+            //{
+            //for ($i = 1; $i <= 12; $i++)
+                 //{
+                    //if( $i < 10 )
+                        //${"methodName"} = 'getM0'.$i;
+                    //else
+                        //${"methodName"} = 'getM'.$i;
+                    //$c = $consommation->${"methodName"}();
+                    //if( $c != null && $c > $conso ) $conso  =   $c;
+                   //}
 
-        // on calcule la consommation comme pourcentage
-            if( $pourcentage_flg == true )
-            {
-            $limite =  $consommation->getLimite();
-            if( $limite <= 0 )
-                static::errorMessage('Functions : getConsommation : limite nulle ou négative');
-            else
-                {
-                $conso   /=  $limite;
-                $conso   *= 100;
-                }
+        //// on calcule la consommation comme pourcentage
+            //if( $pourcentage_flg == true )
+            //{
+            //$limite =  $consommation->getLimite();
+            //if( $limite <= 0 )
+                //static::errorMessage('Functions : getConsommation : limite nulle ou négative');
+            //else
+                //{
+                //$conso   /=  $limite;
+                //$conso   *= 100;
+                //}
 
-            }
-        }
+            //}
+        //}
 
-        return $conso;
-    }
+        //return $conso;
+    //}
 
     // ACL pour Projet
 

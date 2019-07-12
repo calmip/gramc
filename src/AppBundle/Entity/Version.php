@@ -2728,15 +2728,15 @@ class Version
         return $this->getSession()->getAnneeSession() + 2000;
     }
 
-	// Fonction de bas niveau à virer ASAP
-    public function getConsommation()
-    {
-        return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        [
-                                                        'annee'     => $this->getAnneeSession(),
-                                                        'projet'    => $this->getProjet(),
-                                                        ]);
-    }
+	//// Fonction de bas niveau à virer ASAP
+    //public function getConsommation()
+    //{
+        //return AppBundle::getRepository(Consommation::class)->findOneBy(
+                                                        //[
+                                                        //'annee'     => $this->getAnneeSession(),
+                                                        //'projet'    => $this->getProjet(),
+                                                        //]);
+    //}
     public function getLibelleEtat()
     {
         return Etat::getLibelle( $this->getEtatVersion() );
