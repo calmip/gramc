@@ -829,10 +829,10 @@ class Projet
 		}
 		else
 		{
-			// Pour décembre on mesure la consomation du 1er Janvier de l'année suivante !
+			// Pour décembre on mesure la consomation du 31 car il y a risque de remise à zéro le 1er Janvier
 			if ($mois==12)
 			{
-				$d = strval($annee+1)."-01-01";
+				$d = strval($annee)."-12-31";
 				$conso_fin = $this->getConso(new \DateTime($d));
 				//AppBundle::getLogger()->error("koukou1 " . $this->getIdProjet() . "$d -> $conso_fin");
 			}
@@ -876,21 +876,6 @@ class Projet
 		$conso_cpu = $this->getConsoRessource('cpu',$annee);
 		return $conso_cpu[1];
     }
-
-    ///*
-     //* param : $annee
-     //* return: Un objet de type Consommation
-     //*
-     //* TODO - Cette fonction de bas niveau est-elle vraiment utile ?
-     //*/
-    //public function getConsommation($annee)
-    //{
-        //return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        //[
-                                                        //'annee'     => $annee,
-                                                        //'projet'    => $this->getIdProjet()
-                                                        //]);
-    //}
 
     ///////////////////////////////////////////////////////////////////////////////
     //

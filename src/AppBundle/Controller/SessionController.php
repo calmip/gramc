@@ -809,18 +809,6 @@ class SessionController extends Controller
         // Les totaux
         $tq  = 0;
         $tm  = [];
-        //$t01 = 0;
-        //$t02 = 0;
-        //$t03 = 0;
-        //$t04 = 0;
-        //$t05 = 0;
-        //$t06 = 0;
-        //$t07 = 0;
-        //$t08 = 0;
-        //$t09 = 0;
-        //$t10 = 0;
-        //$t11 = 0;
-        //$t12 = 0;
         $tttl= 0;
 
         // Calcul du csv, ligne par ligne
@@ -841,52 +829,6 @@ class SessionController extends Controller
 				$line[] = $c;
 				$tm[$m] += $c;
 			}
-            //$conso  = $v->getConsommation();
-            //if( $conso != null )
-            //{
-                //$quota  =   $conso->getLimite();
-                //$m01    =   $conso->getM01();
-                //$m02    =   $conso->getM02();
-                //$m03    =   $conso->getM03();
-                //$m04    =   $conso->getM04();
-                //$m05    =   $conso->getM05();
-                //$m06    =   $conso->getM06();
-                //$m07    =   $conso->getM07();
-                //$m08    =   $conso->getM08();
-                //$m09    =   $conso->getM09();
-                //$m10    =   $conso->getM10();
-                //$m11    =   $conso->getM11();
-                //$m12    =   $conso->getM12();
-            //}
-            //else
-            //{
-                //$quota  =   0;
-                //$m01    =   0;
-                //$m02    =   0;
-                //$m03    =   0;
-                //$m04    =   0;
-                //$m05    =   0;
-                //$m06    =   0;
-                //$m07    =   0;
-                //$m08    =   0;
-                //$m09    =   0;
-                //$m10    =   0;
-                //$m11    =   0;
-                //$m12    =   0;
-            //}
-            //$line[] = $quota;
-            //$line[] = $m01;
-            //$line[] = ($m02>0) ? $m02-$m01: 0;
-            //$line[] = ($m03>0) ? $m03-$m02: 0;
-            //$line[] = ($m04>0) ? $m04-$m03: 0;
-            //$line[] = ($m05>0) ? $m05-$m04: 0;
-            //$line[] = ($m06>0) ? $m06-$m05: 0;
-            //$line[] = ($m07>0) ? $m07-$m06: 0;
-            //$line[] = ($m08>0) ? $m08-$m07: 0;
-            //$line[] = ($m09>0) ? $m09-$m08: 0;
-            //$line[] = ($m10>0) ? $m10-$m09: 0;
-            //$line[] = ($m11>0) ? $m11-$m10: 0;
-            //$line[] = ($m12>0) ? $m12-$m11: 0;
 
 			$m12 = $v->getProjet()->getConso("$annee-31-12");
             $ttl    = ($m12>0) ? $m12 : 'N/A';

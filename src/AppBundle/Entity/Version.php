@@ -2728,15 +2728,6 @@ class Version
         return $this->getSession()->getAnneeSession() + 2000;
     }
 
-	//// Fonction de bas niveau à virer ASAP
-    //public function getConsommation()
-    //{
-        //return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        //[
-                                                        //'annee'     => $this->getAnneeSession(),
-                                                        //'projet'    => $this->getProjet(),
-                                                        //]);
-    //}
     public function getLibelleEtat()
     {
         return Etat::getLibelle( $this->getEtatVersion() );
@@ -2910,25 +2901,6 @@ class Version
 		return $projet->getQuota($annee);
 	}
 
-    //public function getConso()
-    //{
-        //$consommation   =   $this->getConsommation();
-        //$conso          =   0;
-
-        //if( $consommation != null )
-                 //for ($i = 1; $i <= 12; $i++)
-                 //{
-                    //if( $i < 10 )
-                        //$methodName = 'getM0'.$i;
-                    //else
-                        //$methodName ='getM'.$i;
-                    //$c = $consommation->$methodName();
-                    //if( $c != null && $c > $conso ) $conso  =   $c;
-                   //}
-
-        //return $conso;
-    //}
-
 
     // calcul de la consommation à partir de la table Consommation juste pour une session
     // TODOCONSOMMATION - Est  utilisé seulement pour les statistiques
@@ -2937,54 +2909,6 @@ class Version
 		Functions::warningMessage(__FILE__ . ":" . __LINE__ . " getConsoSession n'est pas écrit");
 		return 0;
 	}
-    //public function getConsoSession()
-    //{
-        //$consommation   =   $this->getConsommation();
-        //$conso          =   0;
-
-        //if( $consommation == null )
-            //return 0;
-        //elseif( $this->typeSession() == "A" )
-                 //for ($i = 1; $i <= 6; $i++)
-                 //{
-                 //$methodName = 'getM0'.$i;
-                 //$c = $consommation->$methodName();
-                 //if( $c != null && $c > $conso ) $conso  =   $c;
-                 //}
-        //elseif( $this->typeSession() == "B" )
-                //{
-                //for ($i = 7; $i <= 12; $i++)
-                 //{
-                    //if( $i < 10 )
-                        //$methodName = 'getM0'.$i;
-                    //else
-                        //$methodName ='getM'.$i;
-
-                    //$c = $consommation->$methodName();
-                    //if( $c != null && $c > $conso ) $conso  =   $c;
-
-                   //}
-                //$c06    =  $consommation->getM06();
-                //if( $c06 != null )
-                    //$conso  =   $conso - $c06;
-                //}
-        //if( $conso < 0 )
-            //Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Consommation de la version " . $version . " est négative");
-
-        //return $conso;
-    //}
-
-    ////////////////////////////////////////////////
-
-    //public function getQuota()
-    //{
-        //$consommation   =   $this->getConsommation();
-
-        //if( $consommation != null )
-            //return $consommation->getLimite();
-        //else
-            //return 0;
-    //}
 
     // MetaEtat d'une version (et du projet associé)
     // Ne sert que pour l'affichage des états de version

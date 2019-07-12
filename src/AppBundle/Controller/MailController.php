@@ -237,11 +237,6 @@ class MailController extends Controller
                 {
                 if( $derniereVersion->getSession()->getLibelleTypeSession() == 'B' ) continue;
                 $conso = $derniereVersion->getConso();
-                //$consommation = $derniereVersion->getConsommation();
-                //if( $consommation != null )
-                    //$conso = $consommation->conso();
-                //else
-                    //$conso = 0;
 
                 if( $derniereVersion->getAttrHeures() > 0 )
                     $rapport = $conso / $derniereVersion->getAttrHeures() * 100;

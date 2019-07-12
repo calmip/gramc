@@ -24,8 +24,6 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Consommation;
-
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -69,14 +67,14 @@ class AdminuxController extends Controller
      {
         $conso_repository = AppBundle::getRepository(Compta::class);
         $em = AppBundle::getManager();
-    
+
         $putdata = fopen("php://input", "r");
         //$input = [];
-        
+
         while ( $ligne  =   fgetcsv($putdata) )
         {
             if( sizeof( $ligne ) < 5 ) continue; // pour une ligne erronée ou incomplète
-                
+
             $date       =   $ligne[0]; // 2019-02-05
             $date       =   new \DateTime( $date . "T00:00:00");
             $loginname  =   $ligne[1]; // login
@@ -102,147 +100,36 @@ class AdminuxController extends Controller
             }
 
             $conso  =   $ligne[4]; // consommation
-            
+
             if( array_key_exists( 5, $ligne ) )
                 $quota  =   $ligne[5]; // quota
             else
                 $quota  =   -1;
 
-            
+
             $compta->setConso( $conso );
             $compta->setQuota( $quota );
-            
+
             //$input[]    =   $compta;
             //return new Response( Functions::show( $ligne ) );
         }
-            
-        try 
+
+        try
         {
             $em->flush();
-        }   
+        }
         catch (\Exception $e)
         {
             return new Response('KO');
         }
-            
+
         //return new Response( Functions::show( $conso_repository->findAll() ) );
-        
+
         return $this->render('consommation/conso_update_batch.html.twig');
     }
 
 
     ///////////////////////////////////////////////////////////////////////////////
-
-   /**
-     * Met à jour la consommation de tous les projets à partir d'un unique fichier csv
-     *
-     * @Route("/conso_update_batch", name="consommation_update_batch")
-     * @Method({"PUT"})
-     */
-     public function updateConsoBatchAction(Request $request)
-     {
-        $em = $this->getDoctrine()->getManager();
-        $conso_repository = $em->getRepository('AppBundle:Consommation');
-        $conso_lignes = 0;
-
-        $putdata = fopen("php://input", "r");
-        while ($ligne=fgetcsv($putdata)) {
-            // Affreuse bidouille on met la date sur la première ligne à la place d'un header dont on ne se sert pas !
-            if ($ligne[0] == 'Date')
-            {
-                $dat = $ligne[1];
-                $annee = substr($dat,0,4);
-                $mois = substr($dat,4,2);
-                $day = substr($dat,6,2);
-            }
-
-            // Il doit y avoir 7 colonnes dans le fichier csv sinon on saute la ligne
-            // Ligne mal formattée, ou fin de fichier
-            if (count($ligne)!=7)
-            {
-                continue;
-            }
-            else
-            {
-                $id_projet = strtoupper($ligne[0]);
-                $id_projet = preg_replace('/T20([01])([0-9])([0-9][0-9])/','T${1}${2}0${3}',$id_projet); // T201604 ==> T16004
-                $conso     = $ligne[1];
-                $limite    = $ligne[2];
-
-                // Contrainte d'unicité: on fait soit un update soit un insert !
-                $consommation = $conso_repository->findOneBy( [ 'projet' => $id_projet, 'annee' => $annee ] );
-                if ($consommation == null)
-                {
-                    $consommation = new Consommation();
-                    $consommation->setAnnee($annee);
-                    $consommation->setProjet($id_projet);
-                    $consommation->setM01(0);
-                    $consommation->setM02(0);
-                    $consommation->setM03(0);
-                    $consommation->setM04(0);
-                    $consommation->setM05(0);
-                    $consommation->setM06(0);
-                    $consommation->setM07(0);
-                    $consommation->setM08(0);
-                    $consommation->setM09(0);
-                    $consommation->setM10(0);
-                    $consommation->setM11(0);
-                    $consommation->setM12(0);
-                }
-                $consommation->setLimite($limite);
-                $m = intval($mois);
-                switch ($m) {
-                case 1:
-                    $consommation->setM01(intval($conso));
-                    break;
-                case 2:
-                    $consommation->setM02(intval($conso));
-                    break;
-                case 3:
-                    $consommation->setM03(intval($conso));
-                    break;
-                case 4:
-                    $consommation->setM04(intval($conso));
-                    break;
-                case 5:
-                    $consommation->setM05(intval($conso));
-                    break;
-                case 6:
-                    $consommation->setM06(intval($conso));
-                    break;
-                case 7:
-                    $consommation->setM07(intval($conso));
-                    break;
-                case 8:
-                    $consommation->setM08(intval($conso));
-                    break;
-                case 9:
-                    $consommation->setM09(intval($conso));
-                    break;
-                case 10:
-                    $consommation->setM10(intval($conso));
-                    break;
-                case 11:
-                    $consommation->setM11(intval($conso));
-                    break;
-                case 12:
-                    $consommation->setM12(intval($conso));
-                    break;
-                }
-
-                $em->persist($consommation);
-                $em->flush();
-
-                $conso_lignes += 1;
-            }
-        }
-        if ($conso_lignes>0)
-        {
-            Functions::infoMessage("Fichier de consommation téléversé - $conso_lignes lignes ajoutées");
-        }
-
-        return $this->render('consommation/conso_update_batch.html.twig');
-    }
 
    /**
      * set loginname
@@ -261,9 +148,9 @@ class AdminuxController extends Controller
     if( $individu == null )
         $error[]    =   'No Individu ' . $idIndividu;
 
-    if ( $error != [] )    
+    if ( $error != [] )
         return new Response( json_encode( ['KO' => $error ]) );
-        
+
      $versions = $projet->getVersion();
      foreach( $versions as $version )
         if( $version->getEtatVersion() == Etat::ACTIF)
@@ -277,7 +164,7 @@ class AdminuxController extends Controller
                     return new Response(json_encode('OK'));
                     }
                 }
-      return new Response(json_encode( ['KO' => 'No user found' ]));  
+      return new Response(json_encode( ['KO' => 'No user found' ]));
      }
 
     /**
@@ -291,19 +178,19 @@ class AdminuxController extends Controller
    $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
    if( $projet == null )
         return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
-        
-   
+
+
    $versions    = $projet->getVersion();
    $output      =   [];
    $idProjet    =   $projet->getIdProjet();
-   
+
    foreach( $versions as $version )
         if( $version->getEtatVersion() == Etat::ACTIF)
              foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
                 {
                 if( $collaborateurVersion->getLogin() == false )
                     continue;
-                    
+
                 $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
                 if( $collaborateur != null )
                     {
