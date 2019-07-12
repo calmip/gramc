@@ -1,0 +1,75 @@
+/* Formulaires d'édition */
+#edit {
+	max-width: 50em;
+	margin: 1em auto;
+	padding: 1em;
+	border: solid #EB6508 4px;
+	background: #aaaaaa;
+}
+#edit div {
+	margin:.4em 0;
+}
+#edit label {
+	display: inline-table;
+	width: 20em;
+}
+
+/* les champs de sélection de date: tout est dans un div */
+#edit div[id*=date], #edit #facturation_fin {
+	display: inline
+}
+
+/* Pour les erreurs de validation */
+#edit ul {
+	background-color: red;
+	color: white;
+	font-weight: bold;
+	text-align: center;
+	list-style-type: none;
+	padding: .5em;
+}
+
+#edit button {
+	margin: 1em 0 0 10em;
+}
+
+#edit button img {
+	vertical-align: middle;
+	height: 20px;
+}
+
+#edit textarea {
+	vertical-align: middle;
+}
+
+/* **************************************************** */
+
+/* La page de journal */
+#jnl {
+	font-size:.8em;
+}
+#jnl .msg {
+	font-size: .8em;
+}
+#jnl .error, #jnl .critical, #jnl .emergency, #jnl .alert {
+	color: red;
+	font-weight: 800;
+}
+#jnl .warning, #jnl .notice {
+	color: orange;
+	font-weight: 600;
+}
+#jnl .info {
+	color: green;
+	font-weight: 600;
+}
+#jnl .debug {
+	color: green;
+	font-weight: 400;
+	font-style: italic;
+
+}
+#jnl_individu {
+max-width: 50em;
+width: 100%;
+}
