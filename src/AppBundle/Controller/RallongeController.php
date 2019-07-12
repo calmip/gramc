@@ -215,7 +215,8 @@ class RallongeController extends Controller
             'rallonge'  => $rallonge,
             'session'   => $session,
             'projet'    => $projet,
-            'menu'      => $menu,
+            'version'   => $version,
+            'menu'      => $menu
             ]);
     }
 
