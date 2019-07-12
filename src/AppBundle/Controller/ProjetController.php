@@ -30,7 +30,6 @@ use AppBundle\Entity\Session;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\Expertise;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
 use AppBundle\Entity\CompteActivation;
@@ -181,7 +180,7 @@ class ProjetController extends Controller
             Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " Le paramètre old_journal manque");
         }
     elseif( $form->isSubmitted() && $form->isValid() && $form->get('supprimer projets')->isClicked() )
-        {
+	{
         $annee = $form->getData()['annee']; // par exemple 2014
 
         $key = array_search($annee,$annees); // supprimer l'année de la liste du formulaire
@@ -205,7 +204,7 @@ class ProjetController extends Controller
         // effacer des structures
 
         foreach( $list[$annee] as $projet )
-            {
+		{
             $em->persist( $projet );
             $projet->setVersionDerniere( null );
             $projet->setVersionActive( null );
@@ -246,18 +245,21 @@ class ProjetController extends Controller
                 }
 
             $versions = AppBundle::getRepository(Version::class)->findBy(['projet' => $projet]);
-                foreach( $versions as $item )
-                    {
-                    $em->remove( $item );
-                    //$em->flush();
-                    }
+			foreach( $versions as $item )
+			{
+				$em->remove( $item );
+			}
 
-            foreach( AppBundle::getRepository(Consommation::class)->findBy(['projet' => $projet->getIdProjet() ]) as $item )
-                    $em->remove( $item );
-
+			$loginname = strtolower($projet->getIdProjet());
+            foreach( AppBundle::getRepository(Compta::class)->findBy(['loginname' => $loginname]) as $item )
+            {
+				$em->remove( $item );
+			}
 
             foreach( $projet->getRapportActivite() as $rapport )
+			{
                 $em->remove( $rapport );
+			}
 
             /*
             if( $projet->derniereVersion() != null )
@@ -272,7 +274,7 @@ class ProjetController extends Controller
             $projets_effaces[] = $projet;
             Functions::infoMessage('Le projet ' . $projet . ' a été effacé ');
             $em->remove( $projet );
-            }
+		}
 
         //return new Response(Functions::show( $projets_effaces ) ); //DEBUG
 
@@ -283,7 +285,7 @@ class ProjetController extends Controller
         $individus_effaces = Functions::effacer_utilisateurs($individus);
 
         //return new Response( Functions::show( $individus_effaces ) );
-        }
+	}
     //return new Response( Functions::show( $annees ) );
 
     $form = AppBundle::createFormBuilder()
@@ -1376,7 +1378,7 @@ class ProjetController extends Controller
     // projets responsable
     $projets_resp  = [];
     foreach ( $list_projets_resp as $projet )
-        {
+	{
         $versionActive  =   $projet->versionActive();
         if( $versionActive != null )
             $rallonges  =  $versionActive ->getRallonge();
@@ -1385,16 +1387,16 @@ class ProjetController extends Controller
         $projets_resp[]   =
             [
             'projet'    =>  $projet,
-            'conso'     =>  Functions::getProjetConsommation($projet),
+            'conso'     =>  $projet->getConsoP(),
             'rallonges' =>  $rallonges,
             'cpt_rall'  =>  count($rallonges),
             ];
-        }
+	}
 
     // projets collaborateur
     $projets_collab  = [];
     foreach ( $list_projets_collab as $projet )
-        {
+	{
         $versionActive  =   $projet->versionActive();
         if( $versionActive != null )
             $rallonges  =  $versionActive ->getRallonge();
@@ -1403,11 +1405,11 @@ class ProjetController extends Controller
         $projets_collab[]   =
             [
             'projet'    =>  $projet,
-            'conso'     =>  Functions::getProjetConsommation($projet, null, true),
+            'conso'     =>  $projet->getConsoP(),
             'rallonges' =>  $rallonges,
             'cpt_rall'  =>  count($rallonges),
             ];
-        }
+	}
 
     $menu[] = Menu::nouveau_projet();
     $menu[] = Menu::nouveau_projet_test();

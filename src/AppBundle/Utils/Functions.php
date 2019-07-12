@@ -30,7 +30,6 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Templates;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Version;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\CollaborateurVersion;
@@ -603,58 +602,6 @@ class Functions
 
     ////////////////////////////////////////////////
 
-    public static function getConsommation(Version $version)
-    {
-        return static::calculConsommation($version->getConsommation() , false);
-    }
-
-    public static function getProjetConsommation( Projet $projet, $annee = null, $pourcentage_flg = true  )
-    {
-        // si $annee == null $annee = GramcDate::get()->showYear()
-        return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommation($projet, $annee),$pourcentage_flg );
-    }
-
-// VIRE PAR MANU car 1/ Non utilise 2/ getConsommationTest a change de prototype (maintenant pareil que getConsommation)
-    //public static function getProjetTestConsommation( ProjetTest $projet, $pourcentage_flg = true  )
-    //{
-        //return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommationTest($projet),$pourcentage_flg );
-    //}
-
-
-    public static function calculConsommation( $consommation, $pourcentage_flg = false )
-    {
-        $conso          =   0;
-
-        if( $consommation != null )
-            {
-            for ($i = 1; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        ${"methodName"} = 'getM0'.$i;
-                    else
-                        ${"methodName"} = 'getM'.$i;
-                    $c = $consommation->${"methodName"}();
-                    if( $c != null && $c > $conso ) $conso  =   $c;
-                   }
-
-        // on calcule la consommation comme pourcentage
-            if( $pourcentage_flg == true )
-            {
-            $limite =  $consommation->getLimite();
-            if( $limite <= 0 )
-                static::errorMessage('Functions : getConsommation : limite nulle ou négative');
-            else
-                {
-                $conso   /=  $limite;
-                $conso   *= 100;
-                }
-
-            }
-        }
-
-        return $conso;
-    }
-
     // ACL pour Projet
 
     public static function projetACL(\AppBundle\Entity\Projet $projet)
@@ -1052,9 +999,6 @@ class Functions
 
         $versions_A= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_A ] );
         $versions_B= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_B ] );
-
-        // $projets_tests= AppBundle::getRepository(ProjetTest::class)->findBy( ['session' => $session_A ] );
-        $consommation_repo = AppBundle::getRepository(Consommation::class);
 
         // $mois est utilisé pour calculer les éventuelles pénalités d'été
         // Si on n'est pas à l'année courante, on le met à 0 donc elles ne seront jamais calculées

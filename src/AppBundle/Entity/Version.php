@@ -651,7 +651,7 @@ class Version
 
     ////////////////////////////////////////////////////////////////////////
 
-   
+
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
@@ -2417,7 +2417,7 @@ class Version
         return $this->projet;
     }
 
-   
+
     /**
      * Add collaborateurVersion
      *
@@ -2728,14 +2728,6 @@ class Version
         return $this->getSession()->getAnneeSession() + 2000;
     }
 
-    public function getConsommation()
-    {
-        return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        [
-                                                        'annee'     => $this->getAnneeSession(),
-                                                        'projet'    => $this->getProjet(),
-                                                        ]);
-    }
     public function getLibelleEtat()
     {
         return Etat::getLibelle( $this->getEtatVersion() );
@@ -2819,10 +2811,10 @@ class Version
     public function hasRapport($annee = null)
     {
         //if( $this->isNouvelle() ) return true; // une nouvelle version compte comme une version avec un RA
-        
+
         if( $annee == null )
             $annee = $this->getAnneeSession()-1;
-        
+
         $rapportActivite    =   AppBundle::getRepository(RapportActivite::class)->findOneBy(
                                                 [
                                                 'projet'    => $this->getProjet(),
@@ -2835,40 +2827,40 @@ class Version
         else
             return true;
 
-       
+
     }
 
-    /* Renvoie le chemin vers le rapport d'activité 
-     * 
+    /* Renvoie le chemin vers le rapport d'activité
+     *
      * Si $annee==null, calcule l'année précédente l'année de la session
      * (OK pour sessions de type A !)
-     * 
+     *
      * */
     public function getRapport($annee = null)
     {
         $rapport_directory = AppBundle::getParameter('rapport_directory');
-        
+
         if ( $annee == null )
             $annee  = $this->getAnneeSession()-1;
-            
+
         $dir    =  $rapport_directory;
         if( $dir == null )
         {
             Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " parameter rapport_directory absent !" );
             return null;
         }
-            
+
         $file   =  $dir . '/' . $annee . '/' . $annee . $this->getProjet()->getIdProjet() . '.pdf';
         if( file_exists( $file ) && ! is_dir( $file ) )
             return $file;
 
         else
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ . " fichier n'existe pas " . $file );
-            
+
         return null;
     }
 
-   
+
 
     public function getSizeRapport()
     {
@@ -2890,78 +2882,33 @@ class Version
         */
     }
 
-
-    // calcul de la consommation à partir de la table Consommation sur toute l'année
-
+    /*
+     * Raccourci vers getConso du projet
+     */
     public function getConso()
     {
-        $consommation   =   $this->getConsommation();
-        $conso          =   0;
+		$projet = $this->getProjet();
+		$annee  = $this->getAnneeSession();
+		return $projet->getConso($annee);
+	}
+    /*
+     * Raccourci vers getQuota du projet
+     */
+    public function getQuota()
+    {
+		$projet = $this->getProjet();
+		$annee  = $this->getAnneeSession();
+		return $projet->getQuota($annee);
+	}
 
-        if( $consommation != null )
-                 for ($i = 1; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        $methodName = 'getM0'.$i;
-                    else
-                        $methodName ='getM'.$i;
-                    $c = $consommation->$methodName();
-                    if( $c != null && $c > $conso ) $conso  =   $c;
-                   }
-
-        return $conso;
-    }
 
     // calcul de la consommation à partir de la table Consommation juste pour une session
     // TODOCONSOMMATION - Est  utilisé seulement pour les statistiques
-    public function getConsoSession()
-    {
-        $consommation   =   $this->getConsommation();
-        $conso          =   0;
-
-        if( $consommation == null )
-            return 0;
-        elseif( $this->typeSession() == "A" )
-                 for ($i = 1; $i <= 6; $i++)
-                 {
-                 $methodName = 'getM0'.$i;
-                 $c = $consommation->$methodName();
-                 if( $c != null && $c > $conso ) $conso  =   $c;
-                 }
-        elseif( $this->typeSession() == "B" )
-                {
-                for ($i = 7; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        $methodName = 'getM0'.$i;
-                    else
-                        $methodName ='getM'.$i;
-
-                    $c = $consommation->$methodName();
-                    if( $c != null && $c > $conso ) $conso  =   $c;
-
-                   }
-                $c06    =  $consommation->getM06();
-                if( $c06 != null )
-                    $conso  =   $conso - $c06;
-                }
-        if( $conso < 0 )
-            Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Consommation de la version " . $version . " est négative");
-
-        return $conso;
-    }
-
-    ////////////////////////////////////////////////
-
-    public function getQuota()
-    {
-        $consommation   =   $this->getConsommation();
-
-        if( $consommation != null )
-            return $consommation->getLimite();
-        else
-            return 0;
-    }
+	public function getConsoSession()
+	{
+		Functions::warningMessage(__FILE__ . ":" . __LINE__ . " getConsoSession n'est pas écrit");
+		return 0;
+	}
 
     // MetaEtat d'une version (et du projet associé)
     // Ne sert que pour l'affichage des états de version
@@ -3111,12 +3058,12 @@ class Version
         // TODO - Supprimer cette fonction, ou la renommer
         $versions   =  $this->getProjet()->getVersion();
         if ( count( $versions ) <= 1 ) return null;
-    
+
         $versions   =   $versions->toArray();
         usort($versions,
                 function(Version $b, Version $a){ return strcmp( $a->getIdVersion(), $b->getIdVersion()); }
                 );
-    
+
         Functions::debugMessage( __METHOD__ .':'. __LINE__ . " version ID 0 1 = " . $versions[0]." " . $versions[1] );
         return $versions[1];
     }
@@ -3136,10 +3083,10 @@ class Version
         else
         {
             return $versions[$k-1];
-        }   
-    }        
-        
-  
+        }
+    }
+
+
     //////////////////////////////////////////////
 
     public function anneeRapport()

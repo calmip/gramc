@@ -30,7 +30,6 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Templates;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Version;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Rallonge;
 use AppBundle\Entity\RapportActivite;

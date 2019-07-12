@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 use AppBundle\AppBundle;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Laboratoire;
@@ -51,7 +50,7 @@ class StatistiquesController extends Controller
      */
     public function homepageAction(Request $request)
     {
-        
+
     return $this->render('default/base_test.html.twig');
 
         // replace this example code with whatever you need
@@ -113,10 +112,10 @@ class StatistiquesController extends Controller
     //return new Response( Functions::show( $heures_nouveaux ));
 
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
-    
+
     $individus  =   [];
     $individus_uniques  =   [];
-    
+
     foreach( $versions as $version )
         {
         $collaborateurs_versions    =   $version->getCollaborateurVersion();
@@ -125,14 +124,14 @@ class StatistiquesController extends Controller
             $individu       =   $collaborateurVersion->getCollaborateur();
             if( $individu == null ) continue;
             $idIndividu     =   $individu->getIdIndividu();
-            
+
             if( count( $collaborateurs_versions ) == 1 )
                 $individus_uniques[$idIndividu] =   $individu;
-                
+
             $individus[$idIndividu] =   $individu;
            }
         }
-    
+
     return $this->render('statistiques/index.html.twig',
             [
             'form'  =>  $data['form']->createView(),
@@ -148,7 +147,7 @@ class StatistiquesController extends Controller
             'num_individus_uniques'     =>  count( $individus_uniques   ),
             'conso_nouveaux'            =>  $conso_nouveaux,
             'conso_renouvelles'         =>  $conso_renouvelles,
-            
+
       /*      'acros' =>  $acros,
             'num_projets'   =>  $num_projets,
             'dem_heures'    =>  $dem_heures,
@@ -185,7 +184,7 @@ class StatistiquesController extends Controller
             if( $collaborateurVersion->getLogin()== true )
                 $compte++;
             }
-            
+
         $idProjet = $version->getProjet()->getIdProjet();
         $collaborateurs[ $personne ][] = $idProjet;
         $comptes[ $compte ][] = $idProjet;
@@ -203,7 +202,7 @@ class StatistiquesController extends Controller
     ksort( $count_comptes );
 
     //return new Response( Functions::show( $collaborateurs ) );
-    
+
     return $this->render('statistiques/repartition.html.twig',
         [
         //'histogram_collaborateurs' => $this->histogram("Collaborateurs par projet pour l'année " + $data['annee'], $collaborateurs),
@@ -212,7 +211,7 @@ class StatistiquesController extends Controller
         'histogram_collaborateurs' => $this->line("Répartition des projets par nombre de collaborateurs pour l'année " + $data['annee'], $count_collaborateurs ),
         'collaborateurs'    => $count_collaborateurs,
         'comptes'           => $count_comptes,
-        'projets_sans_compte'   => $comptes[ 0 ], 
+        'projets_sans_compte'   => $comptes[ 0 ],
         'annee'             => $data['annee'],
         'form'  =>  $data['form']->createView(),
         ]);
@@ -248,7 +247,7 @@ class StatistiquesController extends Controller
         }
 
     $individus  =   [];
-    
+
     foreach( $versions as $version )
         {
         foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
@@ -272,7 +271,7 @@ class StatistiquesController extends Controller
                         ];
            }
         }
-        
+
     $anomaliesStatut         =   [];
     $anomaliesLaboratoire    =   [];
     $anomaliesEtablissement  =   [];
@@ -280,14 +279,14 @@ class StatistiquesController extends Controller
     $changementStatut           =   [];
     $changementLaboratoire      =   [];
     $changementEtablissement    =   [];
-    
+
     foreach( $individus as $key => $individuArray )
         foreach( $individuArray as  $key1 => $array1 )
             foreach( $individuArray as $key2 =>  $array2 )
                 {
                 $version1   =  $array1['version'];
                 $version2   =  $array2['version'];
-                
+
                 $statut1    =  $array1['statut'];
                 $statut2    =  $array2['statut'];
 
@@ -296,7 +295,7 @@ class StatistiquesController extends Controller
 
                 $etablissement1 =  $array1['etablissement'];
                 $etablissement2 =  $array2['etablissement'];
-                  
+
                 if( $key1 < $key2   && $statut1 != $statut2 )
                     {
                     if( $version1->typeSession() == $version2->typeSession() )
@@ -307,7 +306,7 @@ class StatistiquesController extends Controller
                                             'individu' =>  $array1['individu'],
                                             'statut1'   =>  $statut1,
                                             'statut2'   =>  $statut2,
-                                            ]; 
+                                            ];
                         }
                     else
                         {
@@ -317,7 +316,7 @@ class StatistiquesController extends Controller
                                             'individu' =>  $array1['individu'],
                                             'statut1'   =>  $statut1,
                                             'statut2'   =>  $statut2,
-                                            ]; 
+                                            ];
                         }
                     }
 
@@ -347,7 +346,7 @@ class StatistiquesController extends Controller
                                             'individu' =>  $array1['individu'],
                                             'etablissement1'   =>  $etablissement1,
                                             'etablissement2'   =>  $etablissement2,
-                                            ]; 
+                                            ];
                     else
                         $changementEtablissement[]   =   [
                                             'version1'  =>  $version1,
@@ -355,12 +354,12 @@ class StatistiquesController extends Controller
                                             'individu' =>  $array1['individu'],
                                             'etablissement1'   =>  $etablissement1,
                                             'etablissement2'   =>  $etablissement2,
-                                            ]; 
-                    
-                
-                    
-                }   
-    
+                                            ];
+
+
+
+                }
+
     // return new Response( Functions::show(  [ $anomaliesStatut, $anomaliesLaboratoire, $anomaliesEtablissement ] ) );
 
     $total  =    0;
@@ -382,9 +381,9 @@ class StatistiquesController extends Controller
     $statuts_total         =   $total;
     $image_statuts = $this->camembert( $image_data, $acros, "Nombre de collaborateurs par statut" );
     foreach( $statuts as $key => $statut )
-        $statuts[$key]['percent']   =  100 * $statuts[$key]['count'] / $statuts_total ; 
+        $statuts[$key]['percent']   =  100 * $statuts[$key]['count'] / $statuts_total ;
 
-    
+
     $total  =    0;
     $image_data     =   [];
     $acros          =   [];
@@ -404,9 +403,9 @@ class StatistiquesController extends Controller
     $laboratoires_total      =   $total;
     $image_laboratoires = $this->camembert( $image_data, $acros, "Nombre de collaborateurs par laboratoire" );
     foreach( $laboratoires as $key=>$laboratoire )
-        $laboratoires[$key]['percent']  =  100 * $laboratoires[$key]['count'] / $laboratoires_total; 
+        $laboratoires[$key]['percent']  =  100 * $laboratoires[$key]['count'] / $laboratoires_total;
 
-    
+
 
     $total  =    0;
     $image_data     =   [];
@@ -464,7 +463,7 @@ class StatistiquesController extends Controller
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
 
     $stats = $this->statistiques( $versions, "getAcroLaboratoire", "laboratoire" );
-        
+
     return $this->render('statistiques/laboratoire.html.twig',
             [
             'form'  =>  $data['form']->createView(),
@@ -493,7 +492,7 @@ class StatistiquesController extends Controller
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
 
     $stats = $this->statistiques( $versions, "getAcroEtablissement", "établissement" );
-        
+
     return $this->render('statistiques/etablissement.html.twig',
             [
             'form'  =>  $data['form']->createView(),
@@ -522,7 +521,7 @@ class StatistiquesController extends Controller
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
 
     $stats = $this->statistiques( $versions, "getAcroThematique", "thématique" );
-        
+
     return $this->render('statistiques/thematique.html.twig',
             [
             'form'  =>  $data['form']->createView(),
@@ -551,7 +550,7 @@ class StatistiquesController extends Controller
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
 
     $stats = $this->statistiques( $versions, "getAcroMetaThematique", "metathématique" );
-        
+
     return $this->render('statistiques/metathematique.html.twig',
             [
             'form'  =>  $data['form']->createView(),
@@ -578,19 +577,19 @@ class StatistiquesController extends Controller
     $sortie =   "Statistiques de l'année ". $annee . " par metathematique \n";
     $ligne  =   ["metathematique","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
     $sortie .= join("\t",$ligne) . "\n";
-    
+
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
     $stats = $this->statistiques( $versions, "getAcroMetaThematique", "metathématique" );
-    
+
     foreach( $stats['acros'] as $acro )
         {
         $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
         $sortie .= join("\t",$ligne) . "\n";
         }
-        
+
     return Functions::csv($sortie,'statistiques_metathematique.csv');
     }
-     
+
     /**
      * @Route("/{annee}/thematique_csv", name="statistiques_thematique_csv")
      * @Security("has_role('ROLE_ADMIN') or has_role('ROLE_PRESIDENT')")
@@ -600,16 +599,16 @@ class StatistiquesController extends Controller
     $sortie =   "Statistiques de l'année ". $annee . " par thematique \n";
     $ligne  =   ["thematique","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
     $sortie .= join("\t",$ligne) . "\n";
-    
+
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
     $stats = $this->statistiques( $versions, "getAcroThematique", "thématique" );
-    
+
     foreach( $stats['acros'] as $acro )
         {
         $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
         $sortie .= join("\t",$ligne) . "\n";
         }
-        
+
     return Functions::csv($sortie,'statistiques_thematique.csv');
     }
 
@@ -622,16 +621,16 @@ class StatistiquesController extends Controller
     $sortie =   "Statistiques de l'année ". $annee . " par laboratoire \n";
     $ligne  =   ["laboratoire","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
     $sortie .= join("\t",$ligne) . "\n";
-    
+
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
     $stats = $this->statistiques( $versions, "getAcroLaboratoire", "laboratoire" );
-    
+
     foreach( $stats['acros'] as $acro )
         {
         $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
         $sortie .= join("\t",$ligne) . "\n";
         }
-        
+
     return Functions::csv($sortie,'statistiques_laboratoire.csv');
     }
 
@@ -644,19 +643,19 @@ class StatistiquesController extends Controller
     $sortie =   "Statistiques de l'année ". $annee . " par établissement \n";
     $ligne  =   ["établissement","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
     $sortie .= join("\t",$ligne) . "\n";
-    
+
     $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
     $stats = $this->statistiques( $versions, "getAcroEtablissement", "établissement" );
-    
+
     foreach( $stats['acros'] as $acro )
         {
         $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
         $sortie .= join("\t",$ligne) . "\n";
         }
-        
+
     return Functions::csv($sortie,'statistiques_etablissement.csv');
     }
-    
+
     ////////////////////////////////////////////////////////////////////////
 
     private function statistiques( $versions, $critere, $titre = "Titre" )
@@ -670,7 +669,7 @@ class StatistiquesController extends Controller
             $projets[$idProjet] = false; // une version dans l'année
         else
             $projets[$idProjet] = true; //  deux versions l'année
-        
+
         }
 
 
@@ -699,7 +698,7 @@ class StatistiquesController extends Controller
                 $num_projets[$acro] = 1;
 
             }
-            
+
         elseif( $acro_projets[$idProjet] != $acro ) // une autre version du projet est déjà comptée mais le labo du projet a changé
             {
             // il n'y a que le nombre de projets qui change, la consommation n'est pas comptée dans ce cas
@@ -730,35 +729,35 @@ class StatistiquesController extends Controller
             $conso[$acro]       =  $consoV;
 
         }
-         
+
     asort( $acros );
 
 
     $image_data = [];
     foreach( $acros as $key => $acro )
-        $image_data[$key]   =  $num_projets[$acro]; 
+        $image_data[$key]   =  $num_projets[$acro];
     $image_projets = $this->camembert( $image_data, $acros, "Nombre de projets par " . $titre );
 
     $image_data = [];
     foreach( $acros as $key => $acro )
-        $image_data[$key]   =  $dem_heures[$acro]; 
+        $image_data[$key]   =  $dem_heures[$acro];
     $image_dem = $this->camembert( $image_data, $acros, "Nombre d'heures demandées par " . $titre );
 
     $image_data = [];
     foreach( $acros as $key => $acro )
-        $image_data[$key]   =  $attr_heures[$acro]; 
+        $image_data[$key]   =  $attr_heures[$acro];
     $image_attr = $this->camembert( $image_data, $acros, "Nombre d'heures attribuées par " . $titre );
 
 
     $image_data = [];
     foreach( $acros as $key => $acro )
-        $image_data[$key]   =  $conso[$acro]; 
+        $image_data[$key]   =  $conso[$acro];
     $image_conso = $this->camembert( $image_data, $acros, "Consommation par " . $titre );
 
     return [ "acros" => $acros, "acro_projets" => $acro_projets, "num_projets" => $num_projets, "projets" => $projets,
              "dem_heures" =>  $dem_heures , "attr_heures" => $attr_heures,  "conso" => $conso,
-             "image_conso" => $image_conso,  "image_projets" => $image_projets, "image_dem" => $image_dem, "image_attr" => $image_attr ]; 
-    
+             "image_conso" => $image_conso,  "image_projets" => $image_projets, "image_dem" => $image_dem, "image_attr" => $image_attr ];
+
     }
 
     ///////////////////////////////////////////
@@ -782,7 +781,7 @@ class StatistiquesController extends Controller
         $data[]     =   $autres;
         $acros[]    =   "Autres";
         }
-        
+
     if( array_sum( $data ) == 0 )
         {
         $data[]     =   1;
@@ -791,9 +790,9 @@ class StatistiquesController extends Controller
 
     $data = array_values( $data );
     $acros = array_values( $acros );
-    
+
     // bibliothèque graphique
-    
+
     $x = 900;
     $y = 1000;
     $xcenter=0.3;
@@ -829,7 +828,7 @@ class StatistiquesController extends Controller
     $p1->SetTheme('earth');
     //$p1->SetSliceColors(color);
     // .. Création effective du fichier
-    
+
     ob_start();
     $graph->Stroke();
     $image_data = ob_get_contents();
@@ -841,8 +840,8 @@ class StatistiquesController extends Controller
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    
-    
+
+
     private function histogram( $titre, $donnees, $legende = "abc" )
     {
     // Initialisation du graphique
@@ -851,13 +850,13 @@ class StatistiquesController extends Controller
     \JpGraph\JpGraph::module('pie');
 	$graph = new \BarGraph(700, 500);
     return null;
-    
+
 	// Echelle lineaire ('lin') en ordonnee et pas de valeur en abscisse ('text')
 	// Valeurs min et max seront determinees automatiquement
 	$graph->setScale("textlin");
 	$graph->SetMargin(60,60,50,50);
-	$graph->SetMarginColor("silver"); 
-	$graph->SetFrame(true,'silver'); 
+	$graph->SetMarginColor("silver");
+	$graph->SetFrame(true,'silver');
 	$graph->legend->SetFrameWeight(1);
 
 	// Creation de l'histogramme
@@ -877,9 +876,9 @@ class StatistiquesController extends Controller
     $image = base64_encode($image_data);
     return $image;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////
-    
+
     private function line($titre, $donnees)
     {
     \JpGraph\JpGraph::load();
@@ -892,7 +891,7 @@ class StatistiquesController extends Controller
         $x[]    =   $key;
         $y[]    =   $value;
         }
-        
+
 
     //$legende = [ '','jan','fév','mar','avr','mai','juin','juil','août','sept','oct','nov','déc' ];
     $donnees = [ 1, 3, 4, 3 ];
