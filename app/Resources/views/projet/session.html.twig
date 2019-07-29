@@ -112,7 +112,7 @@
         <td><input type="checkbox" class="cb" id="avec_expert" checked="checked" /></td>
     </tr>
     {% endif %}
-    
+
     {% if( nombreEditionTest > 0 ) %}
     <tr>
         <th>Projets test en édition</th>
@@ -145,7 +145,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreAttente > 0 ) %}
     <tr>
         <th>Projets en attente</th>
@@ -154,7 +154,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreActif > 0 ) %}
     <tr>
         <th>Projets actifs</th>
@@ -163,7 +163,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreNouvelleDem > 0 ) %}
     <tr>
         <th>Projets dont le renouvellement est accepté</th>
@@ -172,16 +172,16 @@
      </tr>
      {% endif %}
 
-    {#  
+    {#
     {% if( nombreTermine > 0 ) %}
     <tr>
         <th>Projets terminés</th>
         <td>{{ nombreTermine }}</td>
         <td><input type="checkbox" class="cb" id="nbTermine" checked="checked" /></td>
      </tr>
-     {% endif %}    
+     {% endif %}
     #}
-      
+
     {% if( nombreAnnule > 0 ) %}
     <tr>
         <th>Projets annulés</th>
@@ -189,7 +189,7 @@
         <td><input type="checkbox" class="cb" id="annule" checked="checked" /></td>
      </tr>
      {% endif %}
-         
+
 </table>
 
 </div></div>
@@ -256,6 +256,7 @@
                    { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
                    <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>
                 {% endif %}
+                {% if noconso==false %}
                 {% if( not version.isNouvelle() ) %}
                     {% if version.typeSession=='A' %}
                         {% set annee_conso = version.anneeSession - 1 %}
@@ -266,8 +267,9 @@
                     title="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}" alt="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}"
                         data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : annee_conso })) }}" />
                 {% endif %}
+                {% endif %}
 
- 
+
             </td>
            	 <td class="{{ version.projet.metaEtat | lower }}">{{ gramcmacros.metagraph(version.projet.metaetat) }}</td>
             <td>

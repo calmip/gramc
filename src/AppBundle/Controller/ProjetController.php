@@ -331,53 +331,57 @@ class ProjetController extends Controller
      */
     public function sessionCSVAction(Session $session)
     {
-    $sortie = 'Projets de la session ' . $session->getId() . "\n";
+	    $sortie = 'Projets de la session ' . $session->getId() . "\n";
 
-    $ligne  =   [
-                'Nouveau',
-                'id_projet',
-                'état',
-                'titre',
-                'thématique',
-                'dari',
-                'courriel',
-                'prénom',
-                'nom',
-                'laboratoire',
-                'expert',
-                'heures demandées',
-                'heures attribuées',
-                'heures consommées'
-                ];
-    $sortie     .=   join("\t",$ligne) . "\n";
+	    $ligne  =   [
+	                'Nouveau',
+	                'id_projet',
+	                'état',
+	                'titre',
+	                'thématique',
+	                'dari',
+	                'courriel',
+	                'prénom',
+	                'nom',
+	                'laboratoire',
+	                'expert',
+	                'heures demandées',
+	                'heures attribuées',
+	                ];
+		if (AppBundle::getParameter('noconso')==false)
+		{
+			$ligne[] = 'heures consommées';
+		}
+	    $sortie     .=   join("\t",$ligne) . "\n";
 
-    $versions = AppBundle::getRepository(Version::class)->findSessionVersions($session);
-    foreach ( $versions as $version )
-            {
-            $responsable    =   $version->getResponsable();
-            $ligne  =
-                    [
-                    ( $version->isNouvelle() == true ) ? 'OUI' : '',
-                    $version->getProjet()->getIdProjet(),
-                    $version->getProjet()->getMetaEtat(),
-                    Functions::string_conversion($version->getPrjTitre() ),
-                    Functions::string_conversion($version->getPrjThematique() ),
-                    $version->getPrjGenciDari(),
-                    $responsable->getMail(),
-                    Functions::string_conversion($responsable->getPrenom() ),
-                    Functions::string_conversion($responsable->getNom() ),
-                    Functions::string_conversion($version->getPrjLLabo() ),
-                    ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
-                    $version->getDemHeures(),
-                    $version->getAttrHeures(),
-                    $version->getConso(),
-                    ];
-            $sortie     .=   join("\t",$ligne) . "\n";
-            }
+	    $versions = AppBundle::getRepository(Version::class)->findSessionVersions($session);
+	    foreach ( $versions as $version )
+		{
+			$responsable    =   $version->getResponsable();
+			$ligne  =
+					[
+					( $version->isNouvelle() == true ) ? 'OUI' : '',
+					$version->getProjet()->getIdProjet(),
+					$version->getProjet()->getMetaEtat(),
+					Functions::string_conversion($version->getPrjTitre() ),
+					Functions::string_conversion($version->getPrjThematique() ),
+					$version->getPrjGenciDari(),
+					$responsable->getMail(),
+					Functions::string_conversion($responsable->getPrenom() ),
+					Functions::string_conversion($responsable->getNom() ),
+					Functions::string_conversion($version->getPrjLLabo() ),
+					( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
+					$version->getDemHeures(),
+					$version->getAttrHeures(),
+					];
+			if (AppBundle::getParameter('noconso')==false)
+			{
+				$ligne[] = $version->getConso();
+			}
 
-
-    return Functions::csv($sortie,'projet_session.csv');
-
+			$sortie     .=   join("\t",$ligne) . "\n";
+		}
+	    return Functions::csv($sortie,'projet_session.csv');
     }
 
     /**

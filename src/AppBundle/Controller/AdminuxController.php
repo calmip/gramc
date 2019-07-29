@@ -32,6 +32,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+//use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
@@ -65,6 +67,10 @@ class AdminuxController extends Controller
      */
      public function UpdateComptaBatchAction(Request $request)
      {
+        if ( AppBundle::getParameter('noconso')==true )
+        {
+			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		}
         $conso_repository = AppBundle::getRepository(Compta::class);
         $em = AppBundle::getManager();
 
@@ -137,34 +143,38 @@ class AdminuxController extends Controller
      * @Route("/setloginname/{idProjet}/projet/{idIndividu}/individu/{loginname}/loginname", name="set_loginname")
      * @Method({"GET"})
      */
-    public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
+     public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
      {
-     $error = [];
-     $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
-     if( $projet == null )
-        $error[]    =   'No Projet ' . $idProjet;
+        if ( AppBundle::getParameter('noconso')==true )
+        {
+			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		}
+	    $error = [];
+	    $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
+	    if( $projet == null )
+	        $error[]    =   'No Projet ' . $idProjet;
 
-    $individu       =   AppBundle::getRepository(Individu::class)->find($idIndividu);
-    if( $individu == null )
-        $error[]    =   'No Individu ' . $idIndividu;
+	    $individu       =   AppBundle::getRepository(Individu::class)->find($idIndividu);
+	    if( $individu == null )
+	        $error[]    =   'No Individu ' . $idIndividu;
 
-    if ( $error != [] )
-        return new Response( json_encode( ['KO' => $error ]) );
+	    if ( $error != [] )
+	        return new Response( json_encode( ['KO' => $error ]) );
 
-     $versions = $projet->getVersion();
-     foreach( $versions as $version )
-        if( $version->getEtatVersion() == Etat::ACTIF)
-            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-                {
-                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
-                if( $collaborateur != null && $collaborateur->isEqualTo( $individu ) )
-                    {
-                    $collaborateurVersion->setLoginname( $loginname );
-                    Functions::sauvegarder( $collaborateurVersion );
-                    return new Response(json_encode('OK'));
-                    }
-                }
-      return new Response(json_encode( ['KO' => 'No user found' ]));
+	    $versions = $projet->getVersion();
+	    foreach( $versions as $version )
+	        if( $version->getEtatVersion() == Etat::ACTIF)
+	            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+	                {
+	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
+	                if( $collaborateur != null && $collaborateur->isEqualTo( $individu ) )
+	                    {
+	                    $collaborateurVersion->setLoginname( $loginname );
+	                    Functions::sauvegarder( $collaborateurVersion );
+	                    return new Response(json_encode('OK'));
+	                    }
+	                }
+	    return new Response(json_encode( ['KO' => 'No user found' ]));
      }
 
     /**
@@ -175,43 +185,48 @@ class AdminuxController extends Controller
      */
    public function getloginnamesAction($idProjet)
    {
-   $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
-   if( $projet == null )
-        return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
+        if ( AppBundle::getParameter('noconso')==true )
+        {
+			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		}
+
+	   $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
+	   if( $projet == null )
+	        return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
 
 
-   $versions    = $projet->getVersion();
-   $output      =   [];
-   $idProjet    =   $projet->getIdProjet();
+	   $versions    = $projet->getVersion();
+	   $output      =   [];
+	   $idProjet    =   $projet->getIdProjet();
 
-   foreach( $versions as $version )
-        if( $version->getEtatVersion() == Etat::ACTIF)
-             foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-                {
-                if( $collaborateurVersion->getLogin() == false )
-                    continue;
+	   foreach( $versions as $version )
+	        if( $version->getEtatVersion() == Etat::ACTIF)
+	             foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+	                {
+	                if( $collaborateurVersion->getLogin() == false )
+	                    continue;
 
-                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
-                if( $collaborateur != null )
-                    {
-                    $loginname  =   $collaborateurVersion->getLoginname();
-                    $prenom     =   $collaborateur->getPrenom();
-                    $nom        =   $collaborateur->getNom();
-                    $idIndividu =   $collaborateur->getIdIndividu();
-                    $mail       =   $collaborateur->getMail();
-                    $login      =   $collaborateurVersion->getLogin();
-                    $output[] =   [
-                            'idIndividu' => $idIndividu,
-                            'idProjet' =>$idProjet,
-                            'mail' => $mail,
-                            'prenom' => $prenom,
-                            'nom' => $nom,
-                            'login' => $login,
-                            'loginname' => $loginname,
-                            ];
-                    }
-                }
-    return new Response( json_encode( $output) );
+	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
+	                if( $collaborateur != null )
+	                    {
+	                    $loginname  =   $collaborateurVersion->getLoginname();
+	                    $prenom     =   $collaborateur->getPrenom();
+	                    $nom        =   $collaborateur->getNom();
+	                    $idIndividu =   $collaborateur->getIdIndividu();
+	                    $mail       =   $collaborateur->getMail();
+	                    $login      =   $collaborateurVersion->getLogin();
+	                    $output[] =   [
+	                            'idIndividu' => $idIndividu,
+	                            'idProjet' =>$idProjet,
+	                            'mail' => $mail,
+	                            'prenom' => $prenom,
+	                            'nom' => $nom,
+	                            'login' => $login,
+	                            'loginname' => $loginname,
+	                            ];
+	                    }
+	                }
+	   return new Response( json_encode( $output) );
    }
 
 
@@ -223,6 +238,11 @@ class AdminuxController extends Controller
      */
      public function quotaCheckAction(Request $request)
      {
+        if ( AppBundle::getParameter('noconso')==true )
+        {
+			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		}
+
         $annee_courante=GramcDate::get()->showYear();
         $projets = Functions::projetsParAnnee($annee_courante)[0];
 

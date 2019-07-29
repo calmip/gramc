@@ -53,7 +53,7 @@ twig:
        conso_seuil_2: '%conso_seuil_2%'
        recup_printemps_d: '%recup_printemps_d%'
        recup_printemps_f: '%recup_printemps_f%'
-
+       noconso: true
 
 # Doctrine Configuration
 doctrine:
