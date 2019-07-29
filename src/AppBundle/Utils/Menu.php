@@ -787,7 +787,7 @@ class Menu
 
     public static function affectation()
     {
-        //$session = Functions::getSessionCourante();
+        $session = Functions::getSessionCourante();
 
         $menu['name']        =   'affectation';
         $menu['lien']        =   "Affecter les experts ($session)";
@@ -798,13 +798,6 @@ class Menu
         {
             $menu['raison']     =   "Vous n'avez pas le rôle président";
         }
-        // Supprimé par manu - On peut affecter les experts en permanence, à cause des projets tests
-        /*
-        elseif ( $session->getEtatSession()!=Etat::EDITION_EXPERTISE && $session->getEtatSession()!=Etat::EN_ATTENTE)
-        {
-            $menu['raison']     =   "La session n'est pas en phase d'expertise";
-        }
-        */
         else
         {
             $menu['ok']             =   true;
