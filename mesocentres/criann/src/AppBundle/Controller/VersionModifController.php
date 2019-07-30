@@ -579,15 +579,15 @@ class VersionModifController extends Controller
 
     static public function image($filename, Version $version)
     {
-    $full_filename  = Functions::image_filename( $filename, $version);
+	    $full_filename  = Functions::image_filename( $filename, $version);
 
-    if( file_exists( $full_filename ) && is_file( $full_filename ) )
-        {
-        //Functions::debugMessage('VersionController image  ' .$filename . ' : ' . base64_encode( file_get_contents( $full_filename ) )  );
-        return base64_encode( file_get_contents( $full_filename ) );
-        }
-    else
-        return null;
+	    if( file_exists( $full_filename ) && is_file( $full_filename ) )
+	        {
+	        //Functions::debugMessage('VersionController image  ' .$filename . ' : ' . base64_encode( file_get_contents( $full_filename ) )  );
+	        return base64_encode( file_get_contents( $full_filename ) );
+	        }
+	    else
+	        return null;
     }
 
 	///////////////////////////////////////////////////////////////////////////////////

@@ -651,46 +651,46 @@ class Functions
         return false;
     }
 
-    // Renvoie une représentation en "string" de la varaible passée en input
+    // Renvoie une représentation en "string" de la variable passée en input
     // Utilisé pour déboguer
     public static function show( $input )
     {
-    if( $input instanceof \DateTime )
-        return $input->format("d F Y H:i:s");
-    elseif( is_object( $input ) )
-        {
-        $reflect    = new \ReflectionClass($input);
-        if(  method_exists( $input, '__toString') )
-            return '{'.$reflect->getShortName() .':'.$input->__toString().'}';
-        elseif( method_exists( $input, 'toArray') )
-            return '{'.$reflect->getShortName() .':' . static::show( $input->toArray()) .'}';
-        else
-            {
-            ob_start();
-            Debug::dump( $input, 1);
-            //return '{'.$reflect->getShortName().'}';
-            return ob_get_clean();
-            }
-        }
-    elseif( is_string( $input ) )
-        return "'" . $input . "'";
-    elseif( $input === [] )
-        return '[]';
-    elseif( is_array( $input ) )
-        {
-        $output = '[ ';
-        foreach( $input as $key => $value ) $output .= static::show( $key ) . '=>' . static::show( $value ) . ' ';
-        return $output .= ']';
-        }
-    elseif( $input === NULL )
-        return 'null';
-    elseif( is_bool( $input ) )
-        {
-        if( $input == true ) return 'true';
-        else return 'false';
-        }
-    else
-        return $input;
+	    if( $input instanceof \DateTime )
+	        return $input->format("d F Y H:i:s");
+	    elseif( is_object( $input ) )
+	        {
+	        $reflect    = new \ReflectionClass($input);
+	        if(  method_exists( $input, '__toString') )
+	            return '{'.$reflect->getShortName() .':'.$input->__toString().'}';
+	        elseif( method_exists( $input, 'toArray') )
+	            return '{'.$reflect->getShortName() .':' . static::show( $input->toArray()) .'}';
+	        else
+	            {
+	            ob_start();
+	            Debug::dump( $input, 1);
+	            //return '{'.$reflect->getShortName().'}';
+	            return ob_get_clean();
+	            }
+	        }
+	    elseif( is_string( $input ) )
+	        return "'" . $input . "'";
+	    elseif( $input === [] )
+	        return '[]';
+	    elseif( is_array( $input ) )
+	        {
+	        $output = '[ ';
+	        foreach( $input as $key => $value ) $output .= static::show( $key ) . '=>' . static::show( $value ) . ' ';
+	        return $output .= ']';
+	        }
+	    elseif( $input === NULL )
+	        return 'null';
+	    elseif( is_bool( $input ) )
+	        {
+	        if( $input == true ) return 'true';
+	        else return 'false';
+	        }
+	    else
+	        return $input;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -969,7 +969,7 @@ class ProjetController extends Controller
      */
     public function newAction(Request $request)
     {
-        $projet = new Projet();
+        $projet = new Projet(Projet::PROJET_SESS);
         $form = $this->createForm('AppBundle\Form\ProjetType', $projet);
         $form->handleRequest($request);
 
@@ -1002,7 +1002,7 @@ class ProjetController extends Controller
 
         $renouvelables = AppBundle::getRepository(Projet::class)->get_projets_renouvelables();
 
-        if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => 'P']);
+        if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => '1']);
 
         return $this->render('projet/avant_nouveau_projet.html.twig',
             [
@@ -1025,6 +1025,10 @@ class ProjetController extends Controller
 		// Si changement d'état de la session alors que je suis connecté !
 		// + contournement d'un problème lié à Doctrine
         AppBundle::getSession()->remove('SessionCourante'); // remove cache
+
+        // NOTE - Pour ce controlleur, on identifie les tpyes par une lettre:
+        //        'P' --> Type de projet = Projet::PROJET_SESS
+        //        'T' --> Type de projet = Projet::PROJET_TEST
         if( Menu::nouveau_projet()['ok'] == false && $type == 'P' )
             Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet()['raison'] );
         elseif( Menu::nouveau_projet_test()['ok'] == false && $type == 'T' )
@@ -1032,10 +1036,24 @@ class ProjetController extends Controller
 
         $session    = Functions::getSessionCourante();
 
-        $projet     = new Projet($type);
-        if( $type == 'P' )
+		$prefixes = AppBundle::getParameter('prj_prefix');
+		//$prj_types = array_keys($prefixes,$type);
+		//if ( count ( $prj_types) ===0 )
+	    //{
+		//	Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Pas de type $type. Voir le paramètre prj_prefix");
+		//	return $this->redirectToRoute('accueil');
+		//}
+		//$prj_type = $prj_types[0];
+		if ( !isset ($prefixes[$type]) || $prefixes[$type]==="" )
+	    {
+			Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Pas de préfixe pour le type $type. Voir le paramètre prj_prefix");
+			return $this->redirectToRoute('accueil');
+		}
+
+        $projet   = new Projet($type);
+        if( $type == Projet::PROJET_SESS )
             $projet->setEtatProjet(Etat::RENOUVELABLE);
-        elseif( $type == 'T' )
+        elseif( $type == Projet::PROJET_TEST )
             $projet->setEtatProjet(Etat::NON_RENOUVELABLE);
         else
            Functions::createException(__METHOD__ . ":" . __LINE__ . " mauvais type de projet " . Functions::show( $type) );
@@ -1047,7 +1065,7 @@ class ProjetController extends Controller
         $version->setSession( $session );
         $version->setLaboResponsable();
 
-        if( $type == 'P' )
+        if( $type == Projet::PROJET_SESS )
             $version->setEtatVersion(Etat::EDITION_DEMANDE);
         else
             $version->setEtatVersion(Etat::EDITION_TEST);

@@ -52,42 +52,83 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
                    ->getResult();
     }
 
-    public function countEtat($etat)
+	/*
+	 * Retourne le nombre de projets dans un état donné pour un type de projets donné
+	 *
+     * param $type = si null, compte tous les projets dans un état donné
+     *               si entier>0, compte tous les projets dans un état donné et d'un type donné
+	 */
+
+	private function countEtatPrj($etat)
+	{
+         return $this->getEntityManager()
+         ->createQuery
+        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( p.etatProjet = :etat )')
+        ->setParameter('etat', Etat::getEtat($etat) )
+        ->getSingleScalarResult();
+	}
+
+    public function countEtatPrjType($etat,$type=1)
     {
          return $this->getEntityManager()
          ->createQuery
-        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( p.etatProjet = :etat)')
+        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( p.etatProjet = :etat AND p.typeProjet = :type )')
         ->setParameter('etat', Etat::getEtat($etat) )
+        ->setParameter('type', $type)
         ->getSingleScalarResult();
     }
 
-    public function countEtatTest($etat)
+    public function countEtat($etat, $type=null)
     {
-         return $this->getEntityManager()
-         ->createQuery
-        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( p.etatProjet = :etat AND p.idProjet LIKE :testId)')
-        ->setParameter('etat', Etat::getEtat($etat) )
-        ->setParameter('testId', 'T%')
-        ->getSingleScalarResult();
-    }
+		if ($type === null )
+		{
+			return $this->countEtatPrj($etat);
+		}
+		else
+		{
+			return $this->countEtatPrjType($etat,$type);
+		}
+	}
 
-    public function countAll()
+    public function countEtatTest($etat) { return $this->countEtat($etat,'2'); }
+
+    /*
+     * Retourne le nombre total de projets
+     *
+     * param $type = si null, compte tous les projets
+     *               si entier>0, compte tous les projets d'un type donné
+     *
+     */
+
+    private function countAllPrj()
     {
          return $this->getEntityManager()
          ->createQuery
-        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( NOT p.etatProjet = :etat)')
+        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( NOT p.etatProjet = :etat )')
         ->setParameter('etat', Etat::getEtat('ANNULE') )
         ->getSingleScalarResult();
-    }
-    public function countAllTest()
+	}
+    private function countAllPrjType($type)
     {
          return $this->getEntityManager()
          ->createQuery
-        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( NOT p.etatProjet = :etat AND p.idProjet LIKE :testId)')
+        ('SELECT count(p) FROM AppBundle:Projet p WHERE ( NOT p.etatProjet = :etat AND p.typeProjet = :type)')
         ->setParameter('etat', Etat::getEtat('ANNULE') )
-        ->setParameter('testId', 'T%')
+        ->setParameter(':type', $type)
         ->getSingleScalarResult();
     }
+    public function countAll($type=null)
+    {
+		if ($type === null )
+		{
+			return $this->countAllPrj();
+		}
+		else
+		{
+			return $this->countAllPrjType($type);
+		}
+	}
+    public function countAllTest(){ return $this->countAll('2'); }
 
     // la liste des projets ou un individu est soit juste collaborateur, soit responsable, soit les deux à la fois qui ne sont pas terminés
     public function get_projets_resp_ou_collab($id_individu, $responsable = true, $collaborateur = true)
@@ -167,31 +208,49 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
              ->getResult();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-
-    public function nextId(Session $session, $type = 'P')
+	/*
+	 * Renvoie le numéro de projet le plus élevé créé une année donnée et pour un type donné.
+	 * params: $annee -> L'année (2 chiffres: 17, 18, 19)
+	 *         $type  -> Le type (cf. le paramètre prj_prefix)
+	 *                   A chaque type est associé un préfixe, pour chaque préfixe il y a un espace de numérotation
+	 * Return: Le numéro de plus haut rang, en représentation chaîne de caractère, 3 caractères
+	 *         Si aucun projet n'est trouvé retourne '000'
+	 *         Si $type n'existe pas ou si le préfixe associé est '', retourne null et log un message
+	 *
+	 */
+    public function getLastNumProjet($annee, $type)
     {
-    $annee      = $session->getAnneeSession();
-    $em         = $this->getEntityManager();
+	    $em         = $this->getEntityManager();
+	    $prefixes   = AppBundle::getParameter('prj_prefix');
+	    if ( !isset ($prefixes[$type]) || $prefixes[$type]==="" )
+	    {
+			Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Pas de préfixe pour le type $type. Voir le paramètre prj_prefix");
+			return null;
+		}
+		else
+		{
+			$prf = $prefixes[$type];
 
-    $dql        =   "SELECT p.idProjet FROM AppBundle:Projet p WHERE p.idProjet LIKE :key";
-    $projetIds  =   $em->createQuery( $dql )->setParameter('key', '%' . $type . $annee .'%' ) ->getResult();
+		    $dql        =   "SELECT p.idProjet FROM AppBundle:Projet p WHERE p.idProjet LIKE :key ORDER BY p.idProjet ASC";
+		    $projetIds  =   $em->createQuery( $dql )->setParameter('key', '%' . $prf . $annee .'%' ) ->getResult();
+		    if( $projetIds == null )
+			{
+		        return '000';
+			}
+		    else
+		    {
+				$num    = current( end( $projetIds ) );
+		        return intval(substr($num,-3));
+			};
+		}
+	}
 
-    sort( $projetIds );
-    //return print_r( end( $projetIds ) );
-    //return Functions::show(  $projetIds  );
-    //return Functions::show(  end( $projetIds ) );
-    if( $projetIds == null )
-        $lastId = '000';
-    else
-        $lastId =   current( end( $projetIds ) );
-    //return $lastId;
-    $number = intval(substr($lastId,-3));
-    //return $number;
-    return $type . $annee . sprintf("%'.03d", $number+1);
-    }
-
-    // nombre de projets tests de la session
+    /*
+     * Retourne le nombre de projets tests non terminés dont je suis responsable dans la session
+     *
+     * NOTE - Type de projet = 2
+     *
+     */
     public function countProjetsTestResponsable(Individu $individu)
     {
     $dql  = 'SELECT count(p) FROM AppBundle:Projet p, AppBundle:CollaborateurVersion cv, AppBundle:Version v, AppBundle:Individu i ';
@@ -200,14 +259,14 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
     $dql .= ' AND cv.version =  v AND cv.collaborateur = i ';
     $dql .= ' AND NOT  v.etatVersion = :termine AND NOT p.etatProjet = :termine ';
     $dql .= ' AND NOT v.etatVersion = :annule AND NOT p.etatProjet = :annule ';
-    $dql .= ' AND p.idProjet LIKE :key) ORDER BY p.versionDerniere DESC';
+    $dql .= ' AND p.typeProjet = :type) ORDER BY p.versionDerniere DESC';
 
     return $this->getEntityManager()
          ->createQuery( $dql )
          ->setParameter('individu', $individu )
          ->setParameter('termine', Etat::getEtat('TERMINE'))
          ->setParameter('annule', Etat::getEtat('ANNULE'))
-         ->setParameter('key', 'T%')
+         ->setParameter('type', '2')
          ->setParameter('responsable', 1 )
          ->getSingleScalarResult();
     }
@@ -226,16 +285,16 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
             $query .=   "AND p.idProjet LIKE :Pannee ";
         elseif( $renouvel == Functions::ANCIENS )
             $query .=   "AND NOT ( p.idProjet LIKE :Pannee ) ";
-        
+
         $projets = $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             return $projets->getResult();
         else
-            return $projets->setParameter('Pannee', 'P' . $subAnnee . '%')->getResult();        
+            return $projets->setParameter('Pannee', 'P' . $subAnnee . '%')->getResult();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -247,17 +306,17 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) AND p.idProjet LIKE :Pannee ";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('Pannee', 'P' . $subAnnee . '%')
-        ->getResult();    
-        
+        ->getResult();
+
     }
 
-    
+
 ////////////////////////////////////////////////////////////////////////////////
 
      public function findAnciensProjetsAnnee($annee)
@@ -267,14 +326,14 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) AND NOT ( p.idProjet LIKE :Pannee )";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('Pannee', 'P' . $subAnnee . '%')
-        ->getResult();    
-        
+        ->getResult();
+
     }
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -285,13 +344,13 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         $query .= " JOIN AppBundle:Projet p  WITH v.projet = p ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) ";
-        
+
         return $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' )
-        ->getSingleScalarResult();    
-        
+        ->getSingleScalarResult();
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -301,28 +360,28 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
      public function heuresProjetsAnnee($annee, $renouvel = Functions::TOUS )
     {
         $subAnnee = substr( strval($annee), -2 );
-        
+
         $query = "SELECT SUM(v.demHeures), SUM(v.attrHeures), SUM(v.penalHeures) FROM AppBundle:Version  v ";
         $query .= " JOIN AppBundle:Session s WITH v.session = s ";
         $query .= " JOIN AppBundle:Projet p WITH v.projet = p ";
         $query .= " WHERE (  s.idSession = :anneeA OR s.idSession = :anneeB ) ";
-        
+
         if( $renouvel == Functions::NOUVEAUX )
             $query .=   "AND p.idProjet LIKE :Pannee ";
         elseif( $renouvel == Functions::ANCIENS )
             $query .=   "AND NOT ( p.idProjet LIKE :Pannee ) ";
-    
+
         $heures = $this->getEntityManager()
         ->createQuery( $query )
         ->setParameter('anneeA', $subAnnee . 'A' )
         ->setParameter('anneeB', $subAnnee . 'B' );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             $heures = $heures->getSingleResult();
         else
             $heures = $heures->setParameter('Pannee', 'P' . $subAnnee . '%')
                     ->getSingleResult();
-       
+
 
         $query = "SELECT SUM(r.demHeures), SUM(r.attrHeures) FROM AppBundle:Rallonge r ";
         $query .= " JOIN AppBundle:Version v WITH r.version = v ";
@@ -341,23 +400,23 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
         ->setParameter('anneeB', $subAnnee . 'B' )
         ->setParameter('true', true );
 
-        if( $renouvel == Functions::TOUS ) 
+        if( $renouvel == Functions::TOUS )
             $heures_rallonges = $heures_rallonges->getSingleResult();
         else
             $heures_rallonges = $heures_rallonges->setParameter('Pannee', 'P' . $subAnnee . '%')
                     ->getSingleResult();
-        
+
         return [
                 'demHeures'         => $heures[1],
                 'attrHeures'        => $heures[2],
                 'penalHeures'       => $heures[3],
                 'rallongeDemHeures'      => $heures_rallonges[1],
-                'rallongeAttrHeures'     => $heures_rallonges[2], 
+                'rallongeAttrHeures'     => $heures_rallonges[2],
                 ];
-        
+
         //return array_merge( $heures, $heures_rallonges );
-        
-        
+
+
     }
 
 

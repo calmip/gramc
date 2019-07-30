@@ -35,6 +35,7 @@ use AppBundle\Entity\Rallonge;
 use AppBundle\Entity\RapportActivite;
 
 use AppBundle\Controller\VersionController;
+use AppBundle\Controller\VersionModifController;
 
 use AppBundle\Utils\GramcDate;
 use AppBundle\Utils\ExactGramcDate;
@@ -83,21 +84,21 @@ class Menu
 
         $session =  Functions::getSessionCourante();
         if( $session == null )
-            {
+		{
             $menu['raison'] = "Il n'y a pas de session courante";
             return $menu;
-            }
+		}
 
         $etat_session   =   $session->getEtatSession();
 
         if(  ! self::peut_creer_projets() )
             $menu['raison'] = "Seuls les personnels permanents de l'ESR Occitanie ont la possibilité de créer un projet";
         elseif( $etat_session == Etat::EDITION_DEMANDE )
-            {
+		{
             $menu['raison'] = '';
             $menu['commentaire'] = "Créez un nouveau projet, vous en serez le responsable";
             $menu['ok'] = true;
-            }
+		}
         else
             $menu['raison'] = 'Nous ne sommes pas en période de demande, pas possible de créer un nouveau projet';
 
@@ -111,7 +112,7 @@ class Menu
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet test actuellement";
         $menu['name']   =   'nouveau_projet';
-        $menu['params'] =   [ 'type' =>  'T' ];
+        $menu['params'] =   [ 'type' =>  '2' ];
         $menu['lien']   =   'Nouveau projet test';
         $menu['ok'] = false;
 
@@ -762,7 +763,7 @@ class Menu
             $menu['raison'] = "Le responsable du projet n'a pas demandé de renouvellement";
         elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
             $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
-        elseif(    VersionController::versionValidate( $version ) != []  )
+        elseif(    VersionModifController::versionValidate( $version ) != []  )
             {
             $menu['raison']         = "Votre demande est incomplète";
             $menu['name']           =   'version_avant_modifier';

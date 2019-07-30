@@ -72,6 +72,11 @@ parameters:
     # Si noconso vaut true, le code de visualisation de la consommation est désactivé
     noconso: true
 
+    # Prefixe pour les id de projet: de 1 à 5 caractères
+    # Le préfixe dépend du type de projet (ou pas)
+    # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
+    prj_prefix: { '1' : 'P', '2' : 'T' }
+
     # divers répertoires
     signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'

@@ -33,6 +33,7 @@ use AppBundle\Entity\Version;
 use AppBundle\Entity\Expertise;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Utils\GramcDate;
+use AppBundle\Utils\NextProjetId;
 
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -134,17 +135,19 @@ class Projet
     public function getId(){ return $this->getIdProjet(); }
     public function __toString(){ return $this->getIdProjet(); }
 
-
     /**
      * Constructor
      */
-    public function __construct( $type = 'P' )
+    public function __construct($type)
     {
         $this->publi        = new \Doctrine\Common\Collections\ArrayCollection();
         $this->version      = new \Doctrine\Common\Collections\ArrayCollection();
         $this->rapportActivite = new \Doctrine\Common\Collections\ArrayCollection();
         $this->etatProjet   = Etat::EDITION_DEMANDE;
-        $this->idProjet     = AppBundle::getRepository(Projet::class)->nextId( Functions::getSessionCourante(), $type );
+        $this->typeProjet   = $type;
+        $annee              = Functions::getSessionCourante()->getAnneeSession();
+        $this->idProjet     = NextProjetId::NextProjetId($annee, $type);
+        //$this->idProjet     = AppBundle::getRepository(Projet::class)->nextId( Functions::getSessionCourante(), $type );
     }
 
     /**
