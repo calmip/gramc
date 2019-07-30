@@ -19,20 +19,18 @@
                         $projets = $em->getRepository(Projet::class)->findAll();
 
                         foreach( $projets as $projet )
-                            {
-                            $etat = $projet->getEtatProjet();
-
-                            if( $etat == Etat::RENOUVELABLE ||  $etat == Etat::NON_RENOUVELABLE || $etat == Etat::TERMINE )
-                                continue;
-                            elseif( $etat == Etat::ANNULE )
-                                $projet->setEtatProjet( Etat::TERMINE );
-                            elseif( $etat == Etat::EN_SURSIS )
-                                $projet->setEtatProjet( Etat::NON_RENOUVELABLE );
-                            elseif( $projet->isProjetTest() == true )
-                                $projet->setEtatProjet( Etat::NON_RENOUVELABLE );
-                            else
-                                $projet->setEtatProjet( Etat::RENOUVELABLE );
-                            }
+						{
+							$id_projet = $projet->getIdProjet();
+							$type = substr( $id_projet , 0, 1 );
+							if ($type=='T')
+							{
+								$projet->setTypeProjet(Projet::PROJET_TEST);
+							}
+							else
+							{
+								$projet->setTypeProjet(Projet::PROJET_SESS);
+							}
+						}
                         $em->flush();
 
                 }

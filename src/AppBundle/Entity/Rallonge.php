@@ -103,7 +103,7 @@ class Rallonge
     /**
      * @var string
      *
-     * @ORM\Column(name="id_rallonge", type="string", length=11)
+     * @ORM\Column(name="id_rallonge", type="string", length=15)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -149,7 +149,7 @@ class Rallonge
      * @var boolean
      *
      * @ORM\Column(name="validation", type="boolean", nullable=false)
-     * 
+     *
      */
     private $validation = true;
 
@@ -163,9 +163,9 @@ class Rallonge
      */
     private $expert;
 
-    
+
     /////////
-    
+
     /**
     * @ORM\PrePersist
     */
@@ -205,16 +205,16 @@ class Rallonge
     }
 
 
-     
+
     /////////////////////////////////////////////////////////////////////////////
 
-    
+
     public function getId(){ return $this->getIdRallonge(); }
     public function __toString(){ return $this->getIdRallonge(); }
 
     ////////////////////////////////////////////////////////////////////////////
 
-    
+
 
     /**
      * Set etatRallonge
@@ -431,10 +431,10 @@ class Rallonge
     {
         return $this->version;
     }
-    
+
     /////////////////////////////////////////////////////////////////////
 
-    
+
 
     /**
      * Set nbHeuresAtt
@@ -579,10 +579,10 @@ class Rallonge
     {
         return $this->expert;
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////
 
-    // pour workflow 
+    // pour workflow
     public function getObjectState()
     {
         return $this->getEtatRallonge();
@@ -620,20 +620,20 @@ class Rallonge
     {
         return [ $this->getExpert() ];
     }
-    
+
     // pour notifications
     public function getExpertsThematique()
     {
     $version    =   $this->getVersion();
     if( $version    ==  null    ) return [];
-      
-    $thematique = $version->getThematique();   
+
+    $thematique = $version->getThematique();
     if( $thematique == null) return [];
-    else return $thematique->getExpert(); 
+    else return $thematique->getExpert();
     }
 
     //////////////////////////////
-    
+
     public function getMetaEtat()
     {
     $etat = $this->getEtatRallonge();
@@ -647,7 +647,7 @@ class Rallonge
     }
 
     //////////////
-    
+
     public function getLibelleEtatRallonge()
     {
     return Etat::getLibelle( $this->getEtatRallonge() );
@@ -667,7 +667,7 @@ class Rallonge
         $projet =   $version->getProjet();
     else
         $projet =   null;
-        
+
     $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($projet);
 
     if( $expert ==  null && $projet != null)
@@ -702,7 +702,7 @@ class Rallonge
         if( $individu == null ) return false;
 
         $expert = $this->getExpert();
-        
+
         if( $expert == null )
             {
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ . " rallonge " . $this->__toString() . " n'a pas d'expert ");

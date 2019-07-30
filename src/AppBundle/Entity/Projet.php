@@ -46,6 +46,9 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
  */
 class Projet
 {
+	const PROJET_SESS = 1;		// Projet créé lors d'une session d'attribution
+	const PROJET_TEST = 2;		// Projet test
+
     /**
      * @var integer
      *
@@ -53,10 +56,18 @@ class Projet
      */
     private $etatProjet;
 
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="type_projet", type="integer", nullable=false)
+     */
+    private $typeProjet;
+
     /**
      * @var string
      *
-     * @ORM\Column(name="id_projet", type="string", length=6)
+     * @ORM\Column(name="id_projet", type="string", length=10)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -151,6 +162,20 @@ class Projet
     }
 
     /**
+     * Set typeProjet
+     *
+     * @param integer $typeProjet
+     *
+     * @return Projet
+     */
+    public function setTypeProjet($typeProjet)
+    {
+        $this->typeProjet = $typeProjet;
+
+        return $this;
+    }
+
+    /**
      * Get etatProjet
      *
      * @return integer
@@ -158,6 +183,16 @@ class Projet
     public function getEtatProjet()
     {
         return $this->etatProjet;
+    }
+
+    /**
+     * Get typeProjet
+     *
+     * @return integer
+     */
+    public function getTypeProjet()
+    {
+        return $this->typeProjet;
     }
 
     /**
@@ -421,19 +456,21 @@ class Projet
             return null;
     }
 
+	/*
+	 * Renvoie true si le projet est un projet test, false sinon
+	 *
+	 */
     public function isProjetTest()
     {
-    $idProjet   =  $this->getIdProjet();
-    if( is_string($idProjet ) )
-        {
-        $type = substr( $idProjet , 0, 1 );
-        if( $type == 'T' )
-            return true;
-        elseif( $type == 'P' )
-            return false;
-        }
-
-    Functions::createException(__METHOD__ . ":" . __LINE__ . " mauvais type de projet " . Functions::show( $type) );
+		$type = $this->getTypeProjet();
+		if ($this->getTypeProjet() === Projet::PROJET_TEST)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
     }
 
     // Le Meta-état des projets, pour affichage
