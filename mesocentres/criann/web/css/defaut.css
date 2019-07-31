@@ -23,7 +23,7 @@ html, body {
 /*	background-image:url("https://attribution-ressources.calmip.univ-toulouse.fr/global/icones/beta.jpeg"); */
 	background-repeat: no-repeat;
 	background-position: center top;
-	background-color: #eeeeadd
+	background-color: #eeeedddd
 
 }
 
@@ -1006,3 +1006,8 @@ div.ui-dialog {
 .scrtable .w80  { width:80px; height: 35px; padding:3px 10px; border-bottom: none }
 .scrtable .w170 { width:170px; height: 35px; padding:3px 10px; border-bottom: none }
 .scrtable .w180 { width:180px; height: 35px; padding:3px 10px; border-bottom: none }
+
+/* Les onglets du formulaire de projet */
+.ui-widget-content {
+	background: inherit;
+}

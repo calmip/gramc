@@ -32,6 +32,7 @@ src/cache/*
 !var/SymfonyRequirements.php
 /web/bundles/
 banniere.png
+favicon.ico
 
 altermeso
 
