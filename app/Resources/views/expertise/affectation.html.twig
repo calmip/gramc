@@ -122,7 +122,8 @@
     <form name="affecter_les_experts" method="post">
     <div id="projets">
         {# largeur = largeur des colonnes + padding + bordure #}
-        {% set width=3*15+45+5*80+4*170 + 20*13 + 40  %}
+        {% set width=3*15+45+4*80+4*170 + 20*13 + 40  %}
+        {% if noconso==false %}{% set width = 80 + width %}{% endif %}
         <table id="affecte_experts" class="scrtable dataTable no-footer" role="grid" style="width: {{width}}px" >
             <thead>
                 <tr>
@@ -138,7 +139,7 @@
                     <th class="w170">Expert</th>
                     <th class="w80">Demande</th>
                     <th class="w80">Attribution</th>
-                    <th class="w80">Conso</th>
+                    {% if noconso==false %}<th class="w80">Conso</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -179,7 +180,7 @@
                 <td class="w80">{% if( version.labo != null ) %}{{ version.labo.acrolabo }}{% endif %}</td>
                 <td class="w15">
                     {% if( version.hasExpert ) %}
-                     <img src="{{ asset('icones/actif.png') }}" alt="Choix du président" title="Affecté par le président"><span class="invisible">affecté</span>
+                     <img src="{{ asset('icones/actif.png') }}" alt="Expert affecté" title="Expert affecté"><span class="invisible">affecté</span>
                     {% endif %}
                 </td>
 
@@ -188,7 +189,7 @@
                 {% else %}
                 <td class="w170">
                 {% endif %}
-                {% if( version.libelleEtat=='EDITION_EXPERTISE' and (libelleEtatSession=='EDITION_EXPERTISE' or libelleEtatSession=='EN_ATTENTE') or version.libelleEtat== 'EXPERTISE_TEST') %}
+                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
                     {{ form_widget( forms[version.getIdVersion()].expert ) }}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
@@ -202,7 +203,9 @@
                 </td>
                 <td class="w80">{{ version.demHeures }}</td>
                 <td class="w80">{% if version.idVersion is defined and attHeures[version.idVersion] is defined %}{{ attHeures[version.idVersion] }}{% endif %}</td>
+                {% if noconso==false %}
                 <td class="w80">{{ version.getConso() }}</td>
+                {% endif %}
             </tr>
             {% endfor %}
             </tbody>

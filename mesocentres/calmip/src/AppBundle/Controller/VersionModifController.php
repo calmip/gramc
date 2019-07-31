@@ -80,197 +80,149 @@ class VersionModifController extends Controller
     /**
      * Displays a form to edit an existing version entity.
      *
+     *      D'abord une partie générique (images, collaborateurs)
+     *      Ensuite on appelle modifierTypeX, car le formulaire peut dépendre du type de projet
+     *
      * @Route("/{id}/modifier", name="modifier_version")
      * @Method({"GET", "POST"})
      * @Security("has_role('ROLE_DEMANDEUR')")
      */
     public function modifierAction(Request $request, Version $version, $renouvellement = false )
     {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
-
-    // if annuler on ne sauvegarde rien
-    // version est sauvegardée autrement et je ne sais pas pourquoi
-    $form = $this->createFormBuilder( new Version() )->add( 'annuler',   SubmitType::Class )->getForm();
-    $form->handleRequest($request);
-    if( $form->isSubmitted() && $form->get('annuler')->isClicked() )
-            {
-            Functions::debugMessage(__METHOD__ .':'. __LINE__ . ' annuler clicked');
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
+	    // ACL
+	    if( Menu::modifier_version($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
+	            " parce que : " . Menu::modifier_version($version)['raison'] );
 
 
-   // Functions::debugMessage('modifierAction ' .  print_r($_POST, true) );
-    $image_forms = [];
+	    // ON A CLIQUE SUR ANNULER
+	    // version est sauvegardée autrement et je ne sais pas pourquoi
+	    $form = $this->createFormBuilder( new Version() )->add( 'annuler',   SubmitType::Class )->getForm();
+	    $form->handleRequest($request);
+	    if( $form->isSubmitted() && $form->get('annuler')->isClicked() )
+		{
+			Functions::debugMessage(__METHOD__ .':'. __LINE__ . ' annuler clicked');
+			return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
+		}
 
-    $image_forms['img_expose_1'] =   $this->image_form( 'img_expose_1', false );
-    $image_forms['img_expose_2'] =   $this->image_form( 'img_expose_2', false );
-    $image_forms['img_expose_3'] =   $this->image_form( 'img_expose_3', false );
+		// TELEVERSEMENT DES IMAGES PAR AJAX
+	    // Functions::debugMessage('modifierAction ' .  print_r($_POST, true) );
+	    $image_forms = [];
 
-    $image_forms['img_justif_renou_1'] =   $this->image_form( 'img_justif_renou_1', false );
-    $image_forms['img_justif_renou_2'] =   $this->image_form( 'img_justif_renou_2' , false);
-    $image_forms['img_justif_renou_3'] =   $this->image_form( 'img_justif_renou_3', false );
+	    $image_forms['img_expose_1'] =   $this->image_form( 'img_expose_1', false );
+	    $image_forms['img_expose_2'] =   $this->image_form( 'img_expose_2', false );
+	    $image_forms['img_expose_3'] =   $this->image_form( 'img_expose_3', false );
+
+	    $image_forms['img_justif_renou_1'] =   $this->image_form( 'img_justif_renou_1', false );
+	    $image_forms['img_justif_renou_2'] =   $this->image_form( 'img_justif_renou_2' , false);
+	    $image_forms['img_justif_renou_3'] =   $this->image_form( 'img_justif_renou_3', false );
 
 
-    //Functions::debugMessage('modifierAction image_handle');
-    foreach( $image_forms as $my_form )
-        static::image_handle( $my_form, $version, $request );
-    //Functions::debugMessage('modifierAction après image_handle');
+	    //Functions::debugMessage('modifierAction image_handle');
+	    foreach( $image_forms as $my_form )
+	        static::image_handle( $my_form, $version, $request );
+	    //Functions::debugMessage('modifierAction après image_handle');
 
-    //Functions::debugMessage('modifierAction ajax ');
-    // upload image ajax
+	    //Functions::debugMessage('modifierAction ajax ');
+	    // upload image ajax
 
-    $image_form = $this->image_form( 'image_form', false );
-    //Functions::debugMessage('modifierAction ajax form');
+	    $image_form = $this->image_form( 'image_form', false );
+	    //Functions::debugMessage('modifierAction ajax form');
 
-    $ajax = $this->image_handle( $image_form, $version, $request );
-    //Functions::debugMessage('modifierAction ajax handled');
-    // Functions::debugMessage('modifierAction ajax = ' .  print_r($ajax, true) );
+	    $ajax = $this->image_handle( $image_form, $version, $request );
+	    //Functions::debugMessage('modifierAction ajax handled');
+	    // Functions::debugMessage('modifierAction ajax = ' .  print_r($ajax, true) );
 
-    if( $ajax['etat'] != null )
-    {
-        $div_sts  = substr($ajax['filename'], 0,strlen($ajax['filename'])-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
-        if( $ajax['etat'] == 'OK' )
-        {
-            $html[$ajax['filename']] = '<img class="dropped" src="data:image/png;base64, ' . base64_encode( $ajax['contents'] ) .'" />';
+		// Téléversement des images
+	    if( $ajax['etat'] != null )
+	    {
+	        $div_sts  = substr($ajax['filename'], 0,strlen($ajax['filename'])-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
+	        if( $ajax['etat'] == 'OK' )
+	        {
+	            $html[$ajax['filename']] = '<img class="dropped" src="data:image/png;base64, ' . base64_encode( $ajax['contents'] ) .'" />';
 
-            $twig = clone AppBundle::getTwig();
-            $twig->setLoader(new \Twig_Loader_String());
-            $html[$ajax['filename']] .= $twig
-                ->render( '<img class="icone" src=" {{ asset(\'icones/poubelle32.png\') }}" alt="Supprimer cette figure" title="Supprimer cette figure" />' );
+	            $twig = clone AppBundle::getTwig();
+	            $twig->setLoader(new \Twig_Loader_String());
+	            $html[$ajax['filename']] .= $twig
+	                ->render( '<img class="icone" src=" {{ asset(\'icones/poubelle32.png\') }}" alt="Supprimer cette figure" title="Supprimer cette figure" />' );
 
-            $html[$div_sts] = '<div class="message info">votre figure a été correctement téléversée</div>';
-        }
-        elseif( $ajax['etat'] == 'KO' )
-            $html[$div_sts] = "Le téléchargement de l'image a échoué";
-        elseif( $ajax['etat'] == 'nonvalide' )
-            $html[$div_sts] = '<div class="message warning">'.$ajax['error'].'</div>';
+	            $html[$div_sts] = '<div class="message info">votre figure a été correctement téléversée</div>';
+	        }
+	        elseif( $ajax['etat'] == 'KO' )
+	            $html[$div_sts] = "Le téléchargement de l'image a échoué";
+	        elseif( $ajax['etat'] == 'nonvalide' )
+	            $html[$div_sts] = '<div class="message warning">'.$ajax['error'].'</div>';
 
-        if( $request->isXMLHttpRequest() )
-            return new Response( json_encode($html) );
+	        if( $request->isXMLHttpRequest() )
+	            return new Response( json_encode($html) );
+	    }
+
+	    // SUPPRESSION DES IMAGES TELEVERSEES
+	    $remove_form = $this
+	       ->get('form.factory')
+	       ->createNamedBuilder('remove_form', FormType::class, [], [ 'csrf_protection' => false ] )
+	       ->add('filename', TextType::class, [ 'required'       =>  false,] )
+	       ->getForm();
+
+	    $remove_form->handleRequest($request);
+	    if ($remove_form->isSubmitted() &&  $remove_form->isValid() )
+	    {
+	        Functions::debugMessage('remove_form is valid');
+	        $filename  =   $remove_form->getData()['filename'];
+
+	        $rem_nb         = substr($filename,strlen($filename)-1,1);
+	        $filename       =   basename($filename); // sécurité !
+	        $full_filename = Functions::image_directory($version).'/'.$filename;
+	        if( file_exists( $full_filename ) && is_file( $full_filename ) )
+	            unlink( $full_filename );
+	        else
+	            Functions::errorMessage('VersionController modifierAction Fichier '. $full_filename . " n'existe pas !");
+	        $div_sts  = substr($filename, 0,strlen($filename)-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
+	        $html[$div_sts] = '<div class="message info">La figure ' . $rem_nb . ' a été supprimée</div>';
+	        $html[$filename] = 'Figure ' . $rem_nb;
+
+	        return new Response( json_encode($html) );
+	    }
+
+
+		// FORMULAIRE DES COLLABORATEURS
+		$collaborateur_form = $this->getCollaborateurForm( $version );
+		$collaborateur_form->handleRequest($request);
+		$data   =   $collaborateur_form->getData();
+
+		if( $data != null && array_key_exists('individus', $data ) )
+		{
+			Functions::debugMessage('modifierAction traitement des collaborateurs');
+			static::handleIndividuForms( $data['individus'], $version );
+
+			// ACTUCE : le mail est disabled en HTML et en cas de POST il est annulé
+			// nous devons donc refaire le formulaire pour récupérer ces mails
+			$collaborateur_form = static::getCollaborateurForm( $version );
+		}
+
+		// DES FORMULAIRES QUI DEPENDENT DU TYPE DE PROJET
+		if( $version->getProjet()->getTypeProjet()===Projet::PROJET_TEST )
+		{
+			return $this->modifierType2($request, $version, $renouvellement, $image_forms, $collaborateur_form);
+		}
+		else
+		{
+			return $this->modifierType1($request, $version, $renouvellement, $image_forms, $collaborateur_form);
+		}
     }
 
-    // formulaire remove image
-
-    $remove_form = $this
-       ->get('form.factory')
-       ->createNamedBuilder('remove_form', FormType::class, [], [ 'csrf_protection' => false ] )
-       ->add('filename', TextType::class, [ 'required'       =>  false,] )
-       ->getForm();
-
-    $remove_form->handleRequest($request);
-
-    if ($remove_form->isSubmitted() &&  $remove_form->isValid() )
+    /*
+     * Appelée par modifierAction pour les projets de type 1 (PROJET_SESS)
+     *
+     * params = $request, $version
+     *          $renouvellement (toujours false)
+     *          $image_forms (formulaire de téléversement d'images)
+     *          $collaborateurs_form (formulaire des collaborateurs)
+     *
+     */
+	private function modifierType1(Request $request, Version $version, $renouvellement, $image_forms, $collaborateur_form)
     {
-        Functions::debugMessage('remove_form is valid');
-        $filename  =   $remove_form->getData()['filename'];
-
-        $rem_nb         = substr($filename,strlen($filename)-1,1);
-        $filename       =   basename($filename); // sécurité !
-        $full_filename = Functions::image_directory($version).'/'.$filename;
-        if( file_exists( $full_filename ) && is_file( $full_filename ) )
-            unlink( $full_filename );
-        else
-            Functions::errorMessage('VersionController modifierAction Fichier '. $full_filename . " n'existe pas !");
-        $div_sts  = substr($filename, 0,strlen($filename)-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
-        $html[$div_sts] = '<div class="message info">La figure ' . $rem_nb . ' a été supprimée</div>';
-        $html[$filename] = 'Figure ' . $rem_nb;
-
-        return new Response( json_encode($html) );
-    }
-
-        // traitement de la liste des collaborateurs
-
-        $collaborateur_form = $this->getCollaborateurForm( $version );
-        $collaborateur_form->handleRequest($request);
-        $data   =   $collaborateur_form->getData();
-
-        if( $data != null && array_key_exists('individus', $data ) )
-            {
-            Functions::debugMessage('modifierAction traitement des collaborateurs');
-            static::handleIndividuForms( $data['individus'], $version );
-
-            // ACTUCE : le mail est disaibled en HTML et en cas de POST il est annulé
-            // nous devons donc refaire le formulaire pour récupérer ces mails
-            $collaborateur_form = static::getCollaborateurForm( $version );
-            }
-
-       // formulaire projet test
-       // attention un TWIG différent pour le projet test
-
-        if( $version->isProjetTest() )
-        {
-        if( AppBundle::hasParameter('heures_projet_test' ) )
-            $heures_projet_test =  AppBundle::getParameter('heures_projet_test' );
-        else
-            $heures_projet_test =  5000;
-
-        $version->setDemHeures( $heures_projet_test );
-        $form = $this->createFormBuilder($version)
-            ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
-            ->add('prjThematique', EntityType::class,
-                    [
-                    'required'       =>  false,
-                    'multiple' => false,
-                    'class' => 'AppBundle:Thematique',
-                    'label'     => '',
-                    'placeholder' => '-- Indiquez la thématique',
-                    ])
-            ->add('demHeures', IntegerType::class,
-                [
-                'required'       =>  false,
-                'data' => $heures_projet_test,
-                'disabled' => 'disabled' ]
-                )
-            ->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'codeNom', TextType::class, [ 'required'       =>  false ] )
-            ->add( 'codeFor',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeAutre',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeLangage', TextType::class, [ 'required'       =>  false ])
-            ->add( 'codeLicence', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'codeUtilSurMach', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demLogiciels', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demBib', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add('gpu', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "Oui" => "Oui",
-                                "Non" => "Non",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'fermer',   SubmitType::Class )
-            ->add( 'annuler',   SubmitType::Class )
-            ->getForm();
-
-        $form->handleRequest($request);
-
-        if( $form->isSubmitted() && $form->isValid()  )
-            {
-            // on sauvegarde tout de même mais il semble que c'est déjà fait avant
-            $version->setDemHeures( $heures_projet_test );
-            $return = Functions::sauvegarder( $version );
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
-
-        $version->setDemHeures($heures_projet_test  );
-        return $this->render('version/modifier_projet_test.html.twig',
-            [
-            'form'      => $form->createView(),
-            'version'   => $version,
-            'collaborateur_form' => $collaborateur_form->createView(),
-            'todo'          => static::versionValidate($version),
-            ]);
-        }
-
-       // formulaire principal
-
+		// formulaire principal
         $form = $this->createFormBuilder($version)
             ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
             ->add('prjThematique', EntityType::class,
@@ -433,18 +385,15 @@ class VersionModifController extends Controller
         $form->handleRequest($request);
         //Functions::debugMessage('modifierAction after principal form handle Request');
 
-
-
-        // traitement du formulaire principal
-
+        // traitement du formulaire
         if( $form->isSubmitted() && $form->isValid() )
-            {
+		{
             if( $form->get('annuler')->isClicked() )
-                {
+			{
                 // on ne devrait jamais y arriver !
                 Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
                 return $this->redirectToRoute( 'projet_accueil' );
-                }
+			}
 
            // on sauvegarde tout de même mais il semble que c'est déjà fait avant
            $return = Functions::sauvegarder( $version );
@@ -452,13 +401,13 @@ class VersionModifController extends Controller
            //AppBundle::getManager()->flush();
 
             if( $request->isXmlHttpRequest() )
-                {
+			{
                 Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
                 if( $return == true )
                     return new Response( json_encode('OK - Votre projet est correctement enregistré') );
                 else
                     return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
-                }
+			}
             /*
             if( $form->get('fermer')->isClicked() )
                 Functions::debugMessage(__METHOD__ . ' fermer clicked');
@@ -466,7 +415,7 @@ class VersionModifController extends Controller
                 Functions::warningMessage(__METHOD__ . ' autre chose clicked');
             */
             return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
+		}
 
         return $this->render('version/modifier.html.twig',
             [
@@ -488,9 +437,88 @@ class VersionModifController extends Controller
             'todo'          => static::versionValidate($version),
             'renouvellement'    => $renouvellement,
             ]);
-    }
+	}
 
-        ////////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Appelée par modifierAction pour les projets de type 2 (PROJET_TEST)
+     *
+     * params = $request, $version
+     *          $renouvellement (toujours false)
+     *          $image_forms (formulaire de téléversement d'images)
+     *          $collaborateurs_form (formulaire des collaborateurs)
+     *
+     */
+    private function modifierType2(Request $request, Version $version, $renouvellement, $image_forms, $collaborateur_form)
+    {
+		if( AppBundle::hasParameter('heures_projet_test' ) )
+			$heures_projet_test =  AppBundle::getParameter('heures_projet_test' );
+		else
+			$heures_projet_test =  5000;
+
+		$version->setDemHeures( $heures_projet_test );
+		$form = $this->createFormBuilder($version)
+			->add('prjTitre', TextType::class, [ 'required'       =>  false ])
+			->add('prjThematique', EntityType::class,
+					[
+					'required'       =>  false,
+					'multiple' => false,
+					'class' => 'AppBundle:Thematique',
+					'label'     => '',
+					'placeholder' => '-- Indiquez la thématique',
+					])
+			->add('demHeures', IntegerType::class,
+				[
+				'required'       =>  false,
+				'data' => $heures_projet_test,
+				'disabled' => 'disabled' ]
+				)
+			->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
+			->add( 'codeNom', TextType::class, [ 'required'       =>  false ] )
+			->add( 'codeFor',  CheckboxType::class, [ 'required'       =>  false ])
+			->add( 'codeC',  CheckboxType::class, [ 'required'       =>  false ])
+			->add( 'codeCpp',  CheckboxType::class, [ 'required'       =>  false ])
+			->add( 'codeAutre',  CheckboxType::class, [ 'required'       =>  false ])
+			->add( 'codeLangage', TextType::class, [ 'required'       =>  false ])
+			->add( 'codeLicence', TextAreaType::class, [ 'required'       =>  false ]  )
+			->add( 'codeUtilSurMach', TextAreaType::class, [ 'required'       =>  false ]  )
+			->add( 'demLogiciels', TextAreaType::class, [ 'required'       =>  false ]  )
+			->add( 'demBib', TextAreaType::class, [ 'required'       =>  false ]  )
+			->add('gpu', ChoiceType::class,
+				[
+				'required'       =>  false,
+				'placeholder'   =>  "-- Choisissez une option",
+				'choices'  =>   [
+								"Oui" => "Oui",
+								"Non" => "Non",
+								"Je ne sais pas" => "je ne sais pas",
+								],
+				])
+			->add( 'fermer',   SubmitType::Class )
+			->add( 'annuler',   SubmitType::Class )
+			->getForm();
+
+		$form->handleRequest($request);
+
+		if( $form->isSubmitted() && $form->isValid()  )
+		{
+			// on sauvegarde tout de même mais il semble que c'est déjà fait avant
+			$version->setDemHeures( $heures_projet_test );
+			$return = Functions::sauvegarder( $version );
+			return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
+		}
+
+		$version->setDemHeures($heures_projet_test  );
+		return $this->render('version/modifier_projet_test.html.twig',
+			[
+			'form'      => $form->createView(),
+			'version'   => $version,
+			'collaborateur_form' => $collaborateur_form->createView(),
+			'todo'          => static::versionValidate($version),
+			]);
+
+	}
+
+    ////////////////////////////////////////////////////////////////////////////////////
 
     private static function image_form( $name , $csrf_protection = true )
     {
@@ -578,15 +606,15 @@ class VersionModifController extends Controller
 
     static public function image($filename, Version $version)
     {
-    $full_filename  = Functions::image_filename( $filename, $version);
+	    $full_filename  = Functions::image_filename( $filename, $version);
 
-    if( file_exists( $full_filename ) && is_file( $full_filename ) )
-        {
-        //Functions::debugMessage('VersionController image  ' .$filename . ' : ' . base64_encode( file_get_contents( $full_filename ) )  );
-        return base64_encode( file_get_contents( $full_filename ) );
-        }
-    else
-        return null;
+	    if( file_exists( $full_filename ) && is_file( $full_filename ) )
+	        {
+	        //Functions::debugMessage('VersionController image  ' .$filename . ' : ' . base64_encode( file_get_contents( $full_filename ) )  );
+	        return base64_encode( file_get_contents( $full_filename ) );
+	        }
+	    else
+	        return null;
     }
 
 	///////////////////////////////////////////////////////////////////////////////////

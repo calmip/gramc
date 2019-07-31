@@ -1456,53 +1456,52 @@ class ProjetController extends Controller
      */
     public function avantEnvoyerAction(Projet $projet,  Request $request)
     {
-    Functions::MenuACL( Menu::envoyer_expert($projet), "Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
+	    Functions::MenuACL( Menu::envoyer_expert($projet), "Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
 
-    $version    =    $projet->derniereVersion();
-    if( $version == null ) Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
+	    $version    =    $projet->derniereVersion();
+	    if( $version == null ) Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
 
-    $session = $version->getSession();
+	    $session = $version->getSession();
 
-    $form = AppBundle::createFormBuilder()
-            ->add('CGU',   CheckBoxType::class,
-                    [
-                    'required'  =>  false,
-                    'label'     => '',
-                    ])
-        ->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
-        ->add('annuler', SubmitType::class, ['label' => "Annuler"])
-        ->getForm();
+	    $form = AppBundle::createFormBuilder()
+	            ->add('CGU',   CheckBoxType::class,
+	                    [
+	                    'required'  =>  false,
+	                    'label'     => '',
+	                    ])
+	        ->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
+	        ->add('annuler', SubmitType::class, ['label' => "Annuler"])
+	        ->getForm();
 
-    $form->handleRequest($request);
+	    $form->handleRequest($request);
+	    if ( $form->isSubmitted() && $form->isValid() )
+	    {
+	        $CGU = $form->getData()['CGU'];
+	        if( $form->get('annuler')->isClicked() )
+	             return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
 
-    if ( $form->isSubmitted() && $form->isValid() )
-    {
-        $CGU = $form->getData()['CGU'];
-        if( $form->get('annuler')->isClicked() )
-             return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	        if( $CGU == false && $form->get('envoyer')->isClicked() )
+	        {
+	            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
+	            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	            return $this->render('projet/avant_envoyer_expert.html.twig',
+	                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
+	                    );
 
-        if( $CGU == false && $form->get('envoyer')->isClicked() )
-        {
-            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
-            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
-            return $this->render('projet/avant_envoyer_expert.html.twig',
-                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
-                    );
+	        }
+	        elseif ( $CGU == true && $form->get('envoyer')->isClicked() )
+	        {
+	            $version->setCGU( true );
+	            Functions::sauvegarder( $version );
+	            return $this->redirectToRoute('envoyer_expert',[ 'id' => $projet->getIdProjet() ] );
+	        }
+	        else
+	            Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $projet->getIdProjet());
+	    }
 
-        }
-        elseif( $CGU == true && $form->get('envoyer')->isClicked() )
-        {
-            $version->setCGU( true );
-            Functions::sauvegarder( $version );
-            return $this->redirectToRoute('envoyer_expert',[ 'id' => $projet->getIdProjet() ] );
-        }
-        else
-            Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $projet->getIdProjet());
-    }
-
-    return $this->render('projet/avant_envoyer_expert.html.twig',
-                        [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
-                        );
+	    return $this->render('projet/avant_envoyer_expert.html.twig',
+	                        [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
+	                        );
 
     }
 
@@ -1516,56 +1515,64 @@ class ProjetController extends Controller
      */
     public function envoyerAction(Projet $projet,  Request $request)
     {
-    //if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-    //   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
+	    //if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
+	    //   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
 
-    Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
+	    Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
 
-    $version    =    $projet->derniereVersion();
-    if( $version == null )
-        Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
+	    $version    =    $projet->derniereVersion();
+	    if( $version == null )
+	        Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
 
-    if( Menu::envoyer_expert($projet)['incomplet'] == true )
-        Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
+	    if( Menu::envoyer_expert($projet)['incomplet'] == true )
+	        Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
 
-    if( $version->getCGU() == false )
-        Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
+	    if( $version->getCGU() == false )
+	        Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
 
-    if( count( $version->getExpertise() ) > 0 )
+		// S'il y adéjà une expertise on ne fait rien
+		// Sinon on la crée et on appelle le programme d'affectation automatique des experts
+	    if( count( $version->getExpertise() ) > 0 )
         {
-        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
+	        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
         }
-    else
+	    else
         {
-        $expertise  =   new Expertise();
-        $expertise->setVersion( $version );
+	        $expertise  =   new Expertise();
+	        $expertise->setVersion( $version );
 
-        // affecter le président comme expert pour un projet test
-        if( $projet->isProjetTest() )
+	        // affecter le président comme expert pour un projet test
+	        //if( $projet->isProjetTest() )
+            //{
+	        //    $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
+	        //    if( $presidents == null )
+	        //        Functions::warningMessage(__METHOD__ .  ":" . __LINE__ . " Il n'y a aucun président !");
+	        //    else
+	        //       $expertise->setExpert( $presidents[0] );
+            //}
+            $expert = $projet->proposeExpert();
+            if ($expert != null)
             {
-            $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
-            if( $presidents == null )
-                Functions::warningMessage(__METHOD__ .  ":" . __LINE__ . " Il n'y a aucun président !");
-            else
-               $expertise->setExpert( $presidents[0] );
-            }
-        Functions::sauvegarder( $expertise );
+				$expertise->setExpert( $expert );
+			}
+	        Functions::sauvegarder( $expertise );
         }
 
-    $projetWorkflow = new ProjetWorkflow();
-    $rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+	    $projetWorkflow = new ProjetWorkflow();
+	    $rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
 
-    //Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
-    //    . "(" . $projet->getObjectState() . ")" );
+	    //Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
+	    //    . "(" . $projet->getObjectState() . ")" );
 
-    if( $rtn == true )
-        return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
-    else
+	    if( $rtn == true )
+	        return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
+	    else
         {
-        Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
-        return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+	        Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+	        return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
         }
     }
+
     /**
      * Finds and displays a projet entity.
      *

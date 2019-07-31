@@ -613,108 +613,112 @@ class Projet
 
     public function proposeExpert( $collaborateurs = [] )
     {
-    if( $this->isProjetTest() )
+		if( $this->isProjetTest() )
         {
-        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
-        if( $presidents != null ) return $presidents[0];
+	        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
+	        if( $presidents != null ) return $presidents[0];
         }
 
-    if( $collaborateurs == [] )
-        $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
+	    if( $collaborateurs == [] )
+	        $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
 
-    $derniereVersion = $this->derniereVersion();
-    if( $derniereVersion == null )
+	    $derniereVersion = $this->derniereVersion();
+	    if( $derniereVersion == null )
         {
-        Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " projet " . $this->getIdProjet() . " n'a pas de dernière version !");
-        return null;
+	        Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " projet " . $this->getIdProjet() . " n'a pas de dernière version !");
+	        return null;
         }
 
-    // on veut garder l'expert de la version précédente
+	    // on veut garder l'expert de la version précédente
 
-    $versionPrecedente  =  $derniereVersion->versionPrecedente ();
-    if( $versionPrecedente == null )
-        $derniereExpertise = null;
-    else
-        $derniereExpertise  =   $versionPrecedente->getOneExpertise();
+	    $versionPrecedente  =  $derniereVersion->versionPrecedente ();
+	    if( $versionPrecedente == null )
+	        $derniereExpertise = null;
+	    else
+	        $derniereExpertise  =   $versionPrecedente->getOneExpertise();
 
-    if( $derniereExpertise != null  )
+	    if( $derniereExpertise != null  )
         {
-        $expert = $derniereExpertise->getExpert();
-        if( $expert == null )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expertise de la version précédente " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
-        elseif( $expert->isExpert() == false )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
-        elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente  " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
-        else
-            return $expert;
+	        $expert = $derniereExpertise->getExpert();
+	        if( $expert == null )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expertise de la version précédente " .
+	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
+	        elseif( $expert->isExpert() == false )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente " .
+	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
+	        elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente  " .
+	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
+	        else
+	            return $expert;
         }
-    elseif( $versionPrecedente != null )
-        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " La version précédente " . $versionPrecedente . " n'a pas d'expertise !");
 
-    $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
+	    elseif( $versionPrecedente != null )
+	        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " La version précédente " . $versionPrecedente . " n'a pas d'expertise !");
 
-    // sinon on cherche des experts des expertises précédentes
-    $dernierIdVersion = $derniereVersion->getIdVersion();
-    foreach( $versions as $version )
+	    $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
+
+	    // sinon on cherche des experts des expertises précédentes
+	    $dernierIdVersion = $derniereVersion->getIdVersion();
+	    foreach( $versions as $version )
         {
-        $expertises = $version->getExpertise();
-        if( $expertises != null && isset($expertises[0]) && $version->getIdVersion() != $dernierIdVersion )
+	        $expertises = $version->getExpertise();
+	        if( $expertises != null && isset($expertises[0]) && $version->getIdVersion() != $dernierIdVersion )
             {
-            $expertise = $expertises[0];
-            $expert = $expertise->getExpert();
-            if ( $expert == null )
-                Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " L'expertise de la version " .  $version->getIdVersion(). "(" .$expertise->getId() . ") n'a pas d'expert !");
-            elseif(  $expert->isExpert() == false  )
-                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
-                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " n'est plus un expert");
-            elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
-                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " est un collaborateur");
-            else
-                return $expert;
+	            $expertise = $expertises[0];
+	            $expert = $expertise->getExpert();
+	            if ( $expert == null )
+	                Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " L'expertise de la version " .  $version->getIdVersion(). "(" .$expertise->getId() . ") n'a pas d'expert !");
+	            elseif(  $expert->isExpert() == false  )
+	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
+	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " n'est plus un expert");
+	            elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
+	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " est un collaborateur");
+	            else
+	                return $expert;
             }
         else
             Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " II version " . $version->getIdVersion() . " n'a pas d'expertise !");
         }
-    //Functions::debugMessage(__METHOD__ ." après II " );
-    $thematique = $derniereVersion->getPrjThematique();
-    if( $thematique == null )
+
+	    //Functions::debugMessage(__METHOD__ ." après II " );
+	    $thematique = $derniereVersion->getPrjThematique();
+	    if( $thematique == null )
         {
-        Functions::errorMessage(__METHOD__ ." version " . $derniereVersion->getIdVersion() . " n'a pas de thématique !" );
-        return null;
+	        Functions::errorMessage(__METHOD__ ." version " . $derniereVersion->getIdVersion() . " n'a pas de thématique !" );
+	        return null;
         }
 
-    $experts = $thematique->getExpert();
-    if( $experts == null  )
+	    $experts = $thematique->getExpert();
+	    if( $experts == null  )
         {
-        Functions::warningMessage(__METHOD__  .  ":" . __LINE__ ." thematique " . $thematique . " n'a pas d'expert !" );
-        return null;
+	        Functions::warningMessage(__METHOD__  .  ":" . __LINE__ ." thematique " . $thematique . " n'a pas d'expert !" );
+	        return null;
         }
 
-    // on cherche un expert de la thématique le moins sollicité
+	   // on cherche un expert de la thématique le moins sollicité
 
-   // Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
-    $expertises = [];
-    foreach( $experts as $expert )
-        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
-        elseif( ! $expert->isExpert() )
+	   // Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
+	    $expertises = [];
+	    foreach( $experts as $expert )
+	    {
+	        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
+	        elseif( ! $expert->isExpert() )
             {
-            Functions::errorMessage(__METHOD__  .  ":" . __LINE__ . " " .  $expert . " est un expert de la thématique " . $thematique . " sans être un expert !");
-            Functions::noThematique( $expert );
+	            Functions::errorMessage(__METHOD__  .  ":" . __LINE__ . " " .  $expert . " est un expert de la thématique " . $thematique . " sans être un expert !");
+	            Functions::noThematique( $expert );
             }
+		}
 
-    if( $expertises != null )
+	    if( $expertises != null )
         {
-        ksort( $expertises );
-        return  reset($expertises);
+	        ksort( $expertises );
+	        return  reset($expertises);
         }
-    else
-        return null;
+	    else
+	        return null;
     }
 
     ////////////////////////////////////////////

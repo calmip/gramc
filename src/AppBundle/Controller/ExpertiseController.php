@@ -136,49 +136,52 @@ class ExpertiseController extends Controller
      */
     public function affectationAction(Request $request)
     {
-    //Functions::debugMessage(__METHOD__   . " " .  print_r($_POST, true) );
-    $sessionData       =   Functions::selectSession($request); // formulaire
-    $session = $sessionData['session'];
+	    //Functions::debugMessage(__METHOD__   . " " .  print_r($_POST, true) );
+	    $sessionData       =   Functions::selectSession($request); // formulaire
+	    $session = $sessionData['session'];
 
-    $versions =  AppBundle::getRepository(Version::class)->findSessionVersions($session);
-    return $this->affectationGenerique($request, $versions, false );
+	    $versions =  AppBundle::getRepository(Version::class)->findSessionVersions($session);
+	    return $this->affectationGenerique($request, $versions, false );
     }
 
     ///////////////////////
 
     private function affectationGenerique(Request $request, $versions, $projets_test = false)
     {
-    //Functions::debugMessage(__METHOD__   . " " .  print_r($_POST, true) );
-    if( $projets_test == false )
+	    //Functions::debugMessage(__METHOD__   . " " .  print_r($_POST, true) );
+	    if( $projets_test == false )
         {
-        $sessionData       =   Functions::selectSession($request); // formulaire
-        $session = $sessionData['session'];
-        $etatSession    =   $session->getEtatSession();
+	        $sessionData       =   Functions::selectSession($request); // formulaire
+	        $session = $sessionData['session'];
+	        $etatSession    =   $session->getEtatSession();
         }
-    else
-        $session = Functions::getSessionCourante();
+	    else
+	        $session = Functions::getSessionCourante();
 
-    $thematiques = [];
-    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
+	    $thematiques = [];
+	    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
         {
-        foreach( $thematique->getExpert() as $expert )
-            if( $expert->getExpert() == false )
-                {
-                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
-                Functions::noThematique( $expert );
-                }
-        $thematiques[ $thematique->getIdThematique() ] =
-            ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
+	        foreach( $thematique->getExpert() as $expert )
+	        {
+	            if( $expert->getExpert() == false )
+	                {
+	                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
+	                Functions::noThematique( $expert );
+	                }
+			}
+	        $thematiques[ $thematique->getIdThematique() ] =
+	            ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
         }
 
-    ///////////////////////
+	    ///////////////////////
 
-    $experts = [];
-    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
-        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
+	    $experts = [];
+	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
+	    {
+	        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
+		}
 
-
-    ////////////////////////
+	    ////////////////////////
 
         $nbProjets      =   0;
         $nouveau        =   0;
@@ -190,7 +193,7 @@ class ExpertiseController extends Controller
         $expertId   =   [];
         $attHeures  =   [];
         foreach( $versions as $version )
-            {
+		{
             $etatVersion    =   $version->getEtatVersion();
             if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
 
@@ -201,8 +204,7 @@ class ExpertiseController extends Controller
                 //$expert  =  $projet->proposeExpert( $projet->getCollaborateurs());
               //  $expert  =  $projet->proposeExpert();
 
-            if(  $etatVersion == Etat::EDITION_EXPERTISE && ($etatSession==Etat::EDITION_EXPERTISE||$etatSession==Etat::EN_ATTENTE)
-                        || $etatVersion == Etat::EXPERTISE_TEST)
+            if(  $etatVersion == Etat::EDITION_EXPERTISE || $etatVersion == Etat::EXPERTISE_TEST)
                 {
                 //Functions::debugMessage( __METHOD__ . " form  du projet " . $projet );
 
