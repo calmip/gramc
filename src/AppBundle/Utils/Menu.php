@@ -73,12 +73,41 @@ use AppBundle\Workflow\Session\SessionWorkflow;
 
 class Menu
 {
-    public static function  nouveau_projet()
+	/*
+	 * Création d'un projet de type PROJET_SESS:
+	 *     - Peut être créé seulement lors des sessions d'attribution
+	 *     - Renouvelable à chaque session
+	 *     - Créé seulement par un permanent, qui devient responsable du projet
+	 *
+	 */
+	public static Function nouveau_projet($type)
+	{
+        $prj_prefix = AppBundle::getParameter('prj_prefix');
+        if (!isset($prj_prefix[$type] ))
+        {
+			return null;
+		}
+
+		switch ($type)
+		{
+			case Projet::PROJET_FIL:
+				return self::nouveau_projet_fil();
+				break;
+			case Projet::PROJET_SESS:
+				return self::nouveau_projet_sess();
+				break;
+			case Projet::PROJET_TEST:
+				return self::nouveau_projet_test();
+				break;
+		}
+	}
+
+    private static function  nouveau_projet_sess()
     {
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet actuellement";
         $menu['name']   =   'avant_nouveau_projet';
-        //$menu['params'] =   [ 'type' =>  'P' ];
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_SESS ];
         $menu['lien']   =   'Nouveau projet';
         $menu['ok'] = false;
 
@@ -92,7 +121,9 @@ class Menu
         $etat_session   =   $session->getEtatSession();
 
         if(  ! self::peut_creer_projets() )
-            $menu['raison'] = "Seuls les personnels permanents de l'ESR Occitanie ont la possibilité de créer un projet";
+        {
+            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés peuvent créer un projet";
+		}
         elseif( $etat_session == Etat::EDITION_DEMANDE )
 		{
             $menu['raison'] = '';
@@ -105,23 +136,28 @@ class Menu
         return $menu;
     }
 
-    /////////////////////////////////
-
-    public static function  nouveau_projet_test()
+	/*
+	 * Création d'un projet de type PROJET_TEST:
+	 *     - Peut être créé seulement EN-DEHORS des sessions d'attribution
+	 *     - Non renouvelable
+	 *     - Créé par n'importe qui, qui devient responsable du projet
+	 *
+	 */
+    private static function  nouveau_projet_test()
     {
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet test actuellement";
         $menu['name']   =   'nouveau_projet';
-        $menu['params'] =   [ 'type' =>  '2' ];
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_TEST ];
         $menu['lien']   =   'Nouveau projet test';
         $menu['ok'] = false;
 
         $session =  Functions::getSessionCourante();
         if( $session == null )
-            {
+		{
             $menu['raison'] = "Il n'y a pas de session courante";
             return $menu;
-            }
+		}
 
         $etat_session   =   $session->getEtatSession();
         //Functions:: debugMessage(__METHOD__ . ':' . __LINE__ . "countProjetsTestResponsable = " .
@@ -131,7 +167,7 @@ class Menu
             $menu['raison'] = "Vous n'êtes pas connecté";
         elseif( AppBundle::getRepository(Projet::class)->countProjetsTestResponsable( AppBundle::getUser() ) > 0 )
             $menu['raison'] = "Vous êtes déjà responsable d'un projet test";
-        // manu, 11 jin 2019: tout le monde peut créer un projet test. Vraiment ???
+        // manu, 11 juin 2019: tout le monde peut créer un projet test. Vraiment ???
         //elseif( ! self::peut_creer_projets() )
         //    $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
         elseif( $etat_session == Etat::EDITION_DEMANDE )
@@ -145,7 +181,45 @@ class Menu
         return $menu;
     }
 
-    //////////////////////////////
+	/*
+	 * Création d'un projet de type PROJET_FIL:
+	 *     - Peut être créé n'importe quand ("au fil de l'eau")
+	 *     - Renouvelable seulement à chaque session
+	 *     - Créé seulement par un permanent, qui devient responsable du projet
+	 *
+	 */
+    private static function  nouveau_projet_fil()
+    {
+        $menu   =   [];
+
+        $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet actuellement";
+        $menu['name']   =   'avant_nouveau_projet';
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_FIL ];
+        $menu['lien']   =   'Nouveau projet';
+        $menu['ok']     = false;
+
+        $session =  Functions::getSessionCourante();
+        if( $session == null )
+		{
+            $menu['raison'] = "Il n'y a pas de session courante";
+            return $menu;
+		}
+
+        if(  ! self::peut_creer_projets() )
+        {
+            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés ont la possibilité de créer un projet";
+		}
+        else
+		{
+            $menu['raison'] = '';
+            $menu['commentaire'] = "Créez un nouveau projet, vous en serez le responsable";
+            $menu['ok'] = true;
+		}
+
+        return $menu;
+    }
+
+	////////////////////////////////
 
     public static function peut_creer_projets($user = null)
     {

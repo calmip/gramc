@@ -48,7 +48,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 class Projet
 {
 	const PROJET_SESS = 1;		// Projet créé lors d'une session d'attribution
-	const PROJET_TEST = 2;		// Projet test
+	const PROJET_TEST = 2;		// Projet test, créé au fil de l'eau, non renouvelable
+	const PROJET_FIL  = 3;		// Projet créé au fil de l'eau, renouvelable lors des sessions
 
     /**
      * @var integer

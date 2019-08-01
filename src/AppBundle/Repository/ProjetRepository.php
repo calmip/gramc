@@ -232,7 +232,9 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
 			$prf = $prefixes[$type];
 
 		    $dql        =   "SELECT p.idProjet FROM AppBundle:Projet p WHERE p.idProjet LIKE :key ORDER BY p.idProjet ASC";
-		    $projetIds  =   $em->createQuery( $dql )->setParameter('key', '%' . $prf . $annee .'%' ) ->getResult();
+		    $projetIds  =   $em->createQuery( $dql )
+		    					->setParameter('key', $prf . $annee .'%' )
+		    					->getResult();
 		    if( $projetIds == null )
 			{
 		        return '000';

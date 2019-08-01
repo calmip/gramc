@@ -12,7 +12,7 @@
             <strong>atteindre un nouvel objectif scientifique</strong>.<br>
              Merci de préciser votre choix:
         </p>
-    
+
         <ul>
             {% for projet in renouvelables %}
             <li>
@@ -20,7 +20,7 @@
                 {% if( not projet.derniereVersion.prjTitre == null ) %}({{ projet.derniereVersion.prjTitre }}){% endif %}
             </li>
             {% endfor %}
-            <li><a href="{{ path('nouveau_projet', { 'type' : 'P' } ) }}">Nouveau projet</a></li>
+            <li><a href="{{ path('nouveau_projet', { 'type' : type } ) }}">Nouveau projet</a></li>
         </ul>
     </div>
 </section>

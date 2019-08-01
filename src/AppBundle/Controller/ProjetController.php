@@ -990,23 +990,24 @@ class ProjetController extends Controller
     /**
      * Creates a new projet entity.
      *
-     * @Route("/avant_nouveau", name="avant_nouveau_projet")
+     * @Route("/avant_nouveau/{type}", name="avant_nouveau_projet")
      * @Method({"GET", "POST"})
      * @Security("has_role('ROLE_DEMANDEUR')")
      *
      */
-    public function avantNouveauAction(Request $request)
+    public function avantNouveauAction(Request $request,$type)
     {
-        if( Menu::nouveau_projet()['ok'] == false )
-            Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet()['raison'] );
+        if( Menu::nouveau_projet($type)['ok'] == false )
+            Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet($type)['raison'] );
 
         $renouvelables = AppBundle::getRepository(Projet::class)->get_projets_renouvelables();
 
-        if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => '1']);
+        if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => $type]);
 
         return $this->render('projet/avant_nouveau_projet.html.twig',
             [
             'renouvelables' => $renouvelables,
+            'type'          => $type
             ]
             );
 
@@ -1026,24 +1027,17 @@ class ProjetController extends Controller
 		// + contournement d'un problème lié à Doctrine
         AppBundle::getSession()->remove('SessionCourante'); // remove cache
 
-        // NOTE - Pour ce controlleur, on identifie les tpyes par une lettre:
-        //        'P' --> Type de projet = Projet::PROJET_SESS
-        //        'T' --> Type de projet = Projet::PROJET_TEST
-        if( Menu::nouveau_projet()['ok'] == false && $type == 'P' )
-            Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet()['raison'] );
-        elseif( Menu::nouveau_projet_test()['ok'] == false && $type == 'T' )
-            Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet test parce que " . Menu::nouveau_projet()['raison'] );
+        // NOTE - Pour ce controlleur, on identifie les types par un chiffre (voir Entity/Projet.php)
+        $m = Menu::nouveau_projet("$type");
+        if ($m == null || $m['ok']==false)
+        {
+			$raison = $m===null?"ERREUR AVEC LE TYPE $type - voir le paramètre prj_type":$m['raison'];
+            Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que $raison");
+         }
 
         $session    = Functions::getSessionCourante();
 
 		$prefixes = AppBundle::getParameter('prj_prefix');
-		//$prj_types = array_keys($prefixes,$type);
-		//if ( count ( $prj_types) ===0 )
-	    //{
-		//	Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Pas de type $type. Voir le paramètre prj_prefix");
-		//	return $this->redirectToRoute('accueil');
-		//}
-		//$prj_type = $prj_types[0];
 		if ( !isset ($prefixes[$type]) || $prefixes[$type]==="" )
 	    {
 			Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Pas de préfixe pour le type $type. Voir le paramètre prj_prefix");
@@ -1051,12 +1045,18 @@ class ProjetController extends Controller
 		}
 
         $projet   = new Projet($type);
-        if( $type == Projet::PROJET_SESS )
-            $projet->setEtatProjet(Etat::RENOUVELABLE);
-        elseif( $type == Projet::PROJET_TEST )
-            $projet->setEtatProjet(Etat::NON_RENOUVELABLE);
-        else
-           Functions::createException(__METHOD__ . ":" . __LINE__ . " mauvais type de projet " . Functions::show( $type) );
+        switch ($type)
+        {
+			case Projet::PROJET_SESS:
+			case Projet::PROJET_FIL:
+	            $projet->setEtatProjet(Etat::RENOUVELABLE);
+	            break;
+	        case Projet::PROJET_TEST:
+	            $projet->setEtatProjet(Etat::NON_RENOUVELABLE);
+	            break;
+	        default:
+	           Functions::createException(__METHOD__ . ":" . __LINE__ . " mauvais type de projet " . Functions::show( $type) );
+		}
 
         $version    =   new Version();
         //return new Response( Functions::show( $version ) );
@@ -1384,67 +1384,70 @@ class ProjetController extends Controller
      */
     public function accueilAction()
     {
-    $individu       =   AppBundle::getUser();
-    $id_individu    =   $individu->getIdIndividu();
+	    $individu       =   AppBundle::getUser();
+	    $id_individu    =   $individu->getIdIndividu();
 
-    $projetRepository       =   AppBundle::getRepository(Projet::class);
+	    $projetRepository       =   AppBundle::getRepository(Projet::class);
 
-    $list_projets_collab =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, false, true );
-    $list_projets_resp   =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, true, false );
+	    $list_projets_collab =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, false, true );
+	    $list_projets_resp   =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, true, false );
 
-    $projets_term       =   $projetRepository-> get_projets_etat( $id_individu, 'TERMINE' );
-    $projets_standby = []; // todo -> Virer définitivement ce code, les projets en standby sont maintenant affichés avec les projets actifs, pas avec les projets terminés
+	    $projets_term       =   $projetRepository-> get_projets_etat( $id_individu, 'TERMINE' );
+	    $projets_standby = []; // todo -> Virer définitivement ce code, les projets en standby sont maintenant affichés avec les projets actifs, pas avec les projets terminés
 
-    $session_actuelle       =   Functions::getSessionCourante();
+	    $session_actuelle       =   Functions::getSessionCourante();
 
-    // projets responsable
-    $projets_resp  = [];
-    foreach ( $list_projets_resp as $projet )
-	{
-        $versionActive  =   $projet->versionActive();
-        if( $versionActive != null )
-            $rallonges  =  $versionActive ->getRallonge();
-        else
-            $rallonges  = null;
-        $projets_resp[]   =
-            [
-            'projet'    =>  $projet,
-            'conso'     =>  $projet->getConsoP(),
-            'rallonges' =>  $rallonges,
-            'cpt_rall'  =>  count($rallonges),
-            ];
-	}
+	    // projets responsable
+	    $projets_resp  = [];
+	    foreach ( $list_projets_resp as $projet )
+		{
+	        $versionActive  =   $projet->versionActive();
+	        if( $versionActive != null )
+	            $rallonges  =  $versionActive ->getRallonge();
+	        else
+	            $rallonges  = null;
+	        $projets_resp[]   =
+	            [
+	            'projet'    =>  $projet,
+	            'conso'     =>  $projet->getConsoP(),
+	            'rallonges' =>  $rallonges,
+	            'cpt_rall'  =>  count($rallonges),
+	            ];
+		}
 
-    // projets collaborateur
-    $projets_collab  = [];
-    foreach ( $list_projets_collab as $projet )
-	{
-        $versionActive  =   $projet->versionActive();
-        if( $versionActive != null )
-            $rallonges  =  $versionActive ->getRallonge();
-        else
-            $rallonges  = null;
-        $projets_collab[]   =
-            [
-            'projet'    =>  $projet,
-            'conso'     =>  $projet->getConsoP(),
-            'rallonges' =>  $rallonges,
-            'cpt_rall'  =>  count($rallonges),
-            ];
-	}
+	    // projets collaborateur
+	    $projets_collab  = [];
+	    foreach ( $list_projets_collab as $projet )
+		{
+	        $versionActive  =   $projet->versionActive();
+	        if( $versionActive != null )
+	            $rallonges  =  $versionActive ->getRallonge();
+	        else
+	            $rallonges  = null;
+	        $projets_collab[]   =
+	            [
+	            'projet'    =>  $projet,
+	            'conso'     =>  $projet->getConsoP(),
+	            'rallonges' =>  $rallonges,
+	            'cpt_rall'  =>  count($rallonges),
+	            ];
+		}
 
-    $menu[] = Menu::nouveau_projet();
-    $menu[] = Menu::nouveau_projet_test();
+		$prefixes = AppBundle::getParameter('prj_prefix');
+		foreach (array_keys($prefixes) as $t)
+		{
+			$menu[] = Menu::nouveau_projet($t);
+		}
 
-    return $this->render('projet/demandeur.html.twig',
-            [
-            'projets_collab' => $projets_collab,
-            'projets_resp' => $projets_resp,
-            'projets_term' => $projets_term,
-            'projets_standby' => $projets_standby,
-            'menu'  =>  $menu,
-            ]
-            );
+	    return $this->render('projet/demandeur.html.twig',
+	            [
+	            'projets_collab'  => $projets_collab,
+	            'projets_resp'    => $projets_resp,
+	            'projets_term'    => $projets_term,
+	            'projets_standby' => $projets_standby,
+	            'menu'            =>  $menu,
+	            ]
+	            );
     }
 
     /**
