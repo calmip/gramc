@@ -552,7 +552,8 @@ class ExpertiseController extends Controller
     }
 
     /**
-     * Displays a form to edit an existing expertise entity.
+     * L'expert vient de cliquer sur le bouton "Modifier expertise"
+     * Il entre son expertise et éventuellement l'envoie
      *
      * @Route("/{id}/modifier", name="expertise_modifier")
      * @Method({"GET", "POST"})
@@ -561,7 +562,6 @@ class ExpertiseController extends Controller
     public function modifierAction(Request $request, Expertise $expertise)
     {
         // ACL
-
         $moi = AppBundle::getUser();
         if( is_string( $moi ) ) Functions::createException(__METHOD__ . ":" . __LINE__ . " personne connecté");
         elseif( $expertise->getExpert() == null ) Functions::createException(__METHOD__ . ":" . __LINE__ . " aucun expert pour l'expertise " . $expertise );
@@ -574,15 +574,27 @@ class ExpertiseController extends Controller
         $anneeCour  = 2000 +$session->getAnneeSession();
         $anneePrec  = $anneeCour - 1;
 
-        // Session en mode Edition -> On n'a pas la possibilité d'envoyer son expertise
+        // Si c'est un projet de type PROJET_SESS, le boutno ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
+        // Sinon le bouton est toujours disponible
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
-        if ( $session -> getEtatSession() == Etat::EDITION_EXPERTISE && ! $version->isProjetTest() )
-            $session_edition = true;
-        else
-            $session_edition = false;
 
+		if ( $version->getProjet()->getTypeProjet() != Projet::PROJET_SESS )
+		{
+			$session_edition = false; // Autoriser le bouton Envoyer
+		}
+		else
+		{
+	        if ( $session -> getEtatSession() != Etat::EDITION_EXPERTISE && $session -> getEtatSession() != Etat::ACTIF )
+	        {
+	            $session_edition = true;
+			}
+			else
+			{
+	            $session_edition = false;
+			}
+		}
 
         $editForm = $this->createFormBuilder($expertise)
             ->add('commentaireInterne', TextAreaType::class, [ 'required' => false ] )
@@ -675,8 +687,10 @@ class ExpertiseController extends Controller
             ]);
     }
 
-
     /**
+     *
+     * L'expert vient de cliquer sur le bouton "Envoyer expertise"
+     * On lui envoie un écran de confirmation
      * Displays a form to edit an existing expertise entity.
      *
      * @Route("/{id}/valider", name="expertise_validation")
@@ -685,56 +699,55 @@ class ExpertiseController extends Controller
      */
     public function validationAction(Request $request, Expertise $expertise)
     {
-    // ACL
+	    // ACL
+	    $moi = AppBundle::getUser();
+	    if( is_string( $moi ) ) Functions::createException(__METHOD__ . ":" . __LINE__ . " personne connecté");
+	    elseif( $expertise->getExpert() == null ) Functions::createException(__METHOD__ . ":" . __LINE__ . " aucun expert pour l'expertise " . $expertise );
+	    elseif( ! $expertise->getExpert()->isEqualTo( $moi ) )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $moi .
+	            " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert());
 
-    $moi = AppBundle::getUser();
-    if( is_string( $moi ) ) Functions::createException(__METHOD__ . ":" . __LINE__ . " personne connecté");
-    elseif( $expertise->getExpert() == null ) Functions::createException(__METHOD__ . ":" . __LINE__ . " aucun expert pour l'expertise " . $expertise );
-    elseif( ! $expertise->getExpert()->isEqualTo( $moi ) )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $moi .
-            " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert());
 
+	    $editForm = $this->createFormBuilder($expertise)
+	                ->add('confirmer',   SubmitType::class, ['label' =>  'Confirmer' ])
+	                ->add('annuler',   SubmitType::class, ['label' =>  'Annuler' ])
+	                ->getForm();
 
-    $editForm = $this->createFormBuilder($expertise)
-                ->add('confirmer',   SubmitType::class, ['label' =>  'Confirmer' ])
-                ->add('annuler',   SubmitType::class, ['label' =>  'Annuler' ])
-                ->getForm();
+	    $editForm->handleRequest($request);
 
-    $editForm->handleRequest($request);
-
-    if( $editForm->isSubmitted()  )
+	    if( $editForm->isSubmitted()  )
         {
-        if( $editForm->get('annuler')->isClicked() )
-            return $this->redirectToRoute('expertise_modifier', [ 'id' => $expertise->getId() ] );
+	        if( $editForm->get('annuler')->isClicked() )
+	            return $this->redirectToRoute('expertise_modifier', [ 'id' => $expertise->getId() ] );
 
-        $workflow   =   new ProjetWorkflow();
+	        $workflow   =   new ProjetWorkflow();
 
-        $expertise->getVersion()->setAttrHeures($expertise->getNbHeuresAtt() );
-        $expertise->getVersion()->setAttrHeuresEte($expertise->getNbHeuresAttEte() );
-        $expertise->getVersion()->setAttrAccept($expertise->getValidation()  );
+	        $expertise->getVersion()->setAttrHeures($expertise->getNbHeuresAtt() );
+	        $expertise->getVersion()->setAttrHeuresEte($expertise->getNbHeuresAttEte() );
+	        $expertise->getVersion()->setAttrAccept($expertise->getValidation()  );
 
-        $validation =  $expertise->getValidation();
+	        $validation =  $expertise->getValidation();
 
-        $rtn    =   null;
+	        $rtn    =   null;
 
-        if( $validation == 1 )      $signal = Signal::CLK_VAL_EXP_OK;
-        elseif( $validation == 2 )  $signal = Signal::CLK_VAL_EXP_CONT;
-        elseif( $validation == 0 )  $signal = Signal::CLK_VAL_EXP_KO;
+	        if( $validation == 1 )      $signal = Signal::CLK_VAL_EXP_OK;
+	        elseif( $validation == 2 )  $signal = Signal::CLK_VAL_EXP_CONT;
+	        elseif( $validation == 0 )  $signal = Signal::CLK_VAL_EXP_KO;
 
-        $rtn    =   $workflow->execute( $signal, $expertise->getVersion()->getProjet() );
-        if( $rtn != true )
-            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " Transition avec " .  Signal::getLibelle( $signal )
-            . "(" . $signal . ") pour l'expertise " . $expertise . " avec rtn = " . Functions::show($rtn) );
-        else
-            $expertise->setDefinitif(true);
+	        $rtn    =   $workflow->execute( $signal, $expertise->getVersion()->getProjet() );
+	        if( $rtn != true )
+	            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " Transition avec " .  Signal::getLibelle( $signal )
+	            . "(" . $signal . ") pour l'expertise " . $expertise . " avec rtn = " . Functions::show($rtn) );
+	        else
+	            $expertise->setDefinitif(true);
 
-        $em = AppBundle::getManager();
-        $em->persist( $expertise );
-        $em->flush();
-        return $this->redirectToRoute('expertise_liste');
+	        $em = AppBundle::getManager();
+	        $em->persist( $expertise );
+	        $em->flush();
+	        return $this->redirectToRoute('expertise_liste');
         }
 
-     return $this->render('expertise/valider.html.twig',
+        return $this->render('expertise/valider.html.twig',
             [
             'expertise'  => $expertise,
             'version'    => $expertise->getVersion(),
