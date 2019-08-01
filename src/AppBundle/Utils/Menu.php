@@ -143,7 +143,7 @@ class Menu
 	 *     - Créé par n'importe qui, qui devient responsable du projet
 	 *
 	 */
-    private static function  nouveau_projet_test()
+    public static function  nouveau_projet_test()
     {
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet test actuellement";

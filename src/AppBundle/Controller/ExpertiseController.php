@@ -574,13 +574,15 @@ class ExpertiseController extends Controller
         $anneeCour  = 2000 +$session->getAnneeSession();
         $anneePrec  = $anneeCour - 1;
 
-        // Si c'est un projet de type PROJET_SESS, le boutno ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
-        // Sinon le bouton est toujours disponible
+        // Le comportement diffère (à la marge) suivant le type de projet
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
+        $projet_type = $version->getProjet()->getTypeProjet();
 
-		if ( $version->getProjet()->getTypeProjet() != Projet::PROJET_SESS )
+        // Si c'est un projet de type PROJET_SESS, le bouton ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
+        // Sinon le bouton est toujours disponible
+		if ( $projet_type != Projet::PROJET_SESS )
 		{
 			$session_edition = false; // Autoriser le bouton Envoyer
 		}
@@ -598,7 +600,6 @@ class ExpertiseController extends Controller
 
         $editForm = $this->createFormBuilder($expertise)
             ->add('commentaireInterne', TextAreaType::class, [ 'required' => false ] )
-            ->add('commentaireExterne', TextAreaType::class, [ 'required' => false ] )
             ->add('validation', ChoiceType::class ,
                 [
                 //'label' => " ",
@@ -609,14 +610,20 @@ class ExpertiseController extends Controller
                 'choices'   =>  [ 'Accepter' =>     1, 'Refuser pour cette session' => 2, 'Refuser définitivement et fermer le projet'    => 0, ],
                 ]);
 
+		// Projet au fil de l'eau, le commentaire externe est réservé au président !
+		if ( $projet_type != Projet::PROJET_FIL )
+            $editForm->add('commentaireExterne', TextAreaType::class, [ 'required' => false ] );
 
         if( $expertise->getNbHeuresAtt() == 0 )
             $editForm->add('nbHeuresAtt', IntegerType::class , ['required'  =>  false, 'data' => $version->getDemHeures(), ]);
         else
             $editForm->add('nbHeuresAtt', IntegerType::class , ['required'  =>  false, ]);
 
-        if ($session->getTypeSession() && ! $expertise->getVersion()->isProjetTest() )
-            $editForm -> add('nbHeuresAttEte');
+		// En session B, on propose une attribution spéciale pour heures d'été
+		// TODO A affiner car en septembre en sera toujours et session  B et c'est un peu couillon
+		if ( $projet_type != Projet::PROJET_TEST )
+	        if ($session->getTypeSession())
+	            $editForm -> add('nbHeuresAttEte');
 
         $definitif  =   $expertise->getDefinitif();
         if( $definitif == false )
@@ -673,7 +680,22 @@ class ExpertiseController extends Controller
             $toomuch      = Functions::is_demande_toomuch($attr_a,$dem_b);
         }
 
-        return $this->render('expertise/modifier.html.twig',
+		// LA SUITE DEPEND DU TYPE DE PROJET !
+		// Le workflow n'est pas le même suivant le type de projet, donc l'expertise non plus.
+		switch ($projet_type)
+		{
+			case Projet::PROJET_SESS:
+				$twig = 'expertise/modifier_projet_sess.html.twig';
+				break;
+			case Projet::PROJET_TEST:
+				$twig = 'expertise/modifier_projet_test.html.twig';
+				break;
+			case Projet::PROJET_FIL:
+				$twig = 'expertise/modifier_projet_fil.html.twig';
+				break;
+		}
+
+        return $this->render($twig,
             [
             'expertise'  => $expertise,
             'version'    => $expertise->getVersion(),

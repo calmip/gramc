@@ -70,16 +70,18 @@
             <img class="bouton_poussoir" src="{{ asset('icones/publis.png') }}" alt="Publications" title="Publications associées au projet version.idProjet" />
         </a>
 
-        {% if not version.projet.projettest and not version.isNouvelle %}
-            <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
-            alt="Consommation {{anneePrec}}" title="consommation {{anneePrec}}"
-            data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
-            {% if version.session.libelleTypeSession == 'B' %}
-                <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
-                alt="Consommation {{anneeCour}}" title="Consommation {{anneeCour}}"
-                data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneeCour })) }}" />
-            {% endif %}
-        {% endif %}
+		{% if noconso==false %}
+	        {% if not version.isNouvelle %}
+	            <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+	            alt="Consommation {{anneePrec}}" title="consommation {{anneePrec}}"
+	            data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
+	            {% if version.session.libelleTypeSession == 'B' %}
+	                <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+	                alt="Consommation {{anneeCour}}" title="Consommation {{anneeCour}}"
+	                data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneeCour })) }}" />
+	            {% endif %}
+	        {% endif %}
+        {%endif %}
 
     </div>
 
@@ -89,20 +91,9 @@
             <h2>EXPERTISE DÉJÀ ENVOYEE</h2>
                 <p>Votre expertise a déjà été envoyée, vous ne pouvez plus la modifier.</p>
         </div>
-    {# session en edition expertise #}
-    {% elseif( not session_edition and not version.projet.isProjetTest)  %}
-        <div class="message info">
-            <h2>Commentaire de session</h2>
-                <p><em>Ce commentaire, écrit par le président du comité d'attribution, sera envoyé aux responsables des projets avec le résultat de votre expertise</em></p>
-                <hr />
-                <p>{{ session.commGlobal | e | nl2br}}</p>
-        </div>
-    {% elseif not version.projet.isProjetTest %}
-        <div class="message warning">
-            <h2>EXPERTISE EN EDITION SEULEMENT</h2>
-                <p>Tant que le comité d'attribution ne s'est pas réuni vous ne pouvez pas envoyer votre expertise.
-                Vous pouvez cependant l'éditer et la sauvegarder</p>
-        </div>
+    {% else %}
+    <div class="message info">Merci de renseigner le formulaire ci-dessous. Votre avis sera pris en compte par le président, qui prendra la décision finale<br />
+    <em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em> </div>
     {% endif %}
 
     <table  class="projet">
@@ -131,15 +122,6 @@
     {% endfor %}
     </div>
     {% endif %}
-
-    <table class="projet">
-        <tbody>
-            <tr>
-                <th class="horiz"><label>Commentaire</label><br><small>Ce commentaire sera envoyé au responsable du projet</small></th>
-                <td>{{ form_widget(edit_form.commentaireExterne,{ 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 100 } }) }}
-            </tr>
-        </tbody>
-    </table>
 
    <table class="projet">
         <tbody>
@@ -181,8 +163,10 @@
 
 {{ form_end(edit_form) }}
 
+{% if noconso==false %}
 <div id="graph_1" class="graphique"></div>
 <div id="graph_2" class="graphique"></div>
+{% endif %}
 
 </section>
 {% endblock %}

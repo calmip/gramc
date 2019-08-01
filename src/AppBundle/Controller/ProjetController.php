@@ -1577,7 +1577,7 @@ class ProjetController extends Controller
     }
 
     /**
-     * Finds and displays a projet entity.
+     * Affiche un projet avec un menu pour choisir la version
      *
      * @Route("/{id}/consulter", name="consulter_projet")
      * @Route("/{id}/consulter/{version}", name="consulter_version")
@@ -1597,11 +1597,105 @@ class ProjetController extends Controller
 
        // AppBundle::getManager()->persist($version); // si on supprime cette ligne nous aurons un bogue dans le formulaire
 
-    // projet test
-    // un TWIG différent
+		// LA SUITE DEPEND DU TYPE DE PROJET !
+		$type = $projet->getTypeProjet();
+		switch ($type)
+		{
+			case Projet::PROJET_SESS:
+				return $this->consulterType1($projet, $version, $request);
+			case Projet::PROJET_TEST:
+				return $this->consulterType2($projet, $version, $request);
+			case Projet::PROJET_FIL:
+				return $this->consulterType3($projet, $version, $request);
+		}
+    }
 
-    if( $projet->isProjetTest() )
-        {
+	// Consulter les projets de type 1 (projets PROJET_SESS)
+    private function consulterType1(Projet $projet, Version $version, Request $request)
+    {
+	    $session_form = AppBundle::createFormBuilder( ['version' => $version ] )
+	        ->add('version',   EntityType::class,
+	                [
+	                'multiple' => false,
+	                'class' => 'AppBundle:Version',
+	                'required'  =>  true,
+	                'label'     => '',
+	                'choices' =>  $projet->getVersion(),
+	                'choice_label' => function($version){ return $version->getSession(); }
+	                ])
+	    ->add('submit', SubmitType::class, ['label' => 'Changer'])
+	    ->getForm();
+
+	    $session_form->handleRequest($request);
+
+	    if ( $session_form->isSubmitted() && $session_form->isValid() )
+	        $version = $session_form->getData()['version'];
+
+	    if( $version != null )
+	        $session = $version->getSession();
+	    else
+	        Functions::createException(__METHOD__ . ':' . __LINE__ .' projet ' . $projet . ' sans version');
+
+	    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
+	    $menu[] =   Menu::changer_responsable($version);
+	    $menu[] =   Menu::renouveler_version($version);
+	    $menu[] =   Menu::modifier_version( $version );
+	    $menu[] =   Menu::envoyer_expert( $projet );
+	    $menu[] =   Menu::modifier_collaborateurs( $version );
+	    $menu[] =   Menu::telechargement_fiche( $version );
+	    $menu[] =   Menu::televersement_fiche( $version );
+	    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
+
+	    $etat_version = $version->getEtatVersion();
+	    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
+	        $menu[] =   Menu::televerser_rapport_annee( $version );
+
+	    $menu[] =   Menu::gerer_publications( $projet );
+
+	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
+	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
+	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+
+	    /*
+	    if( $img_expose_1 == null )
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
+	    else
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
+	    */
+
+	    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
+	    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
+	    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+
+	    $toomuch = false;
+	    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
+	        $version_prec = $version->versionPrecedente();
+	        if ($version_prec->getAnneeSession() == $version_prec->getAnneeSession()) {
+	            $toomuch = Functions::is_demande_toomuch($version_prec->getAttrHeures(),$version->getDemHeures());
+	        }
+	    }
+
+	    return $this->render('projet/consulter_projet_sess.html.twig',
+	            [
+	            'projet' => $projet,
+	            'version_form'   => $session_form->createView(),
+	            'version'   =>  $version,
+	            'session'   =>  $session,
+	            'menu'      =>  $menu,
+	            'img_expose_1'  =>  $img_expose_1,
+	            'img_expose_2'  =>  $img_expose_2,
+	            'img_expose_3'  =>  $img_expose_3,
+	            'img_justif_renou_1'    =>  $img_justif_renou_1,
+	            'img_justif_renou_2'    =>  $img_justif_renou_2,
+	            'img_justif_renou_3'    =>  $img_justif_renou_3,
+	            'toomuch'               => $toomuch
+	            ]
+	            );
+	}
+
+	// Consulter les projets de type 2 (projets test)
+	private function consulterType2 (Projet $projet, Version $version, Request $request)
+	{
         if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
         $menu[] =   Menu::modifier_version( $version );
         $menu[] =   Menu::envoyer_expert( $projet );
@@ -1614,92 +1708,90 @@ class ProjetController extends Controller
             'menu'      =>  $menu,
             ]
             );
-        }
+	}
 
-    //////////////////////////
-    //
-    // projet normal
-    //
-    //////////////////////////
-    $session_form = AppBundle::createFormBuilder( ['version' => $version ] )
-        ->add('version',   EntityType::class,
-                [
-                'multiple' => false,
-                'class' => 'AppBundle:Version',
-                'required'  =>  true,
-                'label'     => '',
-                'choices' =>  $projet->getVersion(),
-                'choice_label' => function($version){ return $version->getSession(); }
-                ])
-    ->add('submit', SubmitType::class, ['label' => 'Changer'])
-    ->getForm();
+	// Consulter les projets de type 3 (projets PROJET_FIL)
+    private function consulterType3(Projet $projet, Version $version, Request $request)
+    {
+	    $session_form = AppBundle::createFormBuilder( ['version' => $version ] )
+	        ->add('version',   EntityType::class,
+	                [
+	                'multiple' => false,
+	                'class' => 'AppBundle:Version',
+	                'required'  =>  true,
+	                'label'     => '',
+	                'choices' =>  $projet->getVersion(),
+	                'choice_label' => function($version){ return $version->getSession(); }
+	                ])
+	    ->add('submit', SubmitType::class, ['label' => 'Changer'])
+	    ->getForm();
 
-    $session_form->handleRequest($request);
+	    $session_form->handleRequest($request);
 
-    if ( $session_form->isSubmitted() && $session_form->isValid() )
-        $version = $session_form->getData()['version'];
+	    if ( $session_form->isSubmitted() && $session_form->isValid() )
+	        $version = $session_form->getData()['version'];
 
-    if( $version != null )
-        $session = $version->getSession();
-    else
-        Functions::createException(__METHOD__ . ':' . __LINE__ .' projet ' . $projet . ' sans version');
+	    if( $version != null )
+	        $session = $version->getSession();
+	    else
+	        Functions::createException(__METHOD__ . ':' . __LINE__ .' projet ' . $projet . ' sans version');
 
-    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
-    $menu[] =   Menu::changer_responsable($version);
-    $menu[] =   Menu::renouveler_version($version);
-    $menu[] =   Menu::modifier_version( $version );
-    $menu[] =   Menu::envoyer_expert( $projet );
-    $menu[] =   Menu::modifier_collaborateurs( $version );
-    $menu[] =   Menu::telechargement_fiche( $version );
-    $menu[] =   Menu::televersement_fiche( $version );
-    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
+	    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
+	    $menu[] =   Menu::changer_responsable($version);
+	    $menu[] =   Menu::renouveler_version($version);
+	    $menu[] =   Menu::modifier_version( $version );
+	    $menu[] =   Menu::envoyer_expert( $projet );
+	    $menu[] =   Menu::modifier_collaborateurs( $version );
+	    $menu[] =   Menu::telechargement_fiche( $version );
+	    $menu[] =   Menu::televersement_fiche( $version );
+	    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
 
-    $etat_version = $version->getEtatVersion();
-    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
-        $menu[] =   Menu::televerser_rapport_annee( $version );
+	    $etat_version = $version->getEtatVersion();
+	    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
+	        $menu[] =   Menu::televerser_rapport_annee( $version );
 
-    $menu[] =   Menu::gerer_publications( $projet );
+	    $menu[] =   Menu::gerer_publications( $projet );
 
-    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
-    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
-    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
+	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
+	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
 
-    /*
-    if( $img_expose_1 == null )
-        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
-    else
-        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
-    */
+	    /*
+	    if( $img_expose_1 == null )
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
+	    else
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
+	    */
 
-    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
-    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
-    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+	    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
+	    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
+	    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
 
-    $toomuch = false;
-    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
-        $version_prec = $version->versionPrecedente();
-        if ($version_prec->getAnneeSession() == $version_prec->getAnneeSession()) {
-            $toomuch = Functions::is_demande_toomuch($version_prec->getAttrHeures(),$version->getDemHeures());
-        }
-    }
+	    $toomuch = false;
+	    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
+	        $version_prec = $version->versionPrecedente();
+	        if ($version_prec->getAnneeSession() == $version_prec->getAnneeSession()) {
+	            $toomuch = Functions::is_demande_toomuch($version_prec->getAttrHeures(),$version->getDemHeures());
+	        }
+	    }
 
-    return $this->render('projet/consulter.html.twig',
-            [
-            'projet' => $projet,
-            'version_form'   => $session_form->createView(),
-            'version'   =>  $version,
-            'session'   =>  $session,
-            'menu'      =>  $menu,
-            'img_expose_1'  =>  $img_expose_1,
-            'img_expose_2'  =>  $img_expose_2,
-            'img_expose_3'  =>  $img_expose_3,
-            'img_justif_renou_1'    =>  $img_justif_renou_1,
-            'img_justif_renou_2'    =>  $img_justif_renou_2,
-            'img_justif_renou_3'    =>  $img_justif_renou_3,
-            'toomuch'               => $toomuch
-            ]
-            );
-    }
+	    return $this->render('projet/consulter_projet_fil.html.twig',
+	            [
+	            'projet' => $projet,
+	            'version_form'   => $session_form->createView(),
+	            'version'   =>  $version,
+	            'session'   =>  $session,
+	            'menu'      =>  $menu,
+	            'img_expose_1'  =>  $img_expose_1,
+	            'img_expose_2'  =>  $img_expose_2,
+	            'img_expose_3'  =>  $img_expose_3,
+	            'img_justif_renou_1'    =>  $img_justif_renou_1,
+	            'img_justif_renou_2'    =>  $img_justif_renou_2,
+	            'img_justif_renou_3'    =>  $img_justif_renou_3,
+	            'toomuch'               => $toomuch
+	            ]
+	            );
+	}
 
     /**
      * Finds and displays a projet entity.
