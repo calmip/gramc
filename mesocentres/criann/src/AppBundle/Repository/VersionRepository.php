@@ -76,6 +76,7 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
         ->getResult();
     }
 
+	/* Renvoie toutes les versions non annulées de $session */
     public function findSessionVersions($session)
     {
         return $this->getEntityManager()
@@ -86,14 +87,18 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
         ->getResult();
     }
 
+	/* Renvoie toutes les versions de projets tests non annulées de $annee (19, 20, ... -> 2 sessions) */
     public function findAnneeTestVersions($annee)
     {
+		$sa = $annee.'A';
+		$sb = $annee.'B';
         return $this->getEntityManager()
         ->createQuery
-        ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v  WHERE ( v.idVersion LIKE :pattern AND NOT v.etatVersion = :annule)')
+        ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v, AppBundle:Projet p WHERE ( p.typeProjet = :test AND ( v.session = :sa OR v.session = :sb ) AND v.projet = p.idProjet AND NOT v.etatVersion = :annule)')
         ->setParameter('annule', Etat::getEtat('ANNULE') )
-        ->setParameter('pattern', '%T' . $annee . '%' ) 
-        //->setParameter('pattern', $annee . 'T' . $annee) 
+        ->setParameter('test', Projet::PROJET_TEST)
+        ->setParameter('sa',$sa)
+        ->setParameter('sb',$sb)
         ->getResult();
     }
 
@@ -177,13 +182,13 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
     public function findVersionsAnnee($annee)
     {
         $subAnnee = substr( strval($annee), -2 );
-        
+
         return $this->getEntityManager()
         ->createQuery
         ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v  WHERE ( v.idVersion LIKE :pattern AND NOT v.etatVersion = :annule)')
         ->setParameter('annule', Etat::getEtat('ANNULE') )
-        ->setParameter('pattern', $subAnnee . '%' ) 
-        //->setParameter('pattern', $annee . 'T' . $annee) 
+        ->setParameter('pattern', $subAnnee . '%' )
+        //->setParameter('pattern', $annee . 'T' . $annee)
         ->getResult();
     }
 
