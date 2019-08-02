@@ -69,44 +69,61 @@ use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 class ExpertiseController extends Controller
 {
 
+	/***
+	 * Renvoie un tableau de formulaires pour choisir les experts d'une version
+	 *
+	 *   params  $version
+	 *   return  un tableau de forms
+	 *
+	 */
+	 private static function cmpExpertises($a,$b) { return $a->getId() > $b ->getId(); }
+	 private function getExpertForms(Version $version)
+	 {
+		$forms = [];
+		$expertises = $version->getExpertise()->toArray();
+		usort($expertises,['self','cmpExpertises']);
 
-    //////////////////////////////////////////////////////////////////////////
-    //
-    // préparation du formulaire du choix d'expert
-    //
+	    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
 
-    private function getExpertForm(Projet $projet, Session $session)
-    {
-
-	    $expert = $projet->getExpert($session);
-	    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($projet);
-
-	    if( $expert ==  null )
+		foreach ($expertises as $expertise)
 		{
-	        $expert  =  $projet->proposeExpert( $collaborateurs );
-	        Functions::debugMessage(__METHOD__ ." nouvel expert proposé du projet " . $projet . " : " . Functions::show( $expert ) );
+
+			$expert = $expertise->getExpert();
+			$nom = 'expert'.$version->getProjet()->getIdProjet().'-'.$expertise->getId();
+			//if ($version->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
+			$forms[] = $this->get( 'form.factory')->createNamedBuilder($nom, FormType::class, null  ,  ['csrf_protection' => false ])
+			                ->add('expert', ChoiceType::class,
+			                    [
+				                'multiple'  =>  false,
+				                'required'  =>  false,
+				                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
+				                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
+				                'data'          => $expert,
+				                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
+				                'choice_label'  => function ($individu) { return $individu->__toString(); },
+			                    ])
+		                    ->getForm();
+		    // Ne pas proposer plusieurs fois le même expert !
+		    $collaborateurs[] = $expert;
 		}
-
-	    // Functions::debugMessage(__METHOD__ );
-	    // Functions::debugMessage(__METHOD__ ." expert proposé du projet " . $projet . " : " . Functions::show( $expert ) );
-	    // Functions::debugMessage(__METHOD__ ." collaborateurs du projet " . $projet . " : ". Functions::show( $collaborateurs ) );
-	    // Functions::debugMessage( __METHOD__ . " choices  du projet " . $projet . " : ". Functions::show( $choices ) );
-
-	    return $this->get( 'form.factory')->createNamedBuilder('expert'.$projet->getIdProjet() , FormType::class, null  ,  ['csrf_protection' => false ])
-	                ->add('expert', ChoiceType::class,
-	                    [
-		                'multiple'  =>  false,
-		                'required'  =>  false,
-		                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-		                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
-		                'data'          => $expert,
-		                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
-		                'choice_label'  => function ($individu) { return $individu->__toString(); },
-	                    ])
-                    ->add('selection',CheckboxType::class, [ 'required' =>  false ])
-                    ->add( "Affecter les experts",SubmitType::Class )
-                    ->getForm();
+		return $forms;
     }
+
+	/***
+	 * Renvoie un formulaire avec une case à cocher, rien d'autre
+	 *
+	 *   params  $version
+	 *   return  une form
+	 *
+	 */
+	private function getSelForm(Version $version)
+	{
+		$nom = 'selection_'.$version->getIdVersion();
+		return $this->get( 'form.factory')  -> createNamedBuilder($nom, FormType::class, null, ['csrf_protection' => false ])
+										    -> add('sel',CheckboxType::class, [ 'required' =>  false ])
+										    ->getForm();
+	}
+
 
  /**
      * Affectation des experts
@@ -217,42 +234,59 @@ class ExpertiseController extends Controller
 	            $etatVersion    =   $version->getEtatVersion();
 	            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
 
+				// La version est-elle sélectionnée ? - Si non on ignore
+				$selform = $this->getSelForm($version);
+				$selform->handleRequest($request);
+				if ($selform->getData()['sel']==false)
+				{
+		            //Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection NON');
+		            continue;
+				}
+				//else
+				//{
+				//	Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection OUI');
+				//}
+
 	            //$expert = $version->getExpert();
-	            $projet = $version->getProjet();
+	            //$projet = $version->getProjet();
 
 				// traitement du formulaire d'affectation - On ignore les projets non sélectionnés
-				$form  = $this->getExpertForm($projet, $session);
-				$form->handleRequest($request);
-				if ($form->isSubmitted() && $form->isValid())
+				$forms   = $this->getExpertForms($version);
+
+				$experts = [];
+				foreach ($forms as $f)
 				{
-					$expert     =   $form->getData()['expert'];
-					if ($form->getData()['selection']==false) continue;
-					dump($form_buttons->getData());
+					$f->handleRequest($request);
+					if ($f->isSubmitted() && $f->isValid())
+					{
+						$experts[] = $f->getData()['expert'];
+					}
+				}
 
-					if ($form_buttons->get('sub1')->isClicked())
-					{
-						$this->affecterExpertsToVersion($expert,$version);
-					}
-					elseif ($form_buttons->get('sub2')->isClicked())
-					{
-						$this->affecterExpertsToVersion($expert,$version);
-						$this->notifierExperts($expert,$version);
-					}
-					elseif ($form_buttons->get('sub3')->isClicked())
-					{
-						$this->addExpertiseToVersion($version);
-					}
-					elseif ($form_buttons->getData('sub4')->isClicked())
-					{
-						$this->delExpertiseFromVersion($version);
-					}
-					else
-					{
-						continue;
-					}
-
-					//Functions::debugMessage(__METHOD__ . " version " . $version . " a soumis l'expert " . $expert);
-	                //$form  = $this->getExpertForm($projet,$session);
+				// Traitements différentiés suivant le bouton sur lequel on a cliqué
+				if ($form_buttons->get('sub1')->isClicked())
+				{
+					$this->affecterExpertsToVersion($experts,$version);
+				}
+				elseif ($form_buttons->get('sub2')->isClicked())
+				{
+					$this->affecterExpertsToVersion($expert,$version);
+					$this->notifierExperts($expert,$version);
+				}
+				elseif ($form_buttons->get('sub3')->isClicked())
+				{
+					$this->addExpertiseToVersion($version);
+					// doctrine cache les expertises précédentes du coup si on ne redirige pas
+					// l'affichage ne sera pas correctement actualisé !
+					return $this->redirectToRoute('affectation');
+				}
+				elseif ($form_buttons->get('sub4')->isClicked())
+				{
+					$this->remExpertiseFromVersion($version);
+				}
+				else
+				{
+					continue;
 				}
 			}
 		}
@@ -263,25 +297,30 @@ class ExpertiseController extends Controller
             $etatVersion    =   $version->getEtatVersion();
             if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
 
-            $expert = $version->getExpert();
-            $projet = $version->getProjet();
+            $experts = $version->getExperts();
+            //$projet = $version->getProjet();
+
+			// Formulaire pour la sélection
+			$sform = $this->getSelForm($version)->createView();
+			$forms['selection_'.$version->getIdVersion()] = $sform;
 
 			// Génération du formulaire de choix de l'expert
-			$form  = $this->getExpertForm($projet, $session)->createView();
-			$forms[$version->getIdVersion()] = $form;
+			$eforms  = $this->getExpertForms($version);
+			foreach ($eforms as &$f) $f=$f->createView();
+			$forms[$version->getIdVersion()] = $eforms;
 
-            if( $expert  == null )
-			{
-                $expertId[$version->getIdVersion()]    =   '';
-			}
-            else
-			{
-                $expertId[$version->getIdVersion()]    =  $expert->getIdIndividu();
-                if( isset( $experts[ $expert->getIdIndividu()] ) ) // on peut avoir des anciens experts
-                    $experts[ $expert->getIdIndividu()]['projets']++;
-                else
-                    $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 1 ];
-			}
+            //if( count($experts  === 0)
+			//{
+            //    $expertId[$version->getIdVersion()]    =   '';
+			//}
+            //else
+			//{
+            //    $expertId[$version->getIdVersion()]    =  $expert->getIdIndividu();
+            //    if( isset( $experts[ $expert->getIdIndividu()] ) ) // on peut avoir des anciens experts
+            //        $experts[ $expert->getIdIndividu()]['projets']++;
+            //    else
+            //        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 1 ];
+			//}
 
             if( $version->getPrjThematique() != null )
                  $thematiques[ $version->getPrjThematique()->getIdThematique() ]['projets']++;
@@ -328,10 +367,11 @@ class ExpertiseController extends Controller
             'versions'   =>  $versions,
             'forms'     =>  $forms,
             'sessionForm'   =>  $sessionForm,
-            'expertId'  =>  $expertId,
+            //'expertId'  =>  $expertId,
             'session'   => $session,
             'thematiques'   =>  $thematiques,
-            'experts'   =>  $experts,
+            //'experts'   =>  $experts,
+            'experts' => [],
             'nbProjets' => $nbProjets,
             'renouvellement'    => $renouvellement,
             'nouveau'   => $nouveau,
@@ -345,20 +385,68 @@ class ExpertiseController extends Controller
     }
 
 	/**
-	 * Appelée par affectationGenerique, sauvegarde le ou les experts associés à la version
+	 * Appelée par affectationGenerique, sauvegarde les experts associés à la version
 	 *
 	 ***/
-	private function affecterExpertsToVersion($expert,$version)
+	private function affecterExpertsToVersion($experts,Version $version)
 	{
-		$expertise  =   $version->getOneExpertise();
-		if( $expertise == null )
+		$em = $this->getDoctrine()->getManager();
+		$expertises = $version->getExpertise()->toArray();
+		usort($expertises,['self','cmpExpertises']);
+
+		if (count($experts)>1)
 		{
-			$expertise = new Expertise();
-			$expertise->setVersion( $version );
+			// On vérifie qu'il n'y a pas deux experts identiques
+			// TODO Dans ce cas il faudrait envoyer un message d'erreur !
+			// TODO - Trouver un truc plus élégant que ça !
+			$id_experts=[];
+			foreach ($experts as $e)
+			{
+				$id_experts[] = $e->getIdIndividu();
+			}
+			//Functions::debugMessage( __METHOD__ . ' experts uniques -> '.count(array_unique($id_experts)) .'  experts -> '.count($id_experts));
+			if (count(array_unique($id_experts)) != count($id_experts)) return;
 		}
 
-		$expertise->setExpert( $expert );
-		Functions::sauvegarder( $expertise );
+		foreach ($expertises as $e)
+		{
+			$e->setExpert(array_shift($experts));
+			$em->persist($e);
+		}
+		// Je n'utilise pas Functions::sauvegarder car je sauvegarde plusisuers objets à la fois !
+		$em->flush();
+	}
+
+	/**
+	 * Appelée par affectationGenerique, ajoute une expertise à la version
+	 *
+	 ****/
+	private function addExpertiseToVersion(Version $version)
+	{
+		$expertise  =   new Expertise();
+		$expertise->setVersion( $version );
+
+		// Attention, l'algorithme de proposition des experts dépend du type de projet
+		$expert = $version->getProjet()->proposeExpert();
+		if ($expert != null)
+		{
+			$expertise->setExpert( $expert );
+		}
+        Functions::sauvegarder( $expertise );
+	}
+
+	/**
+	 * Appelée par affectationGenerique, retire la dernière expertise de la version
+	 *
+	 ****/
+	private function remExpertiseFromVersion(Version $version)
+	{
+		$expertises = $version->getExpertise()->toArray();
+		usort($expertises,['self','cmpExpertises']);
+		$expertise = end($expertises);
+		$em = $this->getDoctrine()->getManager();
+		$em->remove($expertise);
+		$em->flush();
 	}
 
     /**

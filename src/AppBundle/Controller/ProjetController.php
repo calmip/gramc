@@ -1533,7 +1533,7 @@ class ProjetController extends Controller
 	    if( $version->getCGU() == false )
 	        Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
 
-		// S'il y adéjà une expertise on ne fait rien
+		// S'il y a déjà une expertise on ne fait rien
 		// Sinon on la crée et on appelle le programme d'affectation automatique des experts
 	    if( count( $version->getExpertise() ) > 0 )
         {
@@ -1544,15 +1544,7 @@ class ProjetController extends Controller
 	        $expertise  =   new Expertise();
 	        $expertise->setVersion( $version );
 
-	        // affecter le président comme expert pour un projet test
-	        //if( $projet->isProjetTest() )
-            //{
-	        //    $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
-	        //    if( $presidents == null )
-	        //        Functions::warningMessage(__METHOD__ .  ":" . __LINE__ . " Il n'y a aucun président !");
-	        //    else
-	        //       $expertise->setExpert( $presidents[0] );
-            //}
+			// Attention, l'algorithme de proposition des experts dépend du type de projet
             $expert = $projet->proposeExpert();
             if ($expert != null)
             {

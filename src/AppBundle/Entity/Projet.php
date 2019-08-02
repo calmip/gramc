@@ -724,18 +724,24 @@ class Projet
 
     ////////////////////////////////////////////
 
+    // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS experts
+    //        Remplacée par Version::getExperts()
+
     public function getExpert(Session $session = null)
     {
-    if( $session == null ) $session = Functions::getSessionCourante();
+	    if( $session == null ) $session = Functions::getSessionCourante();
 
-    $expertise  = $this->getOneExpertise($session);
-    if( $expertise  == null )
-        return null;
-    else
-        return $expertise->getExpert();
+	    $expertise  = $this->getOneExpertise($session);
+	    if( $expertise  == null )
+	        return null;
+	    else
+	        return $expertise->getExpert();
     }
 
     ///////////////////////////////////////////////
+    // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS exprites
+    //        Remplacée par Version::getExpertise()
+    //
 
     public function getOneExpertise(Session $session)
     {
@@ -921,44 +927,6 @@ class Projet
 		$conso_cpu = $this->getConsoRessource('cpu',$annee);
 		return $conso_cpu[1];
     }
-
-    ///////////////////////////////////////////////////////////////////////////////
-    //
-    // préparation du formulaire du choix d'expert
-    //
-
-    public function getExpertForm(Session $session, $hash = "")
-    {
-
-    $expert = $this->getExpert($session);
-    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($this);
-
-    if( $expert ==  null )
-        {
-        $expert  =  $this->proposeExpert( $collaborateurs );
-        Functions::debugMessage(__METHOD__ . ":" . __LINE__ ." nouvel expert proposé du projet " . $this . " : " . Functions::show( $expert ) );
-        }
-
-
-    return AppBundle::getContainer()->get( 'form.factory')
-            ->createNamedBuilder(   'expert'.$this->getIdProjet().$hash , FormType::class, null  ,  ['csrf_protection' => false ])
-                ->add('expert', ChoiceType::class,
-                    [
-                'multiple'  =>  false,
-                'required'  =>  false,
-                'label'     => '',
-                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
-                'data'          => $expert,
-                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
-                'choice_label' => function ($individu)
-                   { return $individu->__toString(); },
-                    ])
-                    ->getForm();
-    }
-
-
-    /////////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////
 

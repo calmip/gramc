@@ -145,7 +145,7 @@
             <tr>
 				<td >
 	                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
-					{{ form_widget( forms[version.getIdVersion()].selection ) }}
+	                {{ form_widget( forms['selection_' ~ version.getIdVersion()].sel ) }}
 					{% else %}
 					&nbsp;
 					{% endif %}
@@ -196,7 +196,7 @@
                 {% endif %}
                 {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
-                    {{ form_widget( forms[version.getIdVersion()].expert ) }}
+                    {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}{% endfor %}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
                 {% else %}
                     {% if( version.expert!= null ) %}

@@ -77,6 +77,9 @@ parameters:
     # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
     prj_prefix: { '1' : 'P', '2' : 'T' }
 
+    # Nombre max d'expertises pour un projet
+    max_expertises_nb: 1
+
     # divers répertoires
     signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'

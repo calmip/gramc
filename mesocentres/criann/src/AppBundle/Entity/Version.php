@@ -3142,7 +3142,7 @@ class Version
 
 
     ///////////////////////////////////////////////
-
+	// TODO - Supprimer, on a plusieurs expertises par projet
     public function getOneExpertise()
     {
 	    $expertises =   $this->getExpertise()->toArray();
@@ -3267,4 +3267,5 @@ class Version
     else
         Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le nouveau responsable " . $moi . " ne fait partie d'aucun laboratoire");
     }
+
 }
