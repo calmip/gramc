@@ -679,8 +679,8 @@ class Projet
 	            else
 	                return $expert;
             }
-        else
-            Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " II version " . $version->getIdVersion() . " n'a pas d'expertise !");
+	        //else
+	        //    Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " II version " . $version->getIdVersion() . " n'a pas d'expertise !");
         }
 
 	    //Functions::debugMessage(__METHOD__ ." après II " );
@@ -739,28 +739,28 @@ class Projet
 
     public function getOneExpertise(Session $session)
     {
-    if( $this->isProjetTest() )
-        $version    =   $this->derniereVersion();
-    else
-        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
+	    if( $this->isProjetTest() )
+	        $version    =   $this->derniereVersion();
+	    else
+	        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
 
-    if( $version != null )
+	    if( $version != null )
         {
-        $expertises =   $version->getExpertise()->toArray();
-        if( $expertises !=  null )
+	        $expertises =   $version->getExpertise()->toArray();
+	        if( $expertises !=  null )
             {
-            $expertise  =   current( $expertises );
-            //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
-            //    . " expertises = " . Functions::show( $expertises ));
-            return $expertise;
+	            $expertise  =   current( $expertises );
+	            //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
+	            //    . " expertises = " . Functions::show( $expertises ));
+	            return $expertise;
             }
-        else
-            Functions::noticeMessage(__METHOD__ . " version " . $version . " n'a pas d'expertise !");
+	        //else
+	        //    Functions::noticeMessage(__METHOD__ . " version " . $version . " n'a pas d'expertise !");
         }
-    else
-        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
+	    else
+	        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
 
-    return null;
+	    return null;
     }
 
 	/*

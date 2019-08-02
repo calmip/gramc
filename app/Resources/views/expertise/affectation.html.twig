@@ -121,53 +121,58 @@
 <section>
     <form name="affecter_les_experts" method="post">
     <div id="projets">
-        {# largeur = largeur des colonnes + padding + bordure #}
-        {% set width=3*15+45+4*80+4*170 + 20*13 + 40  %}
-        {% if noconso==false %}{% set width = 80 + width %}{% endif %}
-        <table id="affecte_experts" class="scrtable dataTable no-footer" role="grid" style="width: {{width}}px" >
+        <table id="affecte_experts">
             <thead>
                 <tr>
-                    <th class="w15">N</th>
-                    <th class="w45">N°</th>
-                    <th class="w15">&nbsp;</th>
-                    <th class="w15" title="Etat">E</th>
-                    <th class="w170">Titre</th>
-                    <th class="w170">Thématique</th>
-                    <th class="w170">Responsable</th>
-                    <th class="w80">Laboratoire</th>
-                    <th class="w15" title="Affecté">A</th>
-                    <th class="w170">Expert</th>
-                    <th class="w80">Demande</th>
-                    <th class="w80">Attribution</th>
-                    {% if noconso==false %}<th class="w80">Conso</th>{% endif %}
+					<th title="Cocher la case pour sélectionner ce projet">S</th>
+                    <th >N</th>
+                    <th >N°</th>
+                    <th >&nbsp;</th>
+                    <th title="Etat">E</th>
+                    <th >Titre</th>
+                    <th >Thématique</th>
+                    <th >Responsable</th>
+                    <th >Laboratoire</th>
+                    <th title="Affecté">A</th>
+                    <th >Expert</th>
+                    <th >Demande</th>
+                    <th >Attribution</th>
+                    {% if noconso==false %}<th >Conso</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
             {% for version in versions %}
             <tr>
+				<td >
+	                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+					{{ form_widget( forms[version.getIdVersion()].selection ) }}
+					{% else %}
+					&nbsp;
+					{% endif %}
+				</td>
                 {% if( version.isNouvelle() ) %}
                     <td class="nouveau w15"><strong>N</strong></td>
                 {% else %}
                     <td class="renouv w15">&nbsp;</td>
                 {% endif %}
 
-                <td class="w45"> {{  version.projet }}</td>
-                <td class="w15">
+                <td > {{  version.projet }}</td>
+                <td >
                     <a href="{{ path('consulter_projet', { 'id' : version.projet.idProjet } ) }}">
                     <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter">
                     </a>
                 </td>
-                <td class="w15">{{ gramcmacros.metagraph(version.projet.metaEtat) }}</td>
-                <td class="w170">
+                <td >{{ gramcmacros.metagraph(version.projet.metaEtat) }}</td>
+                <td >
                     {{ gramcmacros.afftitre(version.prjtitre) }}
                 </td>
                 {% if( version.prjThematique != null ) %}
                 <td class="t{{ version.prjThematique.idThematique }} w170">{{ version.prjThematique }}</td>
                 {% else %}
-                <td class="w170"></td>
+                <td ></td>
                 {% endif %}
 
-                <td class="w170">
+                <td >
                 {% if( version.responsable != null ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
@@ -177,8 +182,8 @@
                 {% endif %}
                 </td>
 
-                <td class="w80">{% if( version.labo != null ) %}{{ version.labo.acrolabo }}{% endif %}</td>
-                <td class="w15">
+                <td >{% if( version.labo != null ) %}{{ version.labo.acrolabo }}{% endif %}</td>
+                <td >
                     {% if( version.hasExpert ) %}
                      <img src="{{ asset('icones/actif.png') }}" alt="Expert affecté" title="Expert affecté"><span class="invisible">affecté</span>
                     {% endif %}
@@ -187,7 +192,7 @@
                 {% if( not (version.getExpert() == null ) ) %}
                 <td class="e{{ version.getExpert().idIndividu }} w170">
                 {% else %}
-                <td class="w170">
+                <td >
                 {% endif %}
                 {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
@@ -201,16 +206,24 @@
                     {% endif %}
                 {% endif %}
                 </td>
-                <td class="w80">{{ version.demHeures }}</td>
-                <td class="w80">{% if version.idVersion is defined and attHeures[version.idVersion] is defined %}{{ attHeures[version.idVersion] }}{% endif %}</td>
+                <td >{{ version.demHeures }}</td>
+                <td >{% if version.idVersion is defined and attHeures[version.idVersion] is defined %}{{ attHeures[version.idVersion] }}{% endif %}</td>
                 {% if noconso==false %}
-                <td class="w80">{{ version.getConso() }}</td>
+                <td >{{ version.getConso() }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
             </tbody>
         </table>
-        <div id="bouton_affecter"><input value="Affecter les experts" type="submit"></div>
+        <div id="bouton_affecter">
+			<h2>Pour la sélection</h2>
+			{#{{ form_start( forms['BOUTONS'] ) }}#}
+			{{ form_widget( forms['BOUTONS'].sub1 ) }}
+			{{ form_widget( forms['BOUTONS'].sub2 ) }}
+			{{ form_widget( forms['BOUTONS'].sub3 ) }}
+			{{ form_widget( forms['BOUTONS'].sub4 ) }}
+			{#{{ form_end( forms['BOUTONS'] ) }}#}
+		</div>
     </div>
 </form>
 </section>
