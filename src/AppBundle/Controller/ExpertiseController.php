@@ -57,6 +57,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 
@@ -470,13 +471,14 @@ class ExpertiseController extends Controller
     }
 
 
-/**
-     * Lists all expertise entities.
-     *
-     * @Route("/liste", name="expertise_liste")
-     * @Method("GET")
-     * @Security("has_role('ROLE_EXPERT')")
-     */
+	/**
+	 * Liste les expertises attribuées à un expert
+	 *       Aussi les anciennes expertises réalisées par cet expert
+	 *
+	 * @Route("/liste", name="expertise_liste")
+	 * @Method("GET")
+	 * @Security("has_role('ROLE_EXPERT')")
+	 */
     public function listeAction()
     {
         $em = $this->getDoctrine()->getManager();
@@ -495,6 +497,8 @@ class ExpertiseController extends Controller
         $my_expertises  =   [];
         foreach( $expertises as $expertise )
         {
+			Functions::debugMessage(__METHOD__ . " expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
+
             // On n'affiche pas les expertises définitives
             if ( $expertise->getDefinitif()) continue;
 
@@ -516,10 +520,10 @@ class ExpertiseController extends Controller
         }
 
         ////////////////
-
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
         {
+			Functions::debugMessage(__METHOD__ . " expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
             $expertises_thematique =  $expertiseRepository->findExpertisesByThematique($thematique, $session);
             //$expertises_thematique =  $expertiseRepository->findExpertisesByThematiqueForAllSessions($thematique);
             $expertises =   [];
@@ -542,7 +546,7 @@ class ExpertiseController extends Controller
                                         'responsable' =>  $version->getResponsable(),
                                         ];
 
-                if( array_key_exists( $expertise->getId() , $my_expertises ) )
+                if( array_key_exists( $expertise->getId(), $my_expertises ) )
                 {
                     unset( $my_expertises[ $expertise->getId() ]);
                     $output['expert']   =   true;
@@ -700,12 +704,13 @@ class ExpertiseController extends Controller
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $moi .
                 " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert() );
         }
+
         $session    =   Functions::getSessionCourante();
         $commGlobal =  $session->getcommGlobal();
         $anneeCour  = 2000 +$session->getAnneeSession();
         $anneePrec  = $anneeCour - 1;
 
-        // Le comportement diffère (à la marge) suivant le type de projet
+        // Le comportement diffère suivant le type de projet
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
@@ -729,46 +734,56 @@ class ExpertiseController extends Controller
 			}
 		}
 
+		// Création du formulaire
         $editForm = $this->createFormBuilder($expertise)
             ->add('commentaireInterne', TextAreaType::class, [ 'required' => false ] )
             ->add('validation', ChoiceType::class ,
                 [
-                //'label' => " ",
-                //'required'  =>  false,
-                //'expanded' => true,
                 'multiple' => false,
-                //'data'     => $expertise->getValidation(),
                 'choices'   =>  [ 'Accepter' =>     1, 'Refuser pour cette session' => 2, 'Refuser définitivement et fermer le projet'    => 0, ],
                 ]);
 
 		// Projet au fil de l'eau, le commentaire externe est réservé au président !
-		if ( $projet_type != Projet::PROJET_FIL )
+		// On utilise un champ caché, de cette manière le formulaire sera valide
+		if ( $projet_type != Projet::PROJET_FIL || AppBundle::isGranted('ROLE_PRESIDENT'))
+		{
             $editForm->add('commentaireExterne', TextAreaType::class, [ 'required' => false ] );
+		}
+		else
+		{
+			$editForm->add('commentaireExterne', HiddenType::class, [ 'data' => 'Commentaire externe réservé au Président' ] );
 
+		}
+
+		// Par défaut on attribue les heures demandées !
         if( $expertise->getNbHeuresAtt() == 0 )
             $editForm->add('nbHeuresAtt', IntegerType::class , ['required'  =>  false, 'data' => $version->getDemHeures(), ]);
         else
             $editForm->add('nbHeuresAtt', IntegerType::class , ['required'  =>  false, ]);
 
 		// En session B, on propose une attribution spéciale pour heures d'été
-		// TODO A affiner car en septembre en sera toujours et session  B et c'est un peu couillon
+		// TODO A affiner car en septembre avec des projets PROJET_FIL en sera toujours en session  B et c'est un peu couillon de demander cela
 		if ( $projet_type != Projet::PROJET_TEST )
 	        if ($session->getTypeSession())
 	            $editForm -> add('nbHeuresAttEte');
 
-        $definitif  =   $expertise->getDefinitif();
-        if( $definitif == false )
-            $editForm = $editForm->add('enregistrer',   SubmitType::class, ['label' =>  'Enregistrer' ]);
+        //$definitif  =   $expertise->getDefinitif();
+        //if( $definitif == false )
+            //$editForm = $editForm->add('enregistrer',   SubmitType::class, ['label' =>  'Enregistrer' ]);
+        //if( $definitif == false && $session_edition == false)
+            //$editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
+        //$editForm->add( 'retour',   SubmitType::Class );
 
-        if( $definitif == false && $session_edition == false)
+		// Les boutons d'enregistrement ou d'envoi
+		$editForm = $editForm->add('enregistrer', SubmitType::class, ['label' =>  'Enregistrer' ]);
+        if( $session_edition == false)
             $editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
-
         $editForm->add( 'retour',   SubmitType::Class );
+
 
         $editForm = $editForm->getForm();
         $editForm->handleRequest($request);
 
-        //if ($editForm->isSubmitted() /* && $editForm->isValid() */ && $definitif == false )
         if( $editForm->isSubmitted() && ! $editForm->isValid() )
              Functions::warningMessage(__METHOD__ . " form error " .  Functions::show($editForm->getErrors() ) );
 
@@ -778,20 +793,21 @@ class ExpertiseController extends Controller
 
         $erreur = 0;
         $erreurs = [];
-        if ($editForm->isSubmitted() /* && $editForm->isValid()  */ && $definitif == false )
+        if ($editForm->isSubmitted() /* && $editForm->isValid()  */ )
         {
             $erreurs = Functions::dataError( $expertise);
 
             $validation = $expertise->getValidation();
 
             if( $validation != 1 )
-                {
+			{
                 $expertise->setNbHeuresAtt(0);
                 $expertise->setNbHeuresAttEte(0);
-                if ( $validation == 2 && $expertise->getVersion()->getProjet()->isProjetTest() ) {
+                if ( $validation == 2 && $projet_type == Projet::PROJET_TEST )
+                {
                     $erreurs[] = "Pas possible de refuser un projet test juste pour cette session";
                 }
-                }
+			}
 
             $em = AppBundle::getManager();
             $em->persist( $expertise );
@@ -811,6 +827,15 @@ class ExpertiseController extends Controller
             $toomuch      = Functions::is_demande_toomuch($attr_a,$dem_b);
         }
 
+		// Projets au fil de l'eau avec plusieurs exepertises:
+		//    Si je suis président, on va chercher ces expertises pour affichage
+		$autres_expertises = [];
+		if ($projet_type == Projet::PROJET_FIL && AppBundle::isGranted('ROLE_PRESIDENT') )
+		{
+			$expertiseRepository = AppBundle::getRepository(Expertise::class);
+			$autres_expertises   = $expertiseRepository -> findExpertisesForVersion($version,$moi);
+		}
+
 		// LA SUITE DEPEND DU TYPE DE PROJET !
 		// Le workflow n'est pas le même suivant le type de projet, donc l'expertise non plus.
 		switch ($projet_type)
@@ -828,15 +853,16 @@ class ExpertiseController extends Controller
 
         return $this->render($twig,
             [
-            'expertise'  => $expertise,
-            'version'    => $expertise->getVersion(),
-            'edit_form'  => $editForm->createView(),
-            'anneePrec'  => $anneePrec,
-            'anneeCour'  => $anneeCour,
-            'session'    => $session,
-            'session_edition' => $session_edition,
-            'erreurs'    => $erreurs,
-            'toomuch'    => $toomuch,
+            'expertise'         => $expertise,
+            'autres_expertises' => $autres_expertises,
+            'version'           => $expertise->getVersion(),
+            'edit_form'         => $editForm->createView(),
+            'anneePrec'         => $anneePrec,
+            'anneeCour'         => $anneeCour,
+            'session'           => $session,
+            'session_edition'   => $session_edition,
+            'erreurs'           => $erreurs,
+            'toomuch'           => $toomuch,
             ]);
     }
 
@@ -844,7 +870,6 @@ class ExpertiseController extends Controller
      *
      * L'expert vient de cliquer sur le bouton "Envoyer expertise"
      * On lui envoie un écran de confirmation
-     * Displays a form to edit an existing expertise entity.
      *
      * @Route("/{id}/valider", name="expertise_validation")
      * @Method({"GET","POST"})
@@ -868,35 +893,51 @@ class ExpertiseController extends Controller
 
 	    $editForm->handleRequest($request);
 
+		$em = AppBundle::getManager();
 	    if( $editForm->isSubmitted()  )
         {
+			// Bouton Annuler
 	        if( $editForm->get('annuler')->isClicked() )
 	            return $this->redirectToRoute('expertise_modifier', [ 'id' => $expertise->getId() ] );
 
-	        $workflow   =   new ProjetWorkflow();
+			// Bouton Confirmer
+			// Si projet au fil de l'eau mais qu'on n'est pas président, on n'envoit pas de signal
+			// Dans tous les autres cas on envoie un signal CLK_VAL_EXP_XXX
+			//
+			$type_projet = $expertise->getVersion()->getProjet()->getTypeProjet();
+			if ( $type_projet != Projet::PROJET_FIL || AppBundle::isGranted('ROLE_PRESIDENT') )
+			{
+		        $workflow   =   new ProjetWorkflow();
 
-	        $expertise->getVersion()->setAttrHeures($expertise->getNbHeuresAtt() );
-	        $expertise->getVersion()->setAttrHeuresEte($expertise->getNbHeuresAttEte() );
-	        $expertise->getVersion()->setAttrAccept($expertise->getValidation()  );
+		        $expertise->getVersion()->setAttrHeures($expertise->getNbHeuresAtt() );
+		        $expertise->getVersion()->setAttrHeuresEte($expertise->getNbHeuresAttEte() );
+		        $expertise->getVersion()->setAttrAccept($expertise->getValidation()  );
 
-	        $validation =  $expertise->getValidation();
+		        $validation =  $expertise->getValidation();
 
-	        $rtn    =   null;
+		        $rtn    =   null;
 
-	        if( $validation == 1 )      $signal = Signal::CLK_VAL_EXP_OK;
-	        elseif( $validation == 2 )  $signal = Signal::CLK_VAL_EXP_CONT;
-	        elseif( $validation == 0 )  $signal = Signal::CLK_VAL_EXP_KO;
+		        if( $validation == 1 )      $signal = Signal::CLK_VAL_EXP_OK;
+		        elseif( $validation == 2 )  $signal = Signal::CLK_VAL_EXP_CONT;
+		        elseif( $validation == 0 )  $signal = Signal::CLK_VAL_EXP_KO;
 
-	        $rtn    =   $workflow->execute( $signal, $expertise->getVersion()->getProjet() );
-	        if( $rtn != true )
-	            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " Transition avec " .  Signal::getLibelle( $signal )
-	            . "(" . $signal . ") pour l'expertise " . $expertise . " avec rtn = " . Functions::show($rtn) );
-	        else
-	            $expertise->setDefinitif(true);
+		        $rtn    =   $workflow->execute( $signal, $expertise->getVersion()->getProjet() );
+		        if( $rtn != true )
+		            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " Transition avec " .  Signal::getLibelle( $signal )
+		            . "(" . $signal . ") pour l'expertise " . $expertise . " avec rtn = " . Functions::show($rtn) );
+		        else
+		            $expertise->setDefinitif(true);
 
-	        $em = AppBundle::getManager();
-	        $em->persist( $expertise );
-	        $em->flush();
+		        $em->persist( $expertise );
+		        $em->flush();
+			}
+			else
+			{
+				$expertise->setDefinitif(true);
+		        $em->persist( $expertise );
+		        $em->flush();
+			}
+
 	        return $this->redirectToRoute('expertise_liste');
         }
 

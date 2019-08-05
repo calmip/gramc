@@ -28,6 +28,7 @@ use AppBundle\Utils\Etat;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\Individu;
+use AppBundle\Entity\Version;
 
 /**
  * ExpertiseRepository
@@ -49,22 +50,21 @@ public function countExpertises($expert)
 
 
 public function findExpertisesByThematique(Thematique $thematique, Session $session)
-    {
-    $dql     =   'SELECT e FROM AppBundle:Expertise e';
-    $dql    .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
-    $dql    .=  " WHERE ( v.session = :session AND v.prjThematique = :thematique ) ";
+{
+    $dql  =   'SELECT e FROM AppBundle:Expertise e';
+    $dql .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
+    $dql .=  " WHERE ( v.session = :session AND v.prjThematique = :thematique )";
+    $dql .=  " GROUP BY v.prjThematique";
 
     return $this->getEntityManager()
          ->createQuery( $dql )
          ->setParameter('session', $session )
          ->setParameter('thematique', $thematique )
          ->getResult();
-         
-         
-    }
+}
 
 public function findExpertisesByThematiqueForAllSessions(Thematique $thematique)
-    {
+{
     $dql     =   'SELECT e FROM AppBundle:Expertise e';
     $dql    .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
     $dql    .=  " WHERE ( v.prjThematique = :thematique ) ";
@@ -73,7 +73,7 @@ public function findExpertisesByThematiqueForAllSessions(Thematique $thematique)
          ->createQuery( $dql )
          ->setParameter('thematique', $thematique )
          ->getResult();
-    }
+}
 
 public function findExpertisesByExpert(Individu $expert, Session $session)
 {
@@ -86,8 +86,6 @@ public function findExpertisesByExpert(Individu $expert, Session $session)
          ->setParameter('session', $session )
          ->setParameter('expert', $expert )
          ->getResult();
-         
-         
 }
 
 public function findExpertisesByExpertForAllSessions(Individu $expert)
@@ -100,8 +98,19 @@ public function findExpertisesByExpertForAllSessions(Individu $expert)
          ->createQuery( $dql )
          ->setParameter('expert', $expert )
          ->getResult();
-         
-         
-    }
+}
+
+// Renvoie toutes les expertises sur une version donnée, SAUF celle de $expert
+public function findExpertisesForVersion(Version $version,$expert)
+{
+	$dql     =   'SELECT e FROM AppBundle:Expertise e WHERE e.version = :version AND e.expert != :expert ORDER BY e.id';
+
+    return $this->getEntityManager()
+         ->createQuery( $dql )
+         ->setParameter('version', $version )
+         ->setParameter('expert', $expert )
+         ->getResult();
+}
+
 
 }

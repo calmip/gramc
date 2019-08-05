@@ -199,11 +199,11 @@
                     {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}{% endfor %}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
                 {% else %}
-                    {% if( version.expert!= null ) %}
-                    <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
+                	{% for e in version.expertise %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': e.expert.id }) }}?" title="Changer d'identité">
                         <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
-                        {{ version.getExpert() }}
-                    {% endif %}
+                        {{e.expert}}<br />
+                    {% endfor %}
                 {% endif %}
                 </td>
                 <td >{{ version.demHeures }}</td>

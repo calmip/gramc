@@ -715,14 +715,14 @@ class Functions
 
     public static function dataError( $data, $groups = ['Default'] )
     {
-    $validator = AppBundle::getContainer()->get('validator');
-    if( is_string( $groups ) ) $groups = [$groups];
-    $violations = $validator->validate($data, null, $groups);
+	    $validator = AppBundle::getContainer()->get('validator');
+	    if( is_string( $groups ) ) $groups = [$groups];
+	    $violations = $validator->validate($data, null, $groups);
 
-    $erreurs = [];
-    foreach( $violations as $violation )
-        $erreurs[]  =   $violation->getMessage();
-    return $erreurs;
+	    $erreurs = [];
+	    foreach( $violations as $violation )
+	        $erreurs[]  =   $violation->getMessage();
+	    return $erreurs;
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 

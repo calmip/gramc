@@ -86,24 +86,45 @@
     </div>
 
    {{ form_start(edit_form) }}
+
     {% if( expertise.definitif == true ) %}
         <div class="message erreur">
             <h2>EXPERTISE DÉJÀ ENVOYEE</h2>
                 <p>Votre expertise a déjà été envoyée, vous ne pouvez plus la modifier.</p>
         </div>
     {% else %}
-    <div class="message info">Merci de renseigner le formulaire ci-dessous. Votre avis sera pris en compte par le président, qui prendra la décision finale<br />
-    <em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em> </div>
+    	{% if is_granted('ROLE_PRESIDENT') %}
+		    <div class="message info">Merci de renseigner le formulaire ci-dessous <strong>en prenant en compte l'avis des autres experts</strong>. <br />
+		    <em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em> </div>
+		{% endif %}
     {% endif %}
 
+	{% set autres_expertises_sont_definitives = true %}
+	{% for expertise in autres_expertises %}
     <table  class="projet">
         <tbody>
-            <tr>
-                <th class="horiz">Validation</th>
-                <td>{{ form_widget(edit_form.validation)  }}</td>
-            </tr>
-        </tbody>
-    </table>
+				<tr><th colspan="2">Expertise de {{ expertise.expert.prenom }} {{ expertise.expert.nom }}</th></tr>
+				{% if expertise.definitif == false %}
+					{% set autres_expertises_sont_definitives = false %}
+					<tr><td colspan="2"><span class="attention">Cette expertise n'est pas définitive</span></td></tr>
+				{% else %}
+					<tr>
+						<th>Commentaire interne</th>
+						<td>{{ expertise.commentaireInterne }}</td>
+					</tr>
+					<tr>
+						<th>Proposition</th>
+						<td>{{ expertise.nbheuresatt }}
+						{% if expertise.nbheuresattete != 0 %}
+						   (dont {{ expertise.nbheuresattete }} pour l'été)
+						{% endif %}
+						</td>
+					</tr>
+				{% endif %}
+		</tbody>
+	</table>
+	{% endfor %}
+
 
     {#
     {% if erreur==1 %}
@@ -123,8 +144,29 @@
     </div>
     {% endif %}
 
+    <table class="projet">
+        <tbody>
+			<tr>
+				<th colspan="2">Votre expertise </th>
+			</tr>
+		</tbody>
+	</table>
+
+    <table class="projet">
+        <tbody>
+            <tr>
+                <th class="horiz">Validation</th>
+                <td>{{ form_widget(edit_form.validation)  }}</td>
+            </tr>
+        </tbody>
+    </table>
+
    <table class="projet">
         <tbody>
+            <tr>
+                <th class="horiz"><label>Commentaire</label><br><small>Ce commentaire sera envoyé au responsable du projet</small></th>
+                <td>{{ form_widget(edit_form.commentaireExterne,{ 'attr': { 'class': 'compteur', 'rows' : 10, 'cols' : 100 } }) }}
+            </tr>
             <tr><th class="horiz"><label>Commentaire pour le comité</label><br>
                     <small>Ce commentaire restera au sein du comité d'attribution</small>
                 </th>
@@ -156,7 +198,11 @@
 <div id="quitter">
         {% if( expertise.definitif == false ) %}
             {{ form_widget(edit_form.enregistrer) }}
-            {% if( not session_edition ) %}{{ form_widget(edit_form.envoyer) }}{% endif %}
+            {% if( not session_edition ) %}
+	            {% if autres_expertises_sont_definitives %}
+		            {{ form_widget(edit_form.envoyer) }}
+		        {% endif %}
+            {% endif %}
         {% endif %}
         {{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
 </div>
