@@ -32,8 +32,8 @@ src/cache/*
 !var/sessions/.gitkeep
 !var/SymfonyRequirements.php
 /web/bundles/
-banniere.png
-favicon.ico
+/mesocentres/**/banniere.png
+/mesocentres/**/favicon.ico
 
 altermeso
 
