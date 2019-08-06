@@ -54,6 +54,10 @@ use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
 use AppBundle\Utils\GramcDate;
 
+use AppBundle\GramcGraf\Calcul;
+use AppBundle\GramcGraf\CalculTous;
+use AppBundle\GramcGraf\Stockage;
+
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -1109,6 +1113,7 @@ class ProjetController extends Controller
 
     public function consoAction(Projet $projet, $annee = null)
     {
+		$projet_id = strtolower($projet->getIdProjet());
 
         // Seuls les collaborateurs du projet ont accès à la consommation
         if( ! Functions::projetACL( $projet ) )
@@ -1121,53 +1126,34 @@ class ProjetController extends Controller
             $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
 
-        $db_data = AppBundle::getRepository(Compta::class)->conso( $projet, $annee );
-
-        // Conversion: tableau d'objets => tableau de tableaux
+		$conso_repo = AppBundle::getRepository(Compta::class);
         $debut = new \DateTime( $annee . '-01-01');
-        $debut = $debut->getTimestamp();
         $fin   = new \DateTime( $annee . '-12-31');
-        $fin   = $fin->getTimestamp();
 
-        $structured_data = [];
+		// Génération du graphe de conso heures cpu et heures gpu
+        $db_conso = $conso_repo->conso( $projet, $annee );
+		//foreach ($db_conso as $item) {
+		//	$msg = print_r($item,true);
+		//	$this->get('logger')->warning($msg);
+		//}
 
-        // Si pas de données (nouveau projet par ex) on les crée artificiellement
-        if (count($db_data) === 0)
-        {
-            $structured_data[$debut]['quota'] = 1;
-            $structured_data[$fin]['quota'] = 1;
-        }
-        else
-        {
-            foreach( $db_data as $item )
-            {
-                $key = $item->getDate()->getTimestamp();
-                if( $key < $debut || $key > $fin ) continue;
+		$dessin_heures = new Calcul();
+		$struct_data     = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+		$dessin_heures->resetConso($struct_data);
+        $image_conso     = $dessin_heures->createImage($struct_data)[0];
 
-                if ( array_key_exists (  $key , $structured_data ) )
-                {
-                    $structured_data[$key][$item->getRessource()] = $item->getConso();
-                    if ($projet != null)
-                    {
-                        $quota1 = $structured_data[$key]['quota'];
-                        $quota2 = $item->getQuota();
-                        if( $quota1 != $quota2 )
-                        {
-                            Functions::errorMessage( __METHOD__ . ':' . __LINE__ . ' incohérence dans les quotas, date = ' .  $item->getDate()->format("d F Y") . ' projet = '. $projet );
-                        }
-                        //$structured_data[$key]['quota'] = $quota2;
-                    }
-                }
-                else
-                {
-                    $data = [$item->getRessource() => $item->getConso(), 'quota' => $item->getQuota()];
-                    $structured_data[$key] = $data;
-                }
-            }
-        }
+		$db_work    = $conso_repo->consoResPrj( $projet, 'work_space', $annee );
+        $dessin_work = new Stockage();
+        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work);
+        $image_work  = $dessin_work->createImage($struct_data)[0];
 
-        return $this->dessineGraphique($structured_data,$projet, $annee);
+        $twig     = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
+        $twig_src = '<img src="data:image/png;base64, {{ image_conso }}" alt="Heures cpu/gpu" title="Heures cpu et gpu" /><hr /><img src="data:image/png;base64, {{ image_work }}" />';
+        $html = $twig->render( $twig_src,  [ 'image_conso' => $image_conso,'image_work' => $image_work ] );
+
+		return new Response($html);
     }
+
 
     /**
      * Affichage graphique de la consommation de TOUS les projets
@@ -1177,209 +1163,30 @@ class ProjetController extends Controller
      * @Security("has_role('ROLE_ADMIN')")
      */
 
-    public function tousconsoAction($ressource,$annee)
+    public function consoTousAction($ressource,$annee)
     {
 
-        $db_data = AppBundle::getRepository(Compta::class)->consoTotale( $annee );
+		if ( $ressource != 'cpu' && $ressource != 'gpu' )
+		{
+			return "";
+		}
 
-        $structured_data = [];
+        $db_conso = AppBundle::getRepository(Compta::class)->consoTotale( $annee, $ressource );
 
-        // Si pas de données on les crée artificiellement
-        if (count($db_data) === 0)
-        {
-            $structured_data[$debut]['quota'] = 1;
-            $structured_data[$fin]['quota'] = 1;
-        }
-        else
-        {
-            $debut = new \DateTime( $annee . '-01-01');
-            $debut = $debut->getTimestamp();
-            $fin   = new \DateTime( $annee . '-12-31');
-            $fin   = $fin->getTimestamp();
-            foreach( $db_data as $item )
-            {
-                $key = $item['date']->getTimestamp();
-                $res = $item['ressource'];
-                if( $key < $debut || $key > $fin ) continue;
-                if ($res == $ressource)
-                {
-                    $structured_data[$key][$res] = $item['conso'];
-                }
-                else
-                {
-                    $structured_data[$key][$res] = 0;
-                }
-            }
-        }
+		//foreach ($db_conso as $item) {
+		//	$msg = print_r($item,true);
+		//	$this->get('logger')->warning($msg);
+		//}
+		$debut = new \DateTime( $annee . '-01-01');
+		$fin   = new \DateTime( $annee . '-12-31');
 
-        return $this->dessineGraphique($structured_data,null, $annee);
-    }
-
-    private function dessineGraphique($structured_data, $projet, $annee)
-    /* Affichage graphique, appelé par consoAction ou tousconsoAction
-     * Si projet = null, on affiche la somme de tous les projets
-     * Dans ce cas on n'a pas d'informations de quotas
-     */
-    {
-
-        // je remplis des trous gpu ou cpu et je teste s'il y a cpu et qpu
-        $no_cpu = true;
-        $no_gpu = true;
-        $no_quota = true;
-
-        foreach( $structured_data as $key => $item )
-        {
-            if( ! array_key_exists ( 'gpu' , $item ) )
-                $structured_data[$key]['gpu'] = 0;
-            elseif ( $structured_data[$key]['gpu']  > 0 )
-                $no_gpu = false;
-            if ( ! array_key_exists ( 'cpu' , $item ) )
-                $structured_data[$key]['cpu'] = 0;
-            elseif ( $structured_data[$key]['cpu'] > 0 )
-                $no_cpu = false;
-
-            // détection du quota, seulement si on affiche les données d'un seul projet
-            if ( $projet != null)
-            {
-                if ( ! array_key_exists ( 'quota' , $item ) )
-                    $structured_data[$key]['quota'] = 0;
-                elseif ( $structured_data[$key]['quota'] > 0 )
-                    $no_quota = false;
-            }
-            else
-            {
-                $structured_data[$key]['quota'] = 0;
-            }
-
-            // Somme cpu + gpu = conso (comparée au quota)
-            $structured_data[$key]['somme'] = $structured_data[$key]['cpu'] + $structured_data[$key]['gpu'];
-        }
-
-        // recherche de la remise à zéro dans les 20 premiers jours
-        $remise_a_zero = null;
-        $i = 20;
-        $somme_precedente = 0;
-
-        // Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
-        // Sauf qu'on remet les compteurs à zéro en début d'année
-        // Ici on détecte le jour de remise à zéro avant le 20 Janvier
-        // et on met à zéro tout ce qui précède
-        // Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal
-        foreach( $structured_data as $key => $item )
-        {
-            if ( $i < 0 )   break;
-            if ( $somme_precedente > $structured_data[$key]['somme'] )
-            {
-                $remise_a_zero = $key;
-                break;
-            }
-            $somme_precedente = $structured_data[$key]['somme'];
-            $i--;
-        }
-
-        // annulation avant la remise à zéro
-        foreach( $structured_data as $key => $item )
-        {
-            if ( $remise_a_zero == null || $key >= $remise_a_zero )   break;
-            $structured_data[$key]['gpu'] = $structured_data[$remise_a_zero]['gpu'];
-            $structured_data[$key]['cpu'] = $structured_data[$remise_a_zero]['cpu'];
-            $structured_data[$key]['quota'] = $structured_data[$remise_a_zero]['quota'];
-            $structured_data[$key]['somme'] = $structured_data[$remise_a_zero]['somme'];
-        }
-
-        // création des tables
-        $cpu = [];
-        $gpu = [];
-        $xdata = [];
-        $quota = [];
-        $somme = [];
-
-        foreach( $structured_data as $key => $item )
-        {
-            $xdata[]    =   $key;
-            $cpu[]      =   $structured_data[$key]['cpu'];
-            $gpu[]      =   $structured_data[$key]['gpu'];
-            $somme[]    =   $structured_data[$key]['somme'];
-            $quota[]    =   $structured_data[$key]['quota'];
-        }
-
-        \JpGraph\JpGraph::load();
-        \JpGraph\JpGraph::module('line');
-        \JpGraph\JpGraph::module('date');
-
-
-        // Create the new graph
-        $graph = new \Graph(540,300);
-
-        //$graph = new \Graph(600,400);
-        // Slightly larger than normal margins at the bottom to have room for
-        // the x-axis labels
-        $graph->SetMargin(70,40,30,130);
-
-        // Fix the Y-scale to go between [0,100] and use date for the x-axis
-        $graph->SetScale('datlin',0,100);
-        $graph->SetScale('datlin');
-        $graph->xaxis->scale->SetDateFormat("d-m-y");
-
-        $graph->SetTickDensity( \TICKD_SPARSE, \TICKD_SPARSE );
-        //$graph->xaxis->scale->AdjustForDST(false);
-        $graph->xaxis->scale->SetDateAlign(\DAYADJ_1);
-        //$graph->xaxis->scale->ticks->Set(8,2);
-
-        // Set the angle for the labels to 90 degrees
-        $graph->xaxis->SetLabelAngle(90);
-
-        if( $no_cpu == false )
-        {
-            $line = new \LinePlot($cpu,$xdata);
-            $line->SetLegend('CPU');
-            //$line->SetFillColor('lightblue@0.5');
-            $line->SetColor("green");
-            $graph->Add($line);
-        }
-
-        if( $no_gpu == false )
-        {
-            $line = new \LinePlot($gpu,$xdata);
-            $line->SetLegend('GPU');
-            //$line->SetFillColor('lightblue@0.5');
-            $line->SetColor("blue");
-            $graph->Add($line);
-        }
-
-        if( $no_gpu == false && $no_cpu  == false )
-        {
-            $line = new \LinePlot($somme,$xdata);
-            $line->SetLegend('GPU + CPU');
-            //$line->SetFillColor('lightblue@0.5');
-            $line->SetColor("black");
-            $graph->Add($line);
-        }
-
-        if( $no_quota == false )
-        {
-            $line = new \LinePlot($quota,$xdata);
-            $line->SetLegend('Quota');
-            //$line->SetFillColor('lightblue@0.5');
-            $line->SetColor("red");
-            $graph->Add($line);
-        }
-
-        $graph->legend->Pos( 0.05,0.05,"right" ,"center");
-        $graph->legend->SetColumns(4);
-
-        ob_start();
-        $graph->Stroke();
-        $image_data = ob_get_contents();
-        ob_end_clean();
-
-        $image = base64_encode($image_data);
+        $dessin_heures = new CalculTous();
+        $struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+        $image_conso     = $dessin_heures->createImage($struct_data)[0];
 
         $twig = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
-        $body = $twig->render( '<img src="data:image/png;base64, {{ EncodedImage }}" />' ,  [ 'EncodedImage' => $image,      ] );
-
-        return new Response($body);
-
+        $html = $twig->render( '<img src="data:image/png;base64, {{ ImageConso }}" alt="Heures cpu/gpu" title="Heures cpu et gpu" />' ,  [ 'ImageConso' => $image_conso ] );
+		return new Response($html);
     }
 
     /**

@@ -23,7 +23,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
     {
         $debut = new \DateTime( $annee . '-01-01');
         $fin   = new \DateTime( $annee . '-12-31');
-        
+
         $db_data = AppBundle::getManager()->createQuery(
             'SELECT c
             FROM AppBundle:Compta c
@@ -37,41 +37,95 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         ->setParameter('loginname', lcfirst($projet->getIdProjet() ) )
         ->setParameter('debut',$debut)
         ->setParameter('fin',$fin)
-        ->getResult();            
+        ->getResult();
 
         if( $db_data == null || empty( $db_data ) ) return null;
-                        
+
         return $db_data;
     }
-    
-    public function consoTotale($annee)
-    /* Renvoie les données de conso de la somme de tous les types 2 cpu, tous les Type 2 gpu, etc.
+
+    public function consoTotale($annee,$ressource)
+    /* Renvoie les données de conso de la somme de tous les types 2 de la ressource spécifiée
      * Se limite aux projets P* et T* (exclusion des projets E*)
      */
     {
         $debut = new \DateTime( $annee . '-01-01');
         $fin   = new \DateTime( $annee . '-12-31');
-        
+
         $db_data = AppBundle::getManager()->createQuery(
             'SELECT c.date,c.ressource,sum(c.conso) AS conso
-             FROM AppBundle:Compta c 
+             FROM AppBundle:Compta c
              WHERE c.type = 2
              AND c.date >= :debut
-	     AND c.date <= :fin
-	     AND ( c.loginname LIKE \'p%\' OR c.loginname LIKE \'t%\' )
-             GROUP BY c.date,c.ressource'
+	         AND c.date <= :fin
+	         AND c.ressource = :ressource
+	         AND ( c.loginname LIKE \'p%\' OR c.loginname LIKE \'t%\' )
+             GROUP BY c.date'
         )
         ->setParameter('debut',$debut)
         ->setParameter('fin',$fin)
+        ->setParameter('ressource',$ressource)
         ->getResult();
 
         if( $db_data == null || empty( $db_data ) ) return null;
-                        
+
         return $db_data;
 
     }
-    
-    /* Renvoie la conso d'un projet à une date donnée, éventuellement renvoie null 
+
+    /* Renvoie les données de compta pour un projet, une ressource, une année */
+    public function consoResPrj(Projet $projet, $ressource, $annee)
+    {
+        $debut = new \DateTime( $annee . '-01-01');
+        $fin   = new \DateTime( $annee . '-12-31');
+
+        $db_data = AppBundle::getManager()->createQuery(
+            'SELECT c
+            FROM AppBundle:Compta c
+            WHERE c.loginname = :projet
+            AND   c.type=2
+            AND   c.ressource = :res
+            AND   c.date >= :debut
+            AND   c.date <= :fin
+            ORDER BY c.date ASC'
+        )
+        ->setParameter ('projet', strtolower($projet->getIdProjet() ) )
+        ->setParameter ('debut',$debut)
+        ->setParameter ('res', $ressource)
+        ->setParameter ('fin',$fin)
+        ->getResult();
+
+		if( $db_data == null || empty( $db_data ) ) return null;
+        return $db_data;
+	}
+
+    /* Renvoie les données de compta pour un projet OU un user, une ressource, une année */
+    public function consoResPrjUser(Projet $projet, $user, $ressource, $annee)
+    {
+        $debut = new \DateTime( $annee . '-01-01');
+        $fin   = new \DateTime( $annee . '-12-31');
+
+        $db_data = AppBundle::getManager()->createQuery(
+            'SELECT c
+            FROM AppBundle:Compta c
+            WHERE ((c.loginname = :projet AND c.type=2) OR (c.loginname = :login AND c.type=1))
+            AND     c.ressource = :res
+            AND c.date >= :debut
+            AND c.date <= :fin
+            ORDER BY c.date ASC'
+        )
+        ->setParameter ('loginname', $user )
+        ->setParameter ('projet', strtolower($projet->getIdProjet() ) )
+        ->setParameter ('debut',$debut)
+        ->setParameter ('res', $ressource)
+        ->setParameter ('fin',$fin)
+        ->getResult();
+
+		if( $db_data == null || empty( $db_data ) ) return null;
+        return $db_data;
+	}
+
+    /* Renvoie la conso d'un projet à une date donnée, éventuellement renvoie null
      * Peut être utile dans des fixtures de temps en temps
      */
     public function consoDateProjet(Projet $projet, \DateTime $date)
@@ -85,10 +139,10 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         )
         ->setParameter('loginname', lcfirst($projet->getIdProjet() ) )
         ->setParameter('date',$date)
-        ->getResult();            
+        ->getResult();
 
         if( $db_data == null || empty( $db_data ) ) return null;
-                        
+
         return $db_data;
     }
 
