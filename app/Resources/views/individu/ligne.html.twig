@@ -30,7 +30,6 @@
 
 {# ################################################################################################# #}
 
-
 {% if( individu.desactive) == true %}
 
 <td style="text-align:center">
@@ -39,7 +38,7 @@
         <a class="activation" href="{{ path('activer_utilisateur',  { 'id': individu.id }) }}?" title="Réactiver">
         <img class="bouton_on" src="{{ asset('icones/forbidden.png') }}" alt="Désactiver" /></a>
         <span style="display:none">0</span>
-       
+
 </td>
 
 {% elseif( individu.IDP == null ) %}
@@ -92,6 +91,28 @@
 
 {# ################################################################################################# #}
 
+{% if( individu.president) == true %}
+
+<td style="text-align:right">
+    <a class="admin" href="{{ path('plus_president',  { 'id': individu.id }) }}?" title="Retirer les droits de président">
+    <img class="bouton_on" src="{{ asset('icones/president.png') }}" alt="Ne plus être président" />
+    </a>
+    <span style="display:none">1</span>
+</td>
+
+{% else %}
+
+<td style="text-align:left">
+    <a class="admin" href="{{ path('devenir_president',  { 'id': individu.id }) }}?" title="Devenir président">
+   <img class="bouton_off" src="{{ asset('icones/president.png') }}" alt="Devenir président" />
+    </a>
+    <span style="display:none">0</span>
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
 {% if( individu.admin) == true %}
 
 <td style="text-align:right">
@@ -105,7 +126,51 @@
 
 <td style="text-align:left">
     <a class="admin" href="{{ path('devenir_admin',  { 'id': individu.id }) }}?" title="Devenir admin">
-   <img class="bouton_off" src="{{ asset('icones/admin.png') }}" alt="Devenir admin" />    
+   <img class="bouton_off" src="{{ asset('icones/admin.png') }}" alt="Devenir admin" />
+    </a>
+    <span style="display:none">0</span>
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
+{% if( individu.obs) == true %}
+
+<td style="text-align:right">
+    <a class="obs" href="{{ path('plus_obs',  { 'id': individu.id }) }}?" title="Retirer les droits obs">
+    <img class="bouton_on" src="{{ asset('icones/obs.png') }}" alt="Ne plus être obs" />
+    </a>
+    <span style="display:none">1</span>
+</td>
+
+{% else %}
+
+<td style="text-align:left">
+    <a class="obs" href="{{ path('devenir_obs',  { 'id': individu.id }) }}?" title="Devenir obs">
+   <img class="bouton_off" src="{{ asset('icones/obs.png') }}" alt="Devenir obs" />
+    </a>
+    <span style="display:none">0</span>
+</td>
+
+{% endif %}
+
+{# ################################################################################################# #}
+
+{% if( individu.sysadmin) == true %}
+
+<td style="text-align:right">
+    <a class="sysadmin" href="{{ path('plus_sysadmin',  { 'id': individu.id }) }}?" title="Retirer les droits sysadmin">
+    <img class="bouton_on" src="{{ asset('icones/sysadmin.png') }}" alt="Ne plus être sysadmin" />
+    </a>
+    <span style="display:none">1</span>
+</td>
+
+{% else %}
+
+<td style="text-align:left">
+    <a class="sysadmin" href="{{ path('devenir_sysadmin',  { 'id': individu.id }) }}?" title="Devenir sysadmin">
+   <img class="bouton_off" src="{{ asset('icones/sysadmin.png') }}" alt="Devenir sysadmin" />
     </a>
     <span style="display:none">0</span>
 </td>

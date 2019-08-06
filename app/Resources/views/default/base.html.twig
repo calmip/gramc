@@ -94,7 +94,7 @@
         {% if is_granted('ROLE_EXPERT') %}
             <a class="a_ariane" href="{{ path('expertise_liste') }}">Expert</a> |
         {% endif %}
-        {% if is_granted('ROLE_ADMIN') %}
+        {% if is_granted('ROLE_OBS') %}
             <a class="a_ariane" href="{{ path('admin_accueil') }}">Administrateur</a> |
         {% endif %}
         {% if is_granted('ROLE_PRESIDENT') %}

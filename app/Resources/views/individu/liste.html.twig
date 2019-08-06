@@ -1,7 +1,7 @@
 {% extends 'default/base.html.twig' %}
 
 {% block myjavascripts %}
-<script  type="text/javascript" src="{{ asset('js/gerer_utilisateurs.js') }}"></script> 
+<script  type="text/javascript" src="{{ asset('js/gerer_utilisateurs.js') }}"></script>
 {% endblock myjavascripts %}
 
 
@@ -12,7 +12,7 @@
     {# ################################################################################## #}
 
     <h1>Utilisateurs de gramc</h1>
-    
+
     <div class="message warning">
         <h2>AVERTISSEMENT</h2>
         Si la case <strong>Filtrer sur tous les utilisateurs</strong>
@@ -20,24 +20,24 @@
         <br />
         <strong>On peut restreindre l'affichage</strong> en entrant un filtre sur les adresses mail
     </div>
-    
+
     {{ form_start(form) }}
     {{ form_row(form.all) }}
     <div>{{ form_row(form.filtre) }}{{ form_row(form.filtrer) }}</div>
-    
+
     <nav><ul><li>
         <a id="ajout" class="lien_actif" href="{{ path('individu_ajouter') }}?" title="Créer un utilisateur">Nouvel utilisateur</a>
         <div class="infobulleok" data-title="Créer un utilisateur">
             <img src="{{ asset('icones/q16.png') }}" alt="?" />
         </div>
     </li></ul></nav>
-    
-   
+
+
 
     {# ################################################################################## #}
-    
+
     <div id="bilan_legende"><div id="bilan">
-    
+
     <table>
         <tr>
             <th colspan="2">Utilisateurs</th>
@@ -72,24 +72,23 @@
             </tr>
         {% endfor %}
     </table>
-    
+
     </div></div>
-    
+
    {# ################################################################################## #}
 
     <div id="projets"><table id="utilisateurs">
         <thead>
             <tr>
-                <th colspan="3">rm prf Sudo</th>
-                <th colspan="1">
-                    Activé
-                </th>
-                <th colspan="1">
-                    Expert
-                </th>
-                <th colspan="1">
-                    Admin
-                </th>
+                <th>&nbsp;</th>
+                <th>&nbsp;</th>
+                <th>&nbsp;</th>
+                <th>Activé</th>
+                <th><span title="Expert">&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;&nbsp;</span></th>
+                <th><span title="Président">P</span></th>
+                <th><span title="Admin">A</span></th>
+                <th><span title="Observateur">O</span></th>
+                <th><span title="Admin sys">AS</span></th>
                 <th>Prénom</th>
                 <th>Nom</th>
                 <th>Courriel</th>
@@ -101,20 +100,20 @@
         <tbody>
             {% for individu in individus %}
             <tr>
-               {% include 'individu/ligne.html.twig' %} 
+               {% include 'individu/ligne.html.twig' %}
             </tr>
             {% endfor %}
         </tbody>
 
     </table></div>
-    
+
     {# ################################################################################## #}
 
      {{ form_end(form)  }}
-    
+
     <div id="formulaire_profil"></div>
     <div id="formulaire_thematiques"></div>
-    
+
 </section>
 
 

@@ -65,9 +65,11 @@ function cmpProj($a,$b) { return intval($a['annee']) < intval($b['annee']); }
 /**
  * Projet controller.
  *
- * @Security("has_role('ROLE_ADMIN')")
+ * @Security("has_role('ROLE_OBS')")
  * @Route("projet")
  */
+ // Tous ces controleurs sont exécutés au moins par OBS, certains par ADMIN seulement
+ // et d'autres par DEMANDEUR
 
 class ProjetController extends Controller
 {
@@ -94,6 +96,7 @@ class ProjetController extends Controller
     /**
      * Delete old data.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/old", name="projet_nettoyer")
      * @Method({"GET","POST"})
      */
@@ -442,6 +445,7 @@ class ProjetController extends Controller
     /**
      * fermer un projet
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/fermer", name="fermer_projet")
      * @Method({"GET","POST"})
      */
@@ -469,6 +473,7 @@ class ProjetController extends Controller
     /**
      * back une version
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/back", name="back_version")
      * @Method({"GET","POST"})
      */
@@ -499,6 +504,7 @@ class ProjetController extends Controller
     /**
      * fwd une version
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/fwd", name="fwd_version")
      * @Method({"GET","POST"})
      */
@@ -843,7 +849,7 @@ class ProjetController extends Controller
 
     /**
      * download rapport
-     * @Security("has_role('ROLE_DEMANDEUR') or has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_DEMANDEUR') or has_role('ROLE_OBS')")
      * @Route("/{id}/rapport/{annee}", defaults={"annee"=0}, name="rapport")
      * @Method("GET")
      */
@@ -874,7 +880,7 @@ class ProjetController extends Controller
      * download signature
      *
      * @Route("/{id}/signature", name="signature")
-     * @Security("has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_OBS')")
      * @Method("GET")
      */
     public function signatureAction(Version $version, Request $request)
@@ -950,6 +956,7 @@ class ProjetController extends Controller
     /**
      * Lists all projet entities.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/gerer", name="gerer_projets")
      * @Method("GET")
      */
@@ -964,6 +971,7 @@ class ProjetController extends Controller
 
     /**
      * Creates a new projet entity.
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/new", name="projet_new")
      * @Method({"GET", "POST"})
      */
@@ -1817,6 +1825,7 @@ class ProjetController extends Controller
     /**
      * Displays a form to edit an existing projet entity.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/edit", name="projet_edit")
      * @Method({"GET", "POST"})
      */
@@ -1842,6 +1851,7 @@ class ProjetController extends Controller
     /**
      * Deletes a projet entity.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}", name="projet_delete")
      * @Method("DELETE")
      */
@@ -1863,7 +1873,7 @@ class ProjetController extends Controller
      * Creates a form to delete a projet entity.
      *
      * @param Projet $projet The projet entity
-     *
+     * @Security("has_role('ROLE_ADMIN')")
      * @return \Symfony\Component\Form\Form The form
      */
     private function createDeleteForm(Projet $projet)

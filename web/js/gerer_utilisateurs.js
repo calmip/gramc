@@ -25,6 +25,8 @@ $( document ).ready(function() {
 					$( "tr.clicked a.activation" ).click(click_expactiv);
 					$( "tr.clicked a.expert" ).click(click_expactiv);
 					$( "tr.clicked a.admin" ).click(click_expactiv);
+					$( "tr.clicked a.obs" ).click(click_expactiv);
+                    $( "tr.clicked a.sysadmin" ).click(click_expactiv);
 					tr.removeClass("clicked");
 				})
 			.fail(function(xhr, status, errorThrown) { alert (errorThrown); });
@@ -157,5 +159,7 @@ $( document ).ready(function() {
     $( "a.activation" ).click(click_expactiv);
     $( "a.expert" ).click(click_expactiv);
 	$( "a.admin").click(click_expactiv);
+    $( "a.obs" ).click(click_expactiv);
+	$( "a.sysadmin").click(click_expactiv);
     $( "#ajout" ) .click(click_ajout);
 });

@@ -287,7 +287,7 @@ class Menu
     $menu['lien']           =   "Bilan de session";
 
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok'] = true;
         }
@@ -309,7 +309,7 @@ class Menu
         $menu['lien']           =   "Bilan annuel";
 
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -330,7 +330,7 @@ class Menu
         $menu['commentaire']    =   "Gérer les projets par session";
         $menu['lien']           =   "Projets ( par session )";
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -351,7 +351,7 @@ class Menu
         $menu['commentaire']    =   "Gérer les projets par année";
         $menu['lien']           =   "Projets ( par année )";
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -373,7 +373,7 @@ class Menu
     $menu['lien']           =   "Tous les projets";
 
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok'] = true;
         }
@@ -1500,7 +1500,7 @@ class Menu
     $menu['name']           =   'statistiques';
     $menu['lien']           =   "Statistiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques  !";
@@ -1525,7 +1525,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques concernant les collaborateurs";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques concernant les collaborateurs !";
@@ -1550,7 +1550,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques concernant la répartition des projets";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques concernant la répartition des projets !";

@@ -7,7 +7,9 @@
 
 
 {% block menu %}
+{% if is_granted('ROLE_ADMIN') %}
 {{ gramcmacros.menu(menu) }}
+{% endif %}
 {% endblock menu %}
 
 {% block before_body %}

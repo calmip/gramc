@@ -143,16 +143,16 @@ class AdminuxController extends Controller
      * @Route("/setloginname/{idProjet}/projet/{idIndividu}/individu/{loginname}/loginname", name="set_loginname")
      * @Method({"GET"})
      */
-     public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
-     {
-        if ( AppBundle::getParameter('noconso')==true )
-        {
-			throw new AccessDeniedException("Forbidden because of parameter noconso");
+	public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
+	{
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
 		}
 	    $error = [];
 	    $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
 	    if( $projet == null )
-	        $error[]    =   'No Projet ' . $idProjet;
+	       $error[]    =   'No Projet ' . $idProjet;
 
 	    $individu       =   AppBundle::getRepository(Individu::class)->find($idIndividu);
 	    if( $individu == null )
@@ -164,17 +164,19 @@ class AdminuxController extends Controller
 	    $versions = $projet->getVersion();
 	    foreach( $versions as $version )
 	        if( $version->getEtatVersion() == Etat::ACTIF)
+			{
 	            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-	                {
+				{
 	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
 	                if( $collaborateur != null && $collaborateur->isEqualTo( $individu ) )
-	                    {
+					{
 	                    $collaborateurVersion->setLoginname( $loginname );
 	                    Functions::sauvegarder( $collaborateurVersion );
 	                    return new Response(json_encode('OK'));
-	                    }
-	                }
-	    return new Response(json_encode( ['KO' => 'No user found' ]));
+					}
+				}
+			}
+			return new Response(json_encode( ['KO' => 'No user found' ]));
      }
 
     /**
@@ -183,32 +185,33 @@ class AdminuxController extends Controller
      * @Route("/getloginnames/{idProjet}/projet", name="get_loginnames")
      * @Method({"GET"})
      */
-   public function getloginnamesAction($idProjet)
-   {
-        if ( AppBundle::getParameter('noconso')==true )
-        {
-			throw new AccessDeniedException("Forbidden because of parameter noconso");
+	public function getloginnamesAction($idProjet)
+	{
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
 		}
+		$projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
+	    if( $projet == null )
+	    {
+			return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
+	    }
 
-	   $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
-	   if( $projet == null )
-	        return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
+		$versions    = $projet->getVersion();
+		$output      =   [];
+		$idProjet    =   $projet->getIdProjet();
 
-
-	   $versions    = $projet->getVersion();
-	   $output      =   [];
-	   $idProjet    =   $projet->getIdProjet();
-
-	   foreach( $versions as $version )
+		foreach( $versions as $version )
+		{
 	        if( $version->getEtatVersion() == Etat::ACTIF)
-	             foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-	                {
-	                if( $collaborateurVersion->getLogin() == false )
-	                    continue;
+	        {
+				foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+				{
+	                if( $collaborateurVersion->getLogin() == false ) continue;
 
 	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
 	                if( $collaborateur != null )
-	                    {
+                    {
 	                    $loginname  =   $collaborateurVersion->getLoginname();
 	                    $prenom     =   $collaborateur->getPrenom();
 	                    $nom        =   $collaborateur->getNom();
@@ -224,10 +227,12 @@ class AdminuxController extends Controller
 	                            'login' => $login,
 	                            'loginname' => $loginname,
 	                            ];
-	                    }
-	                }
-	   return new Response( json_encode( $output) );
-   }
+                    }
+                }
+			}
+		}
+	    return new Response( json_encode( $output) );
+	}
 
 
     /**
@@ -238,9 +243,9 @@ class AdminuxController extends Controller
      */
      public function quotaCheckAction(Request $request)
      {
-        if ( AppBundle::getParameter('noconso')==true )
-        {
-			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
 		}
 
         $annee_courante=GramcDate::get()->showYear();
@@ -250,17 +255,19 @@ class AdminuxController extends Controller
         $msg = "";
         foreach ($projets as $p)
         {
-            if ($p['attrib'] != $p['q']) {
+            if ($p['attrib'] != $p['q'])
+            {
                 $msg .= $p['p']->getIdProjet() . "\t" . $p['attrib'] . "\t\t" . $p["q"] . "\n";
             }
         }
 
         if ($msg != "")
         {
-            $dest = AppBundle::getParameter('unixadmins');
+            $dest = Functions::mailUsers( [ 'S' ], null);
             Functions::sendMessage('notification/quota_check-sujet.html.twig','notification/quota_check-contenu.html.twig',[ 'MSG' => $msg ],$dest);
         }
 
         return $this->render('consommation/conso_update_batch.html.twig');
     }
 }
+

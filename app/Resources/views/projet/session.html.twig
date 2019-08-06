@@ -288,8 +288,10 @@
             </td>
             <td>
                 {% if( version.responsable != null ) %}
+                {% if ( is_granted('ROLE_ADMIN') ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                {% endif %}
                 <a href="mailto:{{ version.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ version.responsable.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                 {{ version.responsable.prenom }} {{ version.responsable.nom }}
@@ -305,8 +307,10 @@
             </td>
             {% if( version.expert != null ) %}
             <td class="avec_expert" >
+                {% if ( is_granted('ROLE_ADMIN') ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                {% endif %}
                 <a href="mailto:{{ version.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ version.expert.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                 {{ version.expert.prenom }} {{ version.expert.nom }}
