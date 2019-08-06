@@ -93,20 +93,25 @@ Editer le fichier et paramétrer l'application:
 **Hiérarchie de fichiers dépendant du mésocentre**
 Suivant votre mésocentre, vous pouvez recérer une hiérarchie de fichiers que vous pouvez personnaliser. Ils se trouvent ici:
 
+~~~~
 mesocentres/calmip
 mesocentres/criann
 ...
+~~~~
 
 Vous pouvez modifier ces fichiers (src/AppBundle/Entity/Version.php notamment, qui va permettre de modifier les champs de la table Version).
 
 ***configuration pour l'un ou l'autre des mésocentres:***
 
-Créer le lien symbolique altermeso, à la racine de l'application ce lien pointera vers:
+Créer le lien symbolique altermeso, à la racine de l'application ce lien pointera vers mesocentres/calmip ou vers mesocentres/criann:
 
-mesocentres/calmip ou vers mesocentres/criann
+~~~~
+ln -s mesocentres/calmip altermeso
+~~~~
 
 **Bannière et favicon:**
-Déposer votre fichier de bannière dans `web/icones/banniere.png` (cf. `banniere.png.dist` pour un modèle)
+Déposer votre fichier de bannière dans `altermeso/web/icones/banniere.png` (cf. `banniere.png.dist` pour un modèle)
+Déposer votre fichier de favicon dans `altermeso/web/icones/favicon.ico`
 
 Base de données:
 ----
