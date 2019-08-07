@@ -84,28 +84,31 @@ class ExpertiseController extends Controller
 		$expertises = $version->getExpertise()->toArray();
 		usort($expertises,['self','cmpExpertises']);
 
-	    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
+	    $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
 
 		foreach ($expertises as $expertise)
 		{
-
 			$expert = $expertise->getExpert();
 			$nom = 'expert'.$version->getProjet()->getIdProjet().'-'.$expertise->getId();
 			//if ($version->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
+		    //Functions::debugMessage(__METHOD__ . "Experts exclus pour $version ".Functions::show( $exclus));
+		    $choice = new ExpertChoiceLoader($exclus);
 			$forms[] = $this->get( 'form.factory')->createNamedBuilder($nom, FormType::class, null  ,  ['csrf_protection' => false ])
 			                ->add('expert', ChoiceType::class,
 			                    [
 				                'multiple'  =>  false,
 				                'required'  =>  false,
 				                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-				                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
+				                'choice_loader' => $choice, // nécessaire pour contourner le bogue de symfony
 				                'data'          => $expert,
 				                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
 				                'choice_label'  => function ($individu) { return $individu->__toString(); },
 			                    ])
 		                    ->getForm();
 		    // Ne pas proposer plusieurs fois le même expert !
-		    $collaborateurs[] = $expert;
+			$choice = null;
+
+		    if ($expert != null) $exclus[$expert->getId()] = $expert;
 		}
 		return $forms;
     }
@@ -186,7 +189,7 @@ class ExpertiseController extends Controller
 	        {
 	            if( $expert->getExpert() == false )
                 {
-	                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
+	                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " $expert" . " est supprimé de la thématique pour ce projet" . $thematique);
 	                Functions::noThematique( $expert );
                 }
 			}
@@ -258,10 +261,10 @@ class ExpertiseController extends Controller
 				foreach ($forms as $f)
 				{
 					$f->handleRequest($request);
-					if ($f->isSubmitted() && $f->isValid())
-					{
+					//if ($f->isSubmitted() && $f->isValid())
+					//{
 						$experts[] = $f->getData()['expert'];
-					}
+					//}
 				}
 
 				// Traitements différentiés suivant le bouton sur lequel on a cliqué
@@ -401,9 +404,10 @@ class ExpertiseController extends Controller
 			// TODO Dans ce cas il faudrait envoyer un message d'erreur !
 			// TODO - Trouver un truc plus élégant que ça !
 			$id_experts=[];
+			$cnt_null = 0;
 			foreach ($experts as $e)
 			{
-				$id_experts[] = $e->getIdIndividu();
+				$id_experts[] = $e==null ? $cnt_null++ : $e->getIdIndividu();
 			}
 			//Functions::debugMessage( __METHOD__ . ' experts uniques -> '.count(array_unique($id_experts)) .'  experts -> '.count($id_experts));
 			if (count(array_unique($id_experts)) != count($id_experts)) return;
