@@ -124,7 +124,7 @@
         <table id="affecte_experts">
             <thead>
                 <tr>
-					<th title="Cocher la case pour sélectionner ce projet">S</th>
+		    <th title="Cocher la case pour sélectionner ce projet">S</th>
                     <th >N</th>
                     <th >N°</th>
                     <th >&nbsp;</th>
@@ -196,7 +196,7 @@
                 {% endif %}
                 {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
-                    {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}{% endfor %}
+                    {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
                 {% else %}
                 	{% for e in version.expertise %}
