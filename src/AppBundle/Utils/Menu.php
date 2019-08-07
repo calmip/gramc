@@ -73,13 +73,6 @@ use AppBundle\Workflow\Session\SessionWorkflow;
 
 class Menu
 {
-	/*
-	 * Création d'un projet de type PROJET_SESS:
-	 *     - Peut être créé seulement lors des sessions d'attribution
-	 *     - Renouvelable à chaque session
-	 *     - Créé seulement par un permanent, qui devient responsable du projet
-	 *
-	 */
 	public static Function nouveau_projet($type)
 	{
         $prj_prefix = AppBundle::getParameter('prj_prefix');
@@ -102,6 +95,13 @@ class Menu
 		}
 	}
 
+	/*
+	 * Création d'un projet de type PROJET_SESS:
+	 *     - Peut être créé seulement lors des sessions d'attribution
+	 *     - Renouvelable à chaque session
+	 *     - Créé seulement par un permanent, qui devient responsable du projet
+	 *
+	 */
     private static function  nouveau_projet_sess()
     {
         $menu   =   [];

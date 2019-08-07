@@ -50,7 +50,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
  * Session controller.
  *
  * @Route("session")
- * @Security("has_role('ROLE_OBS')")
+ * @Security("has_role('ROLE_ADMIN')")
  */
 class SessionController extends Controller
 {
@@ -263,8 +263,8 @@ class SessionController extends Controller
     /**
      * Creates a new session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/ajouter", name="ajouter_session")
+     * @security("hasRole('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function ajouterAction(Request $request)
@@ -328,7 +328,6 @@ class SessionController extends Controller
 
     /**
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/terminer_saisie", name="terminer_saisie")
      * @Method("GET")
      */
@@ -438,7 +437,6 @@ class SessionController extends Controller
     /**
      *
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/demarrer_saisie", name="demarrer_saisie")
      * @Method("GET")
      */
@@ -466,7 +464,6 @@ class SessionController extends Controller
     /**
      * Creates a new session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/new", name="session_new")
      * @Method({"GET", "POST"})
      */
@@ -493,7 +490,6 @@ class SessionController extends Controller
     /**
      * Finds and displays a session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/show", name="session_show")
      * @Method("GET")
      */
@@ -510,7 +506,6 @@ class SessionController extends Controller
     /**
      * Meme chose que show, mais présenté "à la gramc"
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/consulter", name="consulter_session")
      * @Method("GET")
      */
@@ -527,7 +522,6 @@ class SessionController extends Controller
     /**
      * Displays a form to edit an existing session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}/edit", name="session_edit")
      * @Method({"GET", "POST"})
      */
@@ -553,7 +547,6 @@ class SessionController extends Controller
     /**
      * Displays a form to edit an existing session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/commentaires", name="session_commentaires")
      * @Method({"GET", "POST"})
      */
@@ -610,7 +603,6 @@ class SessionController extends Controller
     /**
      * Deletes a session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/{id}", name="session_delete")
      * @Method("DELETE")
      */
@@ -633,7 +625,6 @@ class SessionController extends Controller
     /**
      * Creates a form to delete a session entity.
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @param Session $session The session entity
      *
      * @return \Symfony\Component\Form\Form The form
