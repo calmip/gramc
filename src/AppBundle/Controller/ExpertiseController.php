@@ -84,12 +84,28 @@ class ExpertiseController extends Controller
 		$expertises = $version->getExpertise()->toArray();
 		usort($expertises,['self','cmpExpertises']);
 
+		// Liste d'exclusion = Les collaborateurs + les experts choisis par ailleurs
 	    $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
+	    $experts= [];
+	    foreach ($expertises as $expertise)
+		{
+			$expert = $expertise->getExpert();
+			if ($expert != null) $exclus[$expert->getId()] = $expert;
+		}
 
 		$first = true;
 		foreach ($expertises as $expertise)
 		{
+			// L'expert actuel (peut-être null)
 			$expert = $expertise->getExpert();
+
+			// La liste d'exclusion pour cette expertise
+			$exclus_exp = $exclus;
+
+			// On vire l'expert actuel de la liste d'exclusion
+			if ($expert != null) unset($exclus_exp[$expert->getId()]);
+
+			// Nom du formulaire
 			$nom = 'expert'.$version->getProjet()->getIdProjet().'-'.$expertise->getId();
 
 			//if ($version->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
@@ -98,11 +114,11 @@ class ExpertiseController extends Controller
 		    // Projets de type Projet::PROJET_FIL -> La première expertise est obligatoirement faite par un président !
 		    if ($first && $version->getProjet()->getTypeProjet() == Projet::PROJET_FIL)
 		    {
-			    $choice = new ExpertChoiceLoader($exclus,true);
+			    $choice = new ExpertChoiceLoader($exclus_exp,true);
 			}
 			else
 			{
-			    $choice = new ExpertChoiceLoader($exclus);
+			    $choice = new ExpertChoiceLoader($exclus_exp);
 			}
 
 			$forms[] = $this->get( 'form.factory')->createNamedBuilder($nom, FormType::class, null  ,  ['csrf_protection' => false ])
@@ -118,8 +134,8 @@ class ExpertiseController extends Controller
 			                    ])
 		                    ->getForm();
 		    // Ne pas proposer plusieurs fois le même expert !
-			$choice = null;
-		    if ($expert != null) $exclus[$expert->getId()] = $expert;
+			//$choice = null;
+		    //if ($expert != null) $exclus[$expert->getId()] = $expert;
 		    $first = false;
 		}
 		return $forms;

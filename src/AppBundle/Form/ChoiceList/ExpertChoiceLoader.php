@@ -59,7 +59,7 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 
     public function __construct($exclus = [], $only_pres=false)
     {
-	    Functions::debugMessage(__METHOD__ . "Experts exclus ".Functions::show( $exclus)." seult présidents = $only_pres");
+	    //Functions::debugMessage(__METHOD__ . "Experts exclus ".Functions::show( $exclus)." seult présidents = $only_pres");
 
 	    $this->exclus   =  $exclus;
 
@@ -119,10 +119,10 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 	                $this->idToExpert[]             =  $expert;
 
                 }
-                else
-                {
-					Functions::debugMessage( __METHOD__ . " $expert_id,Vous êtes viré !");
-				}
+                //else
+                //{
+					//Functions::debugMessage( __METHOD__ . " $expert_id,Vous êtes viré !");
+				//}
 			}
 
 			// Si only_pres, on sort à la fin de la première itération
