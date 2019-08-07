@@ -428,11 +428,13 @@ class ExpertiseController extends Controller
 		$expertise->setVersion( $version );
 
 		// Attention, l'algorithme de proposition des experts dépend du type de projet
-		$expert = $version->getProjet()->proposeExpert();
-		if ($expert != null)
-		{
-			$expertise->setExpert( $expert );
-		}
+		// TODO Actuellement on ne propose pas d'expertise à ce moment
+		//      Il faudra améliorer l'algorithme de proposition
+		//$expert = $version->getProjet()->proposeExpert();
+		//if ($expert != null)
+		//{
+		//	$expertise->setExpert( $expert );
+		//}
         Functions::sauvegarder( $expertise );
 	}
 

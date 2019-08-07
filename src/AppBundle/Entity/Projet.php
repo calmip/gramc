@@ -612,27 +612,49 @@ class Projet
 
     /////////////////////////////////////////////////////
 
-    public function proposeExpert( $collaborateurs = [] )
+	/**
+    * Propose un expert pour l'expertise [0] de la dernière version du projet
+    *         Si l'expert est déjà renseigné dans cette expertise, renvoie null
+    *         TODO - Pour les projets à plusieurs expertises on pourrait faire mieux
+    *
+	* params = $exclus Un liste d'individus exclus du choix (par exemple les collaborateurs)
+	*
+	* return = je ne sais pas quoi
+	*
+	******/
+    public function proposeExpert( $exclus = [] )
     {
-		if( $this->isProjetTest() )
-        {
-	        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
-	        if( $presidents != null ) return $presidents[0];
-        }
-
-	    if( $collaborateurs == [] )
-	        $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
-
-	    $derniereVersion = $this->derniereVersion();
-	    if( $derniereVersion == null )
+	    $version = $this->derniereVersion();
+	    if( $version == null )
         {
 	        Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " projet " . $this->getIdProjet() . " n'a pas de dernière version !");
 	        return null;
         }
 
+		// Pas d'expertise associée à cette version, ou expert déjà attribué: return null
+		$expertise = $version->getOneExpertise();
+		if ($expertise == null || $expertise->getExpert() != null)
+		{
+			return null;
+		}
+
+		// Pour les projets de type PROJET_TEST et PROJET_FIL on propose le président[0]
+		if ($this->getTypeProjet() == Projet::PROJET_TEST || $this->getTypeProjet() == Projet::PROJET_FIL)
+		{
+	        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
+	        if( $presidents != null ) return $presidents[0];
+	        return null;
+        }
+
+		// Par défaut les exclus sont les collaborateurs
+	    if( $exclus == [] )
+	    {
+	        $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
+		}
+
 	    // on veut garder l'expert de la version précédente
 
-	    $versionPrecedente  =  $derniereVersion->versionPrecedente ();
+	    $versionPrecedente  =  $version->versionPrecedente ();
 	    if( $versionPrecedente == null )
 	        $derniereExpertise = null;
 	    else
@@ -643,13 +665,13 @@ class Projet
 	        $expert = $derniereExpertise->getExpert();
 	        if( $expert == null )
 	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expertise de la version précédente " .
-	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
 	        elseif( $expert->isExpert() == false )
 	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente " .
-	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
-	        elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
+	        elseif( array_key_exists( $expert->getIdIndividu(), $exclus ) )
 	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente  " .
-	                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
 	        else
 	            return $expert;
         }
@@ -660,7 +682,7 @@ class Projet
 	    $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
 
 	    // sinon on cherche des experts des expertises précédentes
-	    $dernierIdVersion = $derniereVersion->getIdVersion();
+	    $dernierIdVersion = $version->getIdVersion();
 	    foreach( $versions as $version )
         {
 	        $expertises = $version->getExpertise();
@@ -673,7 +695,7 @@ class Projet
 	            elseif(  $expert->isExpert() == false  )
 	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
 	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " n'est plus un expert");
-	            elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	            elseif( array_key_exists( $expert->getIdIndividu(), $exclus ) )
 	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
 	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " est un collaborateur");
 	            else
@@ -684,10 +706,10 @@ class Projet
         }
 
 	    //Functions::debugMessage(__METHOD__ ." après II " );
-	    $thematique = $derniereVersion->getPrjThematique();
+	    $thematique = $version->getPrjThematique();
 	    if( $thematique == null )
         {
-	        Functions::errorMessage(__METHOD__ ." version " . $derniereVersion->getIdVersion() . " n'a pas de thématique !" );
+	        Functions::errorMessage(__METHOD__ ." version " . $version->getIdVersion() . " n'a pas de thématique !" );
 	        return null;
         }
 
@@ -704,7 +726,7 @@ class Projet
 	    $expertises = [];
 	    foreach( $experts as $expert )
 	    {
-	        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
+	        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $exclus ) )
 	            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
 	        elseif( ! $expert->isExpert() )
             {

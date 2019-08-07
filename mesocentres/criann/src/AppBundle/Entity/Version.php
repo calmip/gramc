@@ -2760,6 +2760,10 @@ class Version
         return $this->getSession()->getAnneeSession() + 2000;
     }
 
+	public function getAnneeCreation()
+	{
+
+	}
     public function getLibelleEtat()
     {
         return Etat::getLibelle( $this->getEtatVersion() );
@@ -2786,17 +2790,31 @@ class Version
         if ($this->isProjetTest()) return true;
 
         $idVersion      = $this->getIdVersion();
-        $anneeSession   = substr( $idVersion, 0, 2 );
-        $typeSession    = substr( $idVersion, 2, 1 );
-        $anneeProjet    = substr( $idVersion, 4, 2 );
+        $anneeSession   = substr( $idVersion, 0, 2 );	// 19, 20 etc
+        $typeSession    = substr( $idVersion, 2, 1 );   // A, B
+        $anneeProjet    = substr( $idVersion, -5, 2 );  // 19, 20 etc qq soit le préfixe
+        $numero         = substr( $idVersion, -3, 2 );  // 001, 002 etc.
 
-        if ( $anneeProjet != $anneeSession )    return false;
-        elseif( $typeSession == 'A' )           return true;
-
-        if( 0 < AppBundle::getRepository( Version::class )->exists( $anneeSession . 'AP' . substr( $idVersion, 4) ) )
-            return false; // elle existe
-        else
-            return true; // elle n'existe pas
+        if ( $anneeProjet != $anneeSession )
+        {
+		    return false;
+		}
+		elseif ( $typeSession == 'A' )
+		{
+            return true;
+		}
+		else
+		{
+			$idVersionA = $anneeSession . 'A' . AppBundle::getParameter('prj_prefix') . $anneProjet . $numero;
+			if( 0 < AppBundle::getRepository( Version::class )->exists( $idVersionA ))
+			{
+				return false; // Il y a uneversion précédente
+			}
+	        else
+	        {
+	            return true; // Non il n'y en a pas donc on est bien sur une nouvelle version
+			}
+		}
     }
 
     public function isSigne()
@@ -3140,19 +3158,19 @@ class Version
             return '0';
     }
 
-
-    ///////////////////////////////////////////////
-	// TODO - Supprimer, on a plusieurs expertises par projet
+	/****
+	* Renvoie la premire expertise associée à ce projet, ou null si pas d'expertise
+	****/
     public function getOneExpertise()
     {
 	    $expertises =   $this->getExpertise()->toArray();
 	    if( $expertises !=  null )
 		{
-	        $expertise  =   current( $expertises );
+	        //$expertise  =   current( $expertises );
 
 	        //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
 	        //    . " expertises = " . Functions::show( $expertises ));
-	        return $expertise;
+	        return $expertises[0];
 		}
 	    else
 		{

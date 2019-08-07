@@ -215,7 +215,7 @@ class GramcSessionController extends Controller
             if( $old_individu->isPermanent() != $individu->isPermanent() && $individu->isPermanent() == false )
                  Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $individu . " cesse d'être permanent !!");
 
-             if( $old_individu->isFromLaboRegional() != $individu->isFromLaboRegional() && $individu->isFromLaboRegional == false )
+             if( $old_individu->isFromLaboRegional() != $individu->isFromLaboRegional() && $individu->isFromLaboRegional() == false )
                  Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $individu . " cesse d'être d'un labo regional !!");
 
             $new_statut = $individu->getStatut();
