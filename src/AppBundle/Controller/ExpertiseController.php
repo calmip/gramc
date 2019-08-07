@@ -86,13 +86,25 @@ class ExpertiseController extends Controller
 
 	    $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
 
+		$first = true;
 		foreach ($expertises as $expertise)
 		{
 			$expert = $expertise->getExpert();
 			$nom = 'expert'.$version->getProjet()->getIdProjet().'-'.$expertise->getId();
+
 			//if ($version->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
 		    //Functions::debugMessage(__METHOD__ . "Experts exclus pour $version ".Functions::show( $exclus));
-		    $choice = new ExpertChoiceLoader($exclus);
+
+		    // Projets de type Projet::PROJET_FIL -> La première expertise est obligatoirement faite par un président !
+		    if ($first && $version->getProjet()->getTypeProjet() == Projet::PROJET_FIL)
+		    {
+			    $choice = new ExpertChoiceLoader($exclus,true);
+			}
+			else
+			{
+			    $choice = new ExpertChoiceLoader($exclus);
+			}
+
 			$forms[] = $this->get( 'form.factory')->createNamedBuilder($nom, FormType::class, null  ,  ['csrf_protection' => false ])
 			                ->add('expert', ChoiceType::class,
 			                    [
@@ -107,8 +119,8 @@ class ExpertiseController extends Controller
 		                    ->getForm();
 		    // Ne pas proposer plusieurs fois le même expert !
 			$choice = null;
-
 		    if ($expert != null) $exclus[$expert->getId()] = $expert;
+		    $first = false;
 		}
 		return $forms;
     }

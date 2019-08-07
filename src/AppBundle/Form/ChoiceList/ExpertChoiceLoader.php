@@ -41,7 +41,10 @@ use AppBundle\Entity\Thematique;
 
 /***
 * Cette classe permet de charger les listes d'experts pour les widgets de choix d'expert
-* On passe une liste d'experts exclus (parce que collaborateurs, déjà affectés, etc) dans le constructeur
+* Constructeur:
+*      On passe une liste d'experts exclus (parce que collaborateurs, déjà affectés, etc)
+*      Si le second paramètre vaut true, on se limite aux présidents
+*
 */
 
 class ExpertChoiceLoader implements ChoiceLoaderInterface
@@ -54,10 +57,9 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 
     private $exclus     =   [];
 
-    public function __construct($exclus = [])
+    public function __construct($exclus = [], $only_pres=false)
     {
-	    Functions::debugMessage(__METHOD__ . "Experts exclus ".Functions::show( $exclus));
-	    Functions::debugMessage(__METHOD__ . "Experts exclus ".Functions::show( array_keys($exclus)));
+	    Functions::debugMessage(__METHOD__ . "Experts exclus ".Functions::show( $exclus)." seult présidents = $only_pres");
 
 	    $this->exclus   =  $exclus;
 
@@ -65,12 +67,13 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
         {
 	        $experts = [];
 
+			// Les présidents
 	        foreach( AppBundle::getRepository(Individu::class)->findBy(['president' =>  true ]) as $expert )
 			{
 	            static::$global_choices['Présidents'][$expert->getIdIndividu()]   =   $expert;
 	            $experts[ $expert->getIdIndividu() ] =   $expert;
 			}
-
+			// Les thématiques avec leurs experts attitrés
 	        foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
 			{
 	            // nous vérifions que la liste contient vraiment des experts
@@ -87,6 +90,7 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 				//static::$choices[ $thematique->getLibelleThematique() ] = $experts_thematique;
 			}
 
+			// Les experts sans thématique
 	        foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' =>  true ]) as $expert )
 	        {
 	            if( ! array_key_exists( $expert->getIdIndividu(), $experts ) )
@@ -100,7 +104,8 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 	    $this->idToExpert =   [];
 	    $this->choices = [];
 
-	    foreach(  static::$global_choices as $thematique_key => $thematique_list )
+		// On commence par les présidents
+	    foreach( static::$global_choices as $thematique_key => $thematique_list )
         {
 	        // Functions::debugMessage( __METHOD__ . ' thematique_list ' . Functions::show( $thematique_list ) );
 	        foreach( $thematique_list as $expert_id => $expert )
@@ -119,6 +124,9 @@ class ExpertChoiceLoader implements ChoiceLoaderInterface
 					Functions::debugMessage( __METHOD__ . " $expert_id,Vous êtes viré !");
 				}
 			}
+
+			// Si only_pres, on sort à la fin de la première itération
+			if ($only_pres) break;
         }
 
     }
