@@ -220,8 +220,10 @@
 			{#{{ form_start( forms['BOUTONS'] ) }}#}
 			{{ form_widget( forms['BOUTONS'].sub1 ) }}
 			{{ form_widget( forms['BOUTONS'].sub2 ) }}
-			{{ form_widget( forms['BOUTONS'].sub3 ) }}
-			{{ form_widget( forms['BOUTONS'].sub4 ) }}
+			{% if max_expertises_nb > 1 %}
+				{{ form_widget( forms['BOUTONS'].sub3 ) }}
+				{{ form_widget( forms['BOUTONS'].sub4 ) }}
+			{% endif %}
 			{#{{ form_end( forms['BOUTONS'] ) }}#}
 		</div>
     </div>

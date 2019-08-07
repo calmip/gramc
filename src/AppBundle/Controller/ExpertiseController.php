@@ -254,9 +254,9 @@ class ExpertiseController extends Controller
 
 		$form_buttons->handleRequest($request);
 
-		// 1ere etape = Traitement du formulaire qui vient  d'être soumis
+		// 1ere etape = Traitement du formulaire qui vient d'être soumis
 		//              On boucle sur les versions:
-		//                  -Une version non sélectionnée est ignorée
+		//                  - Une version non sélectionnée est ignorée
 		//                  - Pour chaque version sélectionnée on fait une action qui dépend du bouton qui a été cliqué
 		//
 		if ($form_buttons->isSubmitted())
@@ -308,9 +308,6 @@ class ExpertiseController extends Controller
 				elseif ($form_buttons->get('sub3')->isClicked())
 				{
 					$this->addExpertiseToVersion($version);
-					// doctrine cache les expertises précédentes du coup si on ne redirige pas
-					// l'affichage ne sera pas correctement actualisé !
-					return $this->redirectToRoute('affectation');
 				}
 				elseif ($form_buttons->get('sub4')->isClicked())
 				{
@@ -321,6 +318,10 @@ class ExpertiseController extends Controller
 					continue;
 				}
 			}
+			// doctrine cache les expertises précédentes du coup si on ne redirige pas
+			// l'affichage ne sera pas correctement actualisé !
+			// Essentiellement avec sub3 (ajout d'expertise)
+			return $this->redirectToRoute('affectation');
 		}
 
 		// 2nde etape = Envoi des formulaires pour affichage
@@ -451,37 +452,54 @@ class ExpertiseController extends Controller
 	}
 
 	/**
-	 * Appelée par affectationGenerique, ajoute une expertise à la version
-	 *
-	 ****/
+	* Appelée par affectationGenerique, ajoute une expertise à la version
+	* Si on atteint le paramètre max_expertises_nb, ne fait rien
+	* TODO - Si on atteint le paramètre max_expertises_nb, envoyer un message d'erreur !
+	*
+	* param = $version
+	* Return= rien
+	*
+	****/
 	private function addExpertiseToVersion(Version $version)
 	{
-		$expertise  =   new Expertise();
-		$expertise->setVersion( $version );
+		$expertises = $version->getExpertise()->toArray();
+		if (count($expertises)<AppBundle::getParameter('max_expertises_nb'))
+		{
+			$expertise  =   new Expertise();
+			$expertise->setVersion( $version );
 
-		// Attention, l'algorithme de proposition des experts dépend du type de projet
-		// TODO Actuellement on ne propose pas d'expertise à ce moment
-		//      Il faudra améliorer l'algorithme de proposition
-		//$expert = $version->getProjet()->proposeExpert();
-		//if ($expert != null)
-		//{
-		//	$expertise->setExpert( $expert );
-		//}
-        Functions::sauvegarder( $expertise );
+			// Attention, l'algorithme de proposition des experts dépend du type de projet
+			// TODO Actuellement on ne propose pas d'expertise à ce moment
+			//      Il faudra améliorer l'algorithme de proposition
+			//$expert = $version->getProjet()->proposeExpert();
+			//if ($expert != null)
+			//{
+			//	$expertise->setExpert( $expert );
+			//}
+	        Functions::sauvegarder( $expertise );
+		}
 	}
 
 	/**
-	 * Appelée par affectationGenerique, retire la dernière expertise de la version
-	 *
-	 ****/
+	* Appelée par affectationGenerique, retire la dernière expertise de la version
+	* S'il n'en reste qu'une, ne fait rien
+	* TODO - Plutôt uqe de ne rien faire, envoyer un message d'erreur !
+	*
+	* param = $version
+	* Return= rien
+	*
+	****/
 	private function remExpertiseFromVersion(Version $version)
 	{
 		$expertises = $version->getExpertise()->toArray();
-		usort($expertises,['self','cmpExpertises']);
-		$expertise = end($expertises);
-		$em = $this->getDoctrine()->getManager();
-		$em->remove($expertise);
-		$em->flush();
+		if (count($expertises) > 1)
+		{
+			usort($expertises,['self','cmpExpertises']);
+			$expertise = end($expertises);
+			$em = $this->getDoctrine()->getManager();
+			$em->remove($expertise);
+			$em->flush();
+		}
 	}
 
     /**
