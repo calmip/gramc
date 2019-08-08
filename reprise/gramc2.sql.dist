@@ -1,8 +1,8 @@
--- MySQL dump 10.15  Distrib 10.0.38-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.16  Distrib 10.1.26-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: gramc2
+-- Host: localhost    Database: manu2-criann-dev
 -- ------------------------------------------------------
--- Server version	10.0.38-MariaDB-0ubuntu0.16.04.1
+-- Server version	10.1.26-MariaDB-0+deb9u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `collaborateurVersion`;
 CREATE TABLE `collaborateurVersion` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_coll_statut` smallint(6) DEFAULT NULL,
-  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_version` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
   `id_coll_labo` int(11) DEFAULT NULL,
   `id_coll_etab` int(11) DEFAULT NULL,
   `id_collaborateur` int(11) DEFAULT NULL,
@@ -187,7 +187,7 @@ DROP TABLE IF EXISTS `expertise`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `expertise` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_version` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
   `id_expert` int(11) DEFAULT NULL,
   `validation` int(11) NOT NULL,
   `nb_heures_att` int(11) NOT NULL,
@@ -237,6 +237,8 @@ CREATE TABLE `individu` (
   `collaborateur` tinyint(1) NOT NULL,
   `president` tinyint(1) NOT NULL,
   `desactive` tinyint(1) NOT NULL,
+  `sysadmin` tinyint(1) NOT NULL,
+  `obs` tinyint(1) NOT NULL,
   PRIMARY KEY (`id_individu`),
   UNIQUE KEY `mail` (`mail`),
   KEY `id_labo` (`id_labo`),
@@ -254,7 +256,7 @@ CREATE TABLE `individu` (
 
 LOCK TABLES `individu` WRITE;
 /*!40000 ALTER TABLE `individu` DISABLE KEYS */;
-INSERT INTO `individu` VALUES (1,0,1,1,'2019-02-20 00:00:00','admin','admin','admin.gramc@exemple.com',1,0,0,0,0,0);
+INSERT INTO `individu` VALUES (1,0,1,1,'2019-02-20 00:00:00','admin','admin','admin.gramc@exemple.com',1,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `individu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -278,7 +280,7 @@ CREATE TABLE `journal` (
   PRIMARY KEY (`id`),
   KEY `IDX_C1A7E74D5EE42FCE` (`individu`),
   CONSTRAINT `FK_C1A7E74D5EE42FCE` FOREIGN KEY (`individu`) REFERENCES `individu` (`id_individu`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,6 +289,7 @@ CREATE TABLE `journal` (
 
 LOCK TABLES `journal` WRITE;
 /*!40000 ALTER TABLE `journal` DISABLE KEYS */;
+INSERT INTO `journal` VALUES (1,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','INFO','AppBundle\\Controller\\GramcSessionController::newAction:303 connexion DBG de l\'utilisateur admin admin','2019-08-08 15:13:02','194.57.114.144',70),(2,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','ERROR','AppBundle\\Utils\\Menu::mailToResponsables:976 La session courante est nulle !','2019-08-08 15:13:04','194.57.114.144',40),(3,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','ERROR','AppBundle\\Utils\\Menu::mailToResponsables:993 La session courante est nulle !','2019-08-08 15:13:04','194.57.114.144',40),(4,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','ERROR','AppBundle\\Utils\\Menu::mailToResponsablesFiche:1020 La session courante est nulle !','2019-08-08 15:13:04','194.57.114.144',40),(5,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','ERROR','AppBundle\\Utils\\Menu::mailToResponsablesFiche:1037 La session courante est nulle !','2019-08-08 15:13:04','194.57.114.144',40),(6,1,1,'4aj5h289tuhmbtkdtm9lfc1kf3','INFO','AppBundle\\Controller\\GramcSessionController::deconnexionAction:181 déconnexion de l\'utilisateur admin admin','2019-08-08 15:14:01','194.57.114.144',70);
 /*!40000 ALTER TABLE `journal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -303,7 +306,7 @@ CREATE TABLE `laboratoire` (
   `acro_labo` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
   `nom_labo` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id_labo`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -312,7 +315,7 @@ CREATE TABLE `laboratoire` (
 
 LOCK TABLES `laboratoire` WRITE;
 /*!40000 ALTER TABLE `laboratoire` DISABLE KEYS */;
-INSERT INTO `laboratoire` VALUES (1,1,'GRAMC','Gramc');
+INSERT INTO `laboratoire` VALUES (1,1,'AUTRE','Autre laboratoire'),(2,99999,'GRAMC','gramc');
 /*!40000 ALTER TABLE `laboratoire` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -373,10 +376,11 @@ DROP TABLE IF EXISTS `projet`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `projet` (
-  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
-  `id_veract` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `id_verder` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_projet` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+  `id_veract` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_verder` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
   `etat_projet` int(11) NOT NULL,
+  `type_projet` int(11) NOT NULL,
   PRIMARY KEY (`id_projet`),
   KEY `etat_projet` (`etat_projet`),
   KEY `IDX_50159CA98AC746EE` (`id_veract`),
@@ -429,7 +433,7 @@ DROP TABLE IF EXISTS `publicationProjet`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `publicationProjet` (
-  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `id_projet` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
   `id_publi` int(11) NOT NULL,
   PRIMARY KEY (`id_projet`,`id_publi`),
   KEY `IDX_385F338F76222944` (`id_projet`),
@@ -456,8 +460,8 @@ DROP TABLE IF EXISTS `rallonge`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `rallonge` (
-  `id_rallonge` varchar(11) COLLATE utf8_unicode_ci NOT NULL,
-  `id_version` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_rallonge` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `id_version` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
   `id_expert` int(11) DEFAULT NULL,
   `etat_rallonge` int(11) NOT NULL,
   `dem_heures` int(11) DEFAULT NULL,
@@ -498,11 +502,10 @@ DROP TABLE IF EXISTS `rapportActivite`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `rapportActivite` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_projet` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_projet` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `annee` int(11) NOT NULL,
   `nom_fichier` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `taille` int(11) NOT NULL,
-  `confidentiel` tinyint(1) NOT NULL,
   `filedata` blob NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_projet_2` (`id_projet`,`annee`),
@@ -689,11 +692,11 @@ DROP TABLE IF EXISTS `version`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `version` (
-  `id_version` varchar(9) COLLATE utf8_unicode_ci NOT NULL,
+  `id_version` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
   `maj_ind` int(11) DEFAULT NULL,
   `prj_id_thematique` int(11) DEFAULT NULL,
   `id_session` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `id_projet` varchar(6) COLLATE utf8_unicode_ci NOT NULL,
+  `id_projet` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
   `etat_version` int(11) NOT NULL,
   `prj_l_labo` varchar(300) COLLATE utf8_unicode_ci NOT NULL,
   `prj_titre` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -759,6 +762,7 @@ CREATE TABLE `version` (
   `cgu` tinyint(1) NOT NULL,
   `gpu` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
   `politique` int(11) NOT NULL,
+  `prj_criann_tag` text COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id_version`),
   KEY `IDX_BF1CD3C32EE4D7B` (`maj_ind`),
   KEY `etat_version` (`etat_version`),
@@ -790,4 +794,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-21 15:52:48
+-- Dump completed on 2019-08-08 15:14:42
