@@ -289,10 +289,7 @@ class ExpertiseController extends Controller
 				foreach ($forms as $f)
 				{
 					$f->handleRequest($request);
-					//if ($f->isSubmitted() && $f->isValid())
-					//{
-						$experts[] = $f->getData()['expert'];
-					//}
+					$experts[] = $f->getData()['expert'];
 				}
 
 				// Traitements différentiés suivant le bouton sur lequel on a cliqué
@@ -302,8 +299,8 @@ class ExpertiseController extends Controller
 				}
 				elseif ($form_buttons->get('sub2')->isClicked())
 				{
-					$this->affecterExpertsToVersion($expert,$version);
-					$this->notifierExperts($expert,$version);
+					$this->affecterExpertsToVersion($experts,$version);
+					$this->notifierExperts($experts,$version);
 				}
 				elseif ($form_buttons->get('sub3')->isClicked())
 				{
@@ -416,6 +413,28 @@ class ExpertiseController extends Controller
             'annee'         =>  Functions::getSessionCourante()->getAnneeSession() + 2000,
             ]);
     }
+
+	/******
+	* Appelée par affectationGenerique quand on clique sur Notifier les experts
+	* Envoie une notification aux experts passés en paramètre
+	*
+	* params $experts = liste d'experts
+	*        $version = la version à expertiser
+	*
+	*****/
+	private function notifierExperts($experts,$version)
+	{
+		$dest = [];
+		foreach ($experts as $e)
+		{
+			$dest[] = $e->getMail();
+		}
+		$params = [ 'object' => $version ];
+		Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
+								'notification/affectation_expert_version-contenu.html.twig',
+								$params,
+								$dest);
+	}
 
 	/**
 	 * Appelée par affectationGenerique, sauvegarde les experts associés à la version
