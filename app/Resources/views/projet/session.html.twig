@@ -129,6 +129,22 @@
      </tr>
      {% endif %}
 
+    {% if( nombreEditionFil > 0 ) %}
+    <tr>
+        <th>Projets Fil en édition</th>
+        <td>{{ nombreEditionFil }}</td>
+        <td><input type="checkbox" class="cb" id="editionFil" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreExpertiseFil > 0 ) %}
+    <tr>
+        <th>Projets Fil en expertise</th>
+        <td>{{ nombreExpertiseFil }}</td>
+        <td><input type="checkbox" class="cb" id="expertiseFil" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
     {% if( nombreEdition > 0 ) %}
     <tr>
         <th>Projets en édition</th>
@@ -305,15 +321,17 @@
                     <span title="{{ version.PrjLLabo }}">{{ version.acroLaboratoire }}</span>
                 {% endif %}
             </td>
-            {% if( version.expert != null ) %}
+            {% if( version.experts|length > 0 ) %}
             <td class="avec_expert" >
-                {% if ( is_granted('ROLE_ADMIN') ) %}
-                <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
-                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
-                {% endif %}
-                <a href="mailto:{{ version.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ version.expert.mail }}">
-                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
-                {{ version.expert.prenom }} {{ version.expert.nom }}
+				{% for exp in version.experts %}
+	                {% if ( is_granted('ROLE_ADMIN') ) %}
+	                <a class="sudo" href="{{ path('sudo',  { 'id': exp.id }) }}?" title="Changer d'identité">
+	                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+	                {% endif %}
+	                <a href="mailto:{{ exp.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ exp.mail }}">
+	                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+	                {{ exp.prenom }} {{ exp.nom }}<br />
+	            {% endfor %}
             {% else %}
             <td>
             {% endif %}

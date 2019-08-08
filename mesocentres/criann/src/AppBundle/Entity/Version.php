@@ -512,7 +512,7 @@ class Version
     /**
      * @var string
      *
-     * @ORM\Column(name="id_version", type="string", length=13)
+     * @ORM\Column(name="id_version", type="string", length=9)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -527,14 +527,6 @@ class Version
      * })
      */
     private $prjThematique;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="prj_criann_tag", type="text", length=1000, nullable=false)
-     */
-    private $criannTag = '';
-
 
     /**
      * @var \AppBundle\Entity\Session
@@ -1692,20 +1684,6 @@ class Version
     }
 
     /**
-     * Set criannTag
-     *
-     * @param string $criannTag
-     *
-     * @return Version
-     */
-    public function setCriannTag($criannTag)
-    {
-        $this->criannTag = $criannTag;
-
-        return $this;
-    }
-
-    /**
      * Set codeFor
      *
      * @param boolean $codeFor
@@ -2005,16 +1983,6 @@ class Version
     public function getDemFormAutres()
     {
         return $this->demFormAutres;
-    }
-
-    /**
-     * Get criannTag
-     *
-     * @return string
-     */
-    public function getCriannTag()
-    {
-        return $this->criannTag;
     }
 
     /**
@@ -2712,7 +2680,7 @@ class Version
             return $expertise->getExpert();
     }
 
-    // pour notifications
+    // pour notifications ou affichage
     public function getExperts()
     {
         $experts    =   [];
@@ -2760,10 +2728,6 @@ class Version
         return $this->getSession()->getAnneeSession() + 2000;
     }
 
-	public function getAnneeCreation()
-	{
-
-	}
     public function getLibelleEtat()
     {
         return Etat::getLibelle( $this->getEtatVersion() );
@@ -2790,31 +2754,17 @@ class Version
         if ($this->isProjetTest()) return true;
 
         $idVersion      = $this->getIdVersion();
-        $anneeSession   = substr( $idVersion, 0, 2 );	// 19, 20 etc
-        $typeSession    = substr( $idVersion, 2, 1 );   // A, B
-        $anneeProjet    = substr( $idVersion, -5, 2 );  // 19, 20 etc qq soit le préfixe
-        $numero         = substr( $idVersion, -3, 2 );  // 001, 002 etc.
+        $anneeSession   = substr( $idVersion, 0, 2 );
+        $typeSession    = substr( $idVersion, 2, 1 );
+        $anneeProjet    = substr( $idVersion, 4, 2 );
 
-        if ( $anneeProjet != $anneeSession )
-        {
-		    return false;
-		}
-		elseif ( $typeSession == 'A' )
-		{
-            return true;
-		}
-		else
-		{
-			$idVersionA = $anneeSession . 'A' . AppBundle::getParameter('prj_prefix') . $anneProjet . $numero;
-			if( 0 < AppBundle::getRepository( Version::class )->exists( $idVersionA ))
-			{
-				return false; // Il y a uneversion précédente
-			}
-	        else
-	        {
-	            return true; // Non il n'y en a pas donc on est bien sur une nouvelle version
-			}
-		}
+        if ( $anneeProjet != $anneeSession )    return false;
+        elseif( $typeSession == 'A' )           return true;
+
+        if( 0 < AppBundle::getRepository( Version::class )->exists( $anneeSession . 'AP' . substr( $idVersion, 4) ) )
+            return false; // elle existe
+        else
+            return true; // elle n'existe pas
     }
 
     public function isSigne()
@@ -3158,23 +3108,27 @@ class Version
             return '0';
     }
 
-	/****
-	* Renvoie la premire expertise associée à ce projet, ou null si pas d'expertise
-	****/
+
+    ///////////////////////////////////////////////
+
+	/*********
+	* Renvoie l'expertise 0 si elle existe, null sinon
+	***************/
     public function getOneExpertise()
     {
 	    $expertises =   $this->getExpertise()->toArray();
 	    if( $expertises !=  null )
 		{
 	        //$expertise  =   current( $expertises );
+	        $expertise = $expertises[0];
 
 	        //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
 	        //    . " expertises = " . Functions::show( $expertises ));
-	        return $expertises[0];
+	        return $expertise;
 		}
 	    else
 		{
-	        //Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
+	        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
 	        return null;
 		}
     }
@@ -3285,5 +3239,4 @@ class Version
     else
         Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le nouveau responsable " . $moi . " ne fait partie d'aucun laboratoire");
     }
-
 }
