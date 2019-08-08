@@ -803,7 +803,7 @@ class ExpertiseController extends Controller
             ->add('validation', ChoiceType::class ,
                 [
                 'multiple' => false,
-                'choices'   =>  [ 'Accepter' =>     1, 'Refuser pour cette session' => 2, 'Refuser définitivement et fermer le projet'    => 0, ],
+                'choices'   =>  [ 'Accepter' =>     1, 'Accepter, avec zéro heure' => 2, 'Refuser définitivement et fermer le projet'    => 0, ],
                 ]);
 
 		// Projet au fil de l'eau, le commentaire externe est réservé au président !

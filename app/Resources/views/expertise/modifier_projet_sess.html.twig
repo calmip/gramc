@@ -4,6 +4,7 @@
     <script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
 {% endblock myjavascripts %}
 
+{# TODO - Pas utilisé, voir le controleur !!! #}
 {% block choice_widget_expanded %}
     <br>
     <input id="form_validation_0" name="form[validation]" class="validation" value="1"  checked=""  type="radio">
@@ -11,7 +12,7 @@
     <br>
 
     <input  id="form_validation_1" name="form[validation]" class="validation" value="2" type="radio" >
-    <label class="validation" for="refus">Refuser pour cette session<br>
+    <label class="validation" for="refus">Accepter, avec zéro heure<br>
         <small> (NOTE: Vous attribuez <strong>ZERO HEURES</strong> pour cette session <strong>SEULEMENT</strong>)</small>
     </label>
     <br>
