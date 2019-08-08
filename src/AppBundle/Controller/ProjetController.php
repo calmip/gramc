@@ -1414,6 +1414,8 @@ class ProjetController extends Controller
 				return $this->consulterType2($projet, $version, $request);
 			case Projet::PROJET_FIL:
 				return $this->consulterType3($projet, $version, $request);
+			default:
+				Functions::errorMessage(__METHOD__ . " Type de projet inconnu: $type");
 		}
     }
 
@@ -1436,13 +1438,20 @@ class ProjetController extends Controller
 	    $session_form->handleRequest($request);
 
 	    if ( $session_form->isSubmitted() && $session_form->isValid() )
+	    {
 	        $version = $session_form->getData()['version'];
+		}
 
 	    if( $version != null )
+	    {
 	        $session = $version->getSession();
+		}
 	    else
+	    {
 	        Functions::createException(__METHOD__ . ':' . __LINE__ .' projet ' . $projet . ' sans version');
+		}
 
+		$menu = [];
 	    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
 	    $menu[] =   Menu::changer_responsable($version);
 	    $menu[] =   Menu::renouveler_version($version);

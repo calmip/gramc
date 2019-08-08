@@ -264,7 +264,6 @@ class SessionController extends Controller
      * Creates a new session entity.
      *
      * @Route("/ajouter", name="ajouter_session")
-     * @security("hasRole('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function ajouterAction(Request $request)

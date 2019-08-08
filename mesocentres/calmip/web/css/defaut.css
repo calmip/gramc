@@ -23,6 +23,7 @@ html, body {
 /*	background-image:url("https://attribution-ressources.calmip.univ-toulouse.fr/global/icones/beta.jpeg"); */
 	background-repeat: no-repeat;
 	background-position: center top;
+	background-color: #eeeeeeee
 
 }
 
@@ -172,7 +173,7 @@ table#profil_horiz tr td.resp {
 
 /* formulaire de projet => Boutons sauvegarder etc. */
 /* Page affectation (presque) pareil */
-#quitter, #bouton_affecter {
+#quitter {
 	position: fixed;
 	top: 115px;
 	right: 0;
@@ -182,7 +183,30 @@ table#profil_horiz tr td.resp {
 	border: red 2px solid;
 
 }
-#quitter input, #quitter button, .quitter button, #bouton_affecter input {
+#bouton_affecter {
+	width: 200px;
+	position: fixed;
+	top: 100px;
+	right: 0;
+	text-align: right;
+	background-color:  black;
+	border: red 2px solid;
+	padding: 3px;
+}
+#bouton_affecter h2 {
+	color: white;
+	margin-bottom: -5px;;
+}
+#bouton_affecter button {
+	margin: 2px 5px;
+	width: 190px;
+	text-align: center;
+	font-size:.8em;
+	border: 4px outset #c0c0c0;
+}
+
+
+#quitter input, #quitter button, .quitter button {
 	margin: 10px;
 	width: 180px;
 }
@@ -1005,3 +1029,8 @@ div.ui-dialog {
 .scrtable .w80  { width:80px; height: 35px; padding:3px 10px; border-bottom: none }
 .scrtable .w170 { width:170px; height: 35px; padding:3px 10px; border-bottom: none }
 .scrtable .w180 { width:180px; height: 35px; padding:3px 10px; border-bottom: none }
+
+/* Les onglets du formulaire de projet */
+.ui-widget-content {
+	background: inherit;
+}
