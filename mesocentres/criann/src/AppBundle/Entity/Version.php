@@ -512,7 +512,7 @@ class Version
     /**
      * @var string
      *
-     * @ORM\Column(name="id_version", type="string", length=9)
+     * @ORM\Column(name="id_version", type="string", length=13)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -527,6 +527,13 @@ class Version
      * })
      */
     private $prjThematique;
+
+     /**
+      * @var string
+      *
+      * @ORM\Column(name="prj_criann_tag", type="text", length=1000, nullable=false)
+      */
+     private $criannTag = '';
 
     /**
      * @var \AppBundle\Entity\Session
@@ -1684,6 +1691,20 @@ class Version
     }
 
     /**
+     * Set criannTag
+     *
+     * @param string $criannTag
+     *
+     * @return Version
+     */
+    public function setCriannTag($criannTag)
+    {
+        $this->criannTag = $criannTag;
+
+        return $this;
+    }
+
+    /**
      * Set codeFor
      *
      * @param boolean $codeFor
@@ -1983,6 +2004,16 @@ class Version
     public function getDemFormAutres()
     {
         return $this->demFormAutres;
+    }
+
+    /**
+    * Get criannTag
+    *
+    * @return string
+    */
+    public function getCriannTag()
+    {
+        return $this->criannTag;
     }
 
     /**

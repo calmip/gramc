@@ -512,7 +512,7 @@ class Version
     /**
      * @var string
      *
-     * @ORM\Column(name="id_version", type="string", length=9)
+     * @ORM\Column(name="id_version", type="string", length=13)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
