@@ -51,11 +51,13 @@ public function countExpertises($expert)
 
 public function findExpertisesByThematique(Thematique $thematique, Session $session)
 {
-    $dql  =   'SELECT e FROM AppBundle:Expertise e';
-    $dql .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
-    $dql .=  " WHERE ( v.session = :session AND v.prjThematique = :thematique )";
-    $dql .=  " GROUP BY v.prjThematique";
+    //$dql  =   'SELECT e FROM AppBundle:Expertise e';
+    //$dql .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
+    //$dql .=  " WHERE ( v.session = :session AND v.prjThematique = :thematique )";
+    //$dql .=  " GROUP BY v.prjThematique";
 
+	$dql  = 'SELECT e FROM AppBundle:Expertise e, AppBundle:Version v';
+	$dql .= ' WHERE ( v.session = :session AND v.prjThematique = :thematique )';
     return $this->getEntityManager()
          ->createQuery( $dql )
          ->setParameter('session', $session )

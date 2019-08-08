@@ -549,7 +549,7 @@ class ExpertiseController extends Controller
         $my_expertises  =   [];
         foreach( $expertises as $expertise )
         {
-			Functions::debugMessage(__METHOD__ . " expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
+			//Functions::debugMessage(__METHOD__ . " koukou1 expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
 
             // On n'affiche pas les expertises définitives
             if ( $expertise->getDefinitif()) continue;
@@ -559,24 +559,27 @@ class ExpertiseController extends Controller
             $projetId   =   $version->getProjet()->getIdProjet();
             $thematique =   $version->getPrjThematique();
 
-            $my_expertises[ $expertise->getId() ]   =   [
-                                                        'expertise' => $expertise,
-                                                        'demHeures' => $version->getDemHeures(),
-                                                        'versionId' => $version->getIdVersion(),
-                                                        'projetId'  => $projetId,
-                                                        'titre'     => $version->getPrjTitre(),
-                                                        'thematique' => $thematique,
-                                                        'responsable'   =>  $version->getResponsable(),
-                                                        'expert'        => true,
-                                                        ];
+            $my_expertises[ $version->getIdVersion() ] = [
+	                                                        'expertise' => $expertise,
+	                                                        'demHeures' => $version->getDemHeures(),
+	                                                        'versionId' => $version->getIdVersion(),
+	                                                        'projetId'  => $projetId,
+	                                                        'titre'     => $version->getPrjTitre(),
+	                                                        'thematique' => $thematique,
+	                                                        'responsable'   =>  $version->getResponsable(),
+	                                                        'expert'        => true,
+                                                         ];
         }
+
+		Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
+		Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques));
 
         ////////////////
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
         {
-			Functions::debugMessage(__METHOD__ . " expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
             $expertises_thematique =  $expertiseRepository->findExpertisesByThematique($thematique, $session);
+            Functions::debugMessage(__METHOD__ . " expertises pour thématique ".Functions::show($thematique). '-> '.Functions::show($expertises_thematique));
             //$expertises_thematique =  $expertiseRepository->findExpertisesByThematiqueForAllSessions($thematique);
             $expertises =   [];
             foreach( $expertises_thematique as $expertise )
@@ -597,16 +600,24 @@ class ExpertiseController extends Controller
                                         'thematique'  => $thematique,
                                         'responsable' =>  $version->getResponsable(),
                                         ];
+				Functions::debugMessage(__METHOD__ . " expertise ".$expertise->getId());
 
-                if( array_key_exists( $expertise->getId(), $my_expertises ) )
-                {
-                    unset( $my_expertises[ $expertise->getId() ]);
-                    $output['expert']   =   true;
-                }
-                else
-                    $output['expert']   =   false;
-
-                $expertises[]   =   $output;
+				// On n'affiche pas deux expertises vers la même version
+				if (!array_key_exists( $version->getIdVersion(), $expertises ))
+				{
+					// Si j'ai une expertise vers cette version, je remplace l'expertise trouvée par la mienne
+	                if( array_key_exists( $version->getIdVersion(), $my_expertises ) )
+	                {
+						$output = $my_expertises[ $version->getIdVersion() ];
+	                    unset( $my_expertises[ $version->getIdVersion() ]);
+	                    $output['expert']   =   true;
+	                }
+	                else
+	                {
+	                    $output['expert']   =   false;
+					}
+	                $expertises[$version->getIdVersion()]   =   $output;
+				}
             }
 
             $expertises_by_thematique[] = [ 'expertises' => $expertises, 'thematique' => $thematique ];
@@ -641,23 +652,23 @@ class ExpertiseController extends Controller
         $rallonges  =   [];
         $all_rallonges  =   AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
         foreach( $all_rallonges as $rallonge )
-            {
+		{
             $version    =   $rallonge->getVersion();
             if( $version == null )
-                {
+			{
                 Functions::errorMessage(__METHOD__ . ':'. __FILE__ . " Rallonge " . $rallonge . " n'a pas de version !");
                 continue;
-                }
+			}
             $projet = $version->getProjet();
             if( $projet == null )
-                {
+			{
                 Functions::errorMessage(__METHOD__ . ':'. __FILE__ . " Version " . $version . " n'a pas de projet !");
                 continue;
-                }
+			}
             $rallonges[$projet->getIdProjet()]['projet']    =   $projet;
             $rallonges[$projet->getIdProjet()]['version']   =   $version;
             $rallonges[$projet->getIdProjet()]['rallonges'][$rallonge->getIdRallonge()] =   $rallonge;
-            }
+		}
 
         ///////////////////////
 
@@ -803,7 +814,7 @@ class ExpertiseController extends Controller
 		}
 		else
 		{
-			$editForm->add('commentaireExterne', HiddenType::class, [ 'data' => 'Commentaire externe réservé au Président' ] );
+			$editForm->add('commentaireExterne', HiddenType::class, [ 'data' => 'Commentaire externe réservé au Comité' ] );
 
 		}
 

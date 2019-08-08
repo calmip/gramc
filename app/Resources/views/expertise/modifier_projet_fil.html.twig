@@ -33,6 +33,24 @@
 
     <h2>Saisie de l'expertise du projet {{ version.projet }}</h2>
 
+
+	<div class="message info">
+	{% if not is_granted('ROLE_PRESIDENT') %}
+	<p>Vous pouvez:
+	<ul>
+	<li>Entrer un commentaire à destination du comité d'attribution</li>
+	<li>Proposer une attribution (en heures cpu normalisées)</li>
+	<li>Cliquer sur le bouton <strong>Enregistrer</strong> pour enregistrer un brouillon de votre expertise</li>
+	<li><strong>N'oubliez pas de Cliquer sur le bouton <strong>Envoyer</strong></strong> pour envoyer votre expertise au comité d'attribution</li>
+	</ul>
+	</p>
+	{% else %}
+	<p>Merci de renseigner le formulaire ci-dessous <strong>en prenant en compte l'avis des autres experts</strong>. <br />
+	<em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em>
+	</p>
+	{% endif %}
+	</div>
+
     <table class="projet">
         <tbody>
             <tr>
@@ -92,11 +110,6 @@
             <h2>EXPERTISE DÉJÀ ENVOYEE</h2>
                 <p>Votre expertise a déjà été envoyée, vous ne pouvez plus la modifier.</p>
         </div>
-    {% else %}
-    	{% if is_granted('ROLE_PRESIDENT') %}
-		    <div class="message info">Merci de renseigner le formulaire ci-dessous <strong>en prenant en compte l'avis des autres experts</strong>. <br />
-		    <em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em> </div>
-		{% endif %}
     {% endif %}
 
 	{% set autres_expertises_sont_definitives = true %}
@@ -196,15 +209,15 @@
     </table>
 
 <div id="quitter">
-        {% if( expertise.definitif == false ) %}
-            {{ form_widget(edit_form.enregistrer) }}
-            {% if( not session_edition ) %}
-	            {% if autres_expertises_sont_definitives %}
-		            {{ form_widget(edit_form.envoyer) }}
-		        {% endif %}
-            {% endif %}
-        {% endif %}
-        {{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
+	{% if( expertise.definitif == false ) %}
+		{{ form_widget(edit_form.enregistrer) }}
+		{% if( not session_edition ) %}
+			{% if autres_expertises_sont_definitives %}
+	            {{ form_widget(edit_form.envoyer) }}
+	        {% endif %}
+		{% endif %}
+	{% endif %}
+	{{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
 </div>
 
 {{ form_end(edit_form) }}
