@@ -632,11 +632,11 @@ class Projet
         }
 
 		// Pas d'expertise associée à cette version, ou expert déjà attribué: return null
-		$expertise = $version->getOneExpertise();
-		if ($expertise == null || $expertise->getExpert() != null)
-		{
-			return null;
-		}
+		//$expertise = $version->getOneExpertise();
+		//if ($expertise == null || $expertise->getExpert() != null)
+		//{
+		//	return null;
+		//}
 
 		// Pour les projets de type PROJET_TEST et PROJET_FIL on propose le président[0]
 		if ($this->getTypeProjet() == Projet::PROJET_TEST || $this->getTypeProjet() == Projet::PROJET_FIL)

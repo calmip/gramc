@@ -3111,29 +3111,33 @@ class Version
 
     ///////////////////////////////////////////////
 
+	/*********
+	* Renvoie l'expertise 0 si elle existe, null sinon
+	***************/
     public function getOneExpertise()
     {
-    $expertises =   $this->getExpertise()->toArray();
-    if( $expertises !=  null )
-        {
-        $expertise  =   current( $expertises );
+	    $expertises =   $this->getExpertise()->toArray();
+	    if( $expertises !=  null )
+		{
+	        //$expertise  =   current( $expertises );
+	        $expertise = $expertises[0];
 
-        //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
-        //    . " expertises = " . Functions::show( $expertises ));
-        return $expertise;
-        }
-    else
-        {
-        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
-        return null;
-        }
+	        //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
+	        //    . " expertises = " . Functions::show( $expertises ));
+	        return $expertise;
+		}
+	    else
+		{
+	        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
+	        return null;
+		}
     }
 
     //////////////////////////////////////////////////
 
     public function getFullAnnee()
     {
-    return '20' . substr( $this->getIdVersion(), 0, 2 );
+	    return '20' . substr( $this->getIdVersion(), 0, 2 );
     }
 
     //////////////////////////////////////////////////
