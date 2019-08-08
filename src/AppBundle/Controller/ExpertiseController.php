@@ -418,22 +418,23 @@ class ExpertiseController extends Controller
 	* Appelée par affectationGenerique quand on clique sur Notifier les experts
 	* Envoie une notification aux experts passés en paramètre
 	*
-	* params $experts = liste d'experts
+	* params $experts = liste d'experts (pas utilisé)
 	*        $version = la version à expertiser
 	*
 	*****/
-	private function notifierExperts($experts,$version)
+	private function notifierExperts($experts, $version)
 	{
-		$dest = [];
-		foreach ($experts as $e)
+		$expertises = $version->getExpertise();
+		foreach ($expertises as $e)
 		{
-			$dest[] = $e->getMail();
+			$dest = [ $e->getExpert()->getMail() ];
+
+			$params = [ 'object' => $e ];
+			Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
+									'notification/affectation_expert_version-contenu.html.twig',
+									$params,
+									$dest);
 		}
-		$params = [ 'object' => $version ];
-		Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
-								'notification/affectation_expert_version-contenu.html.twig',
-								$params,
-								$dest);
 	}
 
 	/**

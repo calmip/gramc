@@ -1,9 +1,9 @@
 Bonjour
 
 Merci d'expertiser (si possible rapidement) la demande d'attributions pour le projet
-n° {{ object.projet }} (resp {{ object.responsable |raw }})
+n° {{ object.version.projet }} (resp {{ object.version.responsable |raw }})
 
-Retrouver le projet : {{ absolute_url(path('consulter_projet', { 'id' : object.projet })) |raw }}
+Retrouver la page d'expertise : {{ absolute_url(path('expertise_modifier', { 'id' : object.id })) |raw }}
 
 Merci pour votre participation,
 - gramc -
