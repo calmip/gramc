@@ -561,6 +561,8 @@ class ProjetController extends Controller
 
         $nombreEditionTest      =   0;
         $nombreExpertiseTest    =   0;
+        $nombreEditionFil       =   0;
+        $nombreExpertiseFil     =   0;
         $nombreEdition          =   0;
         $nombreExpertise        =   0;
         $nombreAttente          =   0;
@@ -599,25 +601,66 @@ class ProjetController extends Controller
             if( $version->getProjet() != null && $version->getProjet()->getEtatProjet() == $termine ) $nombreTermines++;
 
             $etat = $version->getEtatVersion();
+            $type = $version->getProjet()->getTypeProjet();
 
-            if( $etat == Etat::EDITION_TEST )
-                    $nombreEditionTest++;
-            elseif( $etat == Etat::EXPERTISE_TEST )
-                    $nombreExpertiseTest++;
-            elseif( $etat == Etat::EDITION_DEMANDE )
-                    $nombreEdition++;
-            elseif( $etat == Etat::EDITION_EXPERTISE )
-                    $nombreExpertise++;
-            elseif( $etat == Etat::EN_ATTENTE )
-                    $nombreAttente++;
-            elseif( $etat == Etat::ACTIF )
-                    $nombreActif++;
-            elseif( $etat == Etat::NOUVELLE_VERSION_DEMANDEE )
-                    $nombreNouvelleDem++;
-            elseif( $etat == Etat::TERMINE )
-                    $nombreTermine++;
-            elseif( $etat == Etat::ANNULE )
-                    $nombreAnnule++;
+
+			// TODO Que c'est compliqué !
+			//      Plusieurs workflows => pas d'états différents
+			//      Utiliser un tableau
+			if ($type == Projet::PROJET_TEST)
+			{
+				if ($etat == Etat::EDITION_TEST )
+				{
+					$nombreEditionTest++;
+				}
+				elseif ( $etat == Etat::EXPERTISE_TEST )
+				{
+					$nombreExpertiseTest++;
+				}
+			}
+			elseif ($type == Projet::PROJET_FIL)
+			{
+				if ($etat == Etat::EDITION_TEST )
+				{
+					$nombreEditionFil++;
+				}
+				elseif ( $etat == Etat::EXPERTISE_TEST )
+				{
+					$nombreExpertiseFil++;
+				}
+			}
+			elseif ($type == Projet::PROJET_SESS)
+			{
+				if ($etat == Etat::EDITION_DEMANDE )
+				{
+					$nombreEdition++;
+				}
+				elseif ( $etat == Etat::EDITION_EXPERTISE )
+				{
+					$nombreExpertise++;
+				}
+			};
+
+			if ($etat == Etat::ACTIF )
+			{
+				$nombreActif++;
+			}
+			elseif ( $etat == Etat::NOUVELLE_VERSION_DEMANDEE )
+			{
+				$nombreNouvelleDem++;
+			}
+			elseif ( $etat == Etat::EN_ATTENTE )
+			{
+				$nombreAttente++;
+			}
+			elseif ( $etat == Etat::TERMINE )
+			{
+				$nombreTermine++;
+			}
+			elseif ( $etat == Etat::ANNULE )
+			{
+				$nombreAnnule++;
+			};
 
             $items[]    =
                     [
@@ -638,7 +681,7 @@ class ProjetController extends Controller
 
         return $this->render('projet/session.html.twig',
         [
-            'nombreEditionTest'     =>  $nombreExpertiseTest,
+            'nombreEditionTest'     =>  $nombreEditionTest,
             'nombreExpertiseTest'   =>  $nombreExpertiseTest,
             'nombreEdition'         =>  $nombreEdition,
             'nombreExpertise'       =>  $nombreExpertise,
@@ -647,6 +690,8 @@ class ProjetController extends Controller
             'nombreNouvelleDem'     =>  $nombreNouvelleDem,
             'nombreTermine'         =>  $nombreTermine,
             'nombreAnnule'          =>  $nombreAnnule,
+            'nombreEditionFil'      =>  $nombreEditionFil,
+            'nombreExpertiseFil'    =>  $nombreExpertiseFil,
             'form' => $data['form']->createView(), // formulaire
             'idSession' => $data['session']->getIdSession(), // formulaire
             'session'   => $data['session'],

@@ -271,7 +271,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails
+     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
      *
      *********/
     static public function sendMessage( $twig_sujet, $twig_contenu, $params, $users = null )

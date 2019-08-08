@@ -999,12 +999,38 @@ class ExpertiseController extends Controller
 				$expertise->setDefinitif(true);
 		        $em->persist( $expertise );
 		        $em->flush();
+
+		        // Envoi d'une notification aux présidents
+		        $dest = Functions::mailUsers([ 'P' ]);
+		        $params = [ 'object' => $expertise ];
+		        Functions::sendMessage ('notification/expertise_projet_fil_pour_president-sujet.html.twig',
+		        						'notification/expertise_projet_fil_pour_president-contenu.html.twig',
+		        						$params,
+		        						$dest);
 			}
 
 	        return $this->redirectToRoute('expertise_liste');
         }
 
-        return $this->render('expertise/valider.html.twig',
+		// LA SUITE DEPEND DU TYPE DE PROJET !
+		// Le workflow n'est pas le même suivant le type de projet, donc l'expertise non plus.
+
+		$version = $expertise->getVersion();
+        $projet_type = $version->getProjet()->getTypeProjet();
+		switch ($projet_type)
+		{
+			case Projet::PROJET_SESS:
+				$twig = 'expertise/valider_projet_sess.html.twig';
+				break;
+			case Projet::PROJET_TEST:
+				$twig = 'expertise/valider_projet_test.html.twig';
+				break;
+			case Projet::PROJET_FIL:
+				$twig = 'expertise/valider_projet_fil.html.twig';
+				break;
+		}
+
+        return $this->render($twig,
             [
             'expertise'  => $expertise,
             'version'    => $expertise->getVersion(),
