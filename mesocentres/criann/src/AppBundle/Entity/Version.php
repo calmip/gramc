@@ -2788,6 +2788,8 @@ class Version
 	*****/
     public function isNouvelle()
     {
+    public function isNouvelle()
+    {
         // Un projet test ne peut être renouvelé donc il est obligatoirement nouveau !
         if ($this->isProjetTest()) return true;
 
@@ -2795,7 +2797,7 @@ class Version
         $anneeSession   = substr( $idVersion, 0, 2 );	// 19, 20 etc
         $typeSession    = substr( $idVersion, 2, 1 );   // A, B
         $anneeProjet    = substr( $idVersion, -5, 2 );  // 19, 20 etc qq soit le préfixe
-        $numero         = substr( $idVersion, -3, 2 );  // 001, 002 etc.
+        $numero         = substr( $idVersion, -3, 3 );  // 001, 002 etc.
 
         if ( $anneeProjet != $anneeSession )
         {
@@ -2807,8 +2809,9 @@ class Version
 		}
 		else
 		{
-	        $type_projet    = $this->getProjet()->getTypeProjet();
-			$idVersionA = $anneeSession . 'A' . AppBundle::getParameter('prj_prefix')[$type_projet] . $anneeProjet . $numero;
+ 	        $type_projet    = $this->getProjet()->getTypeProjet();
+ 			$idVersionA = $anneeSession . 'A' . AppBundle::getParameter('prj_prefix')[$type_projet] . $anneeProjet . $numero;
+
 			if( 0 < AppBundle::getRepository( Version::class )->exists( $idVersionA ))
 			{
 				return false; // Il y a uneversion précédente
