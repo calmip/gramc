@@ -484,20 +484,30 @@ class ProjetController extends Controller
     public function backAction(Version $version, Request $request)
     {
         if( $request->isMethod('POST') )
-            {
+		{
             $confirmation = $request->request->get('confirmation');
 
             if( $confirmation == 'OUI' )
-                {
+			{
                 //$versionWorkflow = new VersionWorkflow();
                 //if( $versionWorkflow->canExecute( Signal::CLK_ARR, $version) )
                 //     $versionWorkflow->execute( Signal::CLK_ARR, $version);
                 $projetWorkflow = new ProjetWorkflow();
                 if( $projetWorkflow->canExecute( Signal::CLK_ARR, $version->getProjet() ) )
+                {
                      $projetWorkflow->execute( Signal::CLK_ARR, $version->getProjet());
-                }
+                     // Supprime toutes les expertises
+                     $expertises = $version->getExpertise()->toArray();
+                     foreach ($expertises as $e)
+                     {
+			             $em = $this->getDoctrine()->getManager();
+						 $em->remove($e);
+					 }
+					 $em->flush();
+				}
+			}
             return $this->redirectToRoute('projet_session'); // NON - on ne devrait jamais y arriver !
-            }
+		}
         else
            return $this->render('projet/dialog_back.html.twig',
             [

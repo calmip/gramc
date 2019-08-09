@@ -585,8 +585,8 @@ class ExpertiseController extends Controller
 	                                                        'versionId' => $version->getIdVersion(),
 	                                                        'projetId'  => $projetId,
 	                                                        'titre'     => $version->getPrjTitre(),
-	                                                        'thematique' => $thematique,
-	                                                        'responsable'   =>  $version->getResponsable(),
+	                                                        'thematique'    => $thematique,
+	                                                        'responsable'   => $version->getResponsable(),
 	                                                        'expert'        => true,
                                                          ];
         }
@@ -697,7 +697,8 @@ class ExpertiseController extends Controller
             'rallonges'                  => $rallonges,
             'expertises_by_thematique'   => $expertises_by_thematique,
             'expertises_hors_thematique' =>  $my_expertises,
-            'old_expertises'             => $old_expertises
+            'old_expertises'             => $old_expertises,
+			'session'       => $session,
             ]);
     }
 

@@ -74,7 +74,8 @@
                     <tr>
                         <td>{{ expertise.projetId }}</td>
                         <td>
-                            {% if( expertise.expert == true ) %}
+							{# Si la session est en etat demande l'expert n'est pas encore définitivement attribué #}
+                            {% if( expertise.expert == true and session.etatsession != 2) %}
                                 <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
                                 <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
                             {% else %}
@@ -114,9 +115,14 @@
           {% for expertise in expertises_hors_thematique %}
                     <tr>
                         <td>{{ expertise.projetId }}</td>
-                        <td>
-                            <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
-                            <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                        <td>{# Si la session est en etat demande l'expert n'est pas encore définitivement attribué #}
+							{% if( expertise.expert == true and session.etatsession != 2) %}
+                                <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
+                                <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                            {% else %}
+                                <a href="{{ path('consulter_projet', { 'id' : expertise.projetId } ) }}">
+                                <img src="{{ asset('icones/consulter.png') }}" alt="Expertiser" title="Lire le projet" class="bouton_poussoir"></a>
+                            {% endif %}
                         </td>
                         <td>{{ expertise.thematique }}</td>
                         <td>{{ expertise.titre }}</td>
