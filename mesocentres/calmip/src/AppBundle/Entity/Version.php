@@ -2748,23 +2748,45 @@ class Version
         return preg_replace('/^\s*([^\s]+)\s+(.*)$/','${1}',$this->getPrjLLabo() );
     }
 
+	/*******
+	* Retourne true si la version est nouvelle pour cette session
+	*
+	*      - session A -> On vérifie que l'année de création est la même que l'année de la session
+	*      - session B -> En plus on vérifie qu'il n'y a pas eu une version en session A
+	*
+	*****/
     public function isNouvelle()
     {
         // Un projet test ne peut être renouvelé donc il est obligatoirement nouveau !
         if ($this->isProjetTest()) return true;
 
         $idVersion      = $this->getIdVersion();
-        $anneeSession   = substr( $idVersion, 0, 2 );
-        $typeSession    = substr( $idVersion, 2, 1 );
-        $anneeProjet    = substr( $idVersion, 4, 2 );
+        $anneeSession   = substr( $idVersion, 0, 2 );	// 19, 20 etc
+        $typeSession    = substr( $idVersion, 2, 1 );   // A, B
+        $anneeProjet    = substr( $idVersion, -5, 2 );  // 19, 20 etc qq soit le préfixe
+        $numero         = substr( $idVersion, -3, 2 );  // 001, 002 etc.
 
-        if ( $anneeProjet != $anneeSession )    return false;
-        elseif( $typeSession == 'A' )           return true;
-
-        if( 0 < AppBundle::getRepository( Version::class )->exists( $anneeSession . 'AP' . substr( $idVersion, 4) ) )
-            return false; // elle existe
-        else
-            return true; // elle n'existe pas
+        if ( $anneeProjet != $anneeSession )
+        {
+		    return false;
+		}
+		elseif ( $typeSession == 'A' )
+		{
+            return true;
+		}
+		else
+		{
+ 	        $type_projet    = $this->getProjet()->getTypeProjet();
+ 			$idVersionA = $anneeSession . 'A' . AppBundle::getParameter('prj_prefix')[$type_projet] . $anneeProjet . $numero;
+			if( 0 < AppBundle::getRepository( Version::class )->exists( $idVersionA ))
+			{
+				return false; // Il y a uneversion précédente
+			}
+	        else
+	        {
+	            return true; // Non il n'y en a pas donc on est bien sur une nouvelle version
+			}
+		}
     }
 
     public function isSigne()
