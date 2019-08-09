@@ -661,37 +661,42 @@ class Rallonge
     public function getExpertForm()
     {
 
-    $expert = $this->getExpert();
-    $version    =   $this->getVersion();
-    if( $version != null )
-        $projet =   $version->getProjet();
-    else
-        $projet =   null;
+	    $expert = $this->getExpert();
+	    $version    =   $this->getVersion();
 
-    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($projet);
+	    if( $version != null )
+	        $projet =   $version->getProjet();
+	    else
+	        $projet =   null;
 
-    if( $expert ==  null && $projet != null)
+	    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($projet);
+
+	    if( $expert ==  null && $projet != null)
         {
-        $expert  =  $projet->proposeExpert( $collaborateurs );
-        Functions::debugMessage(__METHOD__ . ":" . __LINE__ ." nouvel expert proposé à la rallonge " . $this . " : " . Functions::show( $expert ) );
+	        //$expert  =  $projet->proposeExpert( $collaborateurs );
+	        // L'expert proposé est celui de la dernière expertise du projet, s'il y en a plusieurs
+	        // NOTE - plantage si aucune expertise, mais cela ne devrait jamais arriver
+	        $expertises = $version -> getExpertise()->toArray();
+	        $expert     = end($expertises)->getExpert();
+	        Functions::debugMessage(__METHOD__ . ":" . __LINE__ ." nouvel expert proposé à la rallonge " . $this . " : " . Functions::show( $expert ) );
         }
 
 
-    return AppBundle::getContainer()->get( 'form.factory')
-            ->createNamedBuilder(   'expert'.$this->getIdRallonge() , FormType::class, null  ,  ['csrf_protection' => false ])
-                ->add('expert', ChoiceType::class,
-                    [
-                'multiple'  =>  false,
-                'required'  =>  false,
-                'label'     => '',
-                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
-                'data'          => $expert,
-                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
-                'choice_label' => function ($individu)
-                   { return $individu->__toString(); },
-                    ])
-                    ->getForm();
+	    return AppBundle::getContainer()->get( 'form.factory')
+	            ->createNamedBuilder(   'expert'.$this->getIdRallonge() , FormType::class, null  ,  ['csrf_protection' => false ])
+	                ->add('expert', ChoiceType::class,
+	                    [
+	                'multiple'  =>  false,
+	                'required'  =>  false,
+	                'label'     => '',
+	                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
+	                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
+	                'data'          => $expert,
+	                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
+	                'choice_label' => function ($individu)
+	                   { return $individu->__toString(); },
+	                    ])
+	                    ->getForm();
     }
 
     ////////////////////////////////////////////////////////////////////////

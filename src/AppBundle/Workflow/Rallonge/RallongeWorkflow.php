@@ -58,8 +58,7 @@ class RallongeWorkflow extends Workflow
                 ])
             ->addState( Etat::DESAFFECTE,
                 [
-                Signal::CLK_AFFECTER            =>  new RallongeTransition(Etat::EDITION_EXPERTISE,
-                [ 'E' => 'affectation_expert_rallonge']),
+                Signal::CLK_AFFECTER            =>  new RallongeTransition(Etat::EDITION_EXPERTISE, [ 'E' => 'affectation_expert_rallonge']),
                 Signal::CLK_DESAFFECTER         =>  new NoTransition(),
                 Signal::FERMER_RALLONGE         =>  new RallongeTransition(Etat::ANNULE),
                 ])
