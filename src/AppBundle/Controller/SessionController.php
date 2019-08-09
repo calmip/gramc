@@ -58,7 +58,7 @@ class SessionController extends Controller
     /**
      * Lists all session entities.
      *
-     * @security("hasRole('ROLE_ADMIN')")
+     * @security("has_role('ROLE_ADMIN')")
      * @Route("/", name="session_index")
      * @Method("GET")
      */
@@ -293,7 +293,7 @@ class SessionController extends Controller
 
     /**
      *
-     * @security("hasRole('ROLE_ADMIN')")
+     * @security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/modify", name="modifier_session")
      * @Method({"GET", "POST"})
      */
