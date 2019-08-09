@@ -91,7 +91,9 @@ Editer le fichier et paramétrer l'application:
 - Et pour finir les idp "préférés" (dépend des établissements à proximité du mésocentre)
 
 **Hiérarchie de fichiers dépendant du mésocentre**
-Suivant votre mésocentre, vous pouvez recérer une hiérarchie de fichiers que vous pouvez personnaliser. Ils se trouvent ici:
+
+Suivant votre mésocentre, vous pouvez recréer une hiérarchie de fichiers que vous pouvez personnaliser. Les fichiers pouvant être personnalisés
+se trouvent ici:
 
 ~~~~
 mesocentres/calmip
@@ -103,15 +105,15 @@ Vous pouvez modifier ces fichiers (src/AppBundle/Entity/Version.php notamment, q
 
 ***configuration pour l'un ou l'autre des mésocentres:***
 
-Créer le lien symbolique altermeso, à la racine de l'application ce lien pointera vers mesocentres/calmip ou vers mesocentres/criann:
+Configurer gramc pour un mésocentre revient à:
+- Créer le lien symbolique altermeso, à la racine de l'application ce lien pointera vers mesocentres/calmip ou vers mesocentres/criann:
 
 ~~~~
 ln -s mesocentres/calmip altermeso
 ~~~~
 
-**Bannière et favicon:**
-Déposer votre fichier de bannière dans `altermeso/web/icones/banniere.png` (cf. `banniere.png.dist` pour un modèle)
-Déposer votre fichier de favicon dans `altermeso/web/icones/favicon.ico`
+- Editer le fichier parametres.yml et mettre les bons noms, urls, etc.
+- Déposer dans le répertoire mesocentres/xxx/web/icones les fichiers banniere.png et favicon.ico
 
 Base de données:
 ----
