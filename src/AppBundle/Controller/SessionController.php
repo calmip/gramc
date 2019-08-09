@@ -352,7 +352,6 @@ class SessionController extends Controller
 
     /**
      *
-     * @security("hasRole('ROLE_ADMIN')")
      * @Route("/activer", name="activer_session")
      * @Method("GET")
      */
