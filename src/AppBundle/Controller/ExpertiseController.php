@@ -249,7 +249,7 @@ class ExpertiseController extends Controller
 		                     ->add( "sub1",SubmitType::Class, ['label' => 'Affecter les experts', 'attr' => ['title' => 'Les experts seront affectés incognito'] ] )
 		                     ->add( "sub2",SubmitType::Class, ['label' => 'Affecter et notifier les experts', 'attr' => ['title' => 'Les experts affectés recevront une notification par courriel'] ] )
 		                     ->add( "sub3",SubmitType::Class, ['label' => 'Ajouter une expertise', 'attr' => ['title' => 'Ajouter un expert si possible'] ] )
-		                     ->add( "sub4",SubmitType::Class, ['label' => 'Supprimer une expertise', 'attr' => ['title' => 'ATTENTION - Risque de perte de données'] ] )
+		                     ->add( "sub4",SubmitType::Class, ['label' => 'Supp expertise sans expert', 'attr' => ['title' => 'ATTENTION - Risque de perte de données'] ] )
 		                     ->getForm();
 
 		$form_buttons->handleRequest($request);
@@ -308,6 +308,7 @@ class ExpertiseController extends Controller
 				}
 				elseif ($form_buttons->get('sub4')->isClicked())
 				{
+					$this->affecterExpertsToVersion($experts,$version);
 					$this->remExpertiseFromVersion($version);
 				}
 				else
@@ -427,13 +428,19 @@ class ExpertiseController extends Controller
 		$expertises = $version->getExpertise();
 		foreach ($expertises as $e)
 		{
-			$dest = [ $e->getExpert()->getMail() ];
-
-			$params = [ 'object' => $e ];
-			Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
-									'notification/affectation_expert_version-contenu.html.twig',
-									$params,
-									$dest);
+			$exp = $e->getExpert();
+			if ($exp != null)
+			{
+				$dest = [ $exp->getMail() ];
+				if ($dest!=null)
+				{
+					$params = [ 'object' => $e ];
+					Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
+											'notification/affectation_expert_version-contenu.html.twig',
+											$params,
+											$dest);
+				}
+			}
 		}
 	}
 
@@ -501,9 +508,11 @@ class ExpertiseController extends Controller
 	}
 
 	/**
-	* Appelée par affectationGenerique, retire la dernière expertise de la version
-	* S'il n'en reste qu'une, ne fait rien
-	* TODO - Plutôt uqe de ne rien faire, envoyer un message d'erreur !
+	* Appelée par affectationGenerique
+	* Retire les expertises sans experts de la version, sauf la première
+	* car il doit rester au moins une expertise
+	*
+	* TODO - Plutôt que de ne rien faire, envoyer un message d'erreur !
 	*
 	* param = $version
 	* Return= rien
@@ -512,12 +521,31 @@ class ExpertiseController extends Controller
 	private function remExpertiseFromVersion(Version $version)
 	{
 		$expertises = $version->getExpertise()->toArray();
-		if (count($expertises) > 1)
+		$em = $this->getDoctrine()->getManager();
+
+		// On travaille en deux temps pour ne pas supprimer un tableau tout en itérant
+		// 1/ Identifier les id d'expertises à supprimer
+		// 2/ Les supprimer
+		$first = true;
+		$to_rem= [];
+		foreach($expertises as $e)
 		{
-			usort($expertises,['self','cmpExpertises']);
-			$expertise = end($expertises);
-			$em = $this->getDoctrine()->getManager();
-			$em->remove($expertise);
+			if ($first)
+			{
+				$first = false;
+				continue;
+			}
+			if ($e->getExpert()==null)
+			{
+				$to_rem[]=$e->getid();
+			}
+		}
+		if (count($to_rem)>0)
+		{
+			foreach($to_rem as $e_id)
+			{
+				$em->remove($em->getRepository(Expertise::class)->find($e_id));
+			}
 			$em->flush();
 		}
 	}
