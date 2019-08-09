@@ -797,24 +797,65 @@ class ExpertiseController extends Controller
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
-        $projet_type = $version->getProjet()->getTypeProjet();
 
-        // Si c'est un projet de type PROJET_SESS, le bouton ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
-        // Sinon le bouton est toujours disponible
-		if ( $projet_type != Projet::PROJET_SESS )
+
+		// $session_edition -> Si false, on autorise le bouton Envoyer
+		//                  -> Si true, on n'autorise pas
+		$msg_explain = '';
+        $projet_type = $version->getProjet()->getTypeProjet();
+        $etat_session= $session -> getEtatSession();
+
+		// Projets au fil de l'eau avec plusieurs expertises:
+		//    Si je suis président, on va chercher ces expertises pour affichage
+		//    On vérifie leur état (définitive ou pas)
+		$autres_expertises = [];
+		$toutes_definitives= true;
+		if ($projet_type == Projet::PROJET_FIL && AppBundle::isGranted('ROLE_PRESIDENT') )
 		{
-			$session_edition = false; // Autoriser le bouton Envoyer
-		}
-		else
-		{
-	        if ( $session -> getEtatSession() != Etat::EDITION_EXPERTISE && $session -> getEtatSession() != Etat::ACTIF )
-	        {
-	            $session_edition = true;
-			}
-			else
+			$expertiseRepository = AppBundle::getRepository(Expertise::class);
+			$autres_expertises   = $expertiseRepository -> findExpertisesForVersion($version,$moi);
+			foreach ($autres_expertises as $e)
 			{
-	            $session_edition = false;
+				if (! $e->getDefinitif())
+				{
+					$toutes_definitives = false;
+					break;
+				}
 			}
+		}
+
+        switch ($projet_type)
+		{
+			case Projet::PROJET_SESS:
+		        // Si c'est un projet de type PROJET_SESS, le bouton ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
+				$session_edition = ($session -> getEtatSession() != Etat::EDITION_EXPERTISE && $session -> getEtatSession() != Etat::ACTIF);
+				break;
+			case Projet::PROJET_TEST:
+				// Si c'est un projet de type PROJET_SESS, le bouton ENVOYER est toujours disponible
+				$session_edition = false;
+				break;
+			case Projet::PROJET_FIL:
+				// Si c'est un projet de type PROJET_FIL, le bouton ENVOYER est disponible (presque) tout le temps
+				if ($etat_session == Etat::EDITION_DEMANDE)
+				{
+					$msg_explain = "Vous ne pouvez pas actuellement finaliser votre expertise, car la session est en phase de \"édition des demandes\"";
+					$session_edition = true;
+				}
+				elseif ($etat_session == Etat::EDITION_EXPERTISE)
+				{
+					$msg_explain = "Vous ne pouvez pas actuellement finaliser votre expertise, car la session est en phase d'\"édition des expertises\" et le \"commentaire de session\" n'est pas entré";
+					$session_edition = true;
+				}
+				elseif ($toutes_definitives == false)
+				{
+					$msg_explain = "Vous ne pouvez pas actuellement finaliser votre expertise, il vous faut attendre que les autres experts aient terminé leur expertise";
+					$session_edition = true;
+				}
+				else
+				{
+					$session_edition = false;
+				}
+				break;
 		}
 
 		// Création du formulaire
@@ -910,15 +951,6 @@ class ExpertiseController extends Controller
             $toomuch      = Functions::is_demande_toomuch($attr_a,$dem_b);
         }
 
-		// Projets au fil de l'eau avec plusieurs exepertises:
-		//    Si je suis président, on va chercher ces expertises pour affichage
-		$autres_expertises = [];
-		if ($projet_type == Projet::PROJET_FIL && AppBundle::isGranted('ROLE_PRESIDENT') )
-		{
-			$expertiseRepository = AppBundle::getRepository(Expertise::class);
-			$autres_expertises   = $expertiseRepository -> findExpertisesForVersion($version,$moi);
-		}
-
 		// LA SUITE DEPEND DU TYPE DE PROJET !
 		// Le workflow n'est pas le même suivant le type de projet, donc l'expertise non plus.
 		switch ($projet_type)
@@ -938,6 +970,7 @@ class ExpertiseController extends Controller
             [
             'expertise'         => $expertise,
             'autres_expertises' => $autres_expertises,
+            'msg_explain'       => $msg_explain,
             'version'           => $expertise->getVersion(),
             'edit_form'         => $editForm->createView(),
             'anneePrec'         => $anneePrec,

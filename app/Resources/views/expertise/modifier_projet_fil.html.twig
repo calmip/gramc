@@ -47,6 +47,7 @@
 	</p>
 	{% else %}
 	<p>Merci de renseigner le formulaire ci-dessous <strong>en prenant en compte l'avis des autres experts</strong>. <br />
+	{% if msg_explain %} {{msg_explain }}<br /> {% endif %}
 	<em><strong>Lorsque vous aurez terminé, n'oubliez pas de cliquer sur "Envoyer"</strong></em>
 	</p>
 	{% endif %}
@@ -113,13 +114,11 @@
         </div>
     {% endif %}
 
-	{% set autres_expertises_sont_definitives = true %}
 	{% for expertise in autres_expertises %}
     <table  class="projet">
         <tbody>
 				<tr><th colspan="2">Expertise de {{ expertise.expert.prenom }} {{ expertise.expert.nom }}</th></tr>
 				{% if expertise.definitif == false %}
-					{% set autres_expertises_sont_definitives = false %}
 					<tr><td colspan="2"><span class="attention">Cette expertise n'est pas définitive</span></td></tr>
 				{% else %}
 					<tr>
@@ -138,17 +137,6 @@
 		</tbody>
 	</table>
 	{% endfor %}
-
-
-    {#
-    {% if erreur==1 %}
-        <div class="message erreur"><p>ERREUR: Vous n'avez pas rempli les deux champs de commentaire</p></div>
-    {% elseif erreur==2 %}
-        <div class="message erreur"><p>ERREUR: Si vous n'attribuez pas d'heure, cliquez sur "Refuser pour cette session"</p></div>
-    {% elseif erreur==3 %}
-        <div class="message erreur"><p>ERREUR: Vous ne pouvez pas attribuer plus d'heures pour l'été que pour la session</p></div>
-    {% endif %}
-    #}
 
     {% if not erreurs == null %}
     <div class="message erreur">
@@ -213,9 +201,7 @@
 	{% if( expertise.definitif == false ) %}
 		{{ form_widget(edit_form.enregistrer) }}
 		{% if( not session_edition ) %}
-			{% if autres_expertises_sont_definitives %}
-	            {{ form_widget(edit_form.envoyer) }}
-	        {% endif %}
+            {{ form_widget(edit_form.envoyer) }}
 		{% endif %}
 	{% endif %}
 	{{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
