@@ -205,16 +205,19 @@ class Menu
             return $menu;
 		}
 
+        $etat_session   =   $session->getEtatSession();
         if(  ! self::peut_creer_projets() )
         {
-            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés ont la possibilité de créer un projet";
+            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés peuvent créer un projet";
 		}
-        else
+        elseif( $etat_session != Etat::EDITION_EXPERTISE )
 		{
             $menu['raison'] = '';
             $menu['commentaire'] = "Créez un nouveau projet, vous en serez le responsable";
             $menu['ok'] = true;
 		}
+        else
+            $menu['raison'] = 'La période de saisie des projets est terminée, pas possible de créer un nouveau projet pour l\'instant';
 
         return $menu;
     }
@@ -798,9 +801,11 @@ class Menu
         $menu['raison']         =   "";
         $menu['incomplet']      =   false;
 
-        $version        =   $projet->derniereVersion();
-        $etatVersion    =   $version->getEtatVersion();
-        $isProjetTest   =   $version->isProjetTest();
+        $version      = $projet->derniereVersion();
+        $etatVersion  = $version->getEtatVersion();
+        // true si le projet est un projet test OU un projet fil de l'eau
+        $type_projet  = $version->getProjet()->getTypeProjet();
+        $isProjetTest = ($type_projet == Projet::PROJET_FIL || $type_projet == Projet::PROJET_TEST);
 
         if( $version->getSession() != null )
             $etatSession = $version->getSession()->getEtatSession();
@@ -846,8 +851,6 @@ class Menu
             $menu['ok']             =   true;
             $menu['param']          =   $version->getIdVersion();
             }
-        //elseif( $version->getPrjFicheVal()  == false )
-        //    $menu['raison'] = "La fiche projet n'a pas encore été téléversée";
         else
         {
             $menu['ok']          = true;
