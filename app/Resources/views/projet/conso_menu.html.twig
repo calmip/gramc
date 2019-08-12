@@ -1,0 +1,11 @@
+<h1>Consommations </h1>
+
+<ul>
+	{% for k,r in ressources_conso %}
+		<li>
+			<img class="bouton_poussoir conso" src="{{ asset('icones/conso16.png') }}"
+                 alt="Consommation - {{projet}} - {{annee}} - {{r.nom}}"
+                 data-href="{{ absolute_url(path('projet_conso_ressource', { 'id': projet.idProjet, 'ress_id' : k, 'annee' : annee }))}}" /> Projet: {{ projet }} Année: {{ annee }} Ressource: {{ r.nom }}
+        </li>
+	{% endfor %}
+</ul>

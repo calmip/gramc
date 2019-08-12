@@ -902,7 +902,13 @@ div.ui-dialog {
 	width: 100%;
 }
 
-
+/* NE PAS redimensionner les boutons poussoirs !!! */
+#dialog-compta img.bouton_poussoir {
+	width: inherit;
+}
+#dialog-compta ul {
+	list-style: none;
+}
 #tab_incoh_utilisateurs_statut a, #tab_pb_login a, #tab_incoh_utilisateurs_etablissement a{
 	text-decoration: none;
 	color: black;

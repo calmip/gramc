@@ -8,6 +8,10 @@ class Calcul extends GramcGraf
 {
     /* Génère les données "StructuredData" qui seront utilisées par dessineConsoHeures
 	 * afin de faire le graphique de consommation des heures cpu+gpu pour un projet
+	 *
+	 * TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
+	 *        Il faudrait utiliser la valeur du champ 'ress' du paramètre 'ressources_conso'
+	 *
 	 * $debut, $fin = dates de début et fin
 	 * $db_data     = Le retour de la requête sql sur la table consommation
      *
@@ -68,12 +72,13 @@ class Calcul extends GramcGraf
    /* Affichage du graphique de la conso horaire d'un projet ou de la totale
     *
     * params = $structures_data (retour de createStructuredData)
+    *          $ressource (inutilisé)
     *
     * return = Un tableau de deux éléments:
     *             - L'image en base64
     *             - La taille de l'image produite
     */
-    public function createImage($structured_data)
+    public function createImage($structured_data, $ressource=null)
     {
 
         // Test s'il y a cpu ou gpu

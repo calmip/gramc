@@ -14,7 +14,7 @@ class Stockage extends GramcGraf
 	 *     key = timestamp
 	 *     val = [ $projet => $conso, 'quota' => $quota ]
 	 */
-	public function createStructuredData(\DateTime $date_debut, \DateTime $date_fin,$db_data)
+	public function createStructuredData(\DateTime $date_debut, \DateTime $date_fin, $db_data)
 	{
 		$diviseur = 1.00*1024*1024*1024;
         $structured_data = [];
@@ -56,11 +56,19 @@ class Stockage extends GramcGraf
         return $structured_data;
 	}
 
-    /* Affichage du graphique du stockage d'un projet
-     * Renvoie l'image calculée et encodée en base64
-     */
-    public function createImage($structured_data)
+    /*
+    * Affichage du graphique du stockage d'un projet
+    *
+    *      params $structured_data, retour de createStructuredData
+    *             $ressource, le nom de la ressource utilisée
+    *
+    *      return L'image calculée et codée en base64
+    *
+    */
+    public function createImage($structured_data,$ressource=null)
     {
+		// Compatibilité
+		if ($ressource==null) $ressource = 'work_space';
 
 		//$html = print_r($structured_data,true);
 		//return $html;
@@ -70,9 +78,9 @@ class Stockage extends GramcGraf
         $no_quota = true;
         foreach( $structured_data as $key => $item )
         {
-            if( ! array_key_exists ( 'work_space' , $item ) )
-                $structured_data[$key]['work_space'] = 0;
-            elseif ( $structured_data[$key]['work_space']  > 0 )
+            if( ! array_key_exists ( $ressource , $item ) )
+                $structured_data[$key][$ressource] = 0;
+            elseif ( $structured_data[$key][$ressource]  > 0 )
                 $no_prj = false;
 
 		   if ( ! array_key_exists ( 'quota' , $item ) )
@@ -90,7 +98,7 @@ class Stockage extends GramcGraf
         foreach( $structured_data as $key => $item )
         {
 			$xdata[] = $key;
-            $prj[]   = $structured_data[$key]['work_space'];
+            $prj[]   = $structured_data[$key][$ressource];
             $quota[] = $structured_data[$key]['quota'];
             if ($structured_data[$key]['quota']>$quota_max) $quota_max=$structured_data[$key]['quota'];
         }
@@ -125,7 +133,7 @@ class Stockage extends GramcGraf
         if( $no_prj == false )
         {
             $line = new \LinePlot($prj,$xdata);
-            $line->SetLegend('work_space');
+            $line->SetLegend($ressource);
             //$line->SetFillColor('lightblue@0.5');
             $line->SetColor("green");
             $graph->Add($line);

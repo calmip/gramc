@@ -77,6 +77,11 @@ parameters:
     # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
     prj_prefix: { '1' : 'P', '2' : 'T' }
 
+    # Ressources pour lesquelles on peut afficher la consommation
+    ressources_conso: { '1' : { 'type' : 'calcul', 'ress' : 'cpu,gpu', 'nom' : 'Heures de calcul' },
+                        '2' : { 'type' : 'stockage', 'ress' : 'work_space', 'nom' : 'Espace work' },
+                      }
+
     # Nombre max d'expertises pour un projet
     max_expertises_nb: 1
 

@@ -56,6 +56,7 @@ twig:
        noconso: '%noconso%'
        prj_prefix: '%prj_prefix%'
        max_expertises_nb: %max_expertises_nb%
+       ressources_conso: %ressources_conso%
 
 
 # Doctrine Configuration
