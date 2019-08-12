@@ -944,7 +944,7 @@ class ProjetController extends Controller
      */
     public function signatureAction(Version $version, Request $request)
     {
-    return Functions::pdf( $version->getSigne() );
+	    return Functions::pdf( $version->getSigne() );
     }
 
     /**

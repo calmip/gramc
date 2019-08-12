@@ -513,6 +513,9 @@ class Functions
 
     //////////////////////////////////////////////////
 
+	/***************
+	 * Téléchargement d'un fichier csv
+	 *****************/
     static public function csv($content, $filename = 'filename')
     {
         $response = new Response();
@@ -527,20 +530,23 @@ class Functions
         return $response;
     }
 
+	/***************
+	 * Téléchargement d'un fichier pdf
+	 *****************/
     static public function pdf($filename)
     {
         $response = new Response();
         if( preg_match( '/^\%PDF/', $filename ) )
-            {
+		{
             //$filename = preg_replace('~[\r\n]+~', '', $filename);
             $response->setContent($filename );
             $response->headers->set('Content-Disposition', 'inline; filename="document_gramc.pdf"' );
-            }
+		}
         elseif( $filename != null && file_exists( $filename ) && ! is_dir( $filename ) )
-            {
+		{
             $response->setContent(file_get_contents( $filename ) );
             $response->headers->set('Content-Disposition', 'inline; filename="' . basename($filename) .'"' );
-            }
+		}
         else
             $response->setContent('');
 

@@ -2805,6 +2805,9 @@ class Version
             return false;
     }
 
+	/*****************
+	* Retourne le chemin vers le fichier de signature correspondant à cette version
+	****************/
     public function getSigne()
     {
         $dir    =   AppBundle::getParameter('signature_directory');
@@ -2822,6 +2825,9 @@ class Version
             return null;
     }
 
+	/*****************************
+	 * Retourne la taille du fichier de signature
+	 *****************************/
     public function getSizeSigne()
     {
         $signe    =   $this->getSigne();
