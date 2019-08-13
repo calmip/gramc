@@ -637,6 +637,9 @@ class ExpertiseController extends Controller
                 if ( $expertise->getDefinitif()) continue;
 
                 $version    =  $expertise->getVersion();
+
+                // On  n'affiche que les expertises des versions en édition expertise
+                if ($version->getEtatVersion()!=Etat::EDITION_EXPERTISE && $version->getEtatVersion()!=Etat::EXPERTISE_TEST) continue;
                 $projetId   =  $version->getProjet()->getIdProjet();
 
                 $output =               [
