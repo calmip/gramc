@@ -73,7 +73,16 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
 
     }
 
-    /* Renvoie les données de compta pour un projet, une ressource, une année */
+    /******************
+    * Retourne les données de compta pour un projet, une ressource, une année
+    *
+    *      params: $projet
+    *              $ressource Un tableau décrivant une ressource (cf. parameters.yml)
+    *              $annee     Une annee
+    *
+    *      Retourne: Un tableau d'objets Compta
+    *
+    *********************/
     public function consoResPrj(Projet $projet, $ressource, $annee)
     {
         $debut = new \DateTime( $annee . '-01-01');
@@ -91,7 +100,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         )
         ->setParameter ('projet', strtolower($projet->getIdProjet() ) )
         ->setParameter ('debut',$debut)
-        ->setParameter ('res', $ressource)
+        ->setParameter ('res', $ressource['ress'])
         ->setParameter ('fin',$fin)
         ->getResult();
 
@@ -117,7 +126,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
         ->setParameter ('loginname', $user )
         ->setParameter ('projet', strtolower($projet->getIdProjet() ) )
         ->setParameter ('debut',$debut)
-        ->setParameter ('res', $ressource)
+        ->setParameter ('res', $ressource['nom'])
         ->setParameter ('fin',$fin)
         ->getResult();
 

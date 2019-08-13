@@ -10,13 +10,31 @@ class Stockage extends GramcGraf
 	 * afin de faire le graphique de l'occupation des espaces disques pour un projet sur une année
 	 * $debut, $fin = timestamps de début et fin
 	 * $db_data     = Le retour de la requête sql
+	 * $unite       = L'unité pour mise à l'échelle, Go ou To (cf. les paramètres ressources_conso_xxx dans parameters.yml)
 	 * Retourne stuctured_data, c-a-d un array:
 	 *     key = timestamp
 	 *     val = [ $projet => $conso, 'quota' => $quota ]
 	 */
-	public function createStructuredData(\DateTime $date_debut, \DateTime $date_fin, $db_data)
+	public function createStructuredData(\DateTime $date_debut, \DateTime $date_fin, $db_data, $unite='')
 	{
-		$diviseur = 1.00*1024*1024*1024;
+		$diviseur = 1.0;
+		if ( $unite==='Gio')
+		{
+			$diviseur *= 1024 * 1024;
+		}
+		elseif ( $unite === 'Tio')
+		{
+			$diviseur *= 1024 * 1024 * 1024;
+		}
+		elseif ( $unite === 'Go' )
+		{
+			$diviseur *= 1000 * 1000;
+		}
+		elseif ( $unite === 'To' )
+		{
+			$diviseur *= 1000 * 1000 * 1000;
+		}
+
         $structured_data = [];
         $debut = $date_debut->getTimestamp();
         $fin   = $date_fin->getTimestamp();
@@ -60,27 +78,27 @@ class Stockage extends GramcGraf
     * Affichage du graphique du stockage d'un projet
     *
     *      params $structured_data, retour de createStructuredData
-    *             $ressource, le nom de la ressource utilisée
+    *             $ressource, la ressource utilisée (un array, cf. parameters.yml
     *
     *      return L'image calculée et codée en base64
     *
     */
-    public function createImage($structured_data,$ressource=null)
+    public function createImage($structured_data,$ressource)
     {
 		// Compatibilité
-		if ($ressource==null) $ressource = 'work_space';
-
-		//$html = print_r($structured_data,true);
-		//return $html;
+		if ($ressource==null) $ressource = AppBundle::getParameter('ressources_conso_group')['2']; // work_space
 
         // tester si les données existent
         $no_prj   = true;
         $no_quota = true;
+        $res_nom  = $ressource['nom'];
+        $ress     = $ressource['ress'];
+        $res_unite= $ressource['unite'];
         foreach( $structured_data as $key => $item )
         {
-            if( ! array_key_exists ( $ressource , $item ) )
-                $structured_data[$key][$ressource] = 0;
-            elseif ( $structured_data[$key][$ressource]  > 0 )
+            if( ! array_key_exists ( $ress , $item ) )
+                $structured_data[$key][$ress] = 0;
+            elseif ( $structured_data[$key][$ress]  > 0 )
                 $no_prj = false;
 
 		   if ( ! array_key_exists ( 'quota' , $item ) )
@@ -98,7 +116,7 @@ class Stockage extends GramcGraf
         foreach( $structured_data as $key => $item )
         {
 			$xdata[] = $key;
-            $prj[]   = $structured_data[$key][$ressource];
+            $prj[]   = $structured_data[$key][$ress];
             $quota[] = $structured_data[$key]['quota'];
             if ($structured_data[$key]['quota']>$quota_max) $quota_max=$structured_data[$key]['quota'];
         }
@@ -133,7 +151,7 @@ class Stockage extends GramcGraf
         if( $no_prj == false )
         {
             $line = new \LinePlot($prj,$xdata);
-            $line->SetLegend($ressource);
+            $line->SetLegend($res_nom);
             //$line->SetFillColor('lightblue@0.5');
             $line->SetColor("green");
             $graph->Add($line);
@@ -150,7 +168,7 @@ class Stockage extends GramcGraf
 
         $graph->legend->Pos( 0.05,0.05,"right" ,"center");
         $graph->legend->SetColumns(4);
-		$graph->yaxis->title->Set($ressource);
+		$graph->yaxis->title->Set($res_nom.' ('.$res_unite.')');
 		$graph->yaxis->SetTitlemargin(40);
 		$graph->xaxis->title->Set('date');
 		$graph->xaxis->SetTitlemargin(50);

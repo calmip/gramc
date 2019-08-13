@@ -1182,24 +1182,34 @@ class ProjetController extends Controller
             $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
 
-        return $this->render('projet/conso_menu.html.twig', ['projet'=>$projet, 'annee'=>$annee]);
+        return $this->render('projet/conso_menu.html.twig', ['projet'=>$projet, 'annee'=>$annee, 'type'=>'group']);
 	}
 
     /**
      * Affichage graphique de la consommation d'un projet
      *
-     * @Route("/{id}/{ress_id}/{annee}/conso_ressource", name="projet_conso_ressource")
+     *      utype = type d'utilisateur - user ou group !
+     *
+     * @Route("/{id}/{utype}/{ress_id}/{annee}/conso_ressource", name="projet_conso_ressource")
      * @Method("GET")
      * @Security("has_role('ROLE_DEMANDEUR')")
      */
 
-    public function consoRessourceAction(Projet $projet, $ress_id, $annee = null)
+    public function consoRessourceAction(Projet $projet, $utype='group', $ress_id, $annee = null)
     {
 		$projet_id = strtolower($projet->getIdProjet());
 
         // Seuls les collaborateurs du projet ont accès à la consommation
         if( ! Functions::projetACL( $projet ) )
-                Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+		{
+			Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+		}
+
+        // Verification du paramètre $utype
+        if ($utype != 'group' && $utype != 'user')
+        {
+			Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec utype '.$utype);
+		}
 
         // Si année non spécifiée on prend l'année la plus récente du projet
         if( $annee == null )
@@ -1212,10 +1222,11 @@ class ProjetController extends Controller
         $debut = new \DateTime( $annee . '-01-01');
         $fin   = new \DateTime( $annee . '-12-31');
 
-		$ressource = AppBundle::getParameter('ressources_conso')[$ress_id];
-		$ress = $ressource['ress'];
+		$ressource = AppBundle::getParameter('ressources_conso_'.$utype)[$ress_id];
+		//$ress = $ressource['ress'];
 
 		// Génération du graphe de conso heures cpu et heures gpu
+		// Note - type ici n'a rien à voir avec le paramètre $utype
 		if ($ressource['type'] == 'calcul')
 		{
 	        $db_conso = $compta_repo->conso( $projet, $annee );
@@ -1226,10 +1237,10 @@ class ProjetController extends Controller
 		}
 		elseif ($ressource['type'] == 'stockage')
 		{
-			$db_work     = $compta_repo->consoResPrj( $projet, $ress, $annee );
+			$db_work     = $compta_repo->consoResPrj( $projet, $ressource, $annee );
 	        $dessin_work = new Stockage();
-	        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work);
-	        $image_conso  = $dessin_work->createImage($struct_data, $ressource['ress'])[0];
+	        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work,$ressource['unite']);
+	        $image_conso  = $dessin_work->createImage($struct_data, $ressource)[0];
 		}
 
         $twig     = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
