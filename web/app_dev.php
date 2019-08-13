@@ -8,17 +8,26 @@ use Symfony\Component\Debug\Debug;
 // for more information
 //umask(0000);
 
+// Le fichier adresses.txt contient la liste des adresses autorisées
+// cf. adresses.txt.dist pour un modèle de fichier
+$adresses_ip = file('adresses.txt');
+$adresses_ip = array_map('trim',$adresses_ip);
+if ($adresses_ip === false)
+{
+	$adresses_ip = [];
+}
+
 // This check prevents access to debug front controllers that are deployed by accident to production servers.
 // Feel free to remove this, extend it, or make something more sophisticated.
-/*
+
 if (isset($_SERVER['HTTP_CLIENT_IP'])
     || isset($_SERVER['HTTP_X_FORWARDED_FOR'])
-    || !(in_array(@$_SERVER['REMOTE_ADDR'], ['127.0.0.1','82.237.204.107','194.57.114.134', '194.57.114.144', '194.57.114.194', '172.24.232.83', '::1']) || php_sapi_name() === 'cli-server')
+    || !(in_array(@$_SERVER['REMOTE_ADDR'], $adresses_ip) || php_sapi_name() === 'cli-server')
 ) {
     header('HTTP/1.0 403 Forbidden');
-    exit('You are not allowed to access this file. Check '.basename(__FILE__).' for more information.');
+    //exit('You are not allowed to access this file. Check '.basename(__FILE__).' for more information.');
+    exit('You are not allowed to access this file. Check '.basename(__FILE__).' for more information. Your address is '.@$_SERVER['REMOTE_ADDR']);
 }
- */
 
 /** @var \Composer\Autoload\ClassLoader $loader */
 $loader = require __DIR__.'/../app/autoload.php';

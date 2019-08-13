@@ -1,0 +1,13 @@
+# LISTE DES ADRESSES IP AUTORISEES EN MODE DEV
+#
+# FORMAT = 1 IP par ligne
+#          # devant desactive l'adresse !
+
+# Boucle locale
+127.0.0.1
+::1
+
+# Une adresse autorisee si vous retirez le #
+# 3.3.3.3
+
+
