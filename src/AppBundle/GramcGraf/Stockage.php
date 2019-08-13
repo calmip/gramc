@@ -114,8 +114,8 @@ class Stockage extends GramcGraf
 
         //$graph = new \Graph(600,400);
         // Slightly larger than normal margins at the bottom to have room for
-        // the x-axis labels
-        $graph->SetMargin(70,40,30,130);
+        // the x-axis labels and at left to have room for y-axis labels
+        $graph->SetMargin(80,40,40,170);
 
         // Fix the Y-scale to go between [0,100] and use date for the x-axis
         //$graph->SetScale('datlin',0,100);
@@ -150,6 +150,10 @@ class Stockage extends GramcGraf
 
         $graph->legend->Pos( 0.05,0.05,"right" ,"center");
         $graph->legend->SetColumns(4);
+		$graph->yaxis->title->Set($ressource);
+		$graph->yaxis->SetTitlemargin(40);
+		$graph->xaxis->title->Set('date');
+		$graph->xaxis->SetTitlemargin(50);
 
         ob_start();
         $graph->Stroke();
