@@ -1160,6 +1160,7 @@ class ProjetController extends Controller
 
     /**
      * Affichage graphique de la consommation d'un projet
+     *     Affiche un menu permettant de choisir quelle consommation on veut voir afficher
      *
      * @Route("/{id}/conso/{annee}", name="projet_conso")
      * @Method("GET")
@@ -1168,11 +1169,11 @@ class ProjetController extends Controller
 
     public function consoAction(Projet $projet, $annee = null)
     {
-		$projet_id = strtolower($projet->getIdProjet());
-
         // Seuls les collaborateurs du projet ont accès à la consommation
         if( ! Functions::projetACL( $projet ) )
-                Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+        {
+			Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+		}
 
         // Si année non spécifiée on prend l'année la plus récente du projet
         if( $annee == null )
@@ -1181,30 +1182,70 @@ class ProjetController extends Controller
             $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
         }
 
-		$conso_repo = AppBundle::getRepository(Compta::class);
+        return $this->render('projet/conso_menu.html.twig', ['projet'=>$projet, 'annee'=>$annee, 'type'=>'group']);
+	}
+
+    /**
+     * Affichage graphique de la consommation d'un projet
+     *
+     *      utype = type d'utilisateur - user ou group !
+     *
+     * @Route("/{id}/{utype}/{ress_id}/{annee}/conso_ressource", name="projet_conso_ressource")
+     * @Method("GET")
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+
+    public function consoRessourceAction(Projet $projet, $utype='group', $ress_id, $annee = null)
+    {
+		$projet_id = strtolower($projet->getIdProjet());
+
+        // Seuls les collaborateurs du projet ont accès à la consommation
+        if( ! Functions::projetACL( $projet ) )
+		{
+			Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+		}
+
+        // Verification du paramètre $utype
+        if ($utype != 'group' && $utype != 'user')
+        {
+			Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec utype '.$utype);
+		}
+
+        // Si année non spécifiée on prend l'année la plus récente du projet
+        if( $annee == null )
+        {
+            $version    =   $projet->derniereVersion();
+            $annee = '20' . substr( $version->getIdVersion(), 0, 2 );
+        }
+
+		$compta_repo = AppBundle::getRepository(Compta::class);
         $debut = new \DateTime( $annee . '-01-01');
         $fin   = new \DateTime( $annee . '-12-31');
 
+		$ressource = AppBundle::getParameter('ressources_conso_'.$utype)[$ress_id];
+		//$ress = $ressource['ress'];
+
 		// Génération du graphe de conso heures cpu et heures gpu
-        $db_conso = $conso_repo->conso( $projet, $annee );
-		//foreach ($db_conso as $item) {
-		//	$msg = print_r($item,true);
-		//	$this->get('logger')->warning($msg);
-		//}
-
-		$dessin_heures = new Calcul();
-		$struct_data     = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
-		$dessin_heures->resetConso($struct_data);
-        $image_conso     = $dessin_heures->createImage($struct_data)[0];
-
-		$db_work    = $conso_repo->consoResPrj( $projet, 'work_space', $annee );
-        $dessin_work = new Stockage();
-        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work);
-        $image_work  = $dessin_work->createImage($struct_data)[0];
+		// Note - type ici n'a rien à voir avec le paramètre $utype
+		if ($ressource['type'] == 'calcul')
+		{
+	        $db_conso = $compta_repo->conso( $projet, $annee );
+			$dessin_heures = new Calcul();
+			$struct_data     = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+			$dessin_heures->resetConso($struct_data);
+	        $image_conso     = $dessin_heures->createImage($struct_data)[0];
+		}
+		elseif ($ressource['type'] == 'stockage')
+		{
+			$db_work     = $compta_repo->consoResPrj( $projet, $ressource, $annee );
+	        $dessin_work = new Stockage();
+	        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work,$ressource['unite']);
+	        $image_conso  = $dessin_work->createImage($struct_data, $ressource)[0];
+		}
 
         $twig     = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );
-        $twig_src = '<img src="data:image/png;base64, {{ image_conso }}" alt="Heures cpu/gpu" title="Heures cpu et gpu" /><hr /><img src="data:image/png;base64, {{ image_work }}" />';
-        $html = $twig->render( $twig_src,  [ 'image_conso' => $image_conso,'image_work' => $image_work ] );
+        $twig_src = '<img src="data:image/png;base64, {{ image_conso }}" alt="" title="" />';
+        $html = $twig->render( $twig_src,  [ 'image_conso' => $image_conso ] );
 
 		return new Response($html);
     }

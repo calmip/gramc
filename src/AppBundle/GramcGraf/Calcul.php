@@ -8,6 +8,10 @@ class Calcul extends GramcGraf
 {
     /* Génère les données "StructuredData" qui seront utilisées par dessineConsoHeures
 	 * afin de faire le graphique de consommation des heures cpu+gpu pour un projet
+	 *
+	 * TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
+	 *        Il faudrait utiliser la valeur du champ 'ress' du paramètre 'ressources_conso'
+	 *
 	 * $debut, $fin = dates de début et fin
 	 * $db_data     = Le retour de la requête sql sur la table consommation
      *
@@ -68,12 +72,13 @@ class Calcul extends GramcGraf
    /* Affichage du graphique de la conso horaire d'un projet ou de la totale
     *
     * params = $structures_data (retour de createStructuredData)
+    *          $ressource (inutilisé)
     *
     * return = Un tableau de deux éléments:
     *             - L'image en base64
     *             - La taille de l'image produite
     */
-    public function createImage($structured_data)
+    public function createImage($structured_data, $ressource=null)
     {
 
         // Test s'il y a cpu ou gpu
@@ -92,6 +97,7 @@ class Calcul extends GramcGraf
         $quota = [];
         $norm = [];
 
+		$quotamax = 0;
         foreach( $structured_data as $key => $item )
         {
             $xdata[]    =   $key;
@@ -99,6 +105,8 @@ class Calcul extends GramcGraf
             $gpu[]      =   $structured_data[$key]['gpu'];
             $norm[]    =   $structured_data[$key]['norm'];
             $quota[]    =   $structured_data[$key]['quota'];
+            $first = false;
+            if ($structured_data[$key]['quota']>$quotamax) $quotamax = $structured_data[$key]['quota'];
         }
 
         \JpGraph\JpGraph::load();
@@ -107,16 +115,16 @@ class Calcul extends GramcGraf
 
 
         // Create the new graph
-        $graph = new \Graph(540,300);
+        $graph = new \Graph(640,400);
 
         //$graph = new \Graph(600,400);
         // Slightly larger than normal margins at the bottom to have room for
-        // the x-axis labels
-        $graph->SetMargin(70,40,30,130);
+        // the x-axis labels and at left to have room for y-axis labels
+        $graph->SetMargin(100,40,40,170);
 
-        // Fix the Y-scale to go between [0,100] and use date for the x-axis
-        $graph->SetScale('datlin',0,100);
-        $graph->SetScale('datlin');
+        // Fix the Y-scale to go between [0,$quotamax] and use date for the x-axis
+        $graph->SetScale('datlin',0,1.05*$quotamax);
+        //$graph->SetScale('datlin');
         $graph->xaxis->scale->SetDateFormat("d-m-y");
 
         $graph->SetTickDensity( \TICKD_SPARSE, \TICKD_SPARSE );
@@ -127,12 +135,17 @@ class Calcul extends GramcGraf
         // Set the angle for the labels to 90 degrees
         $graph->xaxis->SetLabelAngle(90);
 
+		// The Y scale - between 0 and 1.1*$quotamax
+//		$graph->SetYScale('1','lin','0','60600');
+
+
         if( $no_cpu == false )
         {
             $line = new \LinePlot($cpu,$xdata);
             $line->SetLegend('CPU');
             //$line->SetFillColor('lightblue@0.5');
             $line->SetColor("green");
+            $line->SetWeight(2);
             $graph->Add($line);
         }
 
@@ -152,6 +165,8 @@ class Calcul extends GramcGraf
             //$line->SetFillColor('lightblue@0.5');
             $line->SetColor("black");
             $graph->Add($line);
+            $line->SetWeight(3);
+
         }
 
         if( $no_quota == false )
@@ -165,6 +180,10 @@ class Calcul extends GramcGraf
 
         $graph->legend->Pos( 0.05,0.05,"right" ,"center");
         $graph->legend->SetColumns(4);
+		$graph->yaxis->title->Set('heures normalisées');
+		$graph->yaxis->SetTitlemargin(65);
+		$graph->xaxis->title->Set('date');
+		$graph->xaxis->SetTitlemargin(60);
 
         ob_start();
         $graph->Stroke();

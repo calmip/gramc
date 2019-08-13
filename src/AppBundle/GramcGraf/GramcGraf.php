@@ -15,6 +15,6 @@ abstract class GramcGraf
      *
      */
     abstract public function createStructuredData(\DateTime $debut,\Datetime $fin,$db_data);
-    abstract public function createImage($structured_data);
+    abstract public function createImage($structured_data, $ressource);
 
 }

@@ -77,6 +77,24 @@ parameters:
     # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
     prj_prefix: { '1' : 'P', '2' : 'T' }
 
+    # Ressources pour lesquelles on peut afficher la consommation d'un projet (=groupe)
+    #         'type' = calcul ou stockage (les algos de dessin ne sont pas les mêmes)
+    #         'ress' = attribut 'ressource' de la classe Compta
+    #         'nom'  = Nom de la ressource (pour affichage uniquement)
+    #         'unite'= To/Go/Tio/Gio, pour affichage et calcul de mise à l'échelle
+
+    ressources_conso_group: { '1' : { 'type' : 'calcul',   'ress' : 'cpu,gpu',    'nom' : 'Heures normalisées', 'unite' : 'h'  },
+                              '2' : { 'type' : 'stockage', 'ress' : 'work_space', 'nom' : 'Espace work',      'unite' : 'Tio' },
+                              '3' : { 'type' : 'stockage', 'ress' : 'home_space', 'nom' : 'Home',             'unite' : 'Gio' },
+                            }
+
+    # Ressources pour lesquelles on peut afficher la consommation d'un utilisateur (=user)
+    ressources_conso_user:  { '1' : { 'type' : 'calcul',   'ress' : 'cpu,gpu',      'nom' : 'Heures normalisées', 'unite' : 'h'  },
+                              '2' : { 'type' : 'stockage', 'ress' : 'work_space',   'nom' : 'Espace work',      'unite' : 'Tio' },
+                              '3' : { 'type' : 'stockage', 'ress' : 'home_space',   'nom' : 'Home',             'unite' : 'Gio' },
+                              '4' : { 'type' : 'stockage', 'ress' : 'tmpdir_space', 'nom' : 'tmpdir',           'unite' : 'Gio' },
+                            }
+
     # Nombre max d'expertises pour un projet
     max_expertises_nb: 1
 
