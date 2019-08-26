@@ -35,7 +35,7 @@ parameters:
     mesoc_attrib: https://www.calmip.univ-toulouse.fr/spip/spip.php?article19
     # url du document décrivant le format des remerciements
     mesoc_merci: https://www.calmip.univ-toulouse.fr/spip/spip.php?article337
-    
+
     # Si l'attribution (+ rallonges) d'un projet est supérieure à ce seuil (gros projet),
     # la demande en B ne devrait pas être supérieure à la moitié de l'attribution !
     # Si c'est le cas on mettra un petit signal d'attention dans divers écrans
@@ -55,7 +55,7 @@ parameters:
     # recup_automne_d, recup_automne_f: Mois d'affichage des heures récupérables à l'automne [Début, Fin(
     # Par défaut: Septembre uniquement
     # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
-    recup_automne_d: 9
+    recup_automne_d: 09
     recup_automne_f: 10
 
     # conso_seuil_1/2: Limites utilisées par les voyants de consommation et par l'écran de projets par année (%)
@@ -69,7 +69,7 @@ parameters:
     # nb de pages max d'un rapport d'activité
     max_page_nb: 5
 
-    # divers répertoires 
+    # divers répertoires
     signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'
     fig_directory: '%kernel.root_dir%/../data/figures'
@@ -102,7 +102,7 @@ parameters:
 #    3/ On récupère une ligne de ce type:
 #       XXX.XXX.XXX.XXX - - [12/Apr/2016:14:52:21 +0200] "GET /Shibboleth.sso/Login?SAMLDS=1&target=ss%3Amem%3A837e1d65be89ecf2be...9b5329&entityID=https%3A%2F%2Fvmfetid.iamm.fr%2Fidp%2Fshibboleth HTTP/1.1" 302 1960...
 #       L'url recherché figure sous le nom entityID, il n'y a plus qu'à la décoder: %3A => :, %2F => /
-#        
+#
     IDPprod: {
               'CNRS' : 'https://janus.cnrs.fr/idp',
               'Université de Toulouse 3 Paul Sabatier' : 'https://shibboleth.ups-tlse.fr/idp/shibboleth',
