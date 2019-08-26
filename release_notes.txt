@@ -1,3 +1,15 @@
+v 2.2.7 - 26 Août 2019
+---------------------
+    - Remise en service des pénalités d'Automne qui avaient disparu suite à la mise en service de la nouvelle table compta
+
+v 2.2.7 - 6 Août 2019
+---------------------
+    - Data fixture pour tenir compte du changement d'eppn de l'INPT
+
+v 2.2.6 - 1 Juillet 2019
+---------------------
+    - Bugs d'affichage des projets (mauvais affichaged des heures d'été)
+
 v 2.2.5 - 3 Juin 2019
 ---------------------
     - BUG introduit par 2.2.4 dans l'écran de projets par année
