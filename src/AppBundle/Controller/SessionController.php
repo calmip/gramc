@@ -95,13 +95,13 @@ class SessionController extends Controller
         else
         {
             AppBundle::getSession()->remove('SessionCourante');
-    
+
             $session_courante       =   Functions::getSessionCourante();
             $etat_session_courante  =   $session_courante->getEtatSession();
             $workflow   = new SessionWorkflow();
-    
+
             //
-    
+
             if(  $etat_session_courante == Etat::ACTIF )
                 $menu[] =   [
                             'ok' => true,
@@ -117,9 +117,9 @@ class SessionController extends Controller
                             'commentaire'=> 'Pas possible de créer une nouvelle session',
                             'raison'    => "La session courante n'est pas encore active",
                             ];
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session_courante) )
                 {
                 $menu[] =
@@ -155,9 +155,9 @@ class SessionController extends Controller
                              'raison' => "La saisie a déjà démarré pour cette session",
                              ];
                 }
-    
+
             //
-    
+
             if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session_courante)  )
                  $menu[] =  [
                             'ok' => true,
@@ -182,9 +182,9 @@ class SessionController extends Controller
                             'raison' => "La saisie est déjà terminée pour cette session",
                             ];
             //
-    
+
              if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-    
+
                 $menu[] =  [
                             'ok' => true,
                             'name' => 'envoyer_expertises',
@@ -205,11 +205,11 @@ class SessionController extends Controller
                         $item['raison'] = "La session n'est pas dans un état qui permet les envois";
                    $menu[]  =   $item;
                 }
-    
+
             //
-    
+
             $mois = GramcDate::get()->format('m');
-    
+
             if( $mois != 1 && $mois != 6 && $mois != 7 && $mois != 12 )
                 $menu[] =   [
                             'ok' => false,
@@ -638,7 +638,7 @@ class SessionController extends Controller
     {
         $annee = GramcDate::get()->format('y');   // 15 pour 2015
         $mois  = GramcDate::get()->format('m');   // 5 pour mai
-    
+
         if ($mois<7)
         {
             $id_session = $annee.'B';
@@ -649,7 +649,7 @@ class SessionController extends Controller
             $id_session = $annee+1 .'A';
             $type = 0;
         }
-    
+
         return [ 'id' => $id_session, 'type' => $type ];
     }
 
@@ -1164,7 +1164,7 @@ class SessionController extends Controller
                     $consommation = $version->getConsommation();
                     $conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
                 }
-                else 
+                else
                 {
                     $consommation = null;
                     $conso_gpu    = 0;
@@ -1331,13 +1331,16 @@ class SessionController extends Controller
         return intval(substr($session->getIdSession(),0,-1));
     }
 
-    // calc_recup_heures_printemps
-    // Si le projet a eu beaucoup d'heures attribuées mais n'en a consommé que peu,
-    // on récupère une partie de son attribution
-    // cf. la règle 4
-    // param $conso  = Consommation
-    // param $attrib = Attribution
-    // return $recup = Heures pouvant être récupérées
+    /********************
+    * calc_recup_heures_printemps
+    * Si le projet a eu beaucoup d'heures attribuées mais n'en a consommé que peu,
+    * on récupère une partie de son attribution
+    * cf. la règle 4
+    *      param $conso  = Consommation
+    *      param $attrib = Attribution
+    *      return $recup = Heures pouvant être récupérées
+    *
+    *********************/
     public static function calc_recup_heures_printemps( $conso, $attrib)
     {
        $recup_heures = 0;
@@ -1358,12 +1361,15 @@ class SessionController extends Controller
         return $recup_heures;
     }
 
-    // calc_recup_heures_automne
-    // Si le projet a consommé moins d'heures en été que demandé par le comité,
-    // on récupère ce qui n'a pas été consommé
-    // param $conso_ete  = Le consommation pour Juillet et Août
-    // param $attrib_ete = L'attribution pour l'été
-    // return $recup     = Heures pouvant être récupérées
+	/********************************
+	* calc_recup_heures_automne
+    * Si le projet a consommé moins d'heures en été que demandé par le comité,
+    * on récupère ce qui n'a pas été consommé
+    *
+    * param $conso_ete  = La consommation pour Juillet et Août
+    * param $attrib_ete = L'attribution pour l'été
+    * return $recup     = Heures pouvant être récupérées
+    **********************************/
     public static function calc_recup_heures_automne( $conso_ete, $attrib_ete )
     {
        $recup_heures = 0;

@@ -41,7 +41,7 @@ twig:
     strict_variables: "%kernel.debug%"
     globals:
        init: "@app.init_controller"
-       version_gramc: '2.2.7'
+       version_gramc: '2.2.8'
        mailadmin: '%mailadmin%'
        mesoc: '%mesoc%'
        mesoc_web: '%mesoc_web%'
@@ -51,8 +51,6 @@ twig:
        mesoc_visu: '%mesoc_visu%'
        conso_seuil_1: '%conso_seuil_1%'
        conso_seuil_2: '%conso_seuil_2%'
-       recup_printemps_d: '%recup_printemps_d%'
-       recup_printemps_f: '%recup_printemps_f%'
 
 
 # Doctrine Configuration

@@ -1196,12 +1196,13 @@ class Functions
             // Pour le calcul des pénalités d'Automne
             $p['attrete'] = $v->getAttrHeuresEte();
 
-            // TODO -> Penalites d'automne !
+            // Penalites d'automne. Elles dépendent de la consommation des mois de Juillet et d'Août
             if ($isRecupAutomne==true) {
-                //$p['consoete']    = $c->getM08()-$c->getM06();
-                //$p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
-                //$total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-                $p['recuperable'] = 0;
+				$d = $annee_courante.'-07-01';
+				$f = $annee_courante.'-09-01';
+                $p['consoete']    = $v->getProjet()->getConsoIntervalle(['cpu','gpu'],[$d,$f]);
+                $p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
+                $total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
             } else {
                 $p['recuperable'] = 0;
             }
