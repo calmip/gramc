@@ -722,17 +722,6 @@ class ProjetController extends Controller
         $data  =   Functions::selectAnnee($request); // formulaire
         $annee = $data['annee'];
 
-        // $mois est utilisé pour calculer les éventuelles pénalités d'été
-        // Si on n'est pas à l'année courante, on le met à 0 donc elles ne seront jamais calculées
-        $annee_courante=GramcDate::get()->showYear();
-        if ($annee == $annee_courante)
-        {
-            $mois  = GramcDate::get()->showMonth();
-        }
-        else
-        {
-            $mois = -1;
-        }
         $isRecupPrintemps = GramcDate::isRecupPrintemps($annee);
         $isRecupAutomne   = GramcDate::isRecupAutomne($annee);
 
