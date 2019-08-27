@@ -98,6 +98,13 @@ parameters:
     # Nombre max d'expertises pour un projet
     max_expertises_nb: 1
 
+    # commentaires_experts_d, commentaires_experts_f: Mois pendant lesquels les experts peuvent entrer leur commentaire
+    # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
+    # Pour l'année 2019, le lien sera disponible à partir du mois de Mai 2019 inclus...
+    commentaires_experts_d: 5
+    # ... et jusqu'au mois de Mars 2020 exclus
+    commentaires_experts_f: 3
+
     # divers répertoires
     signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'

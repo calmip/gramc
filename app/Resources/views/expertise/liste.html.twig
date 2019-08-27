@@ -136,9 +136,28 @@
 </section>
 {% endif %}
 
-{% if( not ( old_expertises == null ) ) %}
+{% if mes_commentaires_flag != null %}
+	<h2>Commentaires généraux</h2>
+	<section>
+	{% if mes_commentaires_maj != null %}
+		<p><strong><a href="{{ path('cree_ou_modif', { 'annee' : mes_commentaires_maj }) }}">Créer ou modifier</a></strong> le commentaire de l'année <strong>{{mes_commentaires_maj}}</strong></p>
+	{% endif %}
+
+	{% if mes_commentaires != null %}
+		{% for comm in mes_commentaires %}
+		<h3>{{comm.annee}}</h3>
+		<p><em>Dernière mise à jour le {{comm.majstamp|date('Y-m-d H:i:s')}}</em></p>
+		<p>{{comm.commentaire}}</p>
+		{% endfor %}
+	{% else %}
+		<p><em>Vous n'avez entré aucun commentaire</em></p>
+	{% endif %}
+	</section>
+{% endif %}
+
+<h2>Anciennes expertises</h2>
 <section>
-    <h2>Anciennes expertises</h2>
+{% if( not ( old_expertises == null ) ) %}
     <table id="old_expertises">
     <thead>
         <tr>
@@ -172,6 +191,8 @@
     </tbody>
     </table>
     <hr>
+{% else %}
+<p><em>Vous n'avez pas d'anciennes expertises</em></p>
 </section>
 {% endif %}
 
