@@ -1113,12 +1113,12 @@ class SessionController extends Controller
 			if ($type_session=='A')
 			{
 				if ($version_precedente_A != null) {
-					$conso = $version_precedente_A->getConso();
+					$conso = $version_precedente_A->getConsoCalcul();
 					$quota = $version_precedente_A->getQuota();
 					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
 				}
 				elseif ( $version_precedente_B != null ) {
-					$conso = $version_precedente_B->getConso();
+					$conso = $version_precedente_B->getConsoCalcul();
 					$quota = $version_precedente_A->getQuota();
 					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
 				}
@@ -1126,7 +1126,7 @@ class SessionController extends Controller
 			// type B
 			else
 			{
-				$conso = $version->getConso();
+				$conso = $version->getConsoCalcul();
 				$quota = $version->getQuota();
 				$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
 			}
@@ -1138,7 +1138,7 @@ class SessionController extends Controller
             if( $version_courante_A != null )
             {
 				// TODO - VERIFIER EN 2020 QUE CA MARCHE !
-				$conso_juin = $version->getProjet()->getConso($date_recup->format('Y-m-d'));
+				$conso_juin = $version->getConsoCalcul($date_recup->format('Y-m-d'));
                 $recuperable        =   static::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
 			}
             else
@@ -1199,7 +1199,7 @@ class SessionController extends Controller
             $totaux["dem_heures_A"]             +=  $dem_heures_A;
             $totaux["attr_heures_A"]            +=  $attr_heures_A;
             $totaux["quota"]                    +=  $quota;
-            $totaux["conso_an"]                 +=  $version->getConso(); //( $consommation != null ) ? $consommation->conso(): 0;
+            $totaux["conso_an"]                 +=  $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
             $totaux["conso_gpu"]                +=  $conso_gpu;
             $totaux["recuperable"]              +=  $recuperable;
 

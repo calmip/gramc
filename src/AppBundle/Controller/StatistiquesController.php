@@ -96,11 +96,11 @@ class StatistiquesController extends Controller
 
     $conso_nouveaux         =   0;
     foreach( $projets_nouveaux as $projet )
-        $conso_nouveaux =   $conso_nouveaux +   $projet->getConso($annee);
+        $conso_nouveaux =   $conso_nouveaux +   $projet->getConsoCalcul($annee);
 
     $conso_renouvelles         =   0;
     foreach( $projets_renouvelles as $projet )
-        $conso_renouvelles      =   $conso_renouvelles  +   $projet->getConso($annee);
+        $conso_renouvelles      =   $conso_renouvelles  +   $projet->getConsoCalcul($annee);
 
     $num_projets_renouvelles    =   count($projets_renouvelles);
     $num_projets_nouveaux       =   count($projets_nouveaux);
@@ -721,7 +721,7 @@ class StatistiquesController extends Controller
         if( $projets[$idProjet] == true )
             $consoV  =   $version->getConsoSession(); // deux versions dans l'année
         else
-            $consoV  =   $version->getConso(); // une seule version dans l'année
+            $consoV  =   $version->getConsoCalcul(); // une seule version dans l'année
 
         if( array_key_exists( $acro, $conso ) )
             $conso[$acro]       =  $conso[$acro] + $consoV;

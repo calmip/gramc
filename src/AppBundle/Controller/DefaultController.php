@@ -197,7 +197,7 @@ class DefaultController extends Controller
        $conso = 0;
        foreach( $projets as $projet )
             {
-            $consoProjet    =  $projet->getConso($annee);
+            $consoProjet    =  $projet->getConsoCalcul($annee);
             if(  $consoProjet < 0 )
                 Functions::errorMessage(__METHOD__ . ':' . __FILE__ . " consommation du projet " . $projet . " pour l'année " . $annee . " negative !");
             else

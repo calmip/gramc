@@ -2912,14 +2912,15 @@ class Version
     }
 
     /*
-     * Raccourci vers getConso du projet
+     * Raccourci vers getConsoCalcul du projet
      */
-    public function getConso()
+    public function getConsoCalcul()
     {
 		$projet = $this->getProjet();
 		$annee  = $this->getAnneeSession();
-		return $projet->getConso($annee);
+		return $projet->getConsoCalcul($annee);
 	}
+
     /*
      * Raccourci vers getQuota du projet
      */

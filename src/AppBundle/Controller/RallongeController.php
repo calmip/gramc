@@ -734,7 +734,7 @@ class RallongeController extends Controller
 	            $projets[ $idProjet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
 	            $projets[ $idProjet ]['etatVersion']        = $version->getEtatVersion();
 	            $projets[ $idProjet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
-	            $projets[ $idProjet ]['conso']      = $projet->getConso(  $version->getAnneeSession() );
+	            $projets[ $idProjet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
 
 	            if( $version->isNouvelle() )
 	                $projets[ $idProjet ]['NR']   =   'N';

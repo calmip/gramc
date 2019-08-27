@@ -46,6 +46,7 @@ parameters:
     recup_conso_seuil:  30      # Si la conso est inférieure à ce seuil (%), on récupèrera des heures
     recup_attrib_quant: 50      # Partie de l'attribution à récupérer: 50% = On récupère la moitié des heures attribuées initialement
 
+    # ATTENTION - NE PAS ECRIRE 05, car vous aurez... 0 a la fin !
     # recup_printemps_d, recup_printemps_f: Mois d'affichage des heures récupérables au printemps [Début, Fin(
     # Par défaut: de Mai (inclus) à Août (exclus)
     # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
