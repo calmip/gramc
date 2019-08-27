@@ -1243,13 +1243,16 @@ class SessionController extends Controller
         return intval(substr($session->getIdSession(),0,-1));
     }
 
-    // calc_recup_heures_printemps
-    // Si le projet a eu beaucoup d'heures attribuées mais n'en a consommé que peu,
-    // on récupère une partie de son attribution
-    // cf. la règle 4
-    // param $conso  = Consommation
-    // param $attrib = Attribution
-    // return $recup = Heures pouvant être récupérées
+    /********************
+    * calc_recup_heures_printemps
+    * Si le projet a eu beaucoup d'heures attribuées mais n'en a consommé que peu,
+    * on récupère une partie de son attribution
+    * cf. la règle 4
+    *      param $conso  = Consommation
+    *      param $attrib = Attribution
+    *      return $recup = Heures pouvant être récupérées
+    *
+    *********************/
     public static function calc_recup_heures_printemps( $conso, $attrib)
     {
        $recup_heures = 0;
@@ -1270,12 +1273,15 @@ class SessionController extends Controller
         return $recup_heures;
     }
 
-    // calc_recup_heures_automne
-    // Si le projet a consommé moins d'heures en été que demandé par le comité,
-    // on récupère ce qui n'a pas été consommé
-    // param $conso_ete  = Le consommation pour Juillet et Août
-    // param $attrib_ete = L'attribution pour l'été
-    // return $recup     = Heures pouvant être récupérées
+	/********************************
+	* calc_recup_heures_automne
+    * Si le projet a consommé moins d'heures en été que demandé par le comité,
+    * on récupère ce qui n'a pas été consommé
+    *
+    * param $conso_ete  = La consommation pour Juillet et Août
+    * param $attrib_ete = L'attribution pour l'été
+    * return $recup     = Heures pouvant être récupérées
+    **********************************/
     public static function calc_recup_heures_automne( $conso_ete, $attrib_ete )
     {
        $recup_heures = 0;

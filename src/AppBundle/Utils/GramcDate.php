@@ -43,7 +43,8 @@ class GramcDate extends GramcDateTime
     // Sommes-nous en periode de récupération des heures de printemps ?
     // param $annee Année considérée - Si non année courante, on renvoie false
     // return true/false
-    static public function isRecupPrintemps($annee) {
+    static public function isRecupPrintemps($annee)
+    {
         $d = new GramcDate();
 
         // Pas de paramètres: renvoie false
@@ -65,7 +66,8 @@ class GramcDate extends GramcDateTime
     // Sommes-nous en periode de récupération des heures d'automne ?
     // param $annee Année considérée - Si non année courante, on renvoie false
     // return true/false
-    static public function isRecupAutomne($annee) {
+    static public function isRecupAutomne($annee)
+    {
         $d = new GramcDate();
 
         // Pas de paramètres: renvoie false

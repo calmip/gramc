@@ -55,7 +55,7 @@ parameters:
     # recup_automne_d, recup_automne_f: Mois d'affichage des heures récupérables à l'automne [Début, Fin(
     # Par défaut: Septembre uniquement
     # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
-    recup_automne_d: 9
+    recup_automne_d: 09
     recup_automne_f: 10
 
     # conso_seuil_1/2: Limites utilisées par les voyants de consommation et par l'écran de projets par année (%)

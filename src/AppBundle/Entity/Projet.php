@@ -809,7 +809,7 @@ class Projet
 	 *        Si on utilise avant 8h00 du matin toutes les consos sont à 0 !
 	 *
 	 */
-    public function getConsoRessource($ressource, $annee_ou_date=null)
+    public function getConsoRessource_DEVELOP_A_CHANGER($ressource, $annee_ou_date=null)
     {
 		//return [0,0];
         $annee_ou_date_courante = GramcDate::get()->showYear();
@@ -849,14 +849,119 @@ class Projet
         return [$conso, $quota];
     }
 
-	/*
-	 * Renvoie la consommation seule (pas le quota) des ressources cpu + gpu
-	 *
-	 * param : $annee
-     * return: La consommation "calcul" pour l'année
-     *
-     */
-    public function getConso($annee_ou_date=null)
+	/************************************
+	* calcul de la consommation et du quota d'une ressource à une date donnée
+    * Renvoie [ $conso, $quota ]
+    * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
+    *
+    ************/
+	public function getConsoDate($ressource, \DateTime $date)
+	{
+        $loginName = strtolower($this->getIdProjet());
+        $conso     = 0;
+        $quota     = 0;
+        $compta    = AppBundle::getRepository(Compta::class)->findOneBy(
+						[
+							'date'      => $date,
+							'ressource' => $ressource,
+							'loginname' => $loginName,
+							'type'      => 2
+						]);
+        if ($compta != null)
+        {
+            $conso = $compta->getConso();
+            $quota = $compta->getQuota();
+        }
+
+        return [$conso, $quota];
+	}
+
+	/************************************
+	* calcul de la consommation et du quota d'une ressource pour une année donnée
+    * Si $annee==null -> On prend l'annee courante
+    * Si $annee==annee courante -> On prend l'info à la DATE DU JOUR
+    * Si $annee==autre année    -> On prend l'info au 31 Décembre
+    * Renvoie [ $conso, $quota ]
+    * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
+    *
+    ************/
+    public function getConsoRessource_MASTER($ressource, $annee=null)
+    {
+        $annee_courante = GramcDate::get()->showYear();
+        if ($annee==null) $annee = $annee_courante;
+        if ($annee==$annee_courante)
+        {
+            $date = new \DateTime();
+        }
+        else
+        {
+            $date = new \DateTime( $annee . '-12-31');
+        }
+        return $this->getConsoDate($ressource, $date);
+    }
+
+	/*******
+	* calcul de la consommation cumulée d'une ou plusieurs ressources dans un intervalle de dates données
+	*
+	* params: $ressources -> Un tableau de ressources
+	*         $dates      -> Un tableau de deux strings représentant des dates [debut,fin(
+	*
+	* Retourne: La somme de la consommation pour les deux ressources dans l'intervalle de dates considéré
+	*
+	* Prérequis: Il ne doit pas y avoir eu de remise à zéro dans l'intervalle
+	*
+	* TODO - Diminuer le nombre de requêtes SQL avec une seule requête plus complexe
+	*
+	***********************/
+	public function getConsoIntervalle($ressources, $dates)
+	{
+		if ( ! is_array($ressources) || ! is_array($dates))
+		{
+			Functions::createException(__METHOD__ . ":" . __LINE__ . " Erreur interne - \$ressources ou \$dates n'est pas un array");
+		}
+		if (count( $ressources ) < 1 || count( $dates ) < 2)
+		{
+			Functions::createException(__METHOD__ . ":" . __LINE__ . " Erreur interne - \$ressources ou \$dates est un array trop petit");
+		}
+
+		$debut = new \DateTime($dates[0]);
+		$fin   = new \DateTime($dates[1]);
+
+		$conso_debut = 0;
+		$conso_fin   = 0;
+		foreach ($ressources as $r)
+		{
+			//Functions::debugMessage('koukou '.$r.' '.$dates[0].' '.print_r($this->getConsoDate($r,$debut),true).$dates[1].' '.print_r($this->getConsoDate($r,$fin),true));
+			$conso_debut += $this->getConsoDate($r,$debut)[0];
+			$conso_fin   += $this->getConsoDate($r,$fin)[0];
+		}
+		// $conso_fin peut être nulle si la date de fin est dans le futur !
+		// Dans ce cas on renvoie 0
+		return ($conso_fin)?$conso_fin-$conso_debut:0;
+	}
+
+    // TODOCONSOMMATION - calcul de la consommation à partir de la table Consommation
+    public function getConso($annee)
+    {
+        $consommation   =   $this->getConsommation($annee);
+        $conso          =   0;
+
+        if( $consommation != null )
+        {
+            for ($i = 1; $i <= 12; $i++)
+            {
+                if( $i < 10 )
+                    $methodName = 'getM0'.$i;
+                else
+                    $methodName ='getM'.$i;
+                $c = $consommation->$methodName();
+                if( $c != null && $c > $conso ) $conso  =   $c;
+            }
+        }
+        return $conso;
+    }
+
+    public function getConsommation($annee)
     {
 		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
 		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);

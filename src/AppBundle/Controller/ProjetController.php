@@ -793,15 +793,6 @@ class ProjetController extends Controller
         $data  =   Functions::selectAnnee($request); // formulaire
         $annee = $data['annee'];
 
-        // $mois est utilisé pour calculer les éventuelles pénalités d'été
-        // Si on n'est pas à l'année courante, on le met à 0 donc elles ne seront jamais calculées
-        $annee_courante=GramcDate::get()->showYear();
-        if ($annee == $annee_courante)
-        {
-            $mois  = GramcDate::get()->showMonth();
-        } else {
-            $mois = -1;
-        }
         $isRecupPrintemps = GramcDate::isRecupPrintemps($annee);
         $isRecupAutomne   = GramcDate::isRecupAutomne($annee);
 
@@ -1621,6 +1612,74 @@ class ProjetController extends Controller
             ]
             );
 	}
+
+    //////////////////////////
+    //
+    // projet normal
+    //
+    //////////////////////////
+    $session_form = AppBundle::createFormBuilder( ['version' => $version ] )
+        ->add('version',   EntityType::class,
+                [
+                'multiple' => false,
+                'class' => 'AppBundle:Version',
+                'required'  =>  true,
+                'label'     => '',
+                'choices' =>  $projet->getVersion(),
+                'choice_label' => function($version){ return $version->getSession(); }
+                ])
+    ->add('submit', SubmitType::class, ['label' => 'Changer'])
+    ->getForm();
+
+    $session_form->handleRequest($request);
+
+    if ( $session_form->isSubmitted() && $session_form->isValid() )
+        $version = $session_form->getData()['version'];
+
+    if( $version != null )
+        $session = $version->getSession();
+    else
+        Functions::createException(__METHOD__ . ':' . __LINE__ .' projet ' . $projet . ' sans version');
+
+    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
+    $menu[] =   Menu::changer_responsable($version);
+    $menu[] =   Menu::renouveler_version($version);
+    $menu[] =   Menu::modifier_version( $version );
+    $menu[] =   Menu::envoyer_expert( $projet );
+    $menu[] =   Menu::modifier_collaborateurs( $version );
+    $menu[] =   Menu::telechargement_fiche( $version );
+    $menu[] =   Menu::televersement_fiche( $version );
+    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
+
+    $etat_version = $version->getEtatVersion();
+    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
+        $menu[] =   Menu::televerser_rapport_annee( $version );
+
+    $menu[] =   Menu::gerer_publications( $projet );
+
+    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
+    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
+    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+
+    /*
+    if( $img_expose_1 == null )
+        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
+    else
+        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
+    */
+
+    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
+    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
+    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+
+    $toomuch = false;
+    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
+        $version_prec = $version->versionPrecedente();
+        if ($version_prec->getAnneeSession() == $version_prec->getAnneeSession()) {
+            $toomuch = Functions::is_demande_toomuch($version_prec->getAttrHeures(),$version->getDemHeures());
+        }
+    }
+>>>>>>> 2.2.8
 
 	// Consulter les projets de type 3 (projets PROJET_FIL)
     private function consulterType3(Projet $projet, Version $version, Request $request)

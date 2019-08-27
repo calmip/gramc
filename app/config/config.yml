@@ -51,13 +51,10 @@ twig:
        mesoc_visu: '%mesoc_visu%'
        conso_seuil_1: '%conso_seuil_1%'
        conso_seuil_2: '%conso_seuil_2%'
-       recup_printemps_d: '%recup_printemps_d%'
-       recup_printemps_f: '%recup_printemps_f%'
        noconso: '%noconso%'
        prj_prefix: '%prj_prefix%'
        max_expertises_nb: %max_expertises_nb%
        ressources_conso_group: %ressources_conso_group%
-
 
 # Doctrine Configuration
 doctrine:
