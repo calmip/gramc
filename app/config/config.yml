@@ -53,8 +53,8 @@ twig:
        conso_seuil_2: '%conso_seuil_2%'
        noconso: '%noconso%'
        prj_prefix: '%prj_prefix%'
-       max_expertises_nb: %max_expertises_nb%
-       ressources_conso_group: %ressources_conso_group%
+       max_expertises_nb: '%max_expertises_nb%'
+       ressources_conso_group: '%ressources_conso_group%'
 
 # Doctrine Configuration
 doctrine:

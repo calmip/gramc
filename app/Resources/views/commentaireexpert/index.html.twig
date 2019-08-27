@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Commentaireexperts list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Commentaire</th>
+                <th>Id</th>
+                <th>Annee</th>
+                <th>Majstamp</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for commentaireExpert in commentaireExperts %}
+            <tr>
+                <td><a href="{{ path('commentaireexpert_show', { 'id': commentaireExpert.id }) }}">{{ commentaireExpert.commentaire }}</a></td>
+                <td>{{ commentaireExpert.id }}</td>
+                <td>{{ commentaireExpert.annee }}</td>
+                <td>{% if commentaireExpert.majStamp %}{{ commentaireExpert.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('commentaireexpert_show', { 'id': commentaireExpert.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('commentaireexpert_edit', { 'id': commentaireExpert.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('commentaireexpert_new') }}">Create a new commentaireExpert</a>
+        </li>
+    </ul>
+{% endblock %}

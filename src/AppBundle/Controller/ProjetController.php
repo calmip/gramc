@@ -746,7 +746,19 @@ class ProjetController extends Controller
         foreach ($prjs as $p)
         {
             $v = empty($p['vb']) ? $p['va'] : $p['vb'];
-            $metathema = $v->getPrjThematique()->getMetaThematique()->getLibelle();
+
+            // On saute les projets en édition !
+            if ($v->getEtatVersion() == Etat::EDITION_DEMANDE || $v->getEtatVersion() == Etat::EDITION_TEST) continue;
+            $thematique= $v->getPrjThematique();
+            if ($thematique==null)
+            {
+				Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $v . " n'a pas de thématique !");
+			}
+			else
+			{
+				$metathema = $thematique->getMetaThematique()->getLibelle();
+			}
+
             if (! isset($projets[$metathema])) {
                 $projets[$metathema] = [];
             }

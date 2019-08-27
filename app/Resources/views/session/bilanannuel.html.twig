@@ -27,6 +27,13 @@
         <input type="submit" value="Afficher les résumés des projets de l'année {{ annee }}" />
     </form>
 
+    <br />
+	{% if avec_commentaires %}
+	    <form action="{{ path('commentaireexpert_liste', {'annee': annee }) }}">
+	        <input type="submit" value="Afficher les commentaires des experts pour l'année {{ annee }}" />
+	    </form>
+	{% endif %}
+
 </section>
 
 {% endblock body %}

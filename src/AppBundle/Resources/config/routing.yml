@@ -1,0 +1,4 @@
+app_commentaireexpert:
+    resource: "@AppBundle/Resources/config/routing/commentaireexpert.php"
+    prefix:   /commentaireexpert
+

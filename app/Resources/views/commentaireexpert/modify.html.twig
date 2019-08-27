@@ -1,0 +1,25 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<h2>Commentaires sur l'année écoulée </h2>
+    {% import "default/macros.html.twig" as gramcmacros %}
+
+    {{ gramcmacros.info('',"Entrez ici votre commentaire en tant que membre du Comité d'Attributions, à propos de l'année " ~ commentaireExpert.annee ~ ": sujets qui prennent de l'importance, sujets en perte de vitesse, tendances sur les nombres d'heures demandées et attribuées, etc.") }}
+
+	{{ form_start(edit_form) }}
+	    <table>
+	        <tr>
+	            <th>{{ form_label(edit_form.commentaire) }}</th>
+	            <td>{{ form_widget(edit_form.commentaire) }}</td>
+	        </tr>
+	        <tr>
+	            <th>&nbsp;</th>
+	            <td>{{ form_widget(edit_form.submit) }}{{ form_widget(edit_form.reset) }}</td>
+	        </tr>
+	    </table>
+    {{ form_end(edit_form) }}
+
+    {{ gramcmacros.menu(menu) }}
+    <div class="center">{{ gramcmacros.actif('expertise_liste','Retour à la page expertise',"Allez à l'espace expert !") }}</div>
+
+{% endblock body %}

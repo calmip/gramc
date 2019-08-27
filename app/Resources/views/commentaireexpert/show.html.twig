@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Commentaireexpert</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Commentaire</th>
+                <td>{{ commentaireExpert.commentaire }}</td>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <td>{{ commentaireExpert.id }}</td>
+            </tr>
+            <tr>
+                <th>Annee</th>
+                <td>{{ commentaireExpert.annee }}</td>
+            </tr>
+            <tr>
+                <th>Majstamp</th>
+                <td>{% if commentaireExpert.majStamp %}{{ commentaireExpert.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('commentaireexpert_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('commentaireexpert_edit', { 'id': commentaireExpert.id }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+{% endblock %}

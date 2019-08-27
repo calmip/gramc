@@ -25,6 +25,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Expertise;
+use AppBundle\Entity\CommentaireExpert;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\Projet;
@@ -587,18 +588,14 @@ class ExpertiseController extends Controller
         if( is_string( $moi ) ) Functions::createException();
 
         $mes_thematiques    =   $moi->getThematique();
-        //Functions::debugMessage(__METHOD__ . " mes thématiques " . Functions::show($mes_thematiques) );
 
         $expertiseRepository = AppBundle::getRepository(Expertise::class);
         $session             = Functions::getSessionCourante();
 
         $expertises  = $expertiseRepository->findExpertisesByExpert($moi, $session);
-
         $my_expertises  =   [];
         foreach( $expertises as $expertise )
         {
-			//Functions::debugMessage(__METHOD__ . " koukou1 expertise " . $expertise->getId() . " exp " . $expertise->getExpert() . " vers " . $expertise->getVersion());
-
             // On n'affiche pas les expertises définitives
             if ( $expertise->getDefinitif()) continue;
 
@@ -619,15 +616,15 @@ class ExpertiseController extends Controller
                                                          ];
         }
 
-		Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
-		Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques));
+		//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
+		//Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
 
         ////////////////
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
         {
             $expertises_thematique =  $expertiseRepository->findExpertisesByThematique($thematique, $session);
-            Functions::debugMessage(__METHOD__ . " expertises pour thématique ".Functions::show($thematique). '-> '.Functions::show($expertises_thematique));
+            //Functions::debugMessage(__METHOD__ . " expertises pour thématique ".Functions::show($thematique). '-> '.Functions::show($expertises_thematique));
             //$expertises_thematique =  $expertiseRepository->findExpertisesByThematiqueForAllSessions($thematique);
             $expertises =   [];
             foreach( $expertises_thematique as $expertise )
@@ -637,6 +634,9 @@ class ExpertiseController extends Controller
                 if ( $expertise->getDefinitif()) continue;
 
                 $version    =  $expertise->getVersion();
+
+                // On  n'affiche que les expertises des versions en édition expertise
+                if ($version->getEtatVersion()!=Etat::EDITION_EXPERTISE && $version->getEtatVersion()!=Etat::EXPERTISE_TEST) continue;
                 $projetId   =  $version->getProjet()->getIdProjet();
 
                 $output =               [
@@ -648,7 +648,7 @@ class ExpertiseController extends Controller
                                         'thematique'  => $thematique,
                                         'responsable' =>  $version->getResponsable(),
                                         ];
-				Functions::debugMessage(__METHOD__ . " expertise ".$expertise->getId());
+				//Functions::debugMessage(__METHOD__ . " expertise ".$expertise->getId());
 
 				// On n'affiche pas deux expertises vers la même version
 				if (!array_key_exists( $version->getIdVersion(), $expertises ))
@@ -696,7 +696,6 @@ class ExpertiseController extends Controller
         };
 
         // rallonges
-
         $rallonges  =   [];
         $all_rallonges  =   AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
         foreach( $all_rallonges as $rallonge )
@@ -718,14 +717,37 @@ class ExpertiseController extends Controller
             $rallonges[$projet->getIdProjet()]['rallonges'][$rallonge->getIdRallonge()] =   $rallonge;
 		}
 
+		// Commentaires
+		// On propose aux experts du comité d'attribution (c-a-d ceux qui ont une thématique) d'entrer un commentaire sur l'année écoulée
+		$mes_commentaires_flag = false;
+		$mes_commentaires_maj        = null;
+		if (AppBundle::hasParameter('commentaires_experts_d') && count($mes_thematiques)>0)
+		{
+			$mes_commentaires_flag = true;
+			$mois = GramcDate::get()->format('m');
+			$annee= GramcDate::get()->format('Y');
+			if ($mois>=AppBundle::getParameter('commentaires_experts_d'))
+			{
+				$mes_commentaires_maj = $annee;
+			}
+			elseif ($mois<AppBundle::getParameter('commentaires_experts_f'))
+			{
+				$mes_commentaires_maj = $annee - 1;
+			}
+		}
+		$mes_commentaires = $em->getRepository('AppBundle:CommentaireExpert')->findBy( ['expert' => $moi ] );
+
         ///////////////////////
 
         return $this->render('expertise/liste.html.twig',
             [
             'rallonges'                  => $rallonges,
             'expertises_by_thematique'   => $expertises_by_thematique,
-            'expertises_hors_thematique' =>  $my_expertises,
+            'expertises_hors_thematique' => $my_expertises,
             'old_expertises'             => $old_expertises,
+            'mes_commentaires_flag'      => $mes_commentaires_flag,
+            'mes_commentaires'           => $mes_commentaires,
+            'mes_commentaires_maj'       => $mes_commentaires_maj,
 			'session'       => $session,
             ]);
     }
