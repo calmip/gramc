@@ -791,24 +791,54 @@ class Projet
 	    return null;
     }
 
-	/*
-	 * calcul de la consommation et du quota d'une ressource (cpu, gpu, work_space, etc.)
-	 *
-	 * param $ressource: La ressource
-	 * param $annee_ou_date    : L'année ou la date
-	 *       Si $annee_ou_date==null                -> On considère la date du jour
-	 *       Si $annee_ou_date est annee courante   -> On considère la date du jour
-	 *       Si $annee_ou_date est une autre année  -> On considère le 31 décembre de $annee_ou_date
-	 *       Si $annee_ou_date est une DateTime     -> On considère la date
-	 *
-	 * S'il n'y a pas de données à la date considérée, on renvoie [0,0]
-	 *
-	 * Renvoie [ $conso, $quota ]
-	 *
-	 * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos seront mesurées à hier
-	 *        Si on utilise avant 8h00 du matin toutes les consos sont à 0 !
-	 *
-	 */
+	/************************************
+	* calcul de la consommation et du quota d'une ressource à une date donnée
+	* N'est utilisée que par les méthodes de cette classe
+	*
+    * Renvoie [ $conso, $quota ]
+    * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
+    *
+    ************/
+	private function getConsoDate($ressource, \DateTime $date)
+	{
+        $loginName = strtolower($this->getIdProjet());
+        $conso     = 0;
+        $quota     = 0;
+        $compta    = AppBundle::getRepository(Compta::class)->findOneBy(
+						[
+							'date'      => $date,
+							'ressource' => $ressource,
+							'loginname' => $loginName,
+							'type'      => 2
+						]);
+        if ($compta != null)
+        {
+            $conso = $compta->getConso();
+            $quota = $compta->getQuota();
+        }
+
+        return [$conso, $quota];
+	}
+
+	/***********************
+	* calcul de la consommation et du quota d'une ressource (cpu, gpu, work_space, etc.)
+	*
+	* param $ressource: La ressource
+	* param $annee_ou_date    : L'année ou la date
+	*       Si $annee_ou_date==null                -> On considère la date du jour
+	*       Si $annee_ou_date est annee courante   -> On considère la date du jour
+	*       Si $annee_ou_date est une autre année  -> On considère le 31 décembre de $annee_ou_date
+	*       Si $annee_ou_date est une DateTime     -> On considère la date
+	*       ATTENTION Si $annee_ou_date est un string qui représente une date... ça va merder !
+	*
+	* S'il n'y a pas de données à la date considérée (par exemple si c'est dans le futur), on renvoie [0,0]
+	*
+	* Renvoie [ $conso, $quota ]
+	*
+	* NOTE - Si la table est chargée à 8h00 du matin, toutes les consos seront mesurées à hier
+	*        Si on utilise avant 8h00 du matin toutes les consos sont à 0 !
+	*
+	*******************/
     public function getConsoRessource($ressource, $annee_ou_date=null)
     {
 		//return [0,0];
@@ -825,52 +855,73 @@ class Projet
 		{
             $date = new \DateTime( $annee_ou_date . '-12-31');
         }
-
-        $loginName = strtolower($this->getIdProjet());
-        $conso     = 0;
-        $quota     = 0;
-		$comptaRepos = AppBundle::getRepository(Compta::class);
-
-		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' date = ' . $date->format("Y-m-d") . " loginname = " . $loginName . " ressource = ".$ressource );
-        $compta = $comptaRepos->findOneBy(
-			 [
-				 'date'      => $date,
-				 'ressource' => $ressource,
-				 'loginname' => $loginName,
-				 'type'      => 2
-			 ]);
-		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' compta = ' . print_r($compta, true));
-		if ($compta != null)
-		{
-			$conso = $compta->getConso();
-			$quota = $compta->getQuota();
-		}
-
-        return [$conso, $quota];
+        return $this->getConsoDate($ressource, $date);
     }
 
-	/*
-	 * Renvoie la consommation seule (pas le quota) des ressources cpu + gpu
-	 *
-	 * param : $annee
-     * return: La consommation "calcul" pour l'année
-     *
-     */
-    public function getConso($annee_ou_date=null)
+	/*******
+	* calcul de la consommation cumulée d'une ou plusieurs ressources dans un intervalle de dates données
+	*
+	* params: $ressources -> Un tableau de ressources
+	*         $dates      -> Un tableau de deux strings représentant des dates [debut,fin(
+	*
+	* Retourne: La somme de la consommation pour les deux ressources dans l'intervalle de dates considéré
+	*
+	* Prérequis: Il ne doit pas y avoir eu de remise à zéro dans l'intervalle
+	*
+	* TODO - Diminuer le nombre de requêtes SQL avec une seule requête plus complexe
+	*
+	***********************/
+	public function getConsoIntervalle($ressources, $dates)
+	{
+		if ( ! is_array($ressources) || ! is_array($dates))
+		{
+			Functions::createException(__METHOD__ . ":" . __LINE__ . " Erreur interne - \$ressources ou \$dates n'est pas un array");
+		}
+		if (count( $ressources ) < 1 || count( $dates ) < 2)
+		{
+			Functions::createException(__METHOD__ . ":" . __LINE__ . " Erreur interne - \$ressources ou \$dates est un array trop petit");
+		}
+
+		$debut = new \DateTime($dates[0]);
+		$fin   = new \DateTime($dates[1]);
+
+		$conso_debut = 0;
+		$conso_fin   = 0;
+		foreach ($ressources as $r)
+		{
+			//Functions::debugMessage('koukou '.$r.' '.$dates[0].' '.print_r($this->getConsoDate($r,$debut),true).$dates[1].' '.print_r($this->getConsoDate($r,$fin),true));
+			$conso_debut += $this->getConsoDate($r,$debut)[0];
+			$conso_fin   += $this->getConsoDate($r,$fin)[0];
+		}
+		// $conso_fin peut être nulle si la date de fin est dans le futur !
+		// Dans ce cas on renvoie 0
+		return ($conso_fin)?$conso_fin-$conso_debut:0;
+	}
+
+	/*******************
+	* calcul de la consommation "calcul" à une date donnée ou pour une année donnée
+	* REMPLACE L'ANCIENNE FONCTION getConso()
+	*
+	* Retourne: la consommation cpu + gpu à la date ou pour l'année donnée
+	*           Ne retourne pas le quota
+	*
+	*************************/
+    public function getConsoCalcul($annee_ou_date)
     {
 		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
 		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
 		return $conso_gpu[0] + $conso_cpu[0];
     }
 
-	/*
-	 * Renvoie la consommation seule en pourcentage des ressources cpu + gpu
-	 *
-	 * param : $annee
-     * return: La consommation "calcul" pour l'année en % du quota
-     *
-     */
-    public function getConsoP($annee_ou_date=null)
+	/*******************
+	* calcul de la consommation "calcul" à une date donnée ou pour une année donnée, en pourcentage du quota
+	* REMPLACE L'ANCIENNE FONCTION getConsoP()
+	*
+	* Retourne: la consommation cpu + gpu à la date ou pour l'année donnée
+	*           en %age du quota cpu
+	*
+	*************************/
+    public function getConsoCalculP($annee_ou_date=null)
     {
 		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
 		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
@@ -884,10 +935,15 @@ class Projet
 		}
     }
 
-	/*
-	 * Renvoie la consommation calcul (getConso() de l'année et du mois passés en paramètres (0..11)
-	 *
-	 */
+	/***************
+	* Renvoie la consommation calcul (getConsoCalcul() de l'année et du mois
+	*
+	* params: $annee (2019 ou 19)
+	*         $mois (0..11)
+	*
+	* Retourne: La conso cpu+gpu, ou 0 si le mois se situe dans le futur
+	*
+	**************************/
 	public function getConsoMois($annee,$mois)
 	{
 		$now = GramcDate::get();
@@ -898,22 +954,23 @@ class Projet
 		// 2019 - 2000 !
 		if ( ($annee==$annee_courante || abs($annee-$annee_courante)==2000) && $mois==$mois_courant)
 		{
-			$conso_fin = $this->getConso($now);
+			$conso_fin = $this->getConsoCalcul($now);
 		}
 		else
 		{
-			// Pour décembre on mesure la consomation du 31 car il y a risque de remise à zéro le 1er Janvier
+			// Pour décembre on mesure la consomation au 31 car il y a risque de remise à zéro le 1er Janvier
+			// Du coup on ignore la consommation du 31 Décembre...
 			if ($mois==12)
 			{
 				$d = strval($annee)."-12-31";
-				$conso_fin = $this->getConso(new \DateTime($d));
+				$conso_fin = $this->getConsoCalcul(new \DateTime($d));
 				//AppBundle::getLogger()->error("koukou1 " . $this->getIdProjet() . "$d -> $conso_fin");
 			}
 			// Pour les autres mois on prend la conso du 1er du mois suivant
 			else
 			{
 				$m = strval($mois + 1);
-				$conso_fin = $this->getConso(new \DateTime($annee.'-'.$m.'-01'));
+				$conso_fin = $this->getConsoCalcul(new \DateTime($annee.'-'.$m.'-01'));
 			}
 		}
 
@@ -925,7 +982,7 @@ class Projet
 		}
 		else
 		{
-			$conso_debut = $this->getConso(new \DateTime("$annee-$mois-01"));
+			$conso_debut = $this->getConsoCalcul(new \DateTime("$annee-$mois-01"));
 		}
 		if ($conso_fin>$conso_debut)
 		{
@@ -940,7 +997,7 @@ class Projet
 	/*
 	 * Renvoie le quota seul (pas la conso) des ressources cpu
 	 *
-	 * param : $annee
+	 * param : $annee ou $date (cf getConsoRessource)
      * return: La consommation "calcul" pour l'année
      *
      */

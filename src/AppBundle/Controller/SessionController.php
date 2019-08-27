@@ -776,19 +776,21 @@ class SessionController extends Controller
         $entetes = ['Projet','Thématique','Titre','Responsable','Quota'];
 
         // Les mois pour les consos
-        array_push($entetes,'Janvier','Février','Mars','Avril',
-            'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
+        array_push($entetes,'Janvier','Février','Mars','Avril', 'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
 
         $entetes[] = "total";
         $entetes[] = "Total(%/quota)";
 
         $sortie     =   join("\t",$entetes) . "\n";
 
+		// Sommes-nous dans l'année courante ?
+		$annee_courante_flg = (GramcDate::get()->showYear()==$annee);
+
         //////////////////////////////
 
         $conso_flds = ['m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11','m12'];
 
-        // $annee = 2017, 2018, etc. (4 caractères)
+        // 2019 -> 19A et 19B
         $session_id_A = substr($annee, 2, 2) . 'A';
         $session_id_B = substr($annee, 2, 2) . 'B';
         $session_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_A ]);
@@ -807,9 +809,9 @@ class SessionController extends Controller
         }
 
         // Les totaux
-        $tq  = 0;
-        $tm  = [];
-        $tttl= 0;
+        $tq  = 0;		// Le total des quotas
+        $tm  = [0,0,0,0,0,0,0,0,0,0,0,0];		// La conso totale par mois
+        $tttl= 0;		// Le total de la conso
 
         // Calcul du csv, ligne par ligne
         foreach ( $id_projets as $id_projet => $paire )
@@ -823,18 +825,26 @@ class SessionController extends Controller
             $r      = $v->getResponsable();
             $line[] = $r->getPrenom() . ' ' . $r->getNom();
             $quota  = $v->getQuota();
+            $line[] = $quota;
             for ($m=0;$m<12;$m++)
             {
-				$c = $v->getProjet()->getConsoMois($annee,$m);
+				$c = $p->getConsoMois($annee,$m);
 				$line[] = $c;
 				$tm[$m] += $c;
 			}
 
-			$m12 = $v->getProjet()->getConso("$annee-31-12");
-            $ttl    = ($m12>0) ? $m12 : 'N/A';
-            $ttlp   = ($m12>0) ? 100.0 * $m12 / $quota : 'N/A';
+			// Si on est dans l'année courante on ne fait pas le total
+            $ttl    = ($annee_courante_flg) ? 'N/A' : $p->getConsoCalcul($annee);
+            if ($quota>0)
+            {
+	            $ttlp   = ($annee_courante_flg) ? 'N/A' : 100.0 * $ttl / $quota;
+			}
+			else
+			{
+				$ttlp = 0;
+			}
             $line[] = $ttl;
-            $line[] = intval($ttlp);
+            $line[] = ($ttlp=='N/A') ? $ttlp : intval($ttlp);
 
             $sortie .= join("\t",$line) . "\n";
 
@@ -938,7 +948,7 @@ class SessionController extends Controller
             $id_projets = [];
             foreach ($projets as $p)
             {
-                $c += $p -> getConso($annee);
+                $c += $p -> getConsoCalcul($annee);
                 $id_projets[] = $p -> getIdProjet();
             }
 
