@@ -43,24 +43,62 @@ use AppBundle\AppBundle;
 /**
  * Commentaireexpert controller.
  *
- *
+ * @Route("commentaireexpert")
  */
 class CommentaireExpertController extends Controller
 {
     /**
-     * Lists all commentaireExpert entities.
+     * Displays a form to edit an existing commentaireExpert entity.
      *
+     * @Route("/{id}/edit", name="commentaireexpert_edit")
+
      */
-    public function indexAction()
+    public function editAction(Request $request, CommentaireExpert $commentaireExpert)
     {
-        $em = $this->getDoctrine()->getManager();
+        $deleteForm = $this->createDeleteForm($commentaireExpert);
+        $editForm = $this->createForm('AppBundle\Form\CommentaireExpertType', $commentaireExpert);
+        $editForm->handleRequest($request);
 
-        $commentaireExperts = $em->getRepository('AppBundle:CommentaireExpert')->findAll();
+        if ($editForm->isSubmitted() && $editForm->isValid()) {
+            $this->getDoctrine()->getManager()->flush();
 
-        return $this->render('commentaireexpert/index.html.twig', array(
-            'commentaireExperts' => $commentaireExperts,
+            return $this->redirectToRoute('commentaireexpert_edit', array('id' => $commentaireExpert->getId()));
+        }
+
+        return $this->render('commentaireexpert/edit.html.twig', array(
+            'commentaireExpert' => $commentaireExpert,
+            'edit_form' => $editForm->createView(),
+            'delete_form' => $deleteForm->createView(),
         ));
     }
+
+    /**
+    * Modification d'un commentaire par l'utilisateur connecté
+    *
+    * @Route("/{id}/modif", name="commentaireexpert_modify")
+    *
+    *
+    * @Method({"GET", "POST"})
+    ************************/
+    public function modifyAction(Request $request, CommentaireExpert $commentaireExpert)
+    {
+		$em = $this->getDoctrine()->getManager();
+		$editForm = $this->createForm('AppBundle\Form\CommentaireExpertType', $commentaireExpert, ["only_comment" => true]);
+		$editForm->handleRequest($request);
+
+        if ($editForm->isSubmitted() && $editForm->isValid()) {
+			$commentaireExpert->setMajStamp(new \DateTime());
+            $em->flush();
+            return $this->redirectToRoute('commentaireexpert_modify', array('id' => $commentaireExpert->getId()));
+        }
+
+		$menu = [];
+        return $this->render('commentaireexpert/modify.html.twig', array(
+        	'menu'              => $menu,
+            'commentaireExpert' => $commentaireExpert,
+            'edit_form'         => $editForm->createView(),
+        ));
+	}
 
     /**
      * Creates a new commentaireExpert entity.
@@ -87,6 +125,21 @@ class CommentaireExpertController extends Controller
     }
 
     /**
+     * Lists all commentaireExpert entities.
+     *
+     */
+    public function indexAction()
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $commentaireExperts = $em->getRepository('AppBundle:CommentaireExpert')->findAll();
+
+        return $this->render('commentaireexpert/index.html.twig', array(
+            'commentaireExperts' => $commentaireExperts,
+        ));
+    }
+
+    /**
      * Finds and displays a commentaireExpert entity.
      *
      */
@@ -96,31 +149,6 @@ class CommentaireExpertController extends Controller
 
         return $this->render('commentaireexpert/show.html.twig', array(
             'commentaireExpert' => $commentaireExpert,
-            'delete_form' => $deleteForm->createView(),
-        ));
-    }
-
-    /**
-     * Displays a form to edit an existing commentaireExpert entity.
-     *
-     * @Route("/{id}/edit", name="commentaireexpert_edit")
-
-     */
-    public function editAction(Request $request, CommentaireExpert $commentaireExpert)
-    {
-        $deleteForm = $this->createDeleteForm($commentaireExpert);
-        $editForm = $this->createForm('AppBundle\Form\CommentaireExpertType', $commentaireExpert);
-        $editForm->handleRequest($request);
-
-        if ($editForm->isSubmitted() && $editForm->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('commentaireexpert_edit', array('id' => $commentaireExpert->getId()));
-        }
-
-        return $this->render('commentaireexpert/edit.html.twig', array(
-            'commentaireExpert' => $commentaireExpert,
-            'edit_form' => $editForm->createView(),
             'delete_form' => $deleteForm->createView(),
         ));
     }
@@ -188,28 +216,17 @@ class CommentaireExpertController extends Controller
     }
 
     /**
-    * Modification d'un commentaire par l'utilisateur connecté
+    * Liste tous les commentaires des experts pour une année
     *
-    * @Route("/{id}/modif", name="commentaireexpert_modify")
+    * @Route("/{annee}/liste", name="commentaireexpert_liste")
+    *
     * @Method({"GET", "POST"})
     **********/
-    public function modifyAction(Request $request, CommentaireExpert $commentaireExpert)
+    public function listeAction(Request $request, $annee)
     {
 		$em = $this->getDoctrine()->getManager();
-		$editForm = $this->createForm('AppBundle\Form\CommentaireExpertType', $commentaireExpert, ["only_comment" => true]);
-		$editForm->handleRequest($request);
+		$commentairesExperts = $em->getRepository('AppBundle:CommentaireExpert')->findBy( ['annee' => $annee ] );
 
-        if ($editForm->isSubmitted() && $editForm->isValid()) {
-			$commentaireExpert->setMajStamp(new \DateTime());
-            $em->flush();
-            return $this->redirectToRoute('commentaireexpert_modify', array('id' => $commentaireExpert->getId()));
-        }
-
-		$menu = [];
-        return $this->render('commentaireexpert/modify.html.twig', array(
-        	'menu'              => $menu,
-            'commentaireExpert' => $commentaireExpert,
-            'edit_form'         => $editForm->createView(),
-        ));
+		return $this->render('commentaireexpert/liste_annee.html.twig', ['annee' => $annee, 'commentairesExperts' => $commentairesExperts]);
 	}
 }

@@ -684,11 +684,12 @@ class SessionController extends Controller
     public function bilanAnnuelAction(Request $request)
     {
         $data   =   Functions::selectAnnee($request);
-
+		$avec_commentaires = AppBundle::hasParameter('commentaires_experts_d');
         return $this->render('session/bilanannuel.html.twig',
             [
             'form' => $data['form']->createView(),
             'annee'=> $data['annee'],
+            'avec_commentaires' => $avec_commentaires
             //'versions'  =>  AppBundle::getRepository(Version::class)->findBy( ['session' => $data['session'] ] )
             ]);
     }

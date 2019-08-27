@@ -55,8 +55,8 @@ twig:
        recup_printemps_f: '%recup_printemps_f%'
        noconso: '%noconso%'
        prj_prefix: '%prj_prefix%'
-       max_expertises_nb: %max_expertises_nb%
-       ressources_conso_group: %ressources_conso_group%
+       max_expertises_nb: '%max_expertises_nb%'
+       ressources_conso_group: '%ressources_conso_group%'
 
 # Doctrine Configuration
 doctrine:
