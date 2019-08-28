@@ -43,6 +43,7 @@ class NextProjetId
 	public static function NextProjetId($annee, $type)
 	{
 		$numero = AppBundle::getRepository(Projet::class)->getLastNumProjet( $annee, $type );
+		//Functions::debugMessage("$annee -> $type -> $numero");
 		if ($numero === null )
 		{
 			return null;
@@ -51,7 +52,9 @@ class NextProjetId
 		{
 			// NB - Si la fonction précédente n'a pas renvoyé null, $type est correct pas la peine de retester
 			$prefix = AppBundle::getParameter('prj_prefix')[$type];
-			return $prefix . $annee . sprintf("%'.03d", $numero+1);
+			$id = $prefix . $annee . sprintf("%'.03d", $numero+1);
+			//Functions::debugMessage("$prefix $numero $id");
+			return $id;
 		}
 	}
 }

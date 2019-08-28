@@ -2788,8 +2788,6 @@ class Version
 	*****/
     public function isNouvelle()
     {
-    public function isNouvelle()
-    {
         // Un projet test ne peut être renouvelé donc il est obligatoirement nouveau !
         if ($this->isProjetTest()) return true;
 
@@ -2838,6 +2836,9 @@ class Version
             return false;
     }
 
+	/*****************
+	* Retourne le chemin vers le fichier de signature correspondant à cette version
+	****************/
     public function getSigne()
     {
         $dir    =   AppBundle::getParameter('signature_directory');
@@ -2855,6 +2856,9 @@ class Version
             return null;
     }
 
+	/*****************************
+	 * Retourne la taille du fichier de signature
+	 *****************************/
     public function getSizeSigne()
     {
         $signe    =   $this->getSigne();
@@ -2939,14 +2943,15 @@ class Version
     }
 
     /*
-     * Raccourci vers getConso du projet
+     * Raccourci vers getConsoCalcul du projet
      */
-    public function getConso()
+    public function getConsoCalcul()
     {
 		$projet = $this->getProjet();
 		$annee  = $this->getAnneeSession();
-		return $projet->getConso($annee);
+		return $projet->getConsoCalcul($annee);
 	}
+
     /*
      * Raccourci vers getQuota du projet
      */

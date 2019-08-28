@@ -2680,7 +2680,7 @@ class Version
             return $expertise->getExpert();
     }
 
-    // pour notifications
+    // pour notifications ou affichage
     public function getExperts()
     {
         $experts    =   [];
