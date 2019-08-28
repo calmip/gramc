@@ -90,6 +90,17 @@ Editer le fichier et paramétrer l'application:
 - Les types de projets supportés (1,2,3)
 - Et pour finir les idp "préférés" (dépend des établissements à proximité du mésocentre)
 
+**Fichier adresses.txt:**
+Ce fichier est propre à gramc2, il est utilisé en mode "développement" (le point d'entrée est app_dev.php et pas app.php, cf. ci-dessus la
+configuration Apache). Il répertorie les adresses IP à partir desquelles il est possible d'utiliser gramc2.
+
+~~~~
+cd app/config
+cp adresses.txt.dist adresses.txt
+~~~~
+
+Editer le fichier et introduire les adresses IP de vos postes de développement
+
 **Hiérarchie de fichiers dépendant du mésocentre**
 
 Suivant votre mésocentre, vous pouvez recréer une hiérarchie de fichiers que vous pouvez personnaliser. Les fichiers pouvant être personnalisés

@@ -10,7 +10,7 @@ use Symfony\Component\Debug\Debug;
 
 // Le fichier adresses.txt contient la liste des adresses autorisées
 // cf. adresses.txt.dist pour un modèle de fichier
-$adresses_ip = file('adresses.txt');
+$adresses_ip = file(__DIR__.'/../app/config/adresses.txt');
 $adresses_ip = array_map('trim',$adresses_ip);
 if ($adresses_ip === false)
 {
