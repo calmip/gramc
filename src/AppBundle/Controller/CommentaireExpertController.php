@@ -26,6 +26,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\CommentaireExpert;
+use AppBundle\Utils\Functions;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +38,9 @@ use AppBundle\AppBundle;
 
 /****
 * Fichier généré automatiquement et modifié par E.Courcelle
+*
+* Les méthodes createDeleteForm, deleteAction, editAction, newAction, showAction ont été générées
+* automatiquement et ne sont pas utilisées (pas de routage)
 *
 *************/
 
@@ -50,8 +54,6 @@ class CommentaireExpertController extends Controller
     /**
      * Displays a form to edit an existing commentaireExpert entity.
      *
-     * @Route("/{id}/edit", name="commentaireexpert_edit")
-
      */
     public function editAction(Request $request, CommentaireExpert $commentaireExpert)
     {
@@ -76,12 +78,18 @@ class CommentaireExpertController extends Controller
     * Modification d'un commentaire par l'utilisateur connecté
     *
     * @Route("/{id}/modif", name="commentaireexpert_modify")
-    *
-    *
+    * @Security("has_role('ROLE_EXPERT')")
     * @Method({"GET", "POST"})
     ************************/
     public function modifyAction(Request $request, CommentaireExpert $commentaireExpert)
     {
+		// Chaque expert ne peut accéder qu'à son commentaire à lui
+		$moi = AppBundle::getUser();
+		if ($moi->getId() != $commentaireExpert->getExpert()->getId())
+		{
+            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+		}
+
 		$em = $this->getDoctrine()->getManager();
 		$editForm = $this->createForm('AppBundle\Form\CommentaireExpertType', $commentaireExpert, ["only_comment" => true]);
 		$editForm->handleRequest($request);
@@ -194,7 +202,7 @@ class CommentaireExpertController extends Controller
     * existe, et sinon le crée. Ensuite redirige vers le contrôleur de modification
     *
     * @Route("/{annee}/cree-ou-modif", name="cree_ou_modif")
-    *
+    * @Security("has_role('ROLE_EXPERT')")
     * @Method({"GET", "POST"})
     **********/
     public function creeOuModifAction(Request $request, $annee)
@@ -219,7 +227,7 @@ class CommentaireExpertController extends Controller
     * Liste tous les commentaires des experts pour une année
     *
     * @Route("/{annee}/liste", name="commentaireexpert_liste")
-    *
+    * @Security("has_role('ROLE_OBS')")
     * @Method({"GET", "POST"})
     **********/
     public function listeAction(Request $request, $annee)
