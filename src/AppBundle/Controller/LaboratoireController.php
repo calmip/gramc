@@ -38,7 +38,6 @@ use AppBundle\AppBundle;
  * Laboratoire controller.
  *
  * @Route("laboratoire")
- * @Security("has_role('ROLE_ADMIN')")
  */
 class LaboratoireController extends Controller
 {
@@ -46,6 +45,7 @@ class LaboratoireController extends Controller
      * Lists all laboratoire entities.
      *
      * @Route("/", name="laboratoire_index")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method("GET")
      */
     public function indexAction()
@@ -56,26 +56,30 @@ class LaboratoireController extends Controller
 
         return $this->render('laboratoire/index.html.twig', ['laboratoires' => $laboratoires, ]);
     }
-    
+
     /**
      * @Route("/gerer",name="gerer_laboratoires" )
-     * @Security("has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_OBS')")
      */
     public function gererAction()
-        {
+	{
+		// Si on n'est pas admin on n'a pas accès au menu
+		$menu = AppBundle::isGranted('ROLE_ADMIN')?[ ['ok' => true,'name' => 'ajouter_laboratoire' ,'lien' => 'Ajouter un laboratoire','commentaire'=> 'Ajouter un laboratoire'] ]:[];
+
         return $this->render( 'laboratoire/liste.html.twig',
             [
-            'menu' => [ ['ok' => true,'name' => 'ajouter_laboratoire' ,'lien' => 'Ajouter un laboratoire','commentaire'=> 'Ajouter un laboratoire'] ],
+            'menu' => $menu,
             'laboratoires' => AppBundle::getRepository('AppBundle:Laboratoire')->findBy( [],['numeroLabo' => 'ASC'])
             ]
             );
-        }
-        
+	}
+
     /**
      * Creates a new laboratoire entity.
      *
      * @Route("/new", name="laboratoire_new")
      * @Route("/ajouter", name="ajouter_laboratoire")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function newAction(Request $request)
@@ -88,7 +92,7 @@ class LaboratoireController extends Controller
             $em = $this->getDoctrine()->getManager();
             $em->persist($laboratoire);
             $em->flush($laboratoire);
-            
+
             return $this->redirectToRoute('gerer_laboratoires');
         }
 
@@ -110,6 +114,7 @@ class LaboratoireController extends Controller
      * Finds and displays a laboratoire entity.
      *
      * @Route("/{id}/show", name="laboratoire_show")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method("GET")
      */
     public function showAction(Laboratoire $laboratoire)
@@ -126,6 +131,7 @@ class LaboratoireController extends Controller
      * Displays a form to edit an existing laboratoire entity.
      *
      * @Route("/{id}/edit", name="laboratoire_edit")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function editAction(Request $request, Laboratoire $laboratoire)
@@ -151,6 +157,7 @@ class LaboratoireController extends Controller
      * Displays a form to edit an existing laboratoire entity.
      *
      * @Route("/{id}/modify", name="modifier_laboratoire")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function modifyAction(Request $request, Laboratoire $laboratoire)
@@ -178,11 +185,12 @@ class LaboratoireController extends Controller
             'delete_form' => $deleteForm->createView(),
             ]);
     }
-    
+
     /**
      * Deletes a laboratoire entity.
      *
      * @Route("/{id}/supprimer", name="supprimer_laboratoire")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method("GET")
      */
     public function supprimerAction(Request $request, Laboratoire $laboratoire)
@@ -192,11 +200,12 @@ class LaboratoireController extends Controller
         $em->flush($laboratoire);
         return $this->redirectToRoute('gerer_laboratoires');
     }
-    
+
     /**
      * Deletes a laboratoire entity.
      *
      * @Route("/{id}/delete", name="laboratoire_delete")
+	 * @Security("has_role('ROLE_ADMIN')")
      * @Method("DELETE")
      */
     public function deleteAction(Request $request, Laboratoire $laboratoire)

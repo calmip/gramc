@@ -10,12 +10,13 @@
     <table id="general" >
     <thead>
     <tr>
-    <th colspan="2">&nbsp;</th><th>Libellé</th>
+		{% if is_granted('ROLE_ADMIN') %}<th colspan="2">&nbsp;</th>{% endif %}<th>Libellé</th>
     </tr>
     </thead>
     <tbody>
     {% for thema in thematiques %}
         <tr>
+			{% if is_granted('ROLE_ADMIN') %}
             <td>
                 <a class="suppression" href="{{ path('supprimer_thematique',{'id' : thema.idThematique }) }}" title="Supprimer">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
@@ -24,6 +25,7 @@
                 <a class="modification" href="{{ path('modifier_thematique',{'id' : thema.idThematique }) }}" title="Modifier le libellé">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
             </td>
+            {% endif %}
             <td>{{ thema.libelleThematique }}</td>
         </tr>
     {% endfor %}

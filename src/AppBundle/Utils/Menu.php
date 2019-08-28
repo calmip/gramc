@@ -414,63 +414,63 @@ class Menu
 
     public static function laboratoires()
     {
-    $menu['name']   =   'gerer_laboratoires';
-    $menu['commentaire']    =   "Gérer la liste des laboratoires enregistrés";
-    $menu['lien']           =   "Laboratoires";
+	    $menu['name']   =   'gerer_laboratoires';
+	    $menu['commentaire']    =   "Gérer la liste des laboratoires enregistrés";
+	    $menu['lien']           =   "Laboratoires";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
-        {
-        $menu['ok'] = true;
-        }
-    else
-        {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
-        }
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
 
-    return $menu;
+	    return $menu;
     }
 
     //////////////////////////////////////
 
     public static function thematiques()
     {
-    $menu['name']   =   'gerer_thematiques';
-    $menu['commentaire']    =   "Gérer la liste des thématiques";
-    $menu['lien']           =   "Thématiques";
+	    $menu['name']   =   'gerer_thematiques';
+	    $menu['commentaire']    =   "Gérer la liste des thématiques";
+	    $menu['lien']           =   "Thématiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
-        {
-        $menu['ok'] = true;
-        }
-    else
-        {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
-        }
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
 
-    return $menu;
+	    return $menu;
     }
 
     //////////////////////////////////////
 
     public static function metathematiques()
     {
-    $menu['name']   =   'gerer_metaThematiques';
-    $menu['commentaire']    =   "Gérer la liste des méta-thématiques";
-    $menu['lien']           =   "Méta-Thématiques";
+	    $menu['name']   =   'gerer_metaThematiques';
+	    $menu['commentaire']    =   "Gérer la liste des méta-thématiques";
+	    $menu['lien']           =   "Méta-Thématiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    if( AppBundle::isGranted('ROLE_OBS') )
         {
-        $menu['ok'] = true;
+	        $menu['ok'] = true;
         }
-    else
+	    else
         {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
         }
 
-    return $menu;
+	    return $menu;
     }
     //////////////////////////////////////
 
@@ -1406,7 +1406,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par établissement";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par établissement !";
@@ -1431,7 +1431,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par laboratoire";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par laboratoire !";
@@ -1456,7 +1456,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par thématique";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par thématique !";
@@ -1481,7 +1481,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par metathématique";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par metathématique !";
@@ -1553,7 +1553,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques concernant la répartition des projets";
 
-    if( AppBundle::isGranted('OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques concernant la répartition des projets !";

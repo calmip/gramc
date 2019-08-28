@@ -679,6 +679,7 @@ class SessionController extends Controller
     /**
      *
      * @Route("/bilan_annuel", name="bilan_annuel")
+     * @Security("has_role('ROLE_OBS')")
      * @Method({"GET","POST"})
      */
     public function bilanAnnuelAction(Request $request)
@@ -768,6 +769,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @Security("has_role('ROLE_OBS')")
      * @Route("/{annee}/bilan_annuel_csv", name="bilan_annuel_csv")
      * @Method("GET")
      *
@@ -879,6 +881,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @Security("has_role('ROLE_OBS')")
      * @Route("/{annee}/bilan_annuel_labo_csv", name="bilan_annuel_labo_csv")
      * @Method("GET")
      *

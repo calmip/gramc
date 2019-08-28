@@ -9,11 +9,12 @@
 
     <table id="general" >
     <thead>
-    <tr><th colspan="2">&nbsp;</th><th>Libellé</th></tr>
+    <tr>{% if is_granted('ROLE_ADMIN') %}<th colspan="2">&nbsp;</th>{% endif %}<th>Libellé</th><th>Thématiques correspondantes</th></tr>
     </thead>
     <tbody>
     {% for thema in metathematiques %}
         <tr>
+			{% if is_granted('ROLE_ADMIN') %}
             <td>
                 <a class="suppression" href="{{ path('supprimer_metaThematique',{'id' : thema.idMetaThematique }) }}" title="Supprimer">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
@@ -22,7 +23,9 @@
                 <a class="modification" href="{{ path('modifier_metaThematique',{'id' : thema.idMetaThematique }) }}" title="Modifier le libellé">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
             </td>
+            {% endif %}
             <td>{{ thema.libelle }}</td>
+            <td>{{thema.thematique | join(', ')}}</td>
         </tr>
     {% endfor %}
     </tbody>

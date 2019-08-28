@@ -10,13 +10,13 @@
     <table id="laboratoires" >
     <thead>
         <tr>
-            <th colspan="2">&nbsp;</th><th>Numéro d'ordre</th><th>Acronyme</th><th>Libellé</th>
-           
+			{% if is_granted('ROLE_ADMIN') %}<th colspan="2">&nbsp;</th>{% endif %}<th>Numéro d'ordre</th><th>Acronyme</th><th>Libellé</th>
         </tr>
     </thead>
     <tbody>
     {% for labo in laboratoires %}
         <tr>
+			{% if is_granted('ROLE_ADMIN') %}
             <td>
                 <a class="suppression" href="{{ path('supprimer_laboratoire',{'id' : labo.idLabo }) }}" title="Supprimer">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
@@ -25,6 +25,7 @@
                 <a class="modification" href="{{ path('modifier_laboratoire',{'id' : labo.idLabo }) }}" title="Modifier le libellé">
                 <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
             </td>
+            {% endif %}
             <td>{{ labo.numeroLabo }}</td>
             <td> {{ labo.acroLabo }}</td>
             <td>{{ labo.nomLabo }}</td>

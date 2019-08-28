@@ -727,6 +727,7 @@ class ProjetController extends Controller
      *
      * Param : $annee
      *
+     * @Security("has_role('ROLE_OBS')")
      * @Route("/{annee}/resumes", name="projet_resumes")
      * @Method({"GET","POST"})
      *
