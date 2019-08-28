@@ -77,9 +77,9 @@
             <th class="horiz">Nombre d'heures consommées<br>
                 <span class="petit">depuis le début de {{ version.fullAnnee }}</span>
             </th>
-            <td>{{ version.getConso }}
-                {% if(version.getQuota > 0) %}
-                    ({{ (version.getConso * 100 / version.getQuota) |number_format(1)}} %)
+            <td>{{ version.consocalcul }}
+                {% if(version.quota > 0) %}
+                    ({{ (version.consocalcul * 100 / version.quota) |number_format(1)}} %)
                 {% endif %}
             </td>
         </tr>
