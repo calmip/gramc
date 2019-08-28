@@ -7,7 +7,7 @@
 
 {% for comm in commentairesExperts %}
 	<p><strong>{{comm.expert.prenom}} {{comm.expert.nom}}</strong></p>
-	<p>{{comm.commentaire}}</p>
+	<p>{{comm.commentaire| e | nl2br}}</p>
     <hr />
 {% endfor %}
 

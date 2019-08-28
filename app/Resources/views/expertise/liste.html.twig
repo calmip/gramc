@@ -147,7 +147,7 @@
 		{% for comm in mes_commentaires %}
 		<h3>{{comm.annee}}</h3>
 		<p><em>Dernière mise à jour le {{comm.majstamp|date('Y-m-d H:i:s')}}</em></p>
-		<p>{{comm.commentaire}}</p>
+		<p>{{comm.commentaire| e | nl2br}}</p>
 		{% endfor %}
 	{% else %}
 		<p><em>Vous n'avez entré aucun commentaire</em></p>
