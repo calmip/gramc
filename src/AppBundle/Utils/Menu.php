@@ -1567,4 +1567,56 @@ class Menu
 
     return $menu;
     }
+    
+    /////// Permet de demander l'accès aux fonctions de Callisto //////////////////
+    public static function demandeCallisto( Version $version )
+    {
+        $menu['name']   = 'demande_callisto';
+        $menu['param']  = $version->getIdVersion();
+        $menu['lien']   = "Valorisation des données";
+        $menu['commentaire']    =   "Vous ne pouvez pas accéder à Callisto";
+        $menu['ok']          = false;
+
+        if( AppBundle::isGranted('ROLE_ADMIN') )
+        {
+            $menu['commentaire']    =   "Calibrer la demande pour les services de valorisation des données";
+            $menu['raison']         =   "L'administrateur peut TOUJOURS demander une valorisation des données du projet quelque soit son état !";
+            $menu['ok']             = true;
+            return $menu;
+        }
+
+        $etatVersion    =   $version->getEtatVersion();
+        $isProjetTest   =   $version->isProjetTest();
+
+        if( $version == null)
+        {
+            $menu['raison'] = "Pas de projet à soumettre";
+            Functions::errorMessage(__METHOD__ . ' le projet ' . Functions::show( $projet ) . " n'a pas de version !");
+        }
+        elseif( $version->getSession() == null )
+        {
+            $menu['raison'] = "Pas de session attachée à ce projet !";
+            Functions::errorMessage(__METHOD__ . ' la version ' . Functions::show( $version ) . " n'a pas de session attachée !");
+        }
+        elseif( $etatVersion ==  Etat::EDITION_EXPERTISE  )
+            $menu['raison'] = "Le projet a déjà été envoyé à l'expert !";
+        elseif( $isProjetTest == true && $etatVersion ==  Etat::ANNULE )
+            $menu['raison'] = "Le projet test a été annulé !";
+        elseif( $isProjetTest == true && $etatVersion !=  Etat::EDITION_TEST )
+            $menu['raison'] = "Le projet test a déjà été envoyé à l'expert !";
+        elseif( $version->getSession()->getEtatSession() != Etat::EDITION_DEMANDE && $isProjetTest == false )
+            $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
+        if( $version->isCollaborateur() == false )
+            $menu['raison']         = "Seul un collaborateur du projet peut modifier ou supprimer le projet";
+        elseif( $etatVersion !=  Etat::EDITION_DEMANDE && $etatVersion !=  Etat::EDITION_TEST )
+            $menu['raison'] = "Le projet n'est pas en mode d'édition";
+        else
+        {
+            $menu['ok']          = true;
+            $menu['commentaire'] = "Modifier votre demande de ressources";
+            $menu['todo']        = "<strong>Vérifier</strong> le projet et le <strong>compléter</strong> si nécessaire";
+        }
+
+        return $menu;
+    }
 }

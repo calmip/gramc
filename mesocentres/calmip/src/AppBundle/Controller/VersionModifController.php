@@ -1118,6 +1118,29 @@ class VersionModifController extends Controller
 
     }
 
+	/**
+     * Displays a form to edit an existing version entity.
+     *
+     * @Route("/{id}/callisto", name="demande_callisto")
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     * @Method({"GET", "POST"})
+     */
+    public function callistoAction(Request $request, Version $version)
+    {
+
+    // ACL
+    
+    //if( Menu::renouveler_version($version)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
+    if( Menu::demandeCallisto($version)['ok'] == false )
+       Functions::createException("VersionController:Callisto impossible de demander acces Callisto " . $version->getIdVersion() );
+	 $message = "Coucou";
+	 return $this->render('version/callisto.html.twig',
+            [
+            'message'    => $message,
+            'version'    =>  $version,
+            ]);
+	}
+
     /**
      * Displays a form to edit an existing version entity.
      *
