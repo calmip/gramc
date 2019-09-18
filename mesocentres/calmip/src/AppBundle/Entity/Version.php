@@ -547,7 +547,30 @@ class Version
      * })
      */
     private $projet;
+    
+    /// Ajout Callisto: Septembre 2019
+    /**
+     * @var \AppBundle\Entity\dataMetaDataFormat
+     *
+     * @ORM\Column(name="data_metadataformat", type="string", length=15, nullable=true)
+	 *
+     */
+    private $dataMetaDataFormat;
 
+    /**
+     * @var \AppBundle\Entity\dataTailleDatasets
+     *
+     * @ORM\Column(name="data_tailledatasets", type="string", length=15, nullable=true)
+	 *
+     */
+    private $dataTailleDatasets;
+    /**
+     * @var \AppBundle\Entity\dataNombreDatasets
+     *
+     * @ORM\Column(name="data_nombredatasets", type="string", length=15, nullable=true)
+	 *
+     */
+    private $dataNombreDatasets;
     /////////
 
     /**
@@ -866,7 +889,7 @@ class Version
 
         return $this;
     }
-
+    
     /**
      * Get prjSousThematique
      *
@@ -877,6 +900,73 @@ class Version
         return $this->prjSousThematique;
     }
 
+    /**
+     * Set dataMetaDataFormat
+     *
+     * @param string $dataMetaDataFormat
+     *
+     * @return Version
+     */
+    public function setDataMetaDataFormat($dataMetaDataFormat)
+    {
+        $this->dataMetaDataFormat = $dataMetaDataFormat;
+
+        return $this;
+    }
+
+    /**
+     * Get dataMetaDataFormat
+     *
+     * @return string
+     */
+    public function getDataMetaDataFormat()
+    {
+        return $this->dataMetaDataFormat;
+    }
+    /**
+     * Set dataNombreDatasets
+     *
+     * @param string $dataNombreDatasets
+     *
+     * @return Version
+     */
+    public function setDataNombreDatasets($dataNombreDatasets)
+    {
+        $this->dataNombreDatasets = $dataNombreDatasets;
+
+        return $this;
+    }
+
+	/**
+     * Get dataNombreDatasets
+     *
+     * @return string
+     */
+    public function getDataNombreDatasets()
+    {
+        return $this->dataNombreDatasets;
+    }
+    /**
+     * Set dataTailleDatasets
+     *
+     * @param string $dataTailleDatasets
+     *
+     * @return Version
+     */
+    public function setDataTailleDatasets($dataTailleDatasets)
+    {
+        $this->dataTailleDatasets = $dataTailleDatasets;
+        return $this;
+    }
+    /**
+     * Get dataTailleDatasets
+     *
+     * @return string
+     */
+    public function getDataTailleDatasets()
+    {
+        return $this->dataTailleDatasets;
+    }
     /**
      * Set prjFinancement
      *

@@ -1604,12 +1604,8 @@ class Menu
             $menu['raison'] = "Le projet test a été annulé !";
         elseif( $isProjetTest == true && $etatVersion !=  Etat::EDITION_TEST )
             $menu['raison'] = "Le projet test a déjà été envoyé à l'expert !";
-        elseif( $version->getSession()->getEtatSession() != Etat::EDITION_DEMANDE && $isProjetTest == false )
-            $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
         if( $version->isCollaborateur() == false )
             $menu['raison']         = "Seul un collaborateur du projet peut modifier ou supprimer le projet";
-        elseif( $etatVersion !=  Etat::EDITION_DEMANDE && $etatVersion !=  Etat::EDITION_TEST )
-            $menu['raison'] = "Le projet n'est pas en mode d'édition";
         else
         {
             $menu['ok']          = true;

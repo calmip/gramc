@@ -1127,20 +1127,95 @@ class VersionModifController extends Controller
      */
     public function callistoAction(Request $request, Version $version)
     {
-
-    // ACL
-    
-    //if( Menu::renouveler_version($version)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-    if( Menu::demandeCallisto($version)['ok'] == false )
-       Functions::createException("VersionController:Callisto impossible de demander acces Callisto " . $version->getIdVersion() );
-	 $message = "Coucou";
-	 return $this->render('version/callisto.html.twig',
-            [
-            'message'    => $message,
-            'version'    =>  $version,
-            ]);
+		if( Menu::demandeCallisto($version)['ok'] == false ) 
+		{
+			Functions::createException("VersionController:Callisto impossible de demander acces Callisto " . $version->getIdVersion() );
+		}	
+		// Formulaire callisto
+		$usecase = 'premier affichage'; 
+        $callisto_form = $this->createFormBuilder($version)
+            ->add('dataMetadataFormat', ChoiceType::class,
+                [
+                'label' => 'Format de métadonnées',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "IVOA" => "IVOA",
+                                "OGC" => "OGC",
+                                "Dublin Core" => "DC",
+                                "Autre" => "Autre",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+            ->add( 'dataNombreDatasets', ChoiceType::class,
+                [
+                'label' => 'Estimation du nombre de datasets à partager',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 10 datasets" => "< 10 datasets",
+                                "< 100 datasets" => "< 100 datasets",
+                                "< 1000 datasets" => "< 1000 datasets",
+                                "> 1000 datasets" => "> 1000 datasets",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+			->add('dataTailleDatasets', ChoiceType::class,
+                [
+                'label' => 'Taille moyenne approximative pour un dataset',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 100 Mo" => "<100 Mo",
+                                "< 500 Mo" => "< 500 Mo",
+                                "> 1 Go" => ">1 Go",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+            ->add('valider',   SubmitType::Class )
+            ->getForm();
+        $projet =  $version->getProjet();	
+        if( $projet != null )
+            $idProjet   =   $projet->getIdProjet();
+		else
+			{
+				Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
+				$idProjet   =   null;
+            }
+        // Pour traiter le retour d'une validation du formulaire    
+		$callisto_form->handleRequest($request);
+		if ( $callisto_form->isSubmitted() && $callisto_form->isValid())
+		{
+			Functions::debugMessage("Entree dans le traitement du formulaire lie a Callisto");
+			$this->handleCallistoForms( $callisto_form, $version );
+		}
+		/*
+		if ($callisto_form->get('valider')->isClicked()) {
+			static::handleCallistoForms( $callisto_form, $version );
+		}
+		*/
+	 // Affichage du formulaire
+	 return $this->render('version/callisto_basique.html.twig',
+		[
+            'usecase' => $usecase,
+            'session'   =>  $version->getSession(),
+            'projet' => $idProjet,
+            'version'    => $version,
+            'callisto_form'       => $callisto_form->createView(),
+        ]);
 	}
 
+	////////// Recupère et traite le retour du formulaire 
+	////////// lié à l'utilisation de Callisto 
+	private function handleCallistoForms( $callisto_form, Version $version )
+	{
+		$version->setDataMetaDataFormat($callisto_form->get('dataMetadataFormat')->getData());
+		$version->setDataNombreDatasets($callisto_form->get('dataNombreDatasets')->getData());
+		$version->setDataTailleDatasets($callisto_form->get('dataTailleDatasets')->getData());
+		$em = $this->getDoctrine()->getManager();
+		$em->persist($version);
+        $em->flush();
+	}
     /**
      * Displays a form to edit an existing version entity.
      *

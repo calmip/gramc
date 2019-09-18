@@ -113,7 +113,6 @@
 	<p>Les heures gpu sont affichées en heures <strong>normalisées</strong></p>
 </div>
 {% endif %}
-
 <table class="projet">
     <tbody>
         <tr><th class="horiz">Titre</th><td>{{ version.prjTitre }}</td></tr>
@@ -503,8 +502,16 @@ Le laboratoire associé au projet est le laboratoire du responsable
         </tr>
 </tbody>
 </table>
+<h3>V - Valorisation des données</h3>
+<table class="projet">
+    <tbody>
+        <tr><th class="horiz">Standard de métadonnées</th><td>{{ version.dataMetaDataFormat}}</td></tr>
+        <tr><th class="horiz">Nombre de datasets (estimation)</th><td>{{ version.dataNombreDatasets }}</td></tr>
+        <tr><th class="horiz">Taille moyenne des datasets (estimation)</th><td>{{ version.dataTailleDatasets }}</td></tr>
+    </tbody>
+</table>
 
-<h3>V - Commentaire de l'expert</h3>
+<h3>VI- Commentaire de l'expert</h3>
 
 {% for expertise in version.expertise %}
 
