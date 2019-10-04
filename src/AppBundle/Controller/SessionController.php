@@ -251,11 +251,11 @@ class SessionController extends Controller
 
 
         return $this->render('session/gerer.html.twig',
-            [
+		[
             'menu'     => $menu,
             'sessions' => $sessions,
             //'sessions' => $new_sessions,
-            ]);
+		]);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -364,48 +364,53 @@ class SessionController extends Controller
 
         $sessions = AppBundle::getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
 
+		$ok = false;
         $mois = GramcDate::get()->format('m');
-
-
         if( $mois == 1 ||  $mois == 12 )
-            {
+		{
             if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session_courante) && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 foreach( $sessions as $session )
-                    {
+				{
                     if( $session->getIdSession() == $session_courante->getIdSession() )
                         continue;
 
                     $workflow   = new SessionWorkflow($session);
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
-                        $workflow->execute( Signal::CLK_SESS_FIN, $session);
-                    }
+                        $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
+				}
 
-                $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
+                $ok = $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
-            }
+			}
+		}
         elseif( $mois == 6 ||  $mois == 7 )
             if( $workflow->canExecute(Signal::CLK_SESS_DEB , $session_courante)  && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 //foreach( $sessions as $session )
                 //    {
                 //    $workflow   = new SessionWorkflow($session);
                 //    if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session) )
                 //        $workflow->execute( Signal::CLK_SESS_DEB, $session);
                 //    }
-                $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
+                $ok = $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
+			}
 
-        return $this->render('default/error.html.twig',
-                [
-                'message'   => "Impossible d'activer la session",
+		if ($ok==true)
+		{
+			return $this->redirectToRoute('gerer_sessions');
+		}
+		else
+		{
+	        return $this->render('default/error.html.twig',
+			[
+                'message'   => "Impossible d'activer la session, allez voir le journal !",
                 'titre'     =>  'Erreur',
-                ]);
+			]);
+		}
     }
+
     /**
      *
      * @Security("has_role('ROLE_ADMIN') or has_role('ROLE_PRESIDENT')")
@@ -1055,7 +1060,7 @@ class SessionController extends Controller
         $date_recup = GramcDate::Get();
         $d30j       = new \DateTime($annee_cour.'-06-30'); // Le 30 Juin
       	// Si on est après le 30 juin on considère le 30 juin comme date de conso de référence
-      	// Si on est avant, on conisdère la date du jour
+      	// Si on est avant, on considère la date du jour
       	// Evidemment elle ne devrait pas être trop éloignée du 30 juin sinon cela n'a pas trop de sens !
         if ($date_recup > $d30j)
         {

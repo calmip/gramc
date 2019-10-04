@@ -32,7 +32,6 @@ use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
 
 //use AppBundle\Exception\WorkflowException;
-//use AppBundle\Utils\Functions;
 
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
@@ -146,6 +145,20 @@ class SessionTransition implements TransitionInterface
 		{
             $rtn = true;
 
+			// Si on ne peut pas remettre toutes les session à zéro, renvoie false
+			// La transition n'a pas eu lieu
+			// Cela est une sécurité afin de s'assurer que personne ne reste connecté, ne sachant pas que la session
+			// a changé d'état !
+			if (Functions::clear_phpSessions()==false)
+			{
+				$rtn = false;
+				return $rtn;
+			}
+			else
+			{
+				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
+			}
+
             Functions::debugMessage( __FILE__ . ":" . __LINE__ . " execute" );
             if( $this->signal_projet == null )
                 Functions::debugMessage( __FILE__ . ":" . __LINE__ . " signal projet null" );
@@ -159,7 +172,6 @@ class SessionTransition implements TransitionInterface
 
                 foreach( $versions as $version )
 				{
-
                     //if( $version->getIdVersion() == "19AP17002" )
 					//{
                     //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Version " .  $version->getIdVersion());

@@ -1254,7 +1254,7 @@ class Functions
     //
 
     public static function utilisateurs_a_effacer($individus = [])
-        {
+	{
         $individus_effaces = [];
 
         foreach( $individus as $individu )
@@ -1270,5 +1270,30 @@ class Functions
                 $individus_effaces[] = $individu;
 
          return $individus_effaces;
-        }
+	}
+
+	////////////////////////
+	// Supprime TOUS les fichiers du répertoire de sessions
+	// Tant pis s'il y avait des fichiers autres que des fichiers de session symfony
+	// (ils n'ont rien à faire ici de toute manière)
+	//
+	public static function clear_phpsessions()
+	{
+		$dir = session_save_path();
+	    $scan = scandir( $dir );
+	    $result = true;
+	    foreach ( $scan as $filename )
+	    {
+			if( $filename != '.' && $filename != '..' )
+			{
+				$path = $dir . '/' . $filename;
+				if (@unlink($path)==false)
+				{
+					Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le fichier $path n'a pas pu être supprimé !" );
+					$result = false;
+				}
+			}
+		}
+		return $result;
+	}
 }
