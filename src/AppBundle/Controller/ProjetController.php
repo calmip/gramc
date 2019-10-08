@@ -597,6 +597,10 @@ class ProjetController extends Controller
         $items  =   [];
         foreach( $versions as $version )
         {
+			//Modif Callisto Septembre 2019
+			$typeMetadata = $version -> getDataMetaDataFormat();
+			$nombreDatasets = $version -> getDataNombreDatasets();
+			$tailleDatasets = $version -> getDataTailleDatasets();
             $demHeures  +=  $version->getDemHeures();
             $attrHeures +=  $version->getAttrHeures();
             if( $version->isNouvelle() == true )    $nombreNouveaux++;
@@ -691,6 +695,9 @@ class ProjetController extends Controller
 
         return $this->render('projet/session.html.twig',
         [
+			'typeMetadata'			=>	$typeMetadata,
+			'nombreDatasets'		=>	$nombreDatasets,
+			'tailleDatasets'		=>	$tailleDatasets,
             'nombreEditionTest'     =>  $nombreEditionTest,
             'nombreExpertiseTest'   =>  $nombreExpertiseTest,
             'nombreEdition'         =>  $nombreEdition,
