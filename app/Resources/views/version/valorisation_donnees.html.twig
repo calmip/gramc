@@ -1,0 +1,105 @@
+{% extends 'default/base.html.twig' %}
+
+{# ######################################################################### #}
+
+{% block collection_widget %}
+    {% spaceless %}
+    <div class="collection">
+        <div class="collection-contents" {{ block('widget_container_attributes') }}>
+             {{ form_errors(form) }}
+            <table id="profil_horiz">
+                <thead>
+                    <tr>
+                    {% if form[0] is defined %}
+                        {% for item in form[0] %}
+                            {% if "hidden"  not in item.vars.block_prefixes.1 %}
+                            <td>{{ form_label(item) }}</td>
+                            {% else %}
+                            <td style="display:NONE"></td>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                     </tr>
+                </thead>
+
+                <tbody class="collection-tbody">
+                {% set rowNum = 0 %}
+                {% for rows in form %}
+                    {% if rows.vars.data.responsable is defined and rows.vars.data.responsable %} {# accès à la donnée via PHP #}
+                        {% set resp = 'resp' %}{% else %}{% set resp = '' %}
+                    {% endif %}
+                    <tr>
+                        {% set fieldNum = 1 %}
+                        {% for row in rows %}
+                            {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+                            <td class="collection-tbody-old  {{ resp }}">
+                            {% else %}
+                            <td style="display:NONE">
+                            {% endif %}
+                                {{ form_widget(row) }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% set rowNum = rowNum + 1 %}
+                {% endfor %}
+
+                {# nous ajoutons la nouvelle ligne du prototype d'une manière manuelle #}
+
+                {% if prototype is defined %}
+                    {{ protoline | replace({ '__name__' : rowNum })  | raw }}
+                {% endif %}
+
+                </tbody>
+            </table>
+            {{ form_rest(form) }}
+
+        </div>
+    </div>
+
+    {% endspaceless %}
+{% endblock collection_widget %}
+
+{# ######################################################################### #}
+
+{% block collection_item_widget %}
+{% spaceless %}
+    <tr>
+    {% set fieldNum = 1 %}
+    {% for row in prototype %}
+        {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+        <td class="collection-tbody-new">
+        {% endif %}
+        {# {{ form_widget(row, { 'attr': { 'class': 'collection-tbody-new' }}) }} #}
+        {{ form_widget(row) }}
+        {% if "hidden"  not in row.vars.block_prefixes.1 %} {# important pour tester le type du champs #}
+        </td>
+        {% endif %}
+        {% set fieldNum = fieldNum + 1 %}
+    {% endfor %}
+    </tr>
+{% endspaceless %}
+{% endblock collection_item_widget %}
+
+{# ######################################################################### #}
+
+
+{% block body %}
+
+{% form_theme callisto_form _self %}
+
+<h2>Demander un espace de valorisation des données - projet {{ projet }} (session {{ session }})  - cas utilisation {{ usecase }}</h2>
+    <div class="message info">
+        <p><strong>L'espace de valorisation (portail CALLISTO) vous permet:</strong></p>
+        <ol>
+			<li>De partager des données <strong>entre membres du projet</strong></li>
+			<li>D'appliquer des standards de métadonnées</li>
+			<li>De faciliter la recherche et l'exploitation de données et de traitements complémentaires aux résultats des calculs</li>
+        </ol>
+    </div>
+
+{{ form_start(callisto_form) }}
+{{ form_widget(callisto_form) }}
+{{ form_end(callisto_form) }}
+
+<a class="lien_actif center" href="{{ path('consulter_projet',{'id' : projet }) }}" title="Consulter le projet {{ projet }}">Retour vers le projet {{ projet }}</a>
+{% endblock %}

@@ -227,6 +227,9 @@
             <th>H dem</th>
             <th>H attr</th>
             <th>H cons</th>
+            <th>Type de metadonnées</th>
+            <th>Taille approximative des datasets</th>
+            <th>Nombre de datasets envisagé</th>
             <th>Signature</th>
             {% if( showRapport == true )%}
             <th>Rapport d'Activité</th>
@@ -348,6 +351,9 @@
                 {% else %}
                 <td>-</td>
                 {% endif %}
+            <td>{{ version.dataMetaDataFormat }}</td>	
+            <td>{{ version.dataNombreDatasets }}</td>
+            <td>{{ version.dataTailleDatasets }}</td>
             {% if( showRapport ==true ) %}
                 {% if( version.isNouvelle() ) %}
                     <td  class="rapport_activite">N/A
