@@ -1,0 +1,104 @@
+{# ################################################################################## #}
+
+<div id="tab3" class="onglet"><br><br>
+	<h3>Description technique du projet</h3>
+	<table class="projet"><tbody>
+		<tr>
+		    <th>Nature du code et informations sur le code utilisé</th>
+		</tr>
+	<tr>
+	    <td><table class="invi"><tbody>
+	        <tr>
+	            <td class="droite"><label for="form_prjConception"><em>Vous pouvez cocher plusieurs cases</em>
+	            <br>Conception de méthodes de calcul parallèle</label></td>
+	            <td class="gauche"><br>{{ form_widget(form.prjConception) }}<br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.prjDeveloppement,"Développement d'un code parallèle") }}</td>
+	            <td class="gauche">{{ form_widget(form.prjDeveloppement) }}<br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.prjParallelisation,"Parallélisation d'un code existant") }}</td>
+	            <td class="gauche">{{ form_widget(form.prjParallelisation) }}<br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.prjUtilisation,"Utilisation d'un code parallèle") }}</td>
+	            <td class="gauche">{{ form_widget(form.prjUtilisation) }}<br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeNom, "Le nom du principal logiciel que vous allez utiliser")}}</td>
+	            <td class="gauche">{{ form_widget(form.codeNom) }}<br><br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">Le langage dans lequel est programmé le logiciel<br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeC, "C")}}</td>
+	            <td class="gauche">{{ form_widget(form.codeC) }}</td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeCpp, "C++")}}</td>
+	            <td class="gauche">{{ form_widget(form.codeCpp) }}</td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeFor, "Fortran")}}</td>
+	            <td class="gauche">{{ form_widget(form.codeFor) }}</td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeAutre, "Autre")}}</td>
+	            <td class="gauche">{{ form_widget(form.codeAutre) }}  Lequel ? {{ form_widget(form.codeLangage) }} </td>
+	        </tr>{# #}
+	        <tr>
+	            <td class="droite">{{ form_label(form.gpu, "Existe-t-il un binaire GPU pour votre application ?" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.gpu) }}<br><br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeLicence, "Licence de ce logiciel (libre, commercial, autre, je ne sais pas)" ) }}<br></td>
+	            <td class="gauche">{{ form_widget(form.codeLicence, { 'attr': { 'rows' : 3, 'cols' : 50 } }) }}<br><br></td>
+	        </tr>{# #}
+	        <tr>
+	            <td class="droite">Avez vous déjà utilisé ce code sur une ou plusieurs machines?"
+	                <br><strong>Machines de GENCI</strong>: précisez le nom<br>
+	                <strong>Serveur ou cluster de labo</strong> : précisez son type (processeurs, OS)</td>
+	                <td class="gauche"><br>{{ form_widget(form.codeUtilSurMach, { 'attr': { 'rows' : 7, 'cols' : 50 } }) }}
+	                <br>
+	                <br>
+	            </td>
+	        </tr>
+	        <tr>{# #}
+	            <td class="droite">{{ form_label(form.codeHeuresPJob, "Estimation du temps CPU max d'un job (heures monoprocesseur)" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.codeHeuresPJob) }}<br><br></td>
+	        </tr>
+	        <tr>{# #}
+	            <td class="droite">{{ form_label(form.codeRamPCoeur, "Estimation de la RAM nécessaire par coeur pour un job" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.codeRamPCoeur) }}<br><br></td>
+	        </tr>
+	        <tr>{# #}
+	            <td class="droite">{{ form_label(form.codeRamPart, "Estimation de la RAM nécessaire en mémoire partagée" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.codeRamPart) }}<br><br></td>
+	        </tr>
+	        <tr>{# #}
+	            <td class="droite">{{ form_label(form.codeEffParal, "Nombre maximal de coeurs utilisables efficacement par le code" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.codeEffParal) }}<br><br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.codeVolDonnTmp, "Estimation de l'espace-disque temporaire nécessaire par job" ) }}</td>
+	            <td class="gauche">{{ form_widget(form.codeVolDonnTmp) }}<br><br></td>
+	        </tr>
+	        <tr>
+	            <td class="droite">{{ form_label(form.demLogiciels, "Autres logiciels nécessaires au projet" ) }}<br></td>
+	            <td class="gauche">{{ form_widget(form.demLogiciels, { 'attr': { 'rows' : 5, 'cols' : 50 } }) }}<br><br></td>
+	        </tr>
+	       <tr>
+	            <td class="droite">{{ form_label(form.demBib, "Bibliothèques nécessaires" ) }}<br></td>
+	            <td class="gauche">{{ form_widget(form.demBib, { 'attr': { 'rows' : 5, 'cols' : 50 } }) }}<br><br></td>
+	        </tr>
+
+	        <tr>
+	            <td class="droite">Pensez-vous utiliser la <a href="{{ mesoc_visu }}" target="_blank">visualisation à distance</a> ?</td>
+	            <td class="gauche">{{ form_widget(form.demPostTrait) }}<br><br></td>
+	        </tr></tbody></table>
+	    </td>
+	</tr></tbody></table>
+
+</div>

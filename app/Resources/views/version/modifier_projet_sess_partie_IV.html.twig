@@ -1,0 +1,33 @@
+{# ################################################################################## #}
+
+<div id="tab4" class="onglet">
+
+    <h3>Besoins en stockage permanent</h3>
+
+	<div class="message info"
+	    <p>Chaque projet dispose par défaut de <strong>1To de stockage permanent et sécurisé pour toute la durée du projet</strong>.<br>
+			    Il est possible de demander plus d'espace de stockage <strong>en justifiant son usage</strong>: le comité d'attribution de {{mesoc}} arbitrera votre demande.</p>
+	</div>
+
+    <table class="projet"><tbody>
+		<tr><th colspan="2">Stockage permanent</th></tr>
+		<tr>
+			<th><label for="form_sondVolDonnPerm">Besoins en espace-disque permanent <strong>pour l'ensemble du projet</strong>
+			<br /><small>(quota de groupe)</small></label></th>
+			<td>{{ form_widget(form.sondVolDonnPerm) }}</td>
+		</tr>
+		<tr>
+			<th  class="gauche" ><label for="sond_justif_donn_perm">Justificatif: Si vous demandez plus de 1 To, merci de préciser l'usage que vous envisagez<br>
+			<small>
+				<ul>
+					<li>S'agit-il de données de calcul régulièrement utilisées ?</li>
+					<li>S'agit-il de données de sortie de calcul qui doivent être stockées de manière sécurisée en attendant d'être postraitées ?</li>
+					<li>etc.</li>
+				</ul>
+			</small>
+			</label>
+			</th>
+			<td>{{ form_widget(form.sondJustifDonnPerm, { 'attr': { 'rows' : 12, 'cols' : 70 } }) }}</td>
+		</tr>
+	</tbody></table>
+</div>

@@ -222,7 +222,76 @@ class VersionModifController extends Controller
 	private function modifierType1(Request $request, Version $version, $renouvellement, $image_forms, $collaborateur_form)
     {
 		// formulaire principal
-        $form = $this->createFormBuilder($version)
+        $form = $this->createFormBuilder($version);
+        $this->modifierPartieI($version,$form);
+        $this->modifierPartieII($version,$form);
+        $this->modifierPartieIII($version,$form);
+        $this->modifierPartieIV($version,$form);
+        $this->modifierPartieV($version,$form);
+
+		$form
+            ->add( 'fermer',   SubmitType::Class )
+                //->add( 'enregistrer',   SubmitType::Class )
+            ->add( 'annuler',   SubmitType::Class );
+
+        $form = $form->getForm();
+
+        //Functions::debugMessage('modifierAction before principal form handle Request');
+        $form->handleRequest($request);
+        //Functions::debugMessage('modifierAction after principal form handle Request');
+
+        // traitement du formulaire
+        if( $form->isSubmitted() && $form->isValid() )
+		{
+            if( $form->get('annuler')->isClicked() )
+			{
+                // on ne devrait jamais y arriver !
+                Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
+                return $this->redirectToRoute( 'projet_accueil' );
+			}
+
+           // on sauvegarde tout de même mais il semble que c'est déjà fait avant
+           $return = Functions::sauvegarder( $version );
+           //AppBundle::getManager()->persist( $version );
+           //AppBundle::getManager()->flush();
+
+            if( $request->isXmlHttpRequest() )
+			{
+                Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
+                if( $return == true )
+                    return new Response( json_encode('OK - Votre projet est correctement enregistré') );
+                else
+                    return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
+			}
+            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
+		}
+
+        return $this->render('version/modifier_projet_sess.html.twig',
+            [
+            'form'      => $form->createView(),
+            'version'   => $version,
+            'img_expose_1'   => $image_forms['img_expose_1']->createView(),
+            'img_expose_2'   => $image_forms['img_expose_2']->createView(),
+            'img_expose_3'   => $image_forms['img_expose_3']->createView(),
+            'imageExp1'    => static::image('img_expose_1',$version),
+            'imageExp2'    => static::image('img_expose_2',$version),
+            'imageExp3'    => static::image('img_expose_3',$version),
+            'img_justif_renou_1'    =>  $image_forms['img_justif_renou_1']->createView(),
+            'img_justif_renou_2'    =>  $image_forms['img_justif_renou_2']->createView(),
+            'img_justif_renou_3'    =>  $image_forms['img_justif_renou_3']->createView(),
+            'imageJust1'    =>   static::image('img_justif_renou_1',$version),
+            'imageJust2'    =>   static::image('img_justif_renou_2',$version),
+            'imageJust3'    =>   static::image('img_justif_renou_3',$version),
+            'collaborateur_form' => $collaborateur_form->createView(),
+            'todo'          => static::versionValidate($version),
+            'renouvellement'    => $renouvellement,
+            ]);
+	}
+
+	/* Les champs de la partie I */
+	private function modifierPartieI($version,&$form)
+	{
+		$form
             ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
             ->add('prjThematique', EntityType::class,
                     [
@@ -238,10 +307,28 @@ class VersionModifController extends Controller
             ->add('prjGenciCentre',     TextType::class, [ 'required'       =>  false ])
             ->add('prjGenciMachines',   TextType::class, [ 'required'       =>  false ])
             ->add('prjGenciHeures',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ])
+            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ]);
+
+		/* Pour un renouvellement, ajouter la justification du renouvellement */
+		if( count( $version->getProjet()->getVersion() ) > 1  )
+		{
+			 $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
+		}
+	}
+
+	/* Les champs de la partie II */
+	private function modifierPartieII($version,&$form)
+	{
+		$form
             ->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
             ->add('prjExpose', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'prjAlgorithme', TextAreaType::class, [ 'required'       =>  false ] )
+            ->add('prjAlgorithme', TextAreaType::class, [ 'required'       =>  false ] );
+	}
+
+	/* Les champs de la partie III */
+	private function modifierPartieIII($version,&$form)
+	{
+		$form
             ->add( 'prjConception', CheckboxType::class, [ 'required'       =>  false ] )
             ->add( 'prjDeveloppement', CheckboxType::class, [ 'required'       =>  false ] )
             ->add( 'prjParallelisation', CheckboxType::class, [ 'required'       =>  false ] )
@@ -336,19 +423,13 @@ class VersionModifController extends Controller
                                 "Non" => "Non",
                                 "Je ne sais pas" => "je ne sais pas",
                                 ],
-                ])
-            ->add( 'demFormPrise',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormDebogage',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOptimisation',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormFortran',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormPython',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormMPI',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenMP',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenACC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormParaview',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormAutresAutres',  TextAreaType::class, [ 'required'       =>  false ])
+                ]);
+	}
+
+	/* Les champs de la partie IV */
+	private function modifierPartieIV($version,&$form)
+	{
+        $form
             ->add( 'sondVolDonnPerm', ChoiceType::class,
                 [
                 'required'       =>  false,
@@ -370,72 +451,25 @@ class VersionModifController extends Controller
                                 ],
                 'required'       =>  false,
                 ])
-            ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  )
-            ->add( 'fermer',   SubmitType::Class )
-                //->add( 'enregistrer',   SubmitType::Class )
-            ->add( 'annuler',   SubmitType::Class );
+            ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  );
+	}
 
-        if( count( $version->getProjet()->getVersion() ) > 1  )
-             $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
-
-        $form = $form->getForm();
-
-        //Functions::debugMessage('modifierAction before principal form handle Request');
-        $form->handleRequest($request);
-        //Functions::debugMessage('modifierAction after principal form handle Request');
-
-        // traitement du formulaire
-        if( $form->isSubmitted() && $form->isValid() )
-		{
-            if( $form->get('annuler')->isClicked() )
-			{
-                // on ne devrait jamais y arriver !
-                Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
-                return $this->redirectToRoute( 'projet_accueil' );
-			}
-
-           // on sauvegarde tout de même mais il semble que c'est déjà fait avant
-           $return = Functions::sauvegarder( $version );
-           //AppBundle::getManager()->persist( $version );
-           //AppBundle::getManager()->flush();
-
-            if( $request->isXmlHttpRequest() )
-			{
-                Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
-                if( $return == true )
-                    return new Response( json_encode('OK - Votre projet est correctement enregistré') );
-                else
-                    return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
-			}
-            /*
-            if( $form->get('fermer')->isClicked() )
-                Functions::debugMessage(__METHOD__ . ' fermer clicked');
-            else
-                Functions::warningMessage(__METHOD__ . ' autre chose clicked');
-            */
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-		}
-
-        return $this->render('version/modifier_projet_sess.html.twig',
-            [
-            'form'      => $form->createView(),
-            'version'   => $version,
-            'img_expose_1'   => $image_forms['img_expose_1']->createView(),
-            'img_expose_2'   => $image_forms['img_expose_2']->createView(),
-            'img_expose_3'   => $image_forms['img_expose_3']->createView(),
-            'imageExp1'    => static::image('img_expose_1',$version),
-            'imageExp2'    => static::image('img_expose_2',$version),
-            'imageExp3'    => static::image('img_expose_3',$version),
-            'img_justif_renou_1'    =>  $image_forms['img_justif_renou_1']->createView(),
-            'img_justif_renou_2'    =>  $image_forms['img_justif_renou_2']->createView(),
-            'img_justif_renou_3'    =>  $image_forms['img_justif_renou_3']->createView(),
-            'imageJust1'    =>   static::image('img_justif_renou_1',$version),
-            'imageJust2'    =>   static::image('img_justif_renou_2',$version),
-            'imageJust3'    =>   static::image('img_justif_renou_3',$version),
-            'collaborateur_form' => $collaborateur_form->createView(),
-            'todo'          => static::versionValidate($version),
-            'renouvellement'    => $renouvellement,
-            ]);
+	/* Les champs de la partie V */
+	private function modifierPartieV($version,&$form)
+	{
+		$form
+            ->add( 'demFormPrise',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormDebogage',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOptimisation',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormFortran',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormC',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormCpp',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormPython',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormMPI',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOpenMP',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOpenACC',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormParaview',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormAutresAutres',  TextAreaType::class, [ 'required'       =>  false ]);
 	}
 
     /*
@@ -1127,12 +1161,12 @@ class VersionModifController extends Controller
      */
     public function callistoAction(Request $request, Version $version)
     {
-		if( Menu::demandeCallisto($version)['ok'] == false ) 
+		if( Menu::demandeCallisto($version)['ok'] == false )
 		{
 			Functions::createException("VersionController:Callisto impossible de demander acces Callisto " . $version->getIdVersion() );
-		}	
+		}
 		// Formulaire callisto
-		$usecase = 'premier affichage'; 
+		$usecase = 'premier affichage';
         $callisto_form = $this->createFormBuilder($version)
             ->add('dataMetadataFormat', ChoiceType::class,
                 [
@@ -1174,7 +1208,7 @@ class VersionModifController extends Controller
                 ])
             ->add('valider',   SubmitType::Class )
             ->getForm();
-        $projet =  $version->getProjet();	
+        $projet =  $version->getProjet();
         if( $projet != null )
             $idProjet   =   $projet->getIdProjet();
 		else
@@ -1182,7 +1216,7 @@ class VersionModifController extends Controller
 				Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
 				$idProjet   =   null;
             }
-        // Pour traiter le retour d'une validation du formulaire    
+        // Pour traiter le retour d'une validation du formulaire
 		$callisto_form->handleRequest($request);
 		if ( $callisto_form->isSubmitted() && $callisto_form->isValid())
 		{
@@ -1205,8 +1239,8 @@ class VersionModifController extends Controller
         ]);
 	}
 
-	////////// Recupère et traite le retour du formulaire 
-	////////// lié à l'utilisation de Callisto 
+	////////// Recupère et traite le retour du formulaire
+	////////// lié à l'utilisation de Callisto
 	private function handleCallistoForms( $callisto_form, Version $version )
 	{
 		$version->setDataMetaDataFormat($callisto_form->get('dataMetadataFormat')->getData());
