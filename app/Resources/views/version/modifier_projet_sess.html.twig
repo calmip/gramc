@@ -103,7 +103,9 @@
     {% if 'collabs' in todo %}
         <a href="#liste_des_collaborateurs" class="gerer_onglets">Liste des collaborateurs</a><br>{% endif %}
     {% if 'rapport_activite' in todo %}<a href="#rapport_activite" class="gerer_onglets">Téléverser le rapport d'activité de l'année précédente</a><br>{% endif %}
-
+    {% if 'Format de métadonnées' in todo %}<a href="#form_dataMetadataFormat" class="gerer_onglets">Format de métadonnées</a><br>{% endif %}
+	{% if 'Nombre de jeux de données' in todo %}<a href="#form_dataNombreDatasets" class="gerer_onglets">Nombre de jeux de données</a><br>{% endif %}
+	{% if 'Taille de chaque jeu de données' in todo %}<a href="#form_dataTailleDatasets" class="gerer_onglets">Taille de chaque jeu de données</a><br>{% endif %}
 </div>
 {% endif %} {# {% if not todo is empty %}  #}
 

@@ -1402,57 +1402,68 @@ class VersionModifController extends Controller
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static function versionValidate(Version $version)
     {
-    $todo   =   [];
+	    $todo   =   [];
 
-    if( $version->getPrjTitre() == null ) $todo[] = 'prj_titre';
-    if( $version->getDemHeures() == null ) $todo[] = 'dem_heures';
-    if( $version->getPrjThematique() == null ) $todo[] = 'prj_id_thematique';
-    if( $version->getPrjResume() == null ) $todo[] = 'prj_resume';
-    if( $version->getCodeNom() == null ) $todo[] = 'code_nom';
-    if( $version->getCodeLicence() == null ) $todo[] = 'code_licence';
-    if( $version->getGpu() == null ) $todo[] = 'gpu';
+	    if( $version->getPrjTitre() == null ) $todo[] = 'prj_titre';
+	    if( $version->getDemHeures() == null ) $todo[] = 'dem_heures';
+	    if( $version->getPrjThematique() == null ) $todo[] = 'prj_id_thematique';
+	    if( $version->getPrjResume() == null ) $todo[] = 'prj_resume';
+	    if( $version->getCodeNom() == null ) $todo[] = 'code_nom';
+	    if( $version->getCodeLicence() == null ) $todo[] = 'code_licence';
+	    if( $version->getGpu() == null ) $todo[] = 'gpu';
 
-    if( ! $version->isProjetTest() )
+	    if( ! $version->isProjetTest() )
         {
-        if( $version->getPrjExpose() == null ) $todo[] = 'prj_expose';
-        if( $version->getCodeHeuresPJob() == null ) $todo[] = 'code_heures_p_job';
-        if( $version->getCodeRamPCoeur() == null ) $todo[] = 'code_ram_p_coeur';
-        if( $version->getCodeRamPart() == null ) $todo[] = 'code_ram_part';
+	        if( $version->getPrjExpose() == null ) $todo[] = 'prj_expose';
+	        if( $version->getCodeHeuresPJob() == null ) $todo[] = 'code_heures_p_job';
+	        if( $version->getCodeRamPCoeur() == null ) $todo[] = 'code_ram_p_coeur';
+	        if( $version->getCodeRamPart() == null ) $todo[] = 'code_ram_part';
 
-        if( $version->getCodeEffParal() == null ) $todo[] = 'code_eff_paral';
-        if( $version->getCodeVolDonnTmp() == null ) $todo[] = 'code_vol_donn_tmp';
-        if( $version->getDemPostTrait() == null ) $todo[] = 'dem_post_trait';
+	        if( $version->getCodeEffParal() == null ) $todo[] = 'code_eff_paral';
+	        if( $version->getCodeVolDonnTmp() == null ) $todo[] = 'code_vol_donn_tmp';
+	        if( $version->getDemPostTrait() == null ) $todo[] = 'dem_post_trait';
 
-        // s'il s'agit d'un renouvellement
-        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
-            $todo[] = 'prj_justif_renouv';
+	        // s'il s'agit d'un renouvellement
+	        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
+	            $todo[] = 'prj_justif_renouv';
 
-        if( $version->getSondVolDonnPerm() == null )
-            $todo[] = 'sond_vol_donn_perm';
-        elseif( $version->getSondJustifDonnPerm() == null
-            &&  $version->getSondVolDonnPerm() != '< 1To'
-            &&  $version->getSondVolDonnPerm() != '1 To'
-            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas'
-            ) $todo[] = 'sond_justif_donn_perm';
-        }
+			// Stockage de données
+	        if( $version->getSondVolDonnPerm() == null )
+	        {
+	            $todo[] = 'sond_vol_donn_perm';
+			}
+	        elseif( $version->getSondJustifDonnPerm() == null
+	            &&  $version->getSondVolDonnPerm() != '< 1To'
+	            &&  $version->getSondVolDonnPerm() != '1 To'
+	            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas')
+	            {
+					$todo[] = 'sond_justif_donn_perm';
+				}
+	        }
 
-    if( $version->typeSession()  == 'A' )
-        {
-        $version_precedente = $version->versionPrecedente();
-        if( $version_precedente != null )
-            {
-            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+	        // Partage de données
+	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';
+	        if ($version->getDataNombreDatasets() == null ) $todo[] = 'Nombre de jeux de données';
+	        if ($version->getDataTailleDatasets() == null ) $todo[] = 'Taille de chaque jeu de données';
+
+		    if( $version->typeSession()  == 'A' )
+	        {
+		        $version_precedente = $version->versionPrecedente();
+		        if( $version_precedente != null )
+	            {
+		            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
                     [
-                    'projet' => $version_precedente->getProjet(),
-                    'annee' => $version_precedente->getAnneeSession(),
+	                    'projet' => $version_precedente->getProjet(),
+	                    'annee' => $version_precedente->getAnneeSession(),
                     ]);
-            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
-            }
-        }
+		            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
+	            }
+	        }
 
-    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
+		    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
 
-    return $todo;
-    }
+		    return $todo;
 
-}
+
+	    }
+	}

@@ -695,9 +695,9 @@ class ProjetController extends Controller
 
         return $this->render('projet/session.html.twig',
         [
-			'typeMetadata'			=>	$typeMetadata,
-			'nombreDatasets'		=>	$nombreDatasets,
-			'tailleDatasets'		=>	$tailleDatasets,
+			//'typeMetadata'			=>	$typeMetadata,
+			//'nombreDatasets'		=>	$nombreDatasets,
+			//'tailleDatasets'		=>	$tailleDatasets,
             'nombreEditionTest'     =>  $nombreEditionTest,
             'nombreExpertiseTest'   =>  $nombreExpertiseTest,
             'nombreEdition'         =>  $nombreEdition,
