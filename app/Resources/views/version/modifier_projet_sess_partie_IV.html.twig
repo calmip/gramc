@@ -2,6 +2,8 @@
 
 <div id="tab4" class="onglet">
 
+	<h2>Stockage et partage de données liées à votre projet</h2>
+
     <h3>Besoins en stockage permanent</h3>
 
 	<div class="message info"
@@ -30,4 +32,28 @@
 			<td>{{ form_widget(form.sondJustifDonnPerm, { 'attr': { 'rows' : 12, 'cols' : 70 } }) }}</td>
 		</tr>
 	</tbody></table>
+
+	<h3>Partage "CLAIR" (ou FAIR) des données</h3>
+
+	<div class="message info"
+	    <p>Le service "Partage de données" de CALMIP vous permet de <strong>déposer des données</strong> sur l'infrastructure de CALMIP dans le but de <strong>les partager
+	    avec des membres de votre communauté scientifique</strong>, afin qu'elle puissent être <strong>réutilisées</strong>. Pour bénéficier de ce service, vous devez avoir
+	    mis en place un <strong>Plan de Gestion de Données</strong></p><p>Celui-ci vous aidera à répondre aux questions ci-dessous:</p>
+	</div>
+
+	<table class="projet"><tbody>
+		<tr><th colspan="2">Partage CLAIR de données</th></tr>
+		<tr>
+			<th>{{ form_label(form.dataMetadataFormat) }}</th><td>{{ form_widget(form.dataMetadataFormat) }}</td>
+		</tr>
+		<tr>
+			<th>{{ form_label(form.dataNombreDatasets) }}</th><td>{{ form_widget(form.dataNombreDatasets) }}</td>
+		</tr>
+		<tr>
+			<th>{{ form_label(form.dataTailleDatasets) }}</th><td>{{ form_widget(form.dataTailleDatasets) }}</td>
+		</tr>
+	</tbody></table>
+
+
+
 </div>

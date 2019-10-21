@@ -451,7 +451,45 @@ class VersionModifController extends Controller
                                 ],
                 'required'       =>  false,
                 ])
-            ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  );
+            ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  )
+            ->add('dataMetadataFormat', ChoiceType::class,
+                [
+                'label' => 'Format de métadonnées',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "IVOA" => "IVOA",
+                                "OGC" => "OGC",
+                                "Dublin Core" => "DC",
+                                "Autre" => "Autre",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+			 ->add( 'dataNombreDatasets', ChoiceType::class,
+                [
+                'label' => 'Estimation du nombre de datasets à partager',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 10 datasets" => "< 10 datasets",
+                                "< 100 datasets" => "< 100 datasets",
+                                "< 1000 datasets" => "< 1000 datasets",
+                                "> 1000 datasets" => "> 1000 datasets",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+			->add('dataTailleDatasets', ChoiceType::class,
+                [
+                'label' => 'Taille moyenne approximative pour un dataset',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 100 Mo" => "<100 Mo",
+                                "< 500 Mo" => "< 500 Mo",
+                                "> 1 Go" => ">1 Go",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ]);
 	}
 
 	/* Les champs de la partie V */
