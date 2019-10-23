@@ -1565,6 +1565,7 @@ class ProjetController extends Controller
 	    $menu[] =   Menu::modifier_version( $version );
 	    $menu[] =   Menu::envoyer_expert( $projet );
 	    $menu[] =   Menu::modifier_collaborateurs( $version );
+		$menu[] =   Menu::donnees( $version );
 	    $menu[] =   Menu::telechargement_fiche( $version );
 	    $menu[] =   Menu::televersement_fiche( $version );
 	    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
@@ -1574,7 +1575,6 @@ class ProjetController extends Controller
 	        $menu[] =   Menu::televerser_rapport_annee( $version );
 
 	    $menu[] =   Menu::gerer_publications( $projet );
-		$menu[] =   Menu::demandeCallisto( $version );
 	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
 	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
 	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);

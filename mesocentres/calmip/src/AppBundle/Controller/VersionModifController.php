@@ -252,8 +252,6 @@ class VersionModifController extends Controller
 
            // on sauvegarde tout de même mais il semble que c'est déjà fait avant
            $return = Functions::sauvegarder( $version );
-           //AppBundle::getManager()->persist( $version );
-           //AppBundle::getManager()->flush();
 
             if( $request->isXmlHttpRequest() )
 			{
@@ -1191,61 +1189,25 @@ class VersionModifController extends Controller
     }
 
 	/**
-     * Displays a form to edit an existing version entity.
+     * Demande de partage stockage ou partage des données
      *
-     * @Route("/{id}/callisto", name="demande_callisto")
+     * @Route("/{id}/callisto", name="donnees")
      * @Security("has_role('ROLE_DEMANDEUR')")
      * @Method({"GET", "POST"})
      */
-    public function callistoAction(Request $request, Version $version)
+    public function donneesAction(Request $request, Version $version)
     {
-		if( Menu::demandeCallisto($version)['ok'] == false )
+		if( Menu::donnees($version)['ok'] == false )
 		{
-			Functions::createException("VersionController:Callisto impossible de demander acces Callisto " . $version->getIdVersion() );
+			Functions::createException("VersionController:donneesAction Bouton donnees inactif " . $version->getIdVersion() );
 		}
-		// Formulaire callisto
-		$usecase = 'premier affichage';
-        $callisto_form = $this->createFormBuilder($version)
-            ->add('dataMetadataFormat', ChoiceType::class,
-                [
-                'label' => 'Format de métadonnées',
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "IVOA" => "IVOA",
-                                "OGC" => "OGC",
-                                "Dublin Core" => "DC",
-                                "Autre" => "Autre",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'dataNombreDatasets', ChoiceType::class,
-                [
-                'label' => 'Estimation du nombre de datasets à partager',
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 10 datasets" => "< 10 datasets",
-                                "< 100 datasets" => "< 100 datasets",
-                                "< 1000 datasets" => "< 1000 datasets",
-                                "> 1000 datasets" => "> 1000 datasets",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-			->add('dataTailleDatasets', ChoiceType::class,
-                [
-                'label' => 'Taille moyenne approximative pour un dataset',
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 100 Mo" => "<100 Mo",
-                                "< 500 Mo" => "< 500 Mo",
-                                "> 1 Go" => ">1 Go",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add('valider',   SubmitType::Class )
-            ->getForm();
+
+        $form = $this->createFormBuilder($version);
+        $this->modifierPartieIV($version,$form);
+		$form
+            ->add( 'valider',   SubmitType::Class )
+            ->add( 'annuler',   SubmitType::Class );
+        $form = $form->getForm();
         $projet =  $version->getProjet();
         if( $projet != null )
             $idProjet   =   $projet->getIdProjet();
@@ -1254,12 +1216,21 @@ class VersionModifController extends Controller
 				Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
 				$idProjet   =   null;
             }
+
         // Pour traiter le retour d'une validation du formulaire
-		$callisto_form->handleRequest($request);
-		if ( $callisto_form->isSubmitted() && $callisto_form->isValid())
+		$form->handleRequest($request);
+		if ( $form->isSubmitted() && $form->isValid())
 		{
-			Functions::debugMessage("Entree dans le traitement du formulaire lie a Callisto");
-			$this->handleCallistoForms( $callisto_form, $version );
+			if ($form->get('valider')->isClicked() )
+			{
+				//Functions::debugMessage("Entree dans le traitement du formulaire données");
+				//$this->handleCallistoForms( $form, $version );
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($version);
+		        $em->flush();
+			}
+			return $this->redirectToRoute( 'consulter_projet', ['id' => $projet->getIdProjet() ] );
+
 		}
 		/*
 		if ($callisto_form->get('valider')->isClicked()) {
@@ -1267,27 +1238,28 @@ class VersionModifController extends Controller
 		}
 		*/
 	 // Affichage du formulaire
-	 return $this->render('version/callisto_basique.html.twig',
+	 return $this->render('version/donnees.html.twig',
 		[
-            'usecase' => $usecase,
-            'session'   =>  $version->getSession(),
-            'projet' => $idProjet,
-            'version'    => $version,
-            'callisto_form'       => $callisto_form->createView(),
+//            'usecase' => $usecase,
+//            'session'   =>  $version->getSession(),
+              'projet' => $projet,
+//            'version'    => $version,
+            'form'       => $form->createView(),
         ]);
 	}
 
 	////////// Recupère et traite le retour du formulaire
-	////////// lié à l'utilisation de Callisto
-	private function handleCallistoForms( $callisto_form, Version $version )
+	////////// lié à l'écran données
+	private function handleDonneesForms( $form, Version $version )
 	{
-		$version->setDataMetaDataFormat($callisto_form->get('dataMetadataFormat')->getData());
-		$version->setDataNombreDatasets($callisto_form->get('dataNombreDatasets')->getData());
-		$version->setDataTailleDatasets($callisto_form->get('dataTailleDatasets')->getData());
+		$version->setDataMetaDataFormat($form->get('dataMetadataFormat')->getData());
+		$version->setDataNombreDatasets($form->get('dataNombreDatasets')->getData());
+		$version->setDataTailleDatasets($form->get('dataTailleDatasets')->getData());
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($version);
         $em->flush();
 	}
+
     /**
      * Displays a form to edit an existing version entity.
      *

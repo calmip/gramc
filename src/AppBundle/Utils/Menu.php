@@ -1567,50 +1567,36 @@ class Menu
 
     return $menu;
     }
-    
-    /////// Permet de demander l'accès aux fonctions de Callisto //////////////////
-    public static function demandeCallisto( Version $version )
+
+	/*
+	 * Demandes concernant stockage et partage des données
+	 */
+    public static function donnees( Version $version )
     {
-        $menu['name']   = 'demande_callisto';
-        $menu['param']  = $version->getIdVersion();
-        $menu['lien']   = "Valorisation des données";
-        $menu['commentaire']    =   "Vous ne pouvez pas accéder à Callisto";
-        $menu['ok']          = false;
+        $menu['name']  = 'donnees';
+        $menu['param'] = $version->getIdVersion();
+        $menu['lien']  = "Vos données";
 
         if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-            $menu['commentaire']    =   "Calibrer la demande pour les services de valorisation des données";
-            $menu['raison']         =   "L'administrateur peut TOUJOURS demander une valorisation des données du projet quelque soit son état !";
+            $menu['commentaire']    =   "Demande de stockage et partage de données en tant qu'admin";
             $menu['ok']             = true;
             return $menu;
         }
 
-        $etatVersion    =   $version->getEtatVersion();
-        $isProjetTest   =   $version->isProjetTest();
+        $menu['ok']             = false;
+        $menu['commentaire']    =   "Bouton inactif";
 
-        if( $version == null)
-        {
-            $menu['raison'] = "Pas de projet à soumettre";
-            Functions::errorMessage(__METHOD__ . ' le projet ' . Functions::show( $projet ) . " n'a pas de version !");
-        }
-        elseif( $version->getSession() == null )
-        {
-            $menu['raison'] = "Pas de session attachée à ce projet !";
-            Functions::errorMessage(__METHOD__ . ' la version ' . Functions::show( $version ) . " n'a pas de session attachée !");
-        }
-        elseif( $etatVersion ==  Etat::EDITION_EXPERTISE  )
-            $menu['raison'] = "Le projet a déjà été envoyé à l'expert !";
-        elseif( $isProjetTest == true && $etatVersion ==  Etat::ANNULE )
-            $menu['raison'] = "Le projet test a été annulé !";
-        elseif( $isProjetTest == true && $etatVersion !=  Etat::EDITION_TEST )
-            $menu['raison'] = "Le projet test a déjà été envoyé à l'expert !";
-        if( $version->isCollaborateur() == false )
-            $menu['raison']         = "Seul un collaborateur du projet peut modifier ou supprimer le projet";
+        if( static::modifier_version( $version )['ok'] == true )
+            $menu['raison']     =  "Merci de passer par le bouton Modifier (partie IV)";
+        elseif( $version->getEtatVersion() == Etat::TERMINE )
+            $menu['raison']     =  "Cette version de projet est terminée";
+        elseif( ! $version->isResponsable() )
+            $menu['raison']     =  "Vous n'êtes pas responsable du projet";
         else
         {
             $menu['ok']          = true;
-            $menu['commentaire'] = "Modifier votre demande de ressources";
-            $menu['todo']        = "<strong>Vérifier</strong> le projet et le <strong>compléter</strong> si nécessaire";
+            $menu['commentaire'] = "Stockage pérenne ou partage de vos données de calcul";
         }
 
         return $menu;
