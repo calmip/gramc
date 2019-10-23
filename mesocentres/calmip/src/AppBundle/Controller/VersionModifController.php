@@ -996,14 +996,16 @@ class VersionModifController extends Controller
      */
     public function modifierCollaborateursAction(Version $version, Request $request)
     {
-    // ACL
-    //if( ! $version->isResponsable() )
-    //    Functions::createException(__METHOD__ . ':' . __LINE__  ': Seul le responsable du projet peut modifier les collaborateurs');
+	    if( Menu::modifier_collaborateurs($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
+	            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
 
-    if( Menu::modifier_collaborateurs($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
-            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
-
+		/* Si le bouton modifier est actif, on doit impérativement passer par là ! */
+        $modifier_version_menu = Menu::modifier_version( $version );
+		if ($modifier_version_menu['ok'] == true)
+		{
+			return $this->redirectToRoute($modifier_version_menu['name'],['id' => $version, '_fragment' => 'liste_des_collaborateurs'] );
+		}
 
     $collaborateur_form = $this
            ->get('form.factory')
@@ -1191,7 +1193,7 @@ class VersionModifController extends Controller
 	/**
      * Demande de partage stockage ou partage des données
      *
-     * @Route("/{id}/callisto", name="donnees")
+     * @Route("/{id}/donnees", name="donnees")
      * @Security("has_role('ROLE_DEMANDEUR')")
      * @Method({"GET", "POST"})
      */
@@ -1200,6 +1202,13 @@ class VersionModifController extends Controller
 		if( Menu::donnees($version)['ok'] == false )
 		{
 			Functions::createException("VersionController:donneesAction Bouton donnees inactif " . $version->getIdVersion() );
+		}
+
+		/* Si le bouton modifier est actif, on doit impérativement passer par là ! */
+        $modifier_version_menu = Menu::modifier_version( $version );
+		if ($modifier_version_menu['ok'] == true)
+		{
+			return $this->redirectToRoute($modifier_version_menu['name'],['id' => $version, '_fragment' => 'tab4'] );
 		}
 
         $form = $this->createFormBuilder($version);

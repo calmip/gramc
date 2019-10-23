@@ -582,27 +582,19 @@ class Menu
         if( AppBundle::isGranted('ROLE_ADMIN') )
         {
             $menu['commentaire']    =   "Modifier les collaborateurs en tant qu'administrateur";
-            $menu['raison']         =   "L'admininstrateur peut TOUJOURS modifier les collaborateurs du projet quelque soit son état !";
             $menu['ok']             = true;
-            return $menu;
         }
-
-        $menu['ok']             = false;
-        $menu['commentaire']    =   "Vous ne pouvez pas modifier les collaborateurs";
-
-        if( static::modifier_version( $version )['ok'] == true )
-            $menu['raison']     =  "Vous devez utiliser le lien Modifier pour gérer les collaborateurs";
-        elseif( $version->getEtatVersion() == Etat::TERMINE )
-            $menu['raison']     =  "Cette version de projet est terminée";
         elseif( ! $version->isResponsable() )
-            $menu['raison']     =  "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
-        else
         {
+        	$menu['ok']     = false;
+        	$menu['commentaire']     = 'Bouton inactif';
+            $menu['raison'] = "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
+		}
+		else
+		{
             $menu['ok']          = true;
-            $menu['commentaire'] = "Modifier les collaborateurs du projet";
-            $menu['todo']        = "Vérifier les <strong>profils des collaborateurs</strong> du projet";
-        }
-
+            $menu['commentaire'] = "Modifier la liste des collaborateurs du projet";
+		}
         return $menu;
     }
 
@@ -1581,20 +1573,15 @@ class Menu
         {
             $menu['commentaire']    =   "Demande de stockage et partage de données en tant qu'admin";
             $menu['ok']             = true;
-            return $menu;
         }
-
-        $menu['ok']             = false;
-        $menu['commentaire']    =   "Bouton inactif";
-
-        if( static::modifier_version( $version )['ok'] == true )
-            $menu['raison']     =  "Merci de passer par le bouton Modifier (partie IV)";
-        elseif( $version->getEtatVersion() == Etat::TERMINE )
-            $menu['raison']     =  "Cette version de projet est terminée";
-        elseif( ! $version->isResponsable() )
-            $menu['raison']     =  "Vous n'êtes pas responsable du projet";
-        else
-        {
+		elseif( ! $version->isResponsable() )
+		{
+			$menu['ok']          = false;
+	        $menu['commentaire'] = "Bouton inactif";
+            $menu['raison']      = "Vous n'êtes pas responsable du projet";
+		}
+		else
+		{
             $menu['ok']          = true;
             $menu['commentaire'] = "Stockage pérenne ou partage de vos données de calcul";
         }
