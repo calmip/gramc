@@ -477,6 +477,12 @@ Le laboratoire associé au projet est le laboratoire du responsable
             <th class="horiz">Visualisation à distance</th>
             <td>{{ version.demPostTrait}}</td>
         </tr>
+</tbody>
+</table>
+
+<h3>IV - Les données</h3>
+<table class="projet">
+    <tbody>
         <tr>
             <th class="horiz">Besoin en espace disque permanent (To)</th>
             <td>{{ version.sondVolDonnPerm}}</td>
@@ -485,10 +491,21 @@ Le laboratoire associé au projet est le laboratoire du responsable
             <th class="horiz">Justification de l'usage de ce stockage</th>
             <td>{{ version.sondJustifDonnPerm | e | nl2br}}</td>
         </tr>
-</tbody>
+        <tr>
+			<th class="horiz">Standard de métadonnées</th>
+			<td>{{ version.dataMetaDataFormat}}</td>
+		</tr>
+        <tr>
+			<th class="horiz">Nombre de datasets (estimation)</th>
+			<td>{{ version.dataNombreDatasets }}</td>
+		</tr>
+        <tr>
+			<th class="horiz">Taille moyenne des datasets (estimation)</th>
+			<td>{{ version.dataTailleDatasets }}</td>
+		</tr>
+    </tbody>
 </table>
-
-<h3>IV - Formation</h3>
+<h3>V - Formation</h3>
 
 <table class="projet">
 <tbody>
@@ -501,14 +518,6 @@ Le laboratoire associé au projet est le laboratoire du responsable
            <td>{{ version.demFormAutres }}</td>
         </tr>
 </tbody>
-</table>
-<h3>V - Valorisation des données</h3>
-<table class="projet">
-    <tbody>
-        <tr><th class="horiz">Standard de métadonnées</th><td>{{ version.dataMetaDataFormat}}</td></tr>
-        <tr><th class="horiz">Nombre de datasets (estimation)</th><td>{{ version.dataNombreDatasets }}</td></tr>
-        <tr><th class="horiz">Taille moyenne des datasets (estimation)</th><td>{{ version.dataTailleDatasets }}</td></tr>
-    </tbody>
 </table>
 
 <h3>VI- Commentaire de l'expert</h3>
