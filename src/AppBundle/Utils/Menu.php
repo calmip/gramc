@@ -1571,7 +1571,7 @@ class Menu
 
         if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-            $menu['commentaire']    =   "Demande de stockage et partage de données en tant qu'admin";
+            $menu['commentaire']    =   "Gestion et valorisation des données en tant qu'admin";
             $menu['ok']             = true;
         }
 		elseif( ! $version->isResponsable() )
@@ -1583,7 +1583,7 @@ class Menu
 		else
 		{
             $menu['ok']          = true;
-            $menu['commentaire'] = "Stockage pérenne ou partage de vos données de calcul";
+            $menu['commentaire'] = "Gestion et valorisation des données";
         }
 
         return $menu;
