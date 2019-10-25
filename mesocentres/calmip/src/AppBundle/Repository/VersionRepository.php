@@ -80,8 +80,27 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
     {
         return $this->getEntityManager()
         ->createQuery
-        ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v JOIN v.session s WHERE ( s = :session AND NOT v.etatVersion = :annule)')
+        ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,penalHeures,politique,sondVolDonnPerm}  FROM AppBundle:Version v JOIN v.session s WHERE ( s = :session AND NOT v.etatVersion = :annule)')
         ->setParameter('annule', Etat::getEtat('ANNULE') )
+        ->setParameter('session', $session )
+        ->getResult();
+    }
+
+	/*
+	 *  Renvoie les versions actives de la session, c-à-d qui sont en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
+	 *
+	 *  NOTE - Fonction écrite pour AdminuxController::versionGetAction() mais finalement PAS UTILISEE
+	 *
+	 *
+	 * */
+    public function findSessionVersionsActives($session)
+    {
+        return $this->getEntityManager()
+        ->createQuery
+        ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v JOIN v.session s WHERE ( s = :session AND (v.etatVersion = :actif OR v.etatVersion = :nouvelle_version_demandee OR v.etatVersion = :en_attente))')
+        ->setParameter('nouvelle_version_demandee', Etat::getetat('NOUVELLE_VERSION_DEMANDEE'))
+        ->setParameter('en_attente', Etat::getetat('EN_ATTENTE'))
+        ->setParameter('actif', Etat::getetat('ACTIF'))
         ->setParameter('session', $session )
         ->getResult();
     }
@@ -92,8 +111,8 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
         ->createQuery
         ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v  WHERE ( v.idVersion LIKE :pattern AND NOT v.etatVersion = :annule)')
         ->setParameter('annule', Etat::getEtat('ANNULE') )
-        ->setParameter('pattern', '%T' . $annee . '%' ) 
-        //->setParameter('pattern', $annee . 'T' . $annee) 
+        ->setParameter('pattern', '%T' . $annee . '%' )
+        //->setParameter('pattern', $annee . 'T' . $annee)
         ->getResult();
     }
 
@@ -177,13 +196,13 @@ class VersionRepository extends \Doctrine\ORM\EntityRepository
     public function findVersionsAnnee($annee)
     {
         $subAnnee = substr( strval($annee), -2 );
-        
+
         return $this->getEntityManager()
         ->createQuery
         ('SELECT partial v.{idVersion,etatVersion,prjGenciDari,prjTitre,prjLLabo,demHeures,attrHeures,politique}  FROM AppBundle:Version v  WHERE ( v.idVersion LIKE :pattern AND NOT v.etatVersion = :annule)')
         ->setParameter('annule', Etat::getEtat('ANNULE') )
-        ->setParameter('pattern', $subAnnee . '%' ) 
-        //->setParameter('pattern', $annee . 'T' . $annee) 
+        ->setParameter('pattern', $subAnnee . '%' )
+        //->setParameter('pattern', $annee . 'T' . $annee)
         ->getResult();
     }
 
