@@ -200,7 +200,7 @@ class AdminuxController extends Controller
 	 *
 	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 si elle est active
 	 *
-	 * Donc on renvoie une ou plusieurs versions appartenant à différentes versions, mais une ou zéro versions par projet
+	 * Donc on renvoie une ou plusieurs versions appartenant à différentes sessions, mais une ou zéro versions par projet
 	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
 	 *
 	 * Données renvoyées (fmt json):
@@ -335,6 +335,132 @@ class AdminuxController extends Controller
 		// return new Response(print_r($retour,true));
 		return new Response(json_encode($retour));
 
+	 }
+
+	/**
+	 * get users
+	 *
+	 * @Route("/users/get", name="get_users")
+	 *
+	 * Exemples de données POST (fmt json):
+	 * 			   ''
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : null }' -> Tous les collaboratuers avec login
+	 *
+	 *             '{ "projet" : "P01234" }'
+	 *             ou
+	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234
+	 *
+	 *             '{ "session" : "20A"}
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login
+	 *
+	 *             '{ "projet" : "P01234", "session" : "toto@exemple.fr"}' -> Tout sur toto !
+	 *
+	 * On renvoie pour chaque projet non terminé, ou pour un projet donné, la liste des collaborateurs qui doivent avoir un login
+	 *
+	 * Données renvoyées (fmt json):
+	 * 				mail		toto@exemple.fr
+	 * 				idIndividu	75
+	 * 				nom			Toto
+	 * 				prenom		Ernest
+	 * 			    idProjet	P01234
+	 * 				login		toto
+	 * 			    idProjet	P56789
+	 * 				login		titi
+	 *
+	 * @Method({"POST"})
+	 *
+	 */
+
+	 public function usersGetAction(Request $request)
+	 {
+		$em = $this->getDoctrine()->getManager();
+		$content  = json_decode($request->getContent(),true);
+		if ($content == null)
+		{
+			$id_projet = null;
+			$mail      = null;
+		}
+		else
+		{
+			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
+			$mail       = (isset($content['mail']))? $content['mail']: null;
+		}
+
+//		$sessions  = $em->getRepository(Session::class)->get_sessions_non_terminees();
+		$users = [];
+		$projets   = [];
+
+		// Tous les collaborateurs de tous les projets non terminés
+		if ($id_projet == null && $mail == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les projets dans lesquels une personne donnée a un login
+		elseif ($id_projet == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les collaborateurs d'un projet
+		elseif ($mail == null)
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p != null)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		// Un collaborateur particulier d'un projet particulier
+		else
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p->getEtatProjet() != Etat::TERMINE)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		//
+		// Construire le tableau $users:
+		//      toto@exemple.com => [ 'idIndividu' => 34, 'nom' => 'Toto', 'prenom' => 'Ernest', 'projets' => [ 'p0123' => 'toto', 'p456' => 'toto1' ] ]
+		//
+		foreach ($projets as $p)
+		{
+			$v = $p->getVersionActive();
+			if ($v != null)
+			{
+				$collaborateurs = $v->getCollaborateurVersion();
+				foreach ($collaborateurs as $c)
+				{
+					if ($c->getLogin())
+					{
+						$m = $c -> getCollaborateur() -> getMail();
+						if ($mail != null && $mail != $m)
+						{
+							continue;
+						}
+
+						if (!isset($users[$m]))
+						{
+							$users[$m] = [];
+							$users[$m]['nom']        = $c -> getCollaborateur() -> getNom();
+							$users[$m]['prenom']     = $c -> getCollaborateur() -> getPrenom();
+							$users[$m]['idIndividu'] = $c -> getCollaborateur() -> getIdIndividu();
+							$users[$m]['projets']    = [];
+						}
+						$users[$m]['projets'][$p->getIdProjet()] = $c->getLoginname();
+					}
+				}
+			}
+		}
+
+		// print_r est plus lisible pour le déboguage
+		//return new Response(print_r($users,true));
+		return new Response(json_encode($users));
 	 }
 
     /**
