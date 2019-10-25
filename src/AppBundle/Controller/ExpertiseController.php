@@ -879,7 +879,16 @@ class ExpertiseController extends Controller
 		{
 			case Projet::PROJET_SESS:
 		        // Si c'est un projet de type PROJET_SESS, le bouton ENVOYER n'est disponible QUE si la session est en états ATTENTE ou ACTIF
-				$session_edition = ($session -> getEtatSession() != Etat::EDITION_EXPERTISE && $session -> getEtatSession() != Etat::ACTIF);
+		        if ($session -> getEtatSession() == Etat::EN_ATTENTE || $session -> getEtatSession() == Etat::ACTIF)
+		        {
+					// bouton envoyer disponible
+					$session_edition = false;
+				}
+				else
+				{
+					// bouton envoyer pas disponible
+					$session_edition = true;
+				}
 				break;
 			case Projet::PROJET_TEST:
 				// Si c'est un projet de type PROJET_SESS, le bouton ENVOYER est toujours disponible
