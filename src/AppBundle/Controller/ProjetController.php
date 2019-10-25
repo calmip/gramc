@@ -597,6 +597,10 @@ class ProjetController extends Controller
         $items  =   [];
         foreach( $versions as $version )
         {
+			//Modif Callisto Septembre 2019
+			$typeMetadata = $version -> getDataMetaDataFormat();
+			$nombreDatasets = $version -> getDataNombreDatasets();
+			$tailleDatasets = $version -> getDataTailleDatasets();
             $demHeures  +=  $version->getDemHeures();
             $attrHeures +=  $version->getAttrHeures();
             if( $version->isNouvelle() == true )    $nombreNouveaux++;
@@ -691,6 +695,9 @@ class ProjetController extends Controller
 
         return $this->render('projet/session.html.twig',
         [
+			//'typeMetadata'			=>	$typeMetadata,
+			//'nombreDatasets'		=>	$nombreDatasets,
+			//'tailleDatasets'		=>	$tailleDatasets,
             'nombreEditionTest'     =>  $nombreEditionTest,
             'nombreExpertiseTest'   =>  $nombreExpertiseTest,
             'nombreEdition'         =>  $nombreEdition,
@@ -1558,6 +1565,7 @@ class ProjetController extends Controller
 	    $menu[] =   Menu::modifier_version( $version );
 	    $menu[] =   Menu::envoyer_expert( $projet );
 	    $menu[] =   Menu::modifier_collaborateurs( $version );
+		$menu[] =   Menu::donnees( $version );
 	    $menu[] =   Menu::telechargement_fiche( $version );
 	    $menu[] =   Menu::televersement_fiche( $version );
 	    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
@@ -1567,7 +1575,6 @@ class ProjetController extends Controller
 	        $menu[] =   Menu::televerser_rapport_annee( $version );
 
 	    $menu[] =   Menu::gerer_publications( $projet );
-
 	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
 	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
 	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);

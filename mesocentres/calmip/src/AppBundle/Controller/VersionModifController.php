@@ -222,7 +222,74 @@ class VersionModifController extends Controller
 	private function modifierType1(Request $request, Version $version, $renouvellement, $image_forms, $collaborateur_form)
     {
 		// formulaire principal
-        $form = $this->createFormBuilder($version)
+        $form = $this->createFormBuilder($version);
+        $this->modifierPartieI($version,$form);
+        $this->modifierPartieII($version,$form);
+        $this->modifierPartieIII($version,$form);
+        $this->modifierPartieIV($version,$form);
+        $this->modifierPartieV($version,$form);
+
+		$form
+            ->add( 'fermer',   SubmitType::Class )
+                //->add( 'enregistrer',   SubmitType::Class )
+            ->add( 'annuler',   SubmitType::Class );
+
+        $form = $form->getForm();
+
+        //Functions::debugMessage('modifierAction before principal form handle Request');
+        $form->handleRequest($request);
+        //Functions::debugMessage('modifierAction after principal form handle Request');
+
+        // traitement du formulaire
+        if( $form->isSubmitted() && $form->isValid() )
+		{
+            if( $form->get('annuler')->isClicked() )
+			{
+                // on ne devrait jamais y arriver !
+                Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
+                return $this->redirectToRoute( 'projet_accueil' );
+			}
+
+           // on sauvegarde tout de même mais il semble que c'est déjà fait avant
+           $return = Functions::sauvegarder( $version );
+
+            if( $request->isXmlHttpRequest() )
+			{
+                Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
+                if( $return == true )
+                    return new Response( json_encode('OK - Votre projet est correctement enregistré') );
+                else
+                    return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
+			}
+            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
+		}
+
+        return $this->render('version/modifier_projet_sess.html.twig',
+            [
+            'form'      => $form->createView(),
+            'version'   => $version,
+            'img_expose_1'   => $image_forms['img_expose_1']->createView(),
+            'img_expose_2'   => $image_forms['img_expose_2']->createView(),
+            'img_expose_3'   => $image_forms['img_expose_3']->createView(),
+            'imageExp1'    => static::image('img_expose_1',$version),
+            'imageExp2'    => static::image('img_expose_2',$version),
+            'imageExp3'    => static::image('img_expose_3',$version),
+            'img_justif_renou_1'    =>  $image_forms['img_justif_renou_1']->createView(),
+            'img_justif_renou_2'    =>  $image_forms['img_justif_renou_2']->createView(),
+            'img_justif_renou_3'    =>  $image_forms['img_justif_renou_3']->createView(),
+            'imageJust1'    =>   static::image('img_justif_renou_1',$version),
+            'imageJust2'    =>   static::image('img_justif_renou_2',$version),
+            'imageJust3'    =>   static::image('img_justif_renou_3',$version),
+            'collaborateur_form' => $collaborateur_form->createView(),
+            'todo'          => static::versionValidate($version),
+            'renouvellement'    => $renouvellement,
+            ]);
+	}
+
+	/* Les champs de la partie I */
+	private function modifierPartieI($version,&$form)
+	{
+		$form
             ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
             ->add('prjThematique', EntityType::class,
                     [
@@ -238,10 +305,28 @@ class VersionModifController extends Controller
             ->add('prjGenciCentre',     TextType::class, [ 'required'       =>  false ])
             ->add('prjGenciMachines',   TextType::class, [ 'required'       =>  false ])
             ->add('prjGenciHeures',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ])
+            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ]);
+
+		/* Pour un renouvellement, ajouter la justification du renouvellement */
+		if( count( $version->getProjet()->getVersion() ) > 1  )
+		{
+			 $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
+		}
+	}
+
+	/* Les champs de la partie II */
+	private function modifierPartieII($version,&$form)
+	{
+		$form
             ->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
             ->add('prjExpose', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'prjAlgorithme', TextAreaType::class, [ 'required'       =>  false ] )
+            ->add('prjAlgorithme', TextAreaType::class, [ 'required'       =>  false ] );
+	}
+
+	/* Les champs de la partie III */
+	private function modifierPartieIII($version,&$form)
+	{
+		$form
             ->add( 'prjConception', CheckboxType::class, [ 'required'       =>  false ] )
             ->add( 'prjDeveloppement', CheckboxType::class, [ 'required'       =>  false ] )
             ->add( 'prjParallelisation', CheckboxType::class, [ 'required'       =>  false ] )
@@ -336,19 +421,13 @@ class VersionModifController extends Controller
                                 "Non" => "Non",
                                 "Je ne sais pas" => "je ne sais pas",
                                 ],
-                ])
-            ->add( 'demFormPrise',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormDebogage',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOptimisation',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormFortran',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormPython',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormMPI',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenMP',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenACC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormParaview',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormAutresAutres',  TextAreaType::class, [ 'required'       =>  false ])
+                ]);
+	}
+
+	/* Les champs de la partie IV */
+	private function modifierPartieIV($version,&$form)
+	{
+        $form
             ->add( 'sondVolDonnPerm', ChoiceType::class,
                 [
                 'required'       =>  false,
@@ -371,71 +450,62 @@ class VersionModifController extends Controller
                 'required'       =>  false,
                 ])
             ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  )
-            ->add( 'fermer',   SubmitType::Class )
-                //->add( 'enregistrer',   SubmitType::Class )
-            ->add( 'annuler',   SubmitType::Class );
+            ->add('dataMetadataFormat', ChoiceType::class,
+                [
+                'label' => 'Format de métadonnées',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "IVOA" => "IVOA",
+                                "OGC" => "OGC",
+                                "Dublin Core" => "DC",
+                                "Autre" => "Autre",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+			 ->add( 'dataNombreDatasets', ChoiceType::class,
+                [
+                'label' => 'Estimation du nombre de datasets à partager',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 10 datasets" => "< 10 datasets",
+                                "< 100 datasets" => "< 100 datasets",
+                                "< 1000 datasets" => "< 1000 datasets",
+                                "> 1000 datasets" => "> 1000 datasets",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ])
+			->add('dataTailleDatasets', ChoiceType::class,
+                [
+                'label' => 'Taille moyenne approximative pour un dataset',
+                'required'       =>  false,
+                'placeholder'   =>  "-- Choisissez une option",
+                'choices'  =>   [
+                                "< 100 Mo" => "<100 Mo",
+                                "< 500 Mo" => "< 500 Mo",
+                                "> 1 Go" => ">1 Go",
+                                "Je ne sais pas" => "je ne sais pas",
+                                ],
+                ]);
+	}
 
-        if( count( $version->getProjet()->getVersion() ) > 1  )
-             $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
-
-        $form = $form->getForm();
-
-        //Functions::debugMessage('modifierAction before principal form handle Request');
-        $form->handleRequest($request);
-        //Functions::debugMessage('modifierAction after principal form handle Request');
-
-        // traitement du formulaire
-        if( $form->isSubmitted() && $form->isValid() )
-		{
-            if( $form->get('annuler')->isClicked() )
-			{
-                // on ne devrait jamais y arriver !
-                Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
-                return $this->redirectToRoute( 'projet_accueil' );
-			}
-
-           // on sauvegarde tout de même mais il semble que c'est déjà fait avant
-           $return = Functions::sauvegarder( $version );
-           //AppBundle::getManager()->persist( $version );
-           //AppBundle::getManager()->flush();
-
-            if( $request->isXmlHttpRequest() )
-			{
-                Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
-                if( $return == true )
-                    return new Response( json_encode('OK - Votre projet est correctement enregistré') );
-                else
-                    return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
-			}
-            /*
-            if( $form->get('fermer')->isClicked() )
-                Functions::debugMessage(__METHOD__ . ' fermer clicked');
-            else
-                Functions::warningMessage(__METHOD__ . ' autre chose clicked');
-            */
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-		}
-
-        return $this->render('version/modifier_projet_sess.html.twig',
-            [
-            'form'      => $form->createView(),
-            'version'   => $version,
-            'img_expose_1'   => $image_forms['img_expose_1']->createView(),
-            'img_expose_2'   => $image_forms['img_expose_2']->createView(),
-            'img_expose_3'   => $image_forms['img_expose_3']->createView(),
-            'imageExp1'    => static::image('img_expose_1',$version),
-            'imageExp2'    => static::image('img_expose_2',$version),
-            'imageExp3'    => static::image('img_expose_3',$version),
-            'img_justif_renou_1'    =>  $image_forms['img_justif_renou_1']->createView(),
-            'img_justif_renou_2'    =>  $image_forms['img_justif_renou_2']->createView(),
-            'img_justif_renou_3'    =>  $image_forms['img_justif_renou_3']->createView(),
-            'imageJust1'    =>   static::image('img_justif_renou_1',$version),
-            'imageJust2'    =>   static::image('img_justif_renou_2',$version),
-            'imageJust3'    =>   static::image('img_justif_renou_3',$version),
-            'collaborateur_form' => $collaborateur_form->createView(),
-            'todo'          => static::versionValidate($version),
-            'renouvellement'    => $renouvellement,
-            ]);
+	/* Les champs de la partie V */
+	private function modifierPartieV($version,&$form)
+	{
+		$form
+            ->add( 'demFormPrise',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormDebogage',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOptimisation',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormFortran',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormC',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormCpp',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormPython',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormMPI',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOpenMP',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormOpenACC',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormParaview',  CheckboxType::class, [ 'required'       =>  false ])
+            ->add( 'demFormAutresAutres',  TextAreaType::class, [ 'required'       =>  false ]);
 	}
 
     /*
@@ -926,14 +996,16 @@ class VersionModifController extends Controller
      */
     public function modifierCollaborateursAction(Version $version, Request $request)
     {
-    // ACL
-    //if( ! $version->isResponsable() )
-    //    Functions::createException(__METHOD__ . ':' . __LINE__  ': Seul le responsable du projet peut modifier les collaborateurs');
+	    if( Menu::modifier_collaborateurs($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
+	            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
 
-    if( Menu::modifier_collaborateurs($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
-            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
-
+		/* Si le bouton modifier est actif, on doit impérativement passer par là ! */
+        $modifier_version_menu = Menu::modifier_version( $version );
+		if ($modifier_version_menu['ok'] == true)
+		{
+			return $this->redirectToRoute($modifier_version_menu['name'],['id' => $version, '_fragment' => 'liste_des_collaborateurs'] );
+		}
 
     $collaborateur_form = $this
            ->get('form.factory')
@@ -1118,6 +1190,85 @@ class VersionModifController extends Controller
 
     }
 
+	/**
+     * Demande de partage stockage ou partage des données
+     *
+     * @Route("/{id}/donnees", name="donnees")
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     * @Method({"GET", "POST"})
+     */
+    public function donneesAction(Request $request, Version $version)
+    {
+		if( Menu::donnees($version)['ok'] == false )
+		{
+			Functions::createException("VersionController:donneesAction Bouton donnees inactif " . $version->getIdVersion() );
+		}
+
+		/* Si le bouton modifier est actif, on doit impérativement passer par là ! */
+        $modifier_version_menu = Menu::modifier_version( $version );
+		if ($modifier_version_menu['ok'] == true)
+		{
+			return $this->redirectToRoute($modifier_version_menu['name'],['id' => $version, '_fragment' => 'tab4'] );
+		}
+
+        $form = $this->createFormBuilder($version);
+        $this->modifierPartieIV($version,$form);
+		$form
+            ->add( 'valider',   SubmitType::Class )
+            ->add( 'annuler',   SubmitType::Class );
+        $form = $form->getForm();
+        $projet =  $version->getProjet();
+        if( $projet != null )
+            $idProjet   =   $projet->getIdProjet();
+		else
+			{
+				Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
+				$idProjet   =   null;
+            }
+
+        // Pour traiter le retour d'une validation du formulaire
+		$form->handleRequest($request);
+		if ( $form->isSubmitted() && $form->isValid())
+		{
+			if ($form->get('valider')->isClicked() )
+			{
+				//Functions::debugMessage("Entree dans le traitement du formulaire données");
+				//$this->handleCallistoForms( $form, $version );
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($version);
+		        $em->flush();
+			}
+			return $this->redirectToRoute( 'consulter_projet', ['id' => $projet->getIdProjet() ] );
+
+		}
+		/*
+		if ($callisto_form->get('valider')->isClicked()) {
+			static::handleCallistoForms( $callisto_form, $version );
+		}
+		*/
+	 // Affichage du formulaire
+	 return $this->render('version/donnees.html.twig',
+		[
+//            'usecase' => $usecase,
+//            'session'   =>  $version->getSession(),
+              'projet' => $projet,
+//            'version'    => $version,
+            'form'       => $form->createView(),
+        ]);
+	}
+
+	////////// Recupère et traite le retour du formulaire
+	////////// lié à l'écran données
+	private function handleDonneesForms( $form, Version $version )
+	{
+		$version->setDataMetaDataFormat($form->get('dataMetadataFormat')->getData());
+		$version->setDataNombreDatasets($form->get('dataNombreDatasets')->getData());
+		$version->setDataTailleDatasets($form->get('dataTailleDatasets')->getData());
+		$em = $this->getDoctrine()->getManager();
+		$em->persist($version);
+        $em->flush();
+	}
+
     /**
      * Displays a form to edit an existing version entity.
      *
@@ -1232,57 +1383,68 @@ class VersionModifController extends Controller
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static function versionValidate(Version $version)
     {
-    $todo   =   [];
+	    $todo   =   [];
 
-    if( $version->getPrjTitre() == null ) $todo[] = 'prj_titre';
-    if( $version->getDemHeures() == null ) $todo[] = 'dem_heures';
-    if( $version->getPrjThematique() == null ) $todo[] = 'prj_id_thematique';
-    if( $version->getPrjResume() == null ) $todo[] = 'prj_resume';
-    if( $version->getCodeNom() == null ) $todo[] = 'code_nom';
-    if( $version->getCodeLicence() == null ) $todo[] = 'code_licence';
-    if( $version->getGpu() == null ) $todo[] = 'gpu';
+	    if( $version->getPrjTitre() == null ) $todo[] = 'prj_titre';
+	    if( $version->getDemHeures() == null ) $todo[] = 'dem_heures';
+	    if( $version->getPrjThematique() == null ) $todo[] = 'prj_id_thematique';
+	    if( $version->getPrjResume() == null ) $todo[] = 'prj_resume';
+	    if( $version->getCodeNom() == null ) $todo[] = 'code_nom';
+	    if( $version->getCodeLicence() == null ) $todo[] = 'code_licence';
+	    if( $version->getGpu() == null ) $todo[] = 'gpu';
 
-    if( ! $version->isProjetTest() )
+	    if( ! $version->isProjetTest() )
         {
-        if( $version->getPrjExpose() == null ) $todo[] = 'prj_expose';
-        if( $version->getCodeHeuresPJob() == null ) $todo[] = 'code_heures_p_job';
-        if( $version->getCodeRamPCoeur() == null ) $todo[] = 'code_ram_p_coeur';
-        if( $version->getCodeRamPart() == null ) $todo[] = 'code_ram_part';
+	        if( $version->getPrjExpose() == null ) $todo[] = 'prj_expose';
+	        if( $version->getCodeHeuresPJob() == null ) $todo[] = 'code_heures_p_job';
+	        if( $version->getCodeRamPCoeur() == null ) $todo[] = 'code_ram_p_coeur';
+	        if( $version->getCodeRamPart() == null ) $todo[] = 'code_ram_part';
 
-        if( $version->getCodeEffParal() == null ) $todo[] = 'code_eff_paral';
-        if( $version->getCodeVolDonnTmp() == null ) $todo[] = 'code_vol_donn_tmp';
-        if( $version->getDemPostTrait() == null ) $todo[] = 'dem_post_trait';
+	        if( $version->getCodeEffParal() == null ) $todo[] = 'code_eff_paral';
+	        if( $version->getCodeVolDonnTmp() == null ) $todo[] = 'code_vol_donn_tmp';
+	        if( $version->getDemPostTrait() == null ) $todo[] = 'dem_post_trait';
 
-        // s'il s'agit d'un renouvellement
-        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
-            $todo[] = 'prj_justif_renouv';
+	        // s'il s'agit d'un renouvellement
+	        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
+	            $todo[] = 'prj_justif_renouv';
 
-        if( $version->getSondVolDonnPerm() == null )
-            $todo[] = 'sond_vol_donn_perm';
-        elseif( $version->getSondJustifDonnPerm() == null
-            &&  $version->getSondVolDonnPerm() != '< 1To'
-            &&  $version->getSondVolDonnPerm() != '1 To'
-            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas'
-            ) $todo[] = 'sond_justif_donn_perm';
-        }
+			// Stockage de données
+	        if( $version->getSondVolDonnPerm() == null )
+	        {
+	            $todo[] = 'sond_vol_donn_perm';
+			}
+	        elseif( $version->getSondJustifDonnPerm() == null
+	            &&  $version->getSondVolDonnPerm() != '< 1To'
+	            &&  $version->getSondVolDonnPerm() != '1 To'
+	            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas')
+	            {
+					$todo[] = 'sond_justif_donn_perm';
+				}
+	        }
 
-    if( $version->typeSession()  == 'A' )
-        {
-        $version_precedente = $version->versionPrecedente();
-        if( $version_precedente != null )
-            {
-            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+	        // Partage de données
+	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';
+	        if ($version->getDataNombreDatasets() == null ) $todo[] = 'Nombre de jeux de données';
+	        if ($version->getDataTailleDatasets() == null ) $todo[] = 'Taille de chaque jeu de données';
+
+		    if( $version->typeSession()  == 'A' )
+	        {
+		        $version_precedente = $version->versionPrecedente();
+		        if( $version_precedente != null )
+	            {
+		            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
                     [
-                    'projet' => $version_precedente->getProjet(),
-                    'annee' => $version_precedente->getAnneeSession(),
+	                    'projet' => $version_precedente->getProjet(),
+	                    'annee' => $version_precedente->getAnneeSession(),
                     ]);
-            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
-            }
-        }
+		            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
+	            }
+	        }
 
-    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
+		    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
 
-    return $todo;
-    }
+		    return $todo;
 
-}
+
+	    }
+	}

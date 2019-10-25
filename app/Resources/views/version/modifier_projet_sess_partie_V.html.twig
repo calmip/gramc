@@ -1,0 +1,77 @@
+{# ################################################################################## #}
+
+<div id="tab5" class="onglet">
+
+	<h3>Formation</h3>
+
+	<table class="projet"><tbody>
+	    <tr>
+	        <th>Êtes-vous intéressés par des formations organisées par {{mesoc}} ?<br><em>Si oui cochez celles qui vous interéssent</em><br></th>
+	    </tr>
+	    <tr>
+	        <td>
+	        <table class="invi"><tbody>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormPrise, "Prise en main du système de calcul" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormPrise) }}</td>
+
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormDebogage, "Débogage parallèle" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormDebogage) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormOptimisation, "Optimisation du code" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormOptimisation) }}</td>
+	            </tr>
+	        </tbody></table>
+	        </td>
+	    </tr>
+	</tbody></table>
+
+	<table class="projet"><tbody>
+	    <tr>
+	        <th>Seriez-vous intéressés par d'autres formations ?<br><em>Si oui cochez celles qui vous interéssent</em><br></th>
+	    </tr>
+	    <tr>
+	        <td><table class="invi"><tbody>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormFortran, "Fortran" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormFortran) }}</td>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormC, "C" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormC) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormCpp, "C++" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormCpp) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormPython, "Python" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormPython) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormMPI, "MPI" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormMPI) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormOpenMP, "OpenMP" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormOpenMP) }}</td>
+	             </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormOpenACC, "OpenACC (GPU)" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormOpenACC) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormParaview, "Paraview" ) }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormParaview) }}</td>
+	            </tr>
+	            <tr>
+	                <td class="droite">{{ form_label(form.demFormAutresAutres,"Vous pouvez préciser d'autres formations que vous souhaiteriez ici") }}</td>
+	                <td class="gauche">{{ form_widget(form.demFormAutresAutres, { 'attr': { 'rows' : 5, 'cols' : 50 } }) }}</td>
+	            </tr>
+	    </tbody></table></td>
+	    </tr>
+	</tbody></table>
+
+</div>

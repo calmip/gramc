@@ -1,0 +1,66 @@
+{# ################################################################################## #}
+
+<div id="tab4" class="onglet">
+
+	<h2>Stockage et partage de données liées à votre projet</h2>
+
+	<div class="message info"
+	    <p>Le service <em>"gestion et valorisation des données"</em> de {{mesoc}} est en cours de définition</p>
+	</div>
+
+    <h3>Besoins en stockage permanent</h3>
+
+	<div class="message info"
+	    <p>Chaque projet dispose par défaut de <strong>1To de stockage permanent et sécurisé pour toute la durée du projet</strong>.<br>
+			    Il est possible de demander plus d'espace de stockage <strong>en justifiant son usage</strong>: le comité d'attribution de {{mesoc}} arbitrera votre demande.</p>
+	</div>
+
+    <table class="projet"><tbody>
+		<tr><th colspan="2">Stockage permanent</th></tr>
+		<tr>
+			<th><label for="form_sondVolDonnPerm">Besoins en espace-disque permanent <strong>pour l'ensemble du projet</strong>
+			<br /><small>(quota de groupe)</small></label></th>
+			<td>{{ form_widget(form.sondVolDonnPerm) }}</td>
+		</tr>
+		<tr>
+			<th  class="gauche" ><label for="sond_justif_donn_perm">Justificatif: Si vous demandez plus de 1 To, merci de préciser l'usage que vous envisagez<br>
+			<small>
+				<ul>
+					<li>S'agit-il de données de calcul régulièrement utilisées ?</li>
+					<li>S'agit-il de données de sortie de calcul qui doivent être stockées de manière sécurisée en attendant d'être postraitées ?</li>
+					<li>etc.</li>
+				</ul>
+			</small>
+			</label>
+			</th>
+			<td>{{ form_widget(form.sondJustifDonnPerm, { 'attr': { 'rows' : 12, 'cols' : 70 } }) }}</td>
+		</tr>
+	</tbody></table>
+
+	<h3>Partage "CLAIR" (ou FAIR) des données</h3>
+
+	<div class="message info"
+	    <p>Le service "Partage de données" de {{mesoc}} vous permet de <strong>déposer des données</strong> sur l'infrastructure de {{mesoc}} dans le but de <strong>les partager
+	    avec des membres de votre communauté scientifique</strong>, afin qu'elle puissent être <strong>réutilisées</strong>.</p><p>Votre <strong>Plan de Gestion de Données</strong> vous aidera à répondre aux questions ci-dessous:</p>
+	</div>
+
+	<table class="projet"><tbody>
+		<tr><th colspan="2">Partage CLAIR de données</th></tr>
+		<tr>
+			<th>{{ form_label(form.dataMetadataFormat) }}</th><td>{{ form_widget(form.dataMetadataFormat) }}</td>
+		</tr>
+		<tr>
+			<th>{{ form_label(form.dataNombreDatasets) }}</th><td>{{ form_widget(form.dataNombreDatasets) }}</td>
+		</tr>
+		<tr>
+			<th>{{ form_label(form.dataTailleDatasets) }}</th><td>{{ form_widget(form.dataTailleDatasets) }}</td>
+		</tr>
+	</tbody></table>
+
+	<div class="message info"
+	    <p>Ces éléments vous permettront d'avoir accès à la plateforme de partage des données <a href="https://callisto.calmip.univ-toulouse.fr"><strong>Callisto</strong></a></p>
+	</div>
+
+
+
+</div>

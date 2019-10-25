@@ -1,0 +1,10 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<h1>Projet {{ projet }}</h1>
+
+{{ form_start( form , { 'attr': { 'id': 'form_projet' } } )  }}
+{% include('version/modifier_projet_sess_partie_IV.html.twig') %}
+{{ form_end(form) }}
+
+{% endblock %}
