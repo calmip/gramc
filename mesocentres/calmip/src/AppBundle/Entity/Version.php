@@ -2387,6 +2387,22 @@ class Version
         return $this->idVersion;
     }
 
+	/****
+	 * Get AutreIdVersion
+	 *
+	 * 	19AP01234 => 19BP01234
+	 *  19BP01234 => 19AP01234
+	 *
+	 * @return string
+	 *
+	 */
+	public function getAutreIdVersion()
+	{
+		$id = $this->getIdVersion();
+		$id[2] = ($id[2]==='A')?'B':'A';
+		return $id;
+	}
+
     /**
      * Set CGU
      *

@@ -42,6 +42,7 @@ use AppBundle\Utils\Etat;
 
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
+use AppBundle\Entity\Session;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Compta;
@@ -178,6 +179,289 @@ class AdminuxController extends Controller
 			}
 			return new Response(json_encode( ['KO' => 'No user found' ]));
      }
+
+	/**
+	 * get versions actives
+	 *
+	 * @Route("/version/get", name="get_version")
+	 *
+	 * Exemples de données POST (fmt json):
+	 * 			   ''
+	 *             ou
+	 *             '{ "projet" : null,     "session" : null }' -> Toutes les versions actives quelque soit la session
+	 *
+	 *             '{ "projet" : "P01234" }'
+	 *             ou
+	 *             '{ "projet" : "P01234", "session" : null }' -> LA version active du projet P01234
+	 *
+	 *             '{ "session" : "20A"}
+	 *             ou
+	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les versions actives de la session 20A
+	 *
+	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 si elle est active
+	 *
+	 * Donc on renvoie une ou plusieurs versions appartenant à différentes sessions, mais une ou zéro versions par projet
+	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
+	 *
+	 * Données renvoyées (fmt json):
+	 * 			    idProjet	P01234
+	 * 				idSession	20A
+	 * 				idVersion	20AP01234
+	 * 				mail		mail du responsable de la version
+	 * 				attrHeures	Heures cpu attribuées
+	 * 				quota		Quota sur la machine
+	 * 				gpfs		sondVolDonnPerm stockage permanent demandé (pas d'attribution pour le stockage)
+	 *
+	 * @Method({"POST"})
+	 *
+	 */
+
+	 public function versionGetAction(Request $request)
+	 {
+		$em = $this->getDoctrine()->getManager();
+		$versions = [];
+
+		$content  = json_decode($request->getContent(),true);
+		if ($content == null)
+		{
+			$id_projet = null;
+			$id_session= null;
+		}
+		else
+		{
+			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
+			$id_session = (isset($content['session']))? $content['session']: null;
+		}
+
+		$v_tmp = [];
+		// Tous les projets actifs
+		if ($id_projet == null && $id_session == null)
+		{
+			$sessions = $em->getRepository(Session::class)->get_sessions_non_terminees();
+			foreach ($sessions as $sess)
+			{
+				//$versions = $em->getRepository(Version::class)->findSessionVersionsActives($sess);
+				$v_tmp = array_merge($v_tmp,$em->getRepository(Version::class)->findSessionVersions($sess));
+			}
+		}
+
+		// Tous les projets actifs d'une session particulière
+		// ... A condition que la session ne soit pas terminée !
+		elseif ($id_projet == null)
+		{
+			$sess  = $em->getRepository(Session::class)->find($id_session);
+			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE)
+			{
+				$v_tmp = $em->getRepository(Version::class)->findSessionVersions($sess);
+			}
+		}
+
+		// La version active d'un projet donné
+		elseif ($id_session == null)
+		{
+			$projet = $em->getRepository(Projet::class)->find($id_projet);
+			$v_tmp[]= $projet->getVersionActive();
+		}
+
+		// Une version particulière
+		// ... A condition que la session ne soit pas terminée !
+		else
+		{
+			$projet = $em->getRepository(Projet::class)->find($id_projet);
+			$sess  = $em->getRepository(Session::class)->find($id_session);
+			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE && $projet != null)
+			{
+				$v_tmp[] = $em->getRepository(Version::class)->findOneVersion($sess,$projet);
+			}
+		}
+
+		// On ne garde que les versions actives... ou presque actives
+		$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
+		foreach ($v_tmp as $v)
+		{
+			if ($v->getSession()->getEtatSession() != Etat::TERMINE)
+			{
+				if (in_array($v->getEtatVersion(),$etats,true))
+				//if ($v->getProjet()->getMetaEtat() === 'ACCEPTE' || $v->getProjet()->getMetaEtat() === 'NONRENOUVELE')
+				{
+					$versions[] = $v;
+				}
+			}
+		}
+
+		$retour = [];
+		foreach ($versions as $v)
+		{
+			$annee = 2000 + $v->getSession()->getAnneeSession();
+			$attr  = $v->getAttrHeures() - $v->getPenalHeures();
+			foreach ($v->getRallonge() as $r)
+			{
+				$attr += $r->getAttrHeures();
+			}
+
+			// Pour une session de type B = Aller chercher la version de type A correspondante et ajouter les attributions
+			// TODO - Des fonctions de haut niveau (au niveau projet par exemple) ?
+			if ($v->getSession()->getTypeSession())
+			{
+				$id_va = $v->getAutreIdVersion();
+				$va = $em->getRepository(Version::class)->find($id_va);
+				if ($va != null)
+				{
+					$attr += $va->getAttrHeures();
+					$attr -= $va->getPenalHeures();
+					foreach ($va->getRallonge() as $r)
+					{
+						$attr += $r->getAttrHeures();
+					}
+				}
+			}
+			$r = [];
+			$r['idProjet']        = $v->getProjet()->getIdProjet();
+			$r['idSession']       = $v->getSession()->getIdSession();
+			$r['idVersion']       = $v->getIdVersion();
+			$r['etatVersion']     = $v->getEtatVersion();
+			$r['mail']            = $v->getResponsable()->getMail();
+			$r['attrHeures']      = $attr;
+			$r['sondVolDonnPerm'] = $v->getSondVolDonnPerm();
+			$r['quota']			  = $v->getProjet()->getConsoRessource('cpu',$annee)[1];
+			// Pour le déboguage
+			// if ($r['quota'] != $r['attrHeures']) $r['attention']="INCOHERENCE";
+
+			$retour[] = $r;
+			//$retour[] = $v->getIdVersion();
+		};
+
+		// print_r est plus lisible pour le déboguage
+		// return new Response(print_r($retour,true));
+		return new Response(json_encode($retour));
+
+	 }
+
+	/**
+	 * get users
+	 *
+	 * @Route("/users/get", name="get_users")
+	 *
+	 * Exemples de données POST (fmt json):
+	 * 			   ''
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : null }' -> Tous les collaboratuers avec login
+	 *
+	 *             '{ "projet" : "P01234" }'
+	 *             ou
+	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234
+	 *
+	 *             '{ "session" : "20A"}
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login
+	 *
+	 *             '{ "projet" : "P01234", "session" : "toto@exemple.fr"}' -> Tout sur toto !
+	 *
+	 * On renvoie pour chaque projet non terminé, ou pour un projet donné, la liste des collaborateurs qui doivent avoir un login
+	 *
+	 * Données renvoyées (fmt json):
+	 * 				mail		toto@exemple.fr
+	 * 				idIndividu	75
+	 * 				nom			Toto
+	 * 				prenom		Ernest
+	 * 			    idProjet	P01234
+	 * 				login		toto
+	 * 			    idProjet	P56789
+	 * 				login		titi
+	 *
+	 * @Method({"POST"})
+	 *
+	 */
+
+	 public function usersGetAction(Request $request)
+	 {
+		$em = $this->getDoctrine()->getManager();
+		$content  = json_decode($request->getContent(),true);
+		if ($content == null)
+		{
+			$id_projet = null;
+			$mail      = null;
+		}
+		else
+		{
+			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
+			$mail       = (isset($content['mail']))? $content['mail']: null;
+		}
+
+//		$sessions  = $em->getRepository(Session::class)->get_sessions_non_terminees();
+		$users = [];
+		$projets   = [];
+
+		// Tous les collaborateurs de tous les projets non terminés
+		if ($id_projet == null && $mail == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les projets dans lesquels une personne donnée a un login
+		elseif ($id_projet == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les collaborateurs d'un projet
+		elseif ($mail == null)
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p != null)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		// Un collaborateur particulier d'un projet particulier
+		else
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p->getEtatProjet() != Etat::TERMINE)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		//
+		// Construire le tableau $users:
+		//      toto@exemple.com => [ 'idIndividu' => 34, 'nom' => 'Toto', 'prenom' => 'Ernest', 'projets' => [ 'p0123' => 'toto', 'p456' => 'toto1' ] ]
+		//
+		foreach ($projets as $p)
+		{
+			$v = $p->getVersionActive();
+			if ($v != null)
+			{
+				$collaborateurs = $v->getCollaborateurVersion();
+				foreach ($collaborateurs as $c)
+				{
+					if ($c->getLogin())
+					{
+						$m = $c -> getCollaborateur() -> getMail();
+						if ($mail != null && $mail != $m)
+						{
+							continue;
+						}
+
+						if (!isset($users[$m]))
+						{
+							$users[$m] = [];
+							$users[$m]['nom']        = $c -> getCollaborateur() -> getNom();
+							$users[$m]['prenom']     = $c -> getCollaborateur() -> getPrenom();
+							$users[$m]['idIndividu'] = $c -> getCollaborateur() -> getIdIndividu();
+							$users[$m]['projets']    = [];
+						}
+						$users[$m]['projets'][$p->getIdProjet()] = $c->getLoginname();
+					}
+				}
+			}
+		}
+
+		// print_r est plus lisible pour le déboguage
+		//return new Response(print_r($users,true));
+		return new Response(json_encode($users));
+	 }
 
     /**
      * set loginname
