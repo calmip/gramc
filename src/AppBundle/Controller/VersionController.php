@@ -225,7 +225,7 @@ class VersionController extends Controller
     }
 
     /**
-     * Finds and displays a version entity.
+     * Affiche au format pdf
      *
      * @Route("/{id}/pdf", name="version_pdf")
      * @Security("has_role('ROLE_DEMANDEUR')")
@@ -233,50 +233,48 @@ class VersionController extends Controller
      */
     public function pdfAction(Version $version, Request $request)
     {
+	    $projet =  $version->getProjet();
+	    if( ! Functions::projetACL( $projet ) )
+	            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    $projet =  $version->getProjet();
-    if( ! Functions::projetACL( $projet ) )
-            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+	    $session = $version->getSession();
 
-    $session = $version->getSession();
+	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
+	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
+	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
 
-    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
-    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
-    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+	    /*
+	    if( $img_expose_1 == null )
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
+	    else
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
+	    */
 
-    /*
-    if( $img_expose_1 == null )
-        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
-    else
-        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
-    */
-
-    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
-    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
-    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+	    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
+	    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
+	    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
 
 
-    $html4pdf =  $this->render('version/pdf.html.twig',
-            [
-            'toomuch' => Functions::is_demande_toomuch($version->getAttrHeures(),$version->getDemHeures()),
-            'projet' => $projet,
-            'version'   =>  $version,
-            'session'   =>  $session,
-            'img_expose_1'  =>  $img_expose_1,
-            'img_expose_2'  =>  $img_expose_2,
-            'img_expose_3'  =>  $img_expose_3,
-            'img_justif_renou_1'    =>  $img_justif_renou_1,
-            'img_justif_renou_2'    =>  $img_justif_renou_2,
-            'img_justif_renou_3'    =>  $img_justif_renou_3,
-            ]
-            );
-    //return $html4pdf;
-    //$html4pdf->prepare($request);
-    //$pdf = AppBundle::getPDF($html4pdf);
-    $pdf = AppBundle::getPDF($html4pdf->getContent());
+	    $html4pdf =  $this->render('version/pdf.html.twig',
+	            [
+	            'toomuch' => Functions::is_demande_toomuch($version->getAttrHeures(),$version->getDemHeures()),
+	            'projet' => $projet,
+	            'version'   =>  $version,
+	            'session'   =>  $session,
+	            'img_expose_1'  =>  $img_expose_1,
+	            'img_expose_2'  =>  $img_expose_2,
+	            'img_expose_3'  =>  $img_expose_3,
+	            'img_justif_renou_1'    =>  $img_justif_renou_1,
+	            'img_justif_renou_2'    =>  $img_justif_renou_2,
+	            'img_justif_renou_3'    =>  $img_justif_renou_3,
+	            ]
+	            );
+	    //return $html4pdf;
+	    //$html4pdf->prepare($request);
+	    //$pdf = AppBundle::getPDF($html4pdf);
+	    $pdf = AppBundle::getPDF($html4pdf->getContent());
 
-    return Functions::pdf( $pdf );
-
+	    return Functions::pdf( $pdf );
     }
 
     /**
