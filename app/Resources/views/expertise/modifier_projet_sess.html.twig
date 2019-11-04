@@ -1,6 +1,7 @@
 {% extends 'default/base.html.twig' %}
 
 {% block myjavascripts %}
+    <script type="text/javascript" src="{{asset('js/projet.js')}}" ></script>
     <script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
 {% endblock myjavascripts %}
 
@@ -31,6 +32,10 @@
 
 {% block body %}
 <section id="expertise">
+
+{% if noconso==false %}
+	<div id="dialog-compta"></div>
+{% endif %}
 
     <h2>Saisie de l'expertise du projet {{ version.projet }}</h2>
 
@@ -68,16 +73,16 @@
         </a>
         {%  endif %}
         <a href="{{ path('consulter_publications', { 'id' : version.projet }) }}"  target="_blank" >
-            <img class="bouton_poussoir" src="{{ asset('icones/publis.png') }}" alt="Publications" title="Publications associées au projet version.idProjet" />
+            <img class="bouton_poussoir" src="{{ asset('icones/publis.png') }}" alt="Publications" title="Publications associées au projet {{version.projet.idProjet}}" />
         </a>
 
 		{% if noconso==false %}
 	        {% if not version.isNouvelle %}
-	            <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+	            <img id="bconso_1" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
 	            alt="Consommation {{anneePrec}}" title="consommation {{anneePrec}}"
 	            data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
 	            {% if version.session.libelleTypeSession == 'B' %}
-	                <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+	                <img id="bconso_2" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
 	                alt="Consommation {{anneeCour}}" title="Consommation {{anneeCour}}"
 	                data-href="{{ absolute_url(path('projet_conso', { 'id': expertise.version.projet.idProjet, 'annee' : anneeCour })) }}" />
 	            {% endif %}
@@ -183,11 +188,6 @@
 </div>
 
 {{ form_end(edit_form) }}
-
-{% if noconso==false %}
-<div id="graph_1" class="graphique"></div>
-<div id="graph_2" class="graphique"></div>
-{% endif %}
 
 </section>
 {% endblock %}
