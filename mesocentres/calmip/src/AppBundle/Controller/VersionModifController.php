@@ -849,7 +849,7 @@ class VersionModifController extends Controller
         $full_filename          =    $dir .'/' . $filename;
 
         if( is_file($form->getData()['image'] ) )
-            {
+		{
             $tempFilename = $form->getData()['image'];
             static::redim_figure( $tempFilename );
             //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' $tempFilename = ' . $form->getData()['image'] );
@@ -867,13 +867,13 @@ class VersionModifController extends Controller
             //Functions::debugMessage('file  ' .$filename . ' : ' .  base64_encode( $contents ) );
 
             return ['etat' => 'OK', 'contents' => $contents, 'filename' => $filename ];
-            }
+		}
         else
-            {
+		{
             Functions::debugMessage('VersionController:image_handle $tempFilename = (' . $form->getData()['image'] . ") n'existe pas");
             return ['etat' => 'KO'];
-            }
-        }
+		}
+	}
     elseif( $form->isSubmitted() && ! $form->isValid() )
         {
         //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' wrong form submitted filename = ' . $filename .' , image = ' . $image);
@@ -1444,7 +1444,51 @@ class VersionModifController extends Controller
 		    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
 
 		    return $todo;
+    }
 
+	/***
+	 * Redimensionne une figure
+	 *
+	 *  params $image, le chemin vers un fichier image
+	 *
+	 */
+     private static function redim_figure($image)
+     {
+	     $cmd = "identify -format '%w %h' $image";
+	     //Functions::debugMessage('redim_figure cmd identify = ' . $cmd);
+	     $format = `$cmd`;
+	     list($width,$height) = explode(' ',$format);
+	     $width = intval($width);
+	     $height= intval($height);
+	     $rap_w = 0;
+	     $rap_h = 0;
+	     $rapport = 0;      // Le rapport de redimensionnement
 
-	    }
-	}
+	     $max_fig_width = AppBundle::getParameter('max_fig_width');
+	     if ($width > $max_fig_width && $max_fig_width > 0 )
+	     {
+			$rap_w = (1.0 * $width) /  $max_fig_width;
+		 }
+
+	     $max_fig_height = AppBundle::getParameter('max_fig_height');
+	     if ($height > $max_fig_height && $max_fig_height > 0 )
+	     {
+            $rap_h = (1.0 * $height) / $max_fig_height;
+		 }
+
+	     // Si l'un des deux rapports est > 0, on prend le plus grand
+	     if ($rap_w + $rap_h > 0)
+         {
+	        $rapport = ($rap_w > $rap_h) ? 1/$rap_w : 1/$rap_h;
+	        $rapport = 100 * $rapport;
+         }
+
+	     // Si un rapport a été calculé, on redimensionne
+	     if ($rapport > 1)
+         {
+	        $cmd = "convert $image -resize $rapport% $image";
+	        //Functions::debugMessage('redim_figure cmd convert = ' . $cmd);
+	        `$cmd`;
+         }
+     }
+}
