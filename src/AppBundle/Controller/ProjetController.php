@@ -1078,7 +1078,13 @@ class ProjetController extends Controller
         if( Menu::nouveau_projet($type)['ok'] == false )
             Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet($type)['raison'] );
 
-        $renouvelables = AppBundle::getRepository(Projet::class)->get_projets_renouvelables();
+	    $projetRepository    = $this->getDoctrine()->getManager()->getRepository(Projet::class);
+	    $id_individu         = AppBundle::getUser()->getIdIndividu();
+	    $list_projets_collab = $projetRepository-> get_projets_resp_ou_collab( $id_individu, false, true );
+	    $list_projets_resp   = $projetRepository-> get_projets_resp_ou_collab( $id_individu, true, false );
+
+        //$renouvelables = AppBundle::getRepository(Projet::class)->get_projets_renouvelables();
+        $renouvelables = array_merge($list_projets_collab,$list_projets_resp);
 
         if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => $type]);
 
