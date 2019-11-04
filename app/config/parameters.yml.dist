@@ -78,7 +78,7 @@ parameters:
     # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
     prj_prefix: { '1' : 'P', '2' : 'T' }
 
-    # Ressources pour lesquelles on peut afficher la consommation d'un projet (=groupe)
+    # Ressources pour lesquelles on peut afficher la consommation d'un projet (=group)
     #         'type' = calcul ou stockage (les algos de dessin ne sont pas les mêmes)
     #         'ress' = attribut 'ressource' de la classe Compta
     #         'nom'  = Nom de la ressource (pour affichage uniquement)

@@ -1234,7 +1234,7 @@ class ProjetController extends Controller
         $fin   = new \DateTime( $annee . '-12-31');
 
 		$ressource = AppBundle::getParameter('ressources_conso_'.$utype)[$ress_id];
-		//$ress = $ressource['ress'];
+		//Functions::debugMessage(__METHOD__.':'.__LINE__. " projet $projet - $utype - ressource = ".print_r($ressource,true));
 
 		// Génération du graphe de conso heures cpu et heures gpu
 		// Note - type ici n'a rien à voir avec le paramètre $utype

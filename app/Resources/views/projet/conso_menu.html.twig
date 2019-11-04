@@ -6,7 +6,7 @@
 			<li>
 				<img class="bouton_poussoir conso" src="{{ asset('icones/conso16.png') }}"
 	                 alt="Consommation - {{projet}} - {{annee}} - {{r.nom}}"
-	                 data-href="{{ absolute_url(path('projet_conso_ressource', { 'id': projet.idProjet, 'ress_id' : k, 'utype': 'group', 'annee' : annee }))}}" /> Projet: {{ projet }} Année: {{ annee }} Ressource: {{ r.nom }}
+	                 data-href="{{ absolute_url(path('projet_conso_ressource', { 'id': projet.idProjet, 'ress_id' : k, 'utype': 'group', 'annee' : annee }))}}" /> {{ projet }} ({{ annee }}) - {{ r.nom }}
 	        </li>
 		{% endfor %}
 	{% endif %}
