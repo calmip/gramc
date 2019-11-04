@@ -49,6 +49,7 @@ twig:
        mesoc_merci: '%mesoc_merci%'
        mesoc_cgu: '%mesoc_cgu%'
        mesoc_visu: '%mesoc_visu%'
+       mesoc_address: '%mesoc_address%'
        conso_seuil_1: '%conso_seuil_1%'
        conso_seuil_2: '%conso_seuil_2%'
        noconso: '%noconso%'

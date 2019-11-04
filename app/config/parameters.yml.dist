@@ -35,6 +35,8 @@ parameters:
     mesoc_attrib: https://www.calmip.univ-toulouse.fr/spip/spip.php?article19
     # url du document décrivant le format des remerciements
     mesoc_merci: https://www.calmip.univ-toulouse.fr/spip/spip.php?article337
+    # L'adresse postale du mésocentre
+    mesoc_address: CALMIP - Espace Clément Ader - 3 rue Caroline Aigle - 31400 TOULOUSE
 
     # Si l'attribution (+ rallonges) d'un projet est supérieure à ce seuil (gros projet),
     # la demande en B ne devrait pas être supérieure à la moitié de l'attribution !
