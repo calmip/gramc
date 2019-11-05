@@ -136,6 +136,7 @@ class VersionModifController extends Controller
 	    if( $ajax['etat'] != null )
 	    {
 	        $div_sts  = substr($ajax['filename'], 0,strlen($ajax['filename'])-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
+	        //Functions::debugMessage(__METHOD__ . " koukou $div_sts");
 	        if( $ajax['etat'] == 'OK' )
 	        {
 	            $html[$ajax['filename']] = '<img class="dropped" src="data:image/png;base64, ' . base64_encode( $ajax['contents'] ) .'" />';
@@ -177,6 +178,7 @@ class VersionModifController extends Controller
 	        else
 	            Functions::errorMessage('VersionController modifierAction Fichier '. $full_filename . " n'existe pas !");
 	        $div_sts  = substr($filename, 0,strlen($filename)-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
+
 	        $html[$div_sts] = '<div class="message info">La figure ' . $rem_nb . ' a été supprimée</div>';
 	        $html[$filename] = 'Figure ' . $rem_nb;
 
@@ -461,6 +463,7 @@ class VersionModifController extends Controller
                                 "Dublin Core" => "DC",
                                 "Autre" => "Autre",
                                 "Je ne sais pas" => "je ne sais pas",
+                                "je ne suis pas intéressé.e" => "pas intéressé.e",
                                 ],
                 ])
 			 ->add( 'dataNombreDatasets', ChoiceType::class,
@@ -474,6 +477,7 @@ class VersionModifController extends Controller
                                 "< 1000 datasets" => "< 1000 datasets",
                                 "> 1000 datasets" => "> 1000 datasets",
                                 "Je ne sais pas" => "je ne sais pas",
+                                "je ne suis pas intéressé.e" => "pas intéressé.e",
                                 ],
                 ])
 			->add('dataTailleDatasets', ChoiceType::class,
@@ -486,6 +490,7 @@ class VersionModifController extends Controller
                                 "< 500 Mo" => "< 500 Mo",
                                 "> 1 Go" => ">1 Go",
                                 "Je ne sais pas" => "je ne sais pas",
+								"je ne suis pas intéressé.e" => "pas intéressé.e"
                                 ],
                 ]);
 	}
@@ -582,7 +587,7 @@ class VersionModifController extends Controller
 			'form'      => $form->createView(),
 			'version'   => $version,
 			'collaborateur_form' => $collaborateur_form->createView(),
-			'todo'          => static::versionValidate($version),
+			'todo'      => static::versionValidate($version),
 			]);
 
 	}
@@ -820,84 +825,84 @@ class VersionModifController extends Controller
 
     private static function image_form( $name , $csrf_protection = true )
     {
-    $format_fichier = static::imageConstraints();
+	    $format_fichier = static::imageConstraints();
 
-     return AppBundle::getContainer()
-           ->get('form.factory')
-           ->createNamedBuilder( $name, FormType::class, [], ['csrf_protection' => $csrf_protection ] )
-           ->add('filename', HiddenType::class, [ 'data'       =>  $name,] )
-           ->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig', 'constraints'=>[$format_fichier] ])
-           //->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig',  ])
-           ->getForm();
+	     return AppBundle::getContainer()
+	           ->get('form.factory')
+	           ->createNamedBuilder( $name, FormType::class, [], ['csrf_protection' => $csrf_protection ] )
+	           ->add('filename', HiddenType::class, [ 'data'       =>  $name,] )
+	           ->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig', 'constraints'=>[$format_fichier] ])
+	           //->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig',  ])
+	           ->getForm();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////
 
     private static function image_handle( $form, Version $version, $request)
     {
-    $form->handleRequest($request);
+	    $form->handleRequest($request);
 
-    if( $form->isSubmitted() && $form->isValid() )
-        {//return ['etat' => 'OKK'];
-        $filename               =    $form->getData()['filename'];
-        $image                  =    $form['image']->getData();
+	    if( $form->isSubmitted() && $form->isValid() )
+		{ //return ['etat' => 'OKK'];
+	        $filename               =    $form->getData()['filename'];
+	        $image                  =    $form['image']->getData();
 
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' form submitted filename = ' . $filename .' , image = ' . $image);
+	        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' form submitted filename = ' . $filename .' , image = ' . $image);
 
-        $dir  =    Functions::image_directory($version);
+	        $dir  =    Functions::image_directory($version);
 
-        $full_filename          =    $dir .'/' . $filename;
+	        $full_filename          =    $dir .'/' . $filename;
 
-        if( is_file($form->getData()['image'] ) )
-		{
-            $tempFilename = $form->getData()['image'];
-            static::redim_figure( $tempFilename );
-            //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' $tempFilename = ' . $form->getData()['image'] );
-            $contents = file_get_contents( $tempFilename );
+	        if( is_file($form->getData()['image'] ) )
+			{
+	            $tempFilename = $form->getData()['image'];
+	            static::redim_figure( $tempFilename );
+	            //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' $tempFilename = ' . $form->getData()['image'] );
+	            $contents = file_get_contents( $tempFilename );
 
-            $file = new File( $form->getData()['image'] );
+	            $file = new File( $form->getData()['image'] );
 
 
-            if( file_exists( $full_filename ) && is_file( $full_filename ) ) unlink( $full_filename );
-            if( ! file_exists( $full_filename ) )
-                $file->move( $dir, $filename );
-            else
-                Functions::debugMessage('Version controller image_handle : mauvais fichier pour la version ' . $version->getIdVersion() );
+	            if( file_exists( $full_filename ) && is_file( $full_filename ) ) unlink( $full_filename );
+	            if( ! file_exists( $full_filename ) )
+	                $file->move( $dir, $filename );
+	            else
+	                Functions::debugMessage('Version controller image_handle : mauvais fichier pour la version ' . $version->getIdVersion() );
 
-            //Functions::debugMessage('file  ' .$filename . ' : ' .  base64_encode( $contents ) );
+	            //Functions::debugMessage('file  ' .$filename . ' : ' .  base64_encode( $contents ) );
 
-            return ['etat' => 'OK', 'contents' => $contents, 'filename' => $filename ];
+	            return ['etat' => 'OK', 'contents' => $contents, 'filename' => $filename ];
+			}
+	        else
+			{
+	            Functions::debugMessage('VersionController:image_handle $tempFilename = (' . $form->getData()['image'] . ") n'existe pas");
+	            return ['etat' => 'KO'];
+			}
 		}
-        else
+	    elseif( $form->isSubmitted() && ! $form->isValid() )
 		{
-            Functions::debugMessage('VersionController:image_handle $tempFilename = (' . $form->getData()['image'] . ") n'existe pas");
-            return ['etat' => 'KO'];
+	        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' wrong form submitted filename = ' . $filename .' , image = ' . $image);
+	        if( isset( $form->getData()['filename']) )
+	            $filename   =  $form->getData()['filename'];
+	        else
+	            $filename   =  'unkonwn';
+
+	        if( isset( $form->getData()['image']) )
+	            $image  =    $form->getData()['image'];
+	        else
+	            return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => 'Erreur indeterminée' ];
+
+	        return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => Functions::formError( $image, [ static::imageConstraints() ] ) ];
+	        //Functions::debugMessage('VersionController:image_handle form for ' . $filename . '('. $form->getData()['image'] . ') is not valide, error = ' .
+	        //    (string) $form->getErrors(true,false)->current() );
+	        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
+	        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
 		}
-	}
-    elseif( $form->isSubmitted() && ! $form->isValid() )
-        {
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' wrong form submitted filename = ' . $filename .' , image = ' . $image);
-        if( isset( $form->getData()['filename']) )
-            $filename   =  $form->getData()['filename'];
-        else
-            $filename   =  'unkonwn';
-
-        if( isset( $form->getData()['image']) )
-            $image  =    $form->getData()['image'];
-        else
-            return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => 'Erreur indeterminée' ];
-
-        return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => Functions::formError( $image, [ static::imageConstraints() ] ) ];
-        //Functions::debugMessage('VersionController:image_handle form for ' . $filename . '('. $form->getData()['image'] . ') is not valide, error = ' .
-        //    (string) $form->getErrors(true,false)->current() );
-        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
-        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
-        }
-    else
-        {
-        //Functions::debugMessage('VersionController:image_handle form not submitted');
-        return ['etat' => null ];
-        }
+	    else
+		{
+	        //Functions::debugMessage('VersionController:image_handle form not submitted');
+	        return ['etat' => null ];
+		}
     }
 
     ///////////////////////////////////////////////////////////
@@ -1381,6 +1386,13 @@ class VersionModifController extends Controller
     }
 
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Validation du formulaire de version
+     *
+     *    param = Version
+     *    return= Un array contenant la "todo liste", ie la liste de choses à faire pour que le formulaire soit validé
+     *            Un array vide [] signifie: "Formulaire validé"
+     **/
     public static function versionValidate(Version $version)
     {
 	    $todo   =   [];
@@ -1406,7 +1418,9 @@ class VersionModifController extends Controller
 
 	        // s'il s'agit d'un renouvellement
 	        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
+	        {
 	            $todo[] = 'prj_justif_renouv';
+			}
 
 			// Stockage de données
 	        if( $version->getSondVolDonnPerm() == null )
@@ -1420,30 +1434,29 @@ class VersionModifController extends Controller
 	            {
 					$todo[] = 'sond_justif_donn_perm';
 				}
-	        }
 
 	        // Partage de données
 	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';
 	        if ($version->getDataNombreDatasets() == null ) $todo[] = 'Nombre de jeux de données';
 	        if ($version->getDataTailleDatasets() == null ) $todo[] = 'Taille de chaque jeu de données';
+		}
+	    if( $version->typeSession()  == 'A' )
+        {
+	        $version_precedente = $version->versionPrecedente();
+	        if( $version_precedente != null )
+            {
+	            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+				[
+                    'projet' => $version_precedente->getProjet(),
+                    'annee' => $version_precedente->getAnneeSession(),
+				]);
+	            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
+            }
+        }
 
-		    if( $version->typeSession()  == 'A' )
-	        {
-		        $version_precedente = $version->versionPrecedente();
-		        if( $version_precedente != null )
-	            {
-		            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
-                    [
-	                    'projet' => $version_precedente->getProjet(),
-	                    'annee' => $version_precedente->getAnneeSession(),
-                    ]);
-		            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
-	            }
-	        }
+	    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
 
-		    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
-
-		    return $todo;
+	    return $todo;
     }
 
 	/***
