@@ -918,6 +918,24 @@ class ProjetController extends Controller
     }
 
     /**
+     *
+     * Liste tous les projets avec des demandes de stockage ou partage de données
+     *
+     * NB - Utile pour Calmip, si c'est inutile pour les autres mesoc il faudra
+     *      mettre cette fonction ailleurs !
+     *
+     * @Route("/donnees", name="projet_donnees")
+     * @Method({"GET","POST"})
+     */
+
+    public function donneesAction(Request $request)
+    {
+		return $this->render('projet/donnees.html.twig',
+								[ 'toto' => 'coucou' ]
+								);
+	}
+
+    /**
      * download rapport
      * @Security("has_role('ROLE_DEMANDEUR') or has_role('ROLE_OBS')")
      * @Route("/{id}/rapport/{annee}", defaults={"annee"=0}, name="rapport")

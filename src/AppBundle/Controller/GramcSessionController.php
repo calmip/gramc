@@ -94,6 +94,7 @@ class GramcSessionController extends Controller
         $menu2[]= Menu::mailToResponsables();
         $menu2[]= Menu::mailToResponsablesFiche();
 
+        $menu3[]= Menu::projet_donnees();
         $menu3[]= Menu::projet_session();
         $menu3[]= Menu::projet_annee();
         $menu3[]= Menu::projet_tous();
