@@ -594,7 +594,7 @@ class VersionController extends Controller
     }
 
     /**
-     * Displays a form to edit an existing version entity.
+     * Ecran affiché dans le cas où la demande est incomplète
      *
      * @Route("/{id}/avant_modifier", name="version_avant_modifier")
      * @Method({"GET", "POST"})

@@ -582,7 +582,7 @@ class VersionModifController extends Controller
 			'form'      => $form->createView(),
 			'version'   => $version,
 			'collaborateur_form' => $collaborateur_form->createView(),
-			'todo'          => static::versionValidate($version),
+			'todo'      => static::versionValidate($version),
 			]);
 
 	}
@@ -1381,6 +1381,13 @@ class VersionModifController extends Controller
     }
 
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Validation du formulaire de version
+     *
+     *    param = Version
+     *    return= Un array contenant la "todo liste", ie la liste de choses à faire pour que le formulaire soit validé
+     *            Un array vide [] signifie: "Formulaire validé"
+     **/
     public static function versionValidate(Version $version)
     {
 	    $todo   =   [];
@@ -1406,7 +1413,9 @@ class VersionModifController extends Controller
 
 	        // s'il s'agit d'un renouvellement
 	        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
+	        {
 	            $todo[] = 'prj_justif_renouv';
+			}
 
 			// Stockage de données
 	        if( $version->getSondVolDonnPerm() == null )
@@ -1420,30 +1429,29 @@ class VersionModifController extends Controller
 	            {
 					$todo[] = 'sond_justif_donn_perm';
 				}
-	        }
 
 	        // Partage de données
 	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';
 	        if ($version->getDataNombreDatasets() == null ) $todo[] = 'Nombre de jeux de données';
 	        if ($version->getDataTailleDatasets() == null ) $todo[] = 'Taille de chaque jeu de données';
+		}
+	    if( $version->typeSession()  == 'A' )
+        {
+	        $version_precedente = $version->versionPrecedente();
+	        if( $version_precedente != null )
+            {
+	            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+				[
+                    'projet' => $version_precedente->getProjet(),
+                    'annee' => $version_precedente->getAnneeSession(),
+				]);
+	            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
+            }
+        }
 
-		    if( $version->typeSession()  == 'A' )
-	        {
-		        $version_precedente = $version->versionPrecedente();
-		        if( $version_precedente != null )
-	            {
-		            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
-                    [
-	                    'projet' => $version_precedente->getProjet(),
-	                    'annee' => $version_precedente->getAnneeSession(),
-                    ]);
-		            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
-	            }
-	        }
+	    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
 
-		    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
-
-		    return $todo;
+	    return $todo;
     }
 
 	/***
