@@ -260,7 +260,7 @@ class AdminuxController extends Controller
 		elseif ($id_session == null)
 		{
 			$projet = $em->getRepository(Projet::class)->find($id_projet);
-			$v_tmp[]= $projet->getVersionActive();
+			if ($projet != null) $v_tmp[]= $projet->getVersionActive();
 		}
 
 		// Une version particulière
@@ -279,6 +279,7 @@ class AdminuxController extends Controller
 		$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
 		foreach ($v_tmp as $v)
 		{
+			if ($v == null) continue;
 			if ($v->getSession()->getEtatSession() != Etat::TERMINE)
 			{
 				if (in_array($v->getEtatVersion(),$etats,true))
@@ -351,7 +352,7 @@ class AdminuxController extends Controller
 	 *             ou
 	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234
 	 *
-	 *             '{ "session" : "20A"}
+	 *             '{ "mail" : "toto@exemple.fr"}
 	 *             ou
 	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login
 	 *
