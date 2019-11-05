@@ -463,6 +463,7 @@ class VersionModifController extends Controller
                                 "Dublin Core" => "DC",
                                 "Autre" => "Autre",
                                 "Je ne sais pas" => "je ne sais pas",
+                                "je ne suis pas intéressé.e" => "pas intéressé.e",
                                 ],
                 ])
 			 ->add( 'dataNombreDatasets', ChoiceType::class,
@@ -476,6 +477,7 @@ class VersionModifController extends Controller
                                 "< 1000 datasets" => "< 1000 datasets",
                                 "> 1000 datasets" => "> 1000 datasets",
                                 "Je ne sais pas" => "je ne sais pas",
+                                "je ne suis pas intéressé.e" => "pas intéressé.e",
                                 ],
                 ])
 			->add('dataTailleDatasets', ChoiceType::class,
@@ -488,6 +490,7 @@ class VersionModifController extends Controller
                                 "< 500 Mo" => "< 500 Mo",
                                 "> 1 Go" => ">1 Go",
                                 "Je ne sais pas" => "je ne sais pas",
+								"je ne suis pas intéressé.e" => "pas intéressé.e"
                                 ],
                 ]);
 	}
