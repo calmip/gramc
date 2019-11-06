@@ -993,9 +993,9 @@ class Functions
 			&& $p['sondVolDonnPerm'] != '1 To'
 			&& strpos($p['sondVolDonnPerm'],'je ne sais') === false
 			) $keep_it = $p['stk'] = true;
-		if ($p['dataMetaDataFormat'] != null && strstr($p['dataMetaDataFormat'],'intéressé') == false) $keep_it = true;
-		if ($p['dataNombreDatasets'] != null && strstr($p['dataNombreDatasets'],'intéressé') == false) $keep_it = true;
-		if ($p['dataTailleDatasets'] != null && strstr($p['dataTailleDatasets'],'intéressé') == false) $keep_it = true;
+		if ($p['dataMetaDataFormat'] != null && strstr($p['dataMetaDataFormat'],'intéressé') == false) $keep_it = $p['ptg'] = true;
+		if ($p['dataNombreDatasets'] != null && strstr($p['dataNombreDatasets'],'intéressé') == false) $keep_it = $p['ptg'] = true;
+		if ($p['dataTailleDatasets'] != null && strstr($p['dataTailleDatasets'],'intéressé') == false) $keep_it = $p['ptg'] = true;
 		return $keep_it;
 	}
 
@@ -1044,8 +1044,7 @@ class Functions
 		$total['pprj']    = 0;	// Nombre de projet ayant demandé du partage
 		$total['autostk'] = 0;	// Nombre de To attribués automatiquement (ie 1 To / projet)
 		$total['demstk']  = 0;	// Nombre de To demandés (> 1 To / projet)
-		$total['attrstk']  = 0;  // Nombre de To alloués suite à une demande
-
+		$total['attrstk']  = 0; // Nombre de To alloués suite à une demande
 
         // $annee = 2017, 2018, etc. (4 caractères)
         $session_id_A = substr($annee, 2, 2) . 'A';
@@ -1096,7 +1095,10 @@ class Functions
 				{
 					$total['autostk'] += 1;
 				}
-
+				if ($p['ptg'])
+				{
+					$total['pprj'] += 1;
+				}
 	            $projets[$p_id] = $p;
 			}
 			else
