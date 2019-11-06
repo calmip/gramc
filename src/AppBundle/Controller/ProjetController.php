@@ -845,6 +845,32 @@ class ProjetController extends Controller
     }
 
     /**
+     *
+     * Liste tous les projets avec des demandes de stockage ou partage de données
+     *
+     * NB - Utile pour Calmip, si c'est inutile pour les autres mesoc il faudra
+     *      mettre cette fonction ailleurs !
+     *
+     * @Route("/donnees", name="projet_donnees")
+     * @Method({"GET","POST"})
+     */
+
+    public function donneesAction(Request $request)
+    {
+        $data  = Functions::selectAnnee($request); // formulaire
+        $annee = $data['annee'];
+
+		list($projets,$total) = Functions::donneesParProjet($annee);
+
+		return $this->render('projet/donnees.html.twig',
+				['form'    => $data['form']->createView(), // formulaire
+				 'annee'   => $annee,
+				 'projets' => $projets,
+				 'total'   => $total,
+				 ]);
+	}
+
+    /**
      * Projets de l'année en CSV
      *
      * @Route("/{annee}/annee_csv", name="projet_annee_csv")
@@ -916,24 +942,6 @@ class ProjetController extends Controller
         }
         return Functions::csv($sortie,'projets_'.$annee.'.csv');
     }
-
-    /**
-     *
-     * Liste tous les projets avec des demandes de stockage ou partage de données
-     *
-     * NB - Utile pour Calmip, si c'est inutile pour les autres mesoc il faudra
-     *      mettre cette fonction ailleurs !
-     *
-     * @Route("/donnees", name="projet_donnees")
-     * @Method({"GET","POST"})
-     */
-
-    public function donneesAction(Request $request)
-    {
-		return $this->render('projet/donnees.html.twig',
-								[ 'toto' => 'coucou' ]
-								);
-	}
 
     /**
      * download rapport

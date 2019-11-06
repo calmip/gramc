@@ -960,6 +960,188 @@ class Functions
      }
 
     /**
+     * Filtre la version passee en paramètres, suivant qu'on a demandé des trucs sur les données ou pas
+     *        Utilise par donneesParProjet
+     *        Modifie le paramètre $p
+     *        Renvoie true/false suivant qu'on veut garder la version ou pas
+     *
+     * Param : $v La version
+     *         $p [inout] Tableau représentant le projet
+     *
+     * Ajoute des champs à $p (voir le code), ainsi que deux flags:
+     *         - 'stk' projet ayant demandé du stockage
+     *         - 'ptg' projet ayant demandé du partage
+     *
+     * Return: true/false le 'ou' de ces deux flags
+     *
+     */
+
+    private function donneesParProjetFiltre($v,&$p)
+    {
+		$keep_it = false;
+		$p               = [];
+		$p['p']          = $v->getProjet();
+		$p['stk']                = false;
+		$p['ptg']				 = false;
+		$p['sondVolDonnPerm']    = $v->getSondVolDonnPerm();
+		$p['sondVolDonnPermTo']  = preg_replace( '/^(\d+) .+/', '${1}', $p['sondVolDonnPerm']);
+		$p['dataMetaDataFormat'] = $v->getDataMetaDataFormat();
+		$p['dataNombreDatasets'] = $v->getDataNombreDatasets();
+		$p['dataTailleDatasets'] = $v->getDataTailleDatasets();
+		if ($p['sondVolDonnPerm']   != null
+			&& $p['sondVolDonnPerm'] != '< 1To'
+			&& $p['sondVolDonnPerm'] != '1 To'
+			&& strpos($p['sondVolDonnPerm'],'je ne sais') === false
+			) $keep_it = $p['stk'] = true;
+		if ($p['dataMetaDataFormat'] != null && strstr($p['dataMetaDataFormat'],'intéressé') == false) $keep_it = true;
+		if ($p['dataNombreDatasets'] != null && strstr($p['dataNombreDatasets'],'intéressé') == false) $keep_it = true;
+		if ($p['dataTailleDatasets'] != null && strstr($p['dataTailleDatasets'],'intéressé') == false) $keep_it = true;
+		return $keep_it;
+	}
+
+	/*
+    *  Ajoute le champ 'c,q,f' au tableau $p:
+    *         c => conso
+    *         q => quota en octets
+    * 		  q => quota en To (nombre entier)
+    *
+    */
+    private function addConsoStockage(&$p,$annee,$ress) {
+		if ($ress === "")
+		{
+			$p['q']  = 0;
+			$p['qt'] = 0;
+			$p['c']  = 0;
+			$p['ct'] = 0;
+			$p['cp'] = 0;
+		}
+		else
+		{
+	        $conso = $p['p']->getConsoRessource($ress,$annee);
+	        $p['q']  = $conso[1];
+	        $p['qt'] = intval($p['q']/(1024*1024*1024));
+	        $p['c']  = $conso[0];
+	        $p['ct'] = intval($p['c']/(1024*1024*1024));
+	        $p['cp'] = ($p['q'] != 0) ? 100*$p['c']/$p['q'] : 0;
+		}
+    }
+
+    /**
+     * Liste tous les projets pour lesquels on a demandé des données en stockage ou en partage
+     *       Utilise par ProjetController
+     *
+     * Param : $annee
+     * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
+     *
+     */
+	public function donneesParProjet($annee)
+	{
+		$total   = [];
+		$projets = [];
+
+		$total['prj']     = 0;	// Nombre de projets
+		$total['sprj']    = 0;	// Nombre de projets ayant demandé du stockage
+		$total['pprj']    = 0;	// Nombre de projet ayant demandé du partage
+		$total['autostk'] = 0;	// Nombre de To attribués automatiquement (ie 1 To / projet)
+		$total['demstk']  = 0;	// Nombre de To demandés (> 1 To / projet)
+		$total['attrstk']  = 0;  // Nombre de To alloués suite à une demande
+
+
+        // $annee = 2017, 2018, etc. (4 caractères)
+        $session_id_A = substr($annee, 2, 2) . 'A';
+        $session_id_B = substr($annee, 2, 2) . 'B';
+        $session_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_A ]);
+        $session_B = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_B ]);
+
+        $versions_A= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_A ] );
+        $versions_B= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_B ] );
+
+        /* Ressource utilisée pour déterminer l'occupation et le quota:
+         *
+         * Regarde le paramètre ressources_conso_group et prend la première de type 'stockage'
+         *         S'il y en a plusieurs... problème !
+         *         S'il n'y en a aucune... on ne fait rien
+         */
+		$ress = "";
+		if ( AppBundle::hasParameter('ressources_conso_group'))
+		{
+			$ressources = AppBundle::getParameter('ressources_conso_group');
+			foreach ($ressources as $k=>$r)
+			{
+				if ($r['type']==='stockage')
+				{
+					$ress = $r['ress'];
+				}
+			}
+		}
+
+		// Boucle sur les versions de la session B
+		$projets_b = [];
+        foreach ( $versions_B as $v)
+        {
+			$total['prj'] += 1;
+			$p = [];
+			$p_id = $v->getProjet()->getIdProjet();
+			$keep_it = Functions::donneesParProjetFiltre($v,$p);
+			if ($keep_it === true)
+			{
+				Functions::addConsoStockage($p,$annee,$ress);
+				if ($p['stk'])
+				{
+					$total['sprj']    += 1;
+					$total['demstk']  += $p['sondVolDonnPermTo'];
+					$total['attrstk'] += $p['qt'];
+				}
+				else
+				{
+					$total['autostk'] += 1;
+				}
+
+	            $projets[$p_id] = $p;
+			}
+			else
+			{
+				$total['autostk'] += 1;
+			}
+			$projets_b[] = $p_id;
+        }
+
+		// Boucle sur les versions de la session A
+        foreach ( $versions_A as $v)
+        {
+			$p_id = $v->getProjet()->getIdProjet();
+			if (!in_array($p_id,$projets_b))
+            {
+				$p = [];
+				$total['prj'] += 1;
+
+				$keep_it = Functions::donneesParProjetFiltre($v,$p);
+
+				if ($keep_it === true) {
+					Functions::addConsoStockage($p,$annee,$ress);
+		            $projets[$p_id] = $p;
+					if ($p['stk'])
+					{
+						$total['sprj']    += 1;
+						$total['demstk']  += $p['sondVolDonnPermTo'];
+						$total['attrstk'] += $p['qt'];
+					}
+					else
+					{
+						$total['autostk'] += 1;
+					}
+				}
+				else
+				{
+					$total['autostk'] += 1;
+				}
+			}
+		}
+
+        return [$projets,$total];
+	}
+
+    /**
      * Liste tous les projets qui ont une version cette annee
      *       Utilise par ProjetController et AdminuxController
      *
