@@ -44,7 +44,7 @@ class ProjetTransition implements TransitionInterface
 {
     protected   $etat                               = null;
     protected   $signal                             = null;
-    
+
     public function __construct( $etat, $signal = null )
     {
         $this->etat                 =   (int)$etat;
@@ -59,14 +59,14 @@ class ProjetTransition implements TransitionInterface
     }
 
     ////////////////////////////////////////////////////
-    
+
     public function canExecute($object)
     {
         if ( ! $object instanceof Projet ) return false;
 
         $rtn    =   true;
         if( $this->signal == null ) return $rtn;
-        
+
         $versionWorkflow    =    new VersionWorkflow();
         foreach( $object->getVersion() as $version )
             if( $version->getEtatVersion() != Etat::TERMINE && $version->getEtatVersion() != Etat::ANNULE )
@@ -78,7 +78,7 @@ class ProjetTransition implements TransitionInterface
                             Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " Version " . $version . "  ne passe pas en état "
                                 . Etat::getLibelle( $version->getEtatVersion() ) . " signal = " . Signal::getLibelle( $this->signal ));
                             }
-                            
+
                 $rtn = $rtn && $output;
                 }
 
@@ -86,33 +86,33 @@ class ProjetTransition implements TransitionInterface
     }
 
     ///////////////////////////////////////////////////////
-    
+    // Transmet le signal aux versions du projet qui ne sont ni annulées ni terminées
+
     public function execute($object)
     {
         if ( ! $object instanceof Projet ) return [[ 'signal' =>  $this->signal, 'object' => $object ]];
-        
+
         $object->setEtatProjet( $this->etat );
-        
+
         $rtn    =   true;
         if( $this->signal == null ) return $rtn;
 
         $versionWorkflow    =    new VersionWorkflow();
-        
         foreach( $object->getVersion() as $version )
+        {
             if( $version->getEtatVersion() != Etat::TERMINE && $version->getEtatVersion() != Etat::ANNULE )
-                {
+			{
                 $return = $versionWorkflow->execute( $this->signal, $version );
 
                 if( $return == false )
                     $return = [[ 'signal' =>  $this->signal, 'object' => $version, 'user' => AppBundle::getUser() ]];
 
-                $rtn = Functions::merge_return( $rtn, $return ); 
-                }
-        //AppBundle::getManager()->persist( $object );
-        //AppBundle::getManager()->flush();
+                $rtn = Functions::merge_return( $rtn, $return );
+			}
+		}
         Functions::sauvegarder( $object );
 
-        return $rtn; 
+        return $rtn;
     }
 
 }

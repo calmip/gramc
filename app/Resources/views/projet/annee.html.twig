@@ -19,6 +19,7 @@
     {{ form_end(form) }}
 
     <br />
+    {% if noconso==false %}
     {% if isRecupAutomne and isRecupPrintemps %}
     <div class="message erreur">
         <h2>ERREUR DE CONFIGURATION !!!</h2>
@@ -46,176 +47,192 @@
     <div class="message info">
         <p>Les heures gpu affichées sont des heures <strong>normalisées</strong></p>
     </div>
-<div id="legende">
-    <h3>Légende</h3>
-    <span id="legende_conso_1">Consommation dépassant {{conso_seuil_1}} %</span><br />
-    <span id="legende_conso_2">Consommation dépassant {{conso_seuil_2}} %</span><br />
-    <span id="legende_alerte">Incohérence entre quota machine et heures attribuées</span><br />
-</div>
 
- <div id="bilan_legende"><div id="bilan">
+	<div id="legende">
+	    <h3>Légende</h3>
+	    <span id="legende_conso_1">Consommation dépassant {{conso_seuil_1}} %</span><br />
+	    <span id="legende_conso_2">Consommation dépassant {{conso_seuil_2}} %</span><br />
+	    <span id="legende_alerte">Incohérence entre quota machine et heures attribuées</span><br />
+	</div>
+    {% endif %}
 
- <table>
-    <tr>
-        <th colspan="2">Session A</th>
-    </tr>
-     <tr>
-        <th>Heures demandées</th>
-        <td>{{ total.demHeuresA|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresA|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Session B</th>
-    </tr>
-     <tr>
-        <th>Heures demandées</th>
-        <td>{{ total.demHeuresB|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresB|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Projets test</th>
-    </tr>
-     <tr>
-        <th>Nombre de projets test</th>
-        <td>{{ total.prjTest }}</td>
-    </tr>
-     <tr>
-        <th>Heures demandées</th>
-        <td>{{ total.demHeuresT|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresT|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Rallonges</th>
-    </tr>
-     <tr>
-        <th>Nombre de rallonges</th>
-        <td>{{ total.rall }}</td>
-    </tr>
-     <tr>
-        <th>Heures demandées</th>
-        <td>{{ total.demHeuresR|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresR|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Pénalités</th>
-    </tr>
-     <tr>
-        {# Le id est important seulement pour faire fonctionner les boutons javascript !!! #}
-        <th>Printemps</th>
-        {% if isRecupPrintemps %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesA|number_format(0, ',', ' ') }}</td>
-    </tr>
-     <tr>
-        <th>Automne</th>
-        {% if isRecupAutomne %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesB|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Données consolidées</th>
-    </tr>
-     <tr>
-        <th>Nombre de projets</th>
-        <td>{{ total.prj }}</td>
-    </tr>
-     <tr>
-        <th>Heures demandées</th>
-        <td>{{ total.demHeuresP|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuées</th>
-        <td>{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures consommées</th>
-        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
-    </tr>
- </table>
- <table>
-    <tr>
-        <th colspan="2">Prévisionnel<br />(sans compter les projets entreprises)</th>
-    </tr>
-     <tr>
-        <th>Heures pour une année</th>
-        <td>{{ heures_par_an|number_format(0, ',', ' ') }}</td>
-    </tr>
-     <tr>
-        <th>Heures déjà attribuées<br />(y compris rallonges et pénalités)</th>
-        <td id="stats_attribuees">{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures récupérables</th>
-        <td id="stats_recuperables">
-            {% if isRecupPrintemps or isRecupAutomne %}
-                {{ total.recupHeuresP|number_format(0, ',', ' ') }}
-            {% else %}
-                N/A
-            {%endif%}
-        </td>
-    </tr>
-    <tr>
-        <th>Heures consommées</th>
-        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
-    </tr>
-    <tr>
-        <th>Heures attribuables</th>
-        <td id="stats_attribuables">
-            {# Pertinent seulement à la fin Juin ! #}
-            {% if isRecupPrintemps %}
-                {% set attribuables = heures_par_an/2 - (total.attrHeuresP-total.consoHeuresP) %}
-                {% if attribuables>0 %}
-                    {{ attribuables|number_format(0, ',', ' ') }}
-                {% else %}
-                    0
-                {% endif %}
-            {% else %}
-                N/A
-            {% endif %}
-        </td>
-    </tr>
- </table>
+	 <div id="bilan_legende"><div id="bilan">
 
-</div>
+		 <table>
+		    <tr>
+		        <th colspan="2">Session A</th>
+		    </tr>
+		     <tr>
+		        <th>Heures demandées</th>
+		        <td>{{ total.demHeuresA|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuées</th>
+		        <td>{{ total.attrHeuresA|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		 </table>
+		 <table>
+		    <tr>
+		        <th colspan="2">Session B</th>
+		    </tr>
+		     <tr>
+		        <th>Heures demandées</th>
+		        <td>{{ total.demHeuresB|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuées</th>
+		        <td>{{ total.attrHeuresB|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		 </table>
+		 <table>
+		    <tr>
+		        <th colspan="2">Projets test</th>
+		    </tr>
+		     <tr>
+		        <th>Nombre de projets test</th>
+		        <td>{{ total.prjTest }}</td>
+		    </tr>
+		     <tr>
+		        <th>Heures demandées</th>
+		        <td>{{ total.demHeuresT|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuées</th>
+		        <td>{{ total.attrHeuresT|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		 </table>
+		 <table>
+		    <tr>
+		        <th colspan="2">Rallonges</th>
+		    </tr>
+		     <tr>
+		        <th>Nombre de rallonges</th>
+		        <td>{{ total.rall }}</td>
+		    </tr>
+		     <tr>
+		        <th>Heures demandées</th>
+		        <td>{{ total.demHeuresR|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuées</th>
+		        <td>{{ total.attrHeuresR|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		 </table>
 
-<div class="lien-pdf">
-    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
-        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
-        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee })) }}"/>
-</div>
-<div class="lien-pdf">
-    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
-        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
-        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee })) }}"/>
-</div>
+		 {% if noconso==false %}
+		 <table>
+		    <tr>
+		        <th colspan="2">Pénalités</th>
+		    </tr>
+		     <tr>
+		        {# Le id est important seulement pour faire fonctionner les boutons javascript !!! #}
+		        <th>Printemps</th>
+		        {% if isRecupPrintemps %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesA|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		     <tr>
+		        <th>Automne</th>
+		        {% if isRecupAutomne %}<td id="stats_penal">{% else %}<td>{% endif %}{{ total.penalitesB|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		 </table>
+		{% endif %}
+
+		 <table>
+		    <tr>
+		        <th colspan="2">Données consolidées</th>
+		    </tr>
+		     <tr>
+		        <th>Nombre de projets</th>
+		        <td>{{ total.prj }}</td>
+		    </tr>
+		     <tr>
+		        <th>Heures demandées</th>
+		        <td>{{ total.demHeuresP|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuées</th>
+		        <td>{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    {% if noconso==false %}
+		    <tr>
+		        <th>Heures consommées</th>
+		        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    {% endif %}
+		 </table>
+
+		 <table>
+		    <tr>
+		        <th colspan="2">Prévisionnel<br />(sans compter les projets entreprises)</th>
+		    </tr>
+		     <tr>
+		        <th>Heures pour une année</th>
+		        <td>{{ heures_par_an|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		     <tr>
+		        <th>Heures déjà attribuées<br />(y compris rallonges et pénalités)</th>
+		        <td id="stats_attribuees">{{ total.attrHeuresP|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    {% if noconso==false %}
+		    <tr>
+		        <th>Heures récupérables</th>
+		        <td id="stats_recuperables">
+		            {% if isRecupPrintemps or isRecupAutomne %}
+		                {{ total.recupHeuresP|number_format(0, ',', ' ') }}
+		            {% else %}
+		                N/A
+		            {%endif%}
+		        </td>
+		    </tr>
+		    <tr>
+		        <th>Heures consommées</th>
+		        <td>{{ total.consoHeuresP|number_format(0, ',', ' ') }}</td>
+		    </tr>
+		    <tr>
+		        <th>Heures attribuables</th>
+		        <td id="stats_attribuables">
+		            {# Pertinent seulement à la fin Juin ! #}
+		            {% if isRecupPrintemps %}
+		                {% set attribuables = heures_par_an/2 - (total.attrHeuresP-total.consoHeuresP) %}
+		                {% if attribuables>0 %}
+		                    {{ attribuables|number_format(0, ',', ' ') }}
+		                {% else %}
+		                    0
+		                {% endif %}
+		            {% else %}
+		                N/A
+		            {% endif %}
+		        </td>
+		    </tr>
+			{% endif %}
+		 </table>
+	</div>
+
+	{% if noconso==false %}
+	<div class="lien-pdf">
+	    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee })) }}"/>
+	</div>
+	<div class="lien-pdf">
+	    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee })) }}"/>
+	</div>
+	{% endif %}
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+4*15+3*170+12*80+ 20*20 + 20 + 20 %}
-{% if isRecupPrintemps %}
-   {% set width=80+45 + 2*20 + 35 + width %}
-{% endif %}
-{% if isRecupAutomne %}
-   {% set width=80+80+80+45 + 4*20 + 35 + width %}
-{% endif %}
+{% set width=45+3*15+3*170+6*80+ 20*20 + 20 + 20 %}
+{% if noconso==false %}
+   {% set width = 15 + 6*80 + width %}
+	{% if isRecupPrintemps %}
+	   {% set width=80+45 + 2*20 + 35 + width %}
+	{% endif %}
+	{% if isRecupAutomne %}
+	   {% set width=80+80+80+45 + 4*20 + 35 + width %}
+	{% endif %}
+{%endif %}
+
 <div id="projets" >
     <table id="table_projets_annee" class="scrtable dataTable no-footer" role="grid" style="width: {{width}}px" >
         <thead>
@@ -223,7 +240,7 @@
                 <th class="w45">N°</th>
                 <th class="w15"></th>
                 <th class="w15" title="Etat">E</th>
-                <th class="w15" title="Consommation">C</th>
+                {% if noconso==false %}<th class="w15" title="Consommation">C</th>{% endif %}
                 <th class="w170" title="Etat du projet">Titre</th>
                 <th class="w170">Thématique</th>
                 <th class="w170">Responsable</th>
@@ -234,8 +251,9 @@
                 <th class="w80">Demandes B</th>
                 <th class="w80">Attrib B</th>
                 <th class="w80">Rallonges</th>
-                <th class="w80">Pénalités</th>
+                {% if noconso==false %}<th class="w80">Pénalités</th>{% endif %}
                 <th class="w80">Attributions</th>
+                {% if noconso==false %}
                 <th class="w80">Quota</th>
                 <th class="w80">Conso (h)</th>
                 <th class="w80">Conso (%)</th>
@@ -250,6 +268,7 @@
                     <th class="w80">Récupérables (h)</th>
                     <th class="w45">Récup</th>
                 {% endif %}
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -259,29 +278,38 @@
             {% set va=prj_array.va %}
             {% set vb=prj_array.vb %}
 
-            {% if prj_array.q != prj_array.attrib %}
-            <tr class="alerte" >
-            {% elseif prj_array.cp >= conso_seuil_2 %}
-            <tr class="conso_seuil_2" >
-            {% elseif prj_array.cp >= conso_seuil_1 %}
-            <tr class="conso_seuil_1" >
-            {% else %}
-            <tr>
-            {% endif %}
+				{% if noconso==false %}
+	            {% if prj_array.q != prj_array.attrib %}
+	            <tr class="alerte" >
+	            {% elseif prj_array.cp >= conso_seuil_2 %}
+	            <tr class="conso_seuil_2" >
+	            {% elseif prj_array.cp >= conso_seuil_1 %}
+	            <tr class="conso_seuil_1" >
+	            {% else %}
+	            <tr>
+	            {% endif %}
+		        {% else %}
+				<tr>
+				{%endif%}
                 <td class="w45">{{ projet.id }}</td>
                 <td class="w15">
-                    <a href="{{ path('consulter_projet', { 'id': projet.idProjet }) }}" title="Consulter le projet">
+                    {% set version=annee|slice(2,2) ~ 'A' ~ projet %}
+                    <a href="{{ path('consulter_version', { 'id':projet.idprojet,'version': version }) }}" title="Consulter le projet">
                         <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
                     </a>
                 </td>
                 <td class="w15">
                     {{ gramcmacros.metagraph(projet.metaetat) }}
                 </td>
+
+                {% if noconso==false %}
                 <td class="w15">
                     <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
                     title="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}" alt="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}"
                     data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
                 </td>
+                {% endif %}
+
                 <td class="w170">
                     {{ gramcmacros.afftitre(projet.titre) }}
                 </td>
@@ -340,12 +368,15 @@
                         &nbsp;
                     {% endif %}
                 </td>
+                {% if noconso==false %}
                 <td class="w80 penalite" >
                     {{ (prj_array.penal_a + prj_array.penal_b) }}
                 </td>
+                {% endif %}
                 <td class="w80 attr" >
                     {{prj_array.attrib }}
                 </td>
+                {% if noconso==false %}
                 <td class="w80" >
                     {{prj_array.q }}
                 </td>
@@ -404,6 +435,7 @@
                             <td class="w80" >&nbsp;</td><td class="w80" >&nbsp;</td><td class="w80" >&nbsp;</td><td class="w45" >&nbsp;</td>
                         {% endif %}
                     {% endif %}
+                {% endif %}
             </tr>
         {% endfor %}
         </tbody>

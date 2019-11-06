@@ -35,6 +35,8 @@ parameters:
     mesoc_attrib: https://www.calmip.univ-toulouse.fr/spip/spip.php?article19
     # url du document décrivant le format des remerciements
     mesoc_merci: https://www.calmip.univ-toulouse.fr/spip/spip.php?article337
+    # L'adresse postale du mésocentre
+    mesoc_address: CALMIP - Espace Clément Ader - 3 rue Caroline Aigle - 31400 TOULOUSE
 
     # Si l'attribution (+ rallonges) d'un projet est supérieure à ce seuil (gros projet),
     # la demande en B ne devrait pas être supérieure à la moitié de l'attribution !
@@ -46,6 +48,7 @@ parameters:
     recup_conso_seuil:  30      # Si la conso est inférieure à ce seuil (%), on récupèrera des heures
     recup_attrib_quant: 50      # Partie de l'attribution à récupérer: 50% = On récupère la moitié des heures attribuées initialement
 
+    # ATTENTION - NE PAS ECRIRE 05, car vous aurez... 0 a la fin !
     # recup_printemps_d, recup_printemps_f: Mois d'affichage des heures récupérables au printemps [Début, Fin(
     # Par défaut: de Mai (inclus) à Août (exclus)
     # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
@@ -68,6 +71,42 @@ parameters:
 
     # nb de pages max d'un rapport d'activité
     max_page_nb: 5
+
+    # Si noconso vaut true, le code de visualisation de la consommation est désactivé
+    noconso: true
+
+    # Prefixe pour les id de projet: de 1 à 5 caractères
+    # Le préfixe dépend du type de projet (ou pas)
+    # Si pas de préfixe pour un type de projet (''), ce type de projet ne sera pas utilisées
+    prj_prefix: { '1' : 'P', '2' : 'T' }
+
+    # Ressources pour lesquelles on peut afficher la consommation d'un projet (=group)
+    #         'type' = calcul ou stockage (les algos de dessin ne sont pas les mêmes)
+    #         'ress' = attribut 'ressource' de la classe Compta
+    #         'nom'  = Nom de la ressource (pour affichage uniquement)
+    #         'unite'= To/Go/Tio/Gio, pour affichage et calcul de mise à l'échelle
+
+    ressources_conso_group: { '1' : { 'type' : 'calcul',   'ress' : 'cpu,gpu',    'nom' : 'Heures normalisées', 'unite' : 'h'  },
+                              '2' : { 'type' : 'stockage', 'ress' : 'work_space', 'nom' : 'Espace work',      'unite' : 'Tio' },
+                              '3' : { 'type' : 'stockage', 'ress' : 'home_space', 'nom' : 'Home',             'unite' : 'Gio' },
+                            }
+
+    # Ressources pour lesquelles on peut afficher la consommation d'un utilisateur (=user)
+    ressources_conso_user:  { '1' : { 'type' : 'calcul',   'ress' : 'cpu,gpu',      'nom' : 'Heures normalisées', 'unite' : 'h'  },
+                              '2' : { 'type' : 'stockage', 'ress' : 'work_space',   'nom' : 'Espace work',      'unite' : 'Tio' },
+                              '3' : { 'type' : 'stockage', 'ress' : 'home_space',   'nom' : 'Home',             'unite' : 'Gio' },
+                              '4' : { 'type' : 'stockage', 'ress' : 'tmpdir_space', 'nom' : 'tmpdir',           'unite' : 'Gio' },
+                            }
+
+    # Nombre max d'expertises pour un projet
+    max_expertises_nb: 1
+
+    # commentaires_experts_d, commentaires_experts_f: Mois pendant lesquels les experts peuvent entrer leur commentaire
+    # On peut supprimer ces paramètres pour supprimer cette fonctionnalité
+    # Pour l'année 2019, le lien sera disponible à partir du mois de Mai 2019 inclus...
+    commentaires_experts_d: 5
+    # ... et jusqu'au mois de Mars 2020 exclus
+    commentaires_experts_f: 3
 
     # divers répertoires
     signature_directory: '%kernel.root_dir%/../data/fiches'

@@ -53,6 +53,7 @@ class GramcDate extends GramcDateTime
         if ($annee!=$d->showYear() && $annee-2000!=$d->showYear()) return false;
 
         $m = $d->showMonth();
+
         if ( $m >= AppBundle::getParameter('recup_printemps_d') && $m < AppBundle::getParameter('recup_printemps_f') )
         {
             return true;
@@ -75,7 +76,9 @@ class GramcDate extends GramcDateTime
         if ( ! AppBundle::hasParameter('recup_automne_f')) return false;
         if ($annee!=$d->showYear() && $annee-2000!=$d->showYear()) return false;
 
-        $m = $d->showMonth();
+        $m = intval($d->showMonth());
+        //Functions::debugMessage(__METHOD__.':'.__LINE__ ." m=$m recup_automne_d=" . intval(AppBundle::getParameter('recup_automne_d')));
+
         if ( $m >= intval(AppBundle::getParameter('recup_automne_d')) && $m < intval(AppBundle::getParameter('recup_automne_f')) )
         {
             return true;

@@ -1,0 +1,16 @@
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+    <h1>Commentaires des experts pour l'année {{ annee }}</h1>
+<hr />
+
+{% for comm in commentairesExperts %}
+	<p><strong>{{comm.expert.prenom}} {{comm.expert.nom}}</strong></p>
+	<p>{{comm.commentaire| e | nl2br}}</p>
+    <hr />
+{% endfor %}
+
+</section>
+
+{% endblock body %}

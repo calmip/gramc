@@ -9,46 +9,48 @@
 
 {% macro ligne_projet(item) %}
 {% import "projet/macros_graphiques.html.twig" as macros_graphiques %}
-        <tr>
-            <td>{{ macros_graphiques.meta_etat_graphique(item.projet.getMetaEtat() ) }}</td>
-            <td><a href="{{ path('consulter_projet', { 'id': item.projet.idProjet })}}" title="Ouvrir le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" /></a>{% if( item.projet.derniereVersion.isEdited ) %}&nbsp;<a href="{{ path('version_avant_supprimer', { 'id': item.projet.derniereVersion.idVersion })}}" title="Supprimer le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>{% endif %}</td>
-            <td>{{ item.projet.idProjet }}</td>
-            <td rowspan="{{ item.cpt_rall + 1 }}">{{ item.projet.titre }}</td>
-            <td rowspan="{{ item.cpt_rall + 1 }}">{{ item.conso |number_format(1)}}&nbsp;%</td>
-            <td class='cellule_canvas' rowspan="{{ item.cpt_rall + 1 }}">
-                <canvas id="canvas_{{ item.projet.idProjet }}" class="canvas_conso" width="110" height="25"></canvas>
-            </td>
-            <td rowspan="{{ item.cpt_rall + 1 }}">
-                <img id="bconso_{{ item.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
-                title="Evolution de la consommation" alt="Evolution de la consommation"
-                data-href="{{ absolute_url(path('projet_conso', { 'id': item.projet.idProjet, 'annee' : item.projet.derniereVersion.getFullAnnee() })) }}"/>
-            </td>
-            <input id="conso_{{ item.projet.idProjet }}" value="{{ item.conso |number_format(1)}}" type="hidden">
-        </tr>
+	<tr>
+		<td>{{ macros_graphiques.meta_etat_graphique(item.projet.getMetaEtat() ) }}</td>
+		<td><a href="{{ path('consulter_projet', { 'id': item.projet.idProjet })}}" title="Ouvrir le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier" /></a>{% if( item.projet.derniereVersion.isEdited ) %}&nbsp;<a href="{{ path('version_avant_supprimer', { 'id': item.projet.derniereVersion.idVersion })}}" title="Supprimer le projet {{ item.projet.idProjet }}"><img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>{% endif %}</td>
+		<td>{{ item.projet.idProjet }}</td>
+		<td rowspan="{{ item.cpt_rall + 1 }}">{{ item.projet.titre }}</td>
+		{% if noconso==false %}
+		<td rowspan="{{ item.cpt_rall + 1 }}">{{ item.conso |number_format(1)}}&nbsp;%</td>
+		<td class='cellule_canvas' rowspan="{{ item.cpt_rall + 1 }}">
+			<canvas id="canvas_{{ item.projet.idProjet }}" class="canvas_conso" width="110" height="25"></canvas>
+		</td>
+		<td rowspan="{{ item.cpt_rall + 1 }}">
+			<img id="bconso_{{ item.projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
+			title="Evolution de la consommation" alt="Evolution de la consommation"
+			data-href="{{ absolute_url(path('projet_conso', { 'id': item.projet.idProjet, 'annee' : item.projet.derniereVersion.getFullAnnee() })) }}"/>
+		</td>
+		<input id="conso_{{ item.projet.idProjet }}" value="{{ item.conso |number_format(1)}}" type="hidden">
+		{% endif %}
+	</tr>
 
-        {% set num_rallonge = 1 %}
-        {% for rallonge in item.rallonges %}
-        <tr>
-            <td>{{ macros_graphiques.meta_etat_graphique(rallonge.getMetaEtat() ) }}</td>
-            <td>
-                <a href="{{ path('rallonge_consulter', { 'id': rallonge.idRallonge })}}"
-                {% if rallonge.getMetaEtat() == 'EDITION' %}
-                    title="Modifier cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier"  />
-                {% else %}
-                    title="Consulter cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
-                {% endif %}
-                </a>
-            </td>
-            <td>
-                {% if num_rallonge == 1 %}
-                    <strong>Rallonge</strong>
-                {% else %}
-                    <strong>Rallonge {{ num_rallonge }}</strong>
-                {% endif %}
-            </td>
-            {% set num_rallonge = num_rallonge + 1 %}
-        {% endfor %}
-        </tr>
+	{% set num_rallonge = 1 %}
+	{% for rallonge in item.rallonges %}
+	<tr>
+		<td>{{ macros_graphiques.meta_etat_graphique(rallonge.getMetaEtat() ) }}</td>
+		<td>
+			<a href="{{ path('rallonge_consulter', { 'id': rallonge.idRallonge })}}"
+			{% if rallonge.getMetaEtat() == 'EDITION' %}
+				title="Modifier cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/modifier.png') }}" alt="Modifier"  />
+			{% else %}
+				title="Consulter cette rallonge" ><img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
+			{% endif %}
+			</a>
+		</td>
+		<td>
+			{% if num_rallonge == 1 %}
+				<strong>Rallonge</strong>
+			{% else %}
+				<strong>Rallonge {{ num_rallonge }}</strong>
+			{% endif %}
+		</td>
+		{% set num_rallonge = num_rallonge + 1 %}
+	</tr>
+	{% endfor %}
 
 {% endmacro ligne_projet %}
 
@@ -85,7 +87,7 @@
             <th colspan="2">Éditer</th>
             <th>Numéro</th>
             <th>Titre</th>
-            <th colspan="3">Conso</th>
+            {% if noconso==false %}<th colspan="3">Conso</th>{% endif %}
         </tr>
     </thead>
 
@@ -113,7 +115,7 @@
             <th colspan="2">Éditer</th>
             <th>Numéro</th>
             <th>Titre</th>
-            <th colspan="3">Conso</th>
+            {% if noconso==false %}<th colspan="3">Conso</th>{% endif %}
         </tr>
     </thead>
 

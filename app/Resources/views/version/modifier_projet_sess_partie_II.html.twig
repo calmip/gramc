@@ -1,0 +1,96 @@
+{# ################################################################################## #}
+
+<div id="tab2" class="onglet"><br><br>
+    <h3>Description scientifique du projet de recherche</h3>
+
+    <table class="projet"><tbody>
+        <tr>
+            <th>Références bibliographiques</th>
+        </tr>
+        <tr>
+            <td class="center">Merci de nous signaler les publications pour lesquelles les moyens de calcul de {{mesoc}} ont été utilisés.<br>
+                <strong><a href="{{ path('gerer_publications', { 'id' : version.projet.idProjet }) }}"
+                target="_blank" title="Entrez maintenant les références bibliographiques correspondantes">Cliquez ici</a></strong>
+            </td>
+        </tr>
+    </tbody></table>
+
+    <table class="projet"><tbody>
+        <tr>
+            <th>Résumé du projet en anglais (environ 2000 caractères)<br><span id="form_prjResume_cpt" class="petit"></span></th>
+        </tr>
+        <tr>
+            <td class="center">{{ form_widget(form.prjResume,
+                { 'attr': { 'class': 'compteur', 'rows' : 12, 'cols' : 70 } }) }}
+            </td>
+        </tr>
+    </tbody></table>
+
+    <div class="message warning">
+        <h2>Confidentialité des données</h2>
+        {{mesoc}} se réserve le droit de faire figurer sur son site web le résumé du projet,
+        ainsi que le nom du responsable du projet et de son laboratoire.
+        Merci de ne pas écrire ici de données confidentielles
+    </div>
+
+    <table class="projet"><tbody>
+        <tr>
+            <th>Exposé scientifique (environ 6000 caractères)<br><span id="form_prjExpose_cpt" class="petit"></span>
+                <br><em>Exposer le problème scientifique, la situation de l'équipe par rapport au problème
+                (résultats ou expérience déjà acquise dans le domaine, ou projet nouveau).<br>
+                Mentionner les 3 publications les plus significatives en rapport avec le projet.</em>
+            </th>
+        </tr>
+        <tr>
+            <td class="center">{{ form_widget(form.prjExpose,
+                { 'attr': { 'class': 'compteur', 'rows' : 12, 'cols' : 70 } }) }}
+            </td>
+        </tr>
+        <tr>
+        <td>
+        <div id="img_expose_sts"></div>
+        <div class="wrap-drop-zone">
+            <div id="img_expose_1" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if imageExp1 == null %}
+                Figure 1
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageExp1 }}" alt="Figure 1" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+            <div id="img_expose_2" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if imageExp2 == null %}
+                Figure 2
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageExp2 }}" alt="Figure 2" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+            <div id="img_expose_3" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if imageExp3 == null %}
+                Figure 3
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageExp3  }}" alt="Figure 3" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+        </div>
+        <hr class="retour">
+        {{ macrosmodifier.info_televersement(img_expose_1,img_expose_2,img_expose_3) }}
+        </td>
+        </tr>
+    </tbody></table>
+
+
+    <table class="projet"><tbody>
+        <tr>
+            <th>Algorithmes ou méthodes numériques utilisées</th>
+        </tr>
+        <tr>
+            <td class="center projet">{{ form_widget(form.prjAlgorithme,
+                { 'attr': { 'rows' : 8, 'cols' : 70 } }) }}
+            </td>
+        </tr>
+    </tbody></table>
+
+</div>

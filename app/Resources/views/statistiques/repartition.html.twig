@@ -14,7 +14,7 @@
 
 <section>
 
-<h1>Répartition des heures par thématique de l'année {{ annee }}</h1>
+<h1>Nombre de collaborateurs par projet - année {{ annee }}</h1>
 
 {{ form_start(form) }}
 {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
@@ -23,8 +23,8 @@
 <table>
     <thead>
          <tr>
-        <td>Nombre de collaborateurs</td>
-        <td>Nombre de projets</td>
+        <th>Nombre de collaborateurs</th>
+        <th>Nombre de projets</th>
     </tr>
     </thead>
     <tbody>
@@ -40,8 +40,8 @@
 <table>
     <thead>
          <tr>
-        <td>Nombre de comptes</td>
-        <td>Nombre de projets</td>
+        <th>Nombre de comptes</th>
+        <th>Nombre de projets</th>
     </tr>
     </thead>
     <tbody>
@@ -57,7 +57,7 @@
 <table>
     <thead>
          <tr>
-        <td>Projets sans compte</td>
+        <th>Projets sans compte</th>
          </tr>
     </thead>
     <tbody>
@@ -76,7 +76,7 @@
     <tbody>
         <tr>
             <td>
-                <img class="figure" src="data:image/png;base64, {{ histogram_collaborateurs }}"  title="cliquez pour afficher la figure en taille réelle" > 
+                <img class="figure" src="data:image/png;base64, {{ histogram_collaborateurs }}"  title="cliquez pour afficher la figure en taille réelle" >
             </td>
             <td>
                 <img class="figure" src="data:image/png;base64, {{ histogram_comptes }}"   title="cliquez pour afficher la figure en taille réelle">

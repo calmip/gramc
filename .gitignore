@@ -17,6 +17,7 @@ web/tmp/*
 src/cache/*
 
 /app/config/parameters.yml
+/app/config/parameters.*.yml
 /build/
 /phpunit.xml
 /var/*
@@ -31,7 +32,9 @@ src/cache/*
 !var/sessions/.gitkeep
 !var/SymfonyRequirements.php
 /web/bundles/
-banniere.png
+/mesocentres/**/banniere.png
+/mesocentres/**/favicon.ico
 
-# gramc 1.x.y
-/etc/connect.php
+altermeso
+app/config/adresses.txt
+

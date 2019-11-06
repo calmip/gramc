@@ -77,7 +77,8 @@
                     <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}">
                     </a>
                 </td>
-                <td rowspan="{{ projet.rowspan }}">{{ macros_graphiques.meta_etat_graphique( projet.etat ) }}</td>
+                {#<td>{{ macros_graphiques.meta_etat_graphique( projet.etat ) }}</td>#}
+                <td>&nbsp;</td>
                 <td rowspan="{{ projet.rowspan }}">{{ projet.titre }}</td>
                 <td rowspan="{{ projet.rowspan }}">{{ projet.thematique }}</td>
 
@@ -92,7 +93,7 @@
                 </td>
 
 
-                
+
                 <td rowspan="{{ projet.rowspan }}">{{ projet.labo }}</td>
                 <td rowspan="{{ projet.rowspan }}">
                     {% if( projet.affecte is defined and projet.affecte == true ) %}
@@ -100,12 +101,14 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if( projet.expert!= null ) %}
-                    <a class="sudo" href="{{ path('sudo',  { 'id': projet.expert.id }) }}?" title="Changer d'identité">
-                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
-                    <a href="mailto:{{ projet.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ projet.expert.mail }}">
-                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
-                    {{ projet.expert.prenom }} {{ projet.expert.nom }}
+                    {% if( projet.version.experts|length!= 0 ) %}
+	                    {% for e in projet.version.experts %}
+		                    <a class="sudo" href="{{ path('sudo',  { 'id': e.id }) }}?" title="Changer d'identité">
+		                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+		                    <a href="mailto:{{ e.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ e.mail }}">
+		                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+	                    {{ e.prenom }} {{ e.nom }} <br />
+	                    {% endfor %}
                     {% endif %}
 
                 </td>
@@ -118,8 +121,8 @@
                 <td></td>
                 {% endif %}
             </tr>
-                {% for rallonge in projet.rallonges %}
-                <tr>
+			{% for rallonge in projet.rallonges %}
+			<tr>
                 <td><strong>R</strong></td>
                 <td>{{ rallonge.idRallonge }}</td>
                 <td>
@@ -133,6 +136,7 @@
                         </a>
                     {% endif %}
                 </td>
+                <td>{{ macros_graphiques.meta_etat_graphique( rallonge.metaetat ) }}</td>
                 <td>
                     {% if( rallonge.expert!= null ) %}
                     <a class="sudo" href="{{ path('sudo',  { 'id': rallonge.expert.id }) }}?" title="Changer d'identité">
@@ -145,7 +149,7 @@
                     {% if( rallonge.libelleEtatRallonge == 'EDITION_EXPERTISE' or rallonge.libelleEtatRallonge == 'DESAFFECTE' ) %}
                     {{ form_widget( projet.form[rallonge.idRallonge].expert ) }}
                     {% endif %}
-                    
+
                 </td>
                 <td>{{ rallonge.demHeures }}</td>
                 <td>{{ rallonge.attrHeures }}</td>
@@ -154,21 +158,12 @@
                 <td></td>
                 <td>{{ rallonge.libelleEtatRallonge }}</td>
                 {% endif %}
-                </tr>
-                {% endfor %}
-            {% endfor %}
+			</tr>
+			{% endfor %}
+		{% endfor %}
         </tbody>
     </table>
 </div>
 <div id="bouton_affecter"><input value="Affecter les experts" type="submit"></div>
 </form>
-
-
-
-
-
-
-
-
-
 {% endblock %}

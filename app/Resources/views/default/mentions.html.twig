@@ -37,13 +37,13 @@ du formulaire projet</p>
 par la mise en œuvre de mesures techniques et organisationnelles.</p>
 
 <h2>Durée de vie des données</h2>
-<p>Les données qui ne sont plus utiles au traitement depuis plus de 5 ans sont régulièrement supprimées. Il s'agit des données suivantes:</p>
+<p>Les données sont supprimées au bout de 10 ans. Il s'agit des données suivantes:</p>
 <ul>
-<li>Projets terminés depuis plus de 5 ans</li>
+<li>Projets terminés depuis plus de 10 ans</li>
 <li>Expertises de ces projets</li>
 <li>Utilisateurs ne participant plus à des projets enregistrés dans gramc.</li>
 <li>Experts n'ayant plus d'expertises enregistrées.</li>
-<li>Enregistrements du journal datés de plus de 5 ans.</li>
+<li>Enregistrements du journal datés de plus de 1 an.</li>
 </ul>
 
 <h2>Déclaration auprès de la CNIL</h2>
@@ -51,9 +51,11 @@ par la mise en œuvre de mesures techniques et organisationnelles.</p>
 
 <h2>Droits de communication, modification, suppression</h2>
 <p>Conformément aux articles 39 et suivants de la loi n° 78-17 du 6 janvier 1978 modifiée en 2004 relative à l'informatique, aux fichiers et aux libertés, toute personne peut
- obtenir communication et, le cas échéant, rectification ou suppression des informations la concernant, en s'adressant à {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<tt>{{ init.mail_replace(mailadmin) }}</tt>{% endif %}
-</p>
+ obtenir communication et, le cas échéant, opposition, rectification, suppression, portabilité des informations la concernant, en s'adressant à:</p>
+ <p><small>{{ mesoc_address }} {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<tt>{{ init.mail_replace(mailadmin) }}</tt>{% endif %}</small></p>
+ <p>ou à défaut à:</p>
+ <p><small>DPD du CNRS - 17 rue Notre Dame des Pauvres - 54519 Vandœuvre lès Nancy Cedex <a href="mailto:dpd.demandes@cnrs.fr">dpd.demandes@cnrs.fr</a></small></p>
 
 <h2>Mise à jour de la charte de protection des données</h2>
-<p>La présente charte peut être mise à jour périodiquement et sans préavis. Dernière mise à jour = 28 Août 2018</p>
+<p>La présente charte peut être mise à jour périodiquement et sans préavis. Dernière mise à jour = 7 Novembre 2019</p>
 {% endblock %}

@@ -1,8 +1,8 @@
 Bonjour,
 
-Une demande de projet test {{mesoc}} a été reçue de {{ object.responsable.prenom |raw }} {{ object.responsable.nom |raw }}.
-Adresse: {{ object.responsable.mail |raw }}
+Une demande de projet pour le {{mesoc}} a été reçue de {{ object.responsable.prenom |raw }} {{ object.responsable.nom |raw }}.
 
+Adresse           : {{ object.responsable.mail |raw }}
 Numéro de projet  : {{ object.projet.idProjet |raw }}
 Le projet         : {{ absolute_url(path('consulter_projet', { 'id' : object.projet.idProjet })) |raw }}
 

@@ -1,0 +1,16 @@
+Bonjour
+
+L'expertise du projet n° {{ object.version.projet |raw }}, (resp {{ object.version.responsable |raw }}) a été traitée.
+
+Cette demande a été {% if( object.validation == true ) %}ACCEPTÉE{% else %}REFUSÉE{% endif %} .
+
+Le nombre d'heures demandées est  : {{ object.version.demHeures |raw }}
+Le nombre d'heures attribuées est : {{ object.nbHeuresAtt |raw }}
+
+Commentaire de l'expert à destination du comité d'attribution:
+{{ object.commentaireInterne |raw }}
+
+Maintenant, en tant que président(e) du comité d'attributions, vous devez décider de la réponse à donner.
+
+Cordialement,
+- gramc -

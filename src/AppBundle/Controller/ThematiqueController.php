@@ -38,7 +38,6 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Thematique controller.
  *
- * @Security("has_role('ROLE_ADMIN')")
  * @Route("thematique")
  */
 class ThematiqueController extends Controller
@@ -46,6 +45,7 @@ class ThematiqueController extends Controller
     /**
      * Lists all thematique entities.
      *
+     * @Security("has_role('ROLE_ADMIN')")
      * @Route("/", name="thematique_index")
      * @Method("GET")
      */
@@ -59,29 +59,30 @@ class ThematiqueController extends Controller
             'thematiques' => $thematiques,
         ));
     }
-    
+
     /**
      * @Route("/gerer",name="gerer_thematiques" )
-     * @Security("has_role('ROLE_ADMIN')")
+     * @Security("has_role('ROLE_OBS')")
      */
     public function gererAction()
-        {
-        $menu = [
-                    ['ok' => true,'name' => 'ajouter_thematique' ,'lien' => 'Ajouter une thématique','commentaire'=> 'Ajouter une thématique']
-                ];
-       
+	{
+		// Si on n'est pas admin on n'a pas accès au menu
+		$menu = AppBundle::isGranted('ROLE_ADMIN')?[ ['ok' => true,'name' => 'ajouter_thematique' ,'lien' => 'Ajouter une thématique','commentaire'=> 'Ajouter une thématique'] ] : [];
+
         return $this->render( 'thematique/liste.html.twig',
             [
             'menu' => $menu,
             'thematiques' => AppBundle::getRepository('AppBundle:Thematique')->findBy( [],['libelleThematique' => 'ASC'])
             ]
-            );
-        }
+		);
+	}
+
     /**
      * Creates a new thematique entity.
      *
      * @Route("/new", name="thematique_new")
      * @Route("/ajouter", name="ajouter_thematique")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function newAction(Request $request)
@@ -114,11 +115,12 @@ class ThematiqueController extends Controller
             'edit_form' => $form->createView(),
             ]);
     }
-    
+
     /**
      * Deletes a thematique entity.
      *
      * @Route("/{id}/supprimer", name="supprimer_thematique")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method("GET")
      */
     public function supprimerAction(Request $request, Thematique $thematique)
@@ -128,11 +130,12 @@ class ThematiqueController extends Controller
         $em->flush($thematique);
         return $this->redirectToRoute('gerer_thematiques');
     }
-    
+
     /**
      * Displays a form to edit an existing laboratoire entity.
      *
      * @Route("/{id}/modify", name="modifier_thematique")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function modifyAction(Request $request, Thematique $thematique)
@@ -166,6 +169,7 @@ class ThematiqueController extends Controller
      * Finds and displays a thematique entity.
      *
      * @Route("/{id}", name="thematique_show")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method("GET")
      */
     public function showAction(Thematique $thematique)
@@ -182,6 +186,7 @@ class ThematiqueController extends Controller
      * Displays a form to edit an existing thematique entity.
      *
      * @Route("/{id}/edit", name="thematique_edit")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method({"GET", "POST"})
      */
     public function editAction(Request $request, Thematique $thematique)
@@ -207,6 +212,7 @@ class ThematiqueController extends Controller
      * Deletes a thematique entity.
      *
      * @Route("/{id}", name="thematique_delete")
+     * @Security("has_role('ROLE_ADMIN')")
      * @Method("DELETE")
      */
     public function deleteAction(Request $request, Thematique $thematique)

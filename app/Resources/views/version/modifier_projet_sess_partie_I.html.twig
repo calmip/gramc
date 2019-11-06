@@ -1,0 +1,181 @@
+<div id="tab1" class="onglet">
+    <br><br>
+    <h3>Présentation générale</h3>
+    <table class="projet"><tbody>
+
+
+    <tr>
+        <th class="horiz">{{ form_label( form.prjTitre  ,"Titre du projet *" ) }}</th>
+        <td>{{ form_widget( form.prjTitre  ,
+                { 'attr':
+                    {
+                    'size': '90',
+                    'style' : ''
+                     }
+                })
+            }}
+        </td>
+    </tr>
+    <tr>
+        <th class="horiz">{{ form_label( form.prjThematique, "Thématique principale du projet" ) }} </th>
+        <td>{{ form_widget( form.prjThematique ) }}</td>
+    </tr>
+    <tr>
+        <th class="horiz">{{ form_label( form.prjSousThematique, "Sous-thématique (éventuellement)" ) }} </th>
+        <td>{{ form_widget( form.prjSousThematique ) }}</td>
+    </tr>
+
+
+    </tbody></table>
+
+    <div class="message warning"><h2>Heures normalisées</h2>
+
+<ul><li>Les heures que vous demandez seront utilisables indifféremment sur des noeuds CPU ou des noeuds avec GPU.</li>
+<li>Les heures GPU utilisées seront converties en heures cpu avec un coefficient de conversion égal à 33.</li>
+<li>Si vous pensez utiliser les noeuds GPU <strong>vous devez prendre en compte ce coefficient de conversion</strong>.
+<li>Votre demande d'heures totale intègre vos besoins en usage des noeuds CPU (rien ne change par rapport à EOS) <strong>et vos besoins en usage des noeuds GPU</strong>.</li>
+</ul>
+
+<h4>Quelques exemples:</h4>
+<ul>
+<li>Un calcul utilisant <strong>1 cœur</strong> et <strong>1 GPU</strong> durant <strong>1 heure</strong> comptera 1+33=<strong>34 heures</strong></li>
+<li>Un calcul utilisant <strong>2 cœurs</strong>  et <strong>2 GPUs</strong> durant <strong>1 heure</strong> comptera 2+2x33=<strong>68 heures</strong></li>
+<li>Un calcul utilisant <strong>36 cœurs</strong> et <strong>4 GPUs</strong> durant <strong>1 heure</strong> comptera 36+4x33 = <strong>168 heures</strong></li>
+</ul>
+
+<p>Plus de détails <a href="{{mesoc_web}}"><strong>sur notre site web</strong></a></p>
+
+</div>
+
+    <table class="projet"><tbody>
+
+    <tr>
+        <th class="horiz">{{ form_label( form.demHeures, "Nombre d'heures demandées") }} </th>
+        <td>{{ form_widget( form.demHeures) }}</td>
+    </tr>
+    <tbody></table>
+
+    <h4>Laboratoire et responsable du projet</h4>
+    <div class="message warning">Le laboratoire associé au projet est le laboratoire du responsable</div>
+
+    <table class="projet"><tbody>
+        <tr>
+            <th class="petite_col">Nom</th>
+            <th>Mail</th>
+            <th>Statut</th>
+            <th>Laboratoire</th>
+        </tr>
+        <tr>
+            <td>{{  version.responsable }}</td>
+            <td>{% if( not version.responsable == null ) %}{{  version.responsable.mail }}{% endif %}</td>
+            <td>{% if( not version.responsable == null ) %}{{  version.responsable.statut }}{% endif %}</td>
+            <td>{% if( not version.responsable == null ) %}{{  version.responsable.labo }}{% endif %}</td>
+        </tr>
+    </tbody></table>
+
+    <h4 id="collabs">Personnes participant au projet</h4>
+    <div class="message warning"><strong>Astuce:</strong> Commencez par l'adresse mail !</div>
+
+    <div id="liste_des_collaborateurs">
+    {{ form_widget(collaborateur_form) }}
+    </div>
+
+    <div id="rapport_activite">
+    <h4>Rapport d'activité de l'année précédente</h4>
+    {% if version.typeSession == 'B'  %}
+        <div class="message info">Vous n'avez pas besoin de téléverser de rapport d'activité lors d'une session B. <br />Nous vous le demanderons à la fin de l'année</div>
+    {% elseif version.anneeRapport == 0 %}
+        <div class="message info">Vous n'avez pas besoin de téléverser de rapport d'activité maintenant. Nous vous le demanderons à la fin de l'année</div>
+    {% else %}
+        <div id="uploadstatus"></div>
+        <div id="fileuploader"><a href="{{ path('televerser_rapport', { 'id' : version.idVersion } ) }}" target="_blank" >
+            <strong>Téléversez le rapport d'activité</strong></a></div>
+    {% endif %}
+    </div>
+
+    {% if version.versionPrecedente != null  %}
+    <h4 id="prj_justif_renou">Justification du renouvellement</h4>
+
+    <table class="projet"><tbody>
+    <tr>
+        <th>Justification de votre demande de renouvellement (environ 2000 caractères)<br>
+            <span id="form_prjJustifRenouv_cpt" class="petit"></span>
+        </th>
+    </tr>
+    <tr><td class="center">{{ form_widget(form.prjJustifRenouv,
+                { 'attr': { 'class': 'compteur', 'rows' : 6, 'cols' : 70 } }) }}
+        <div id="img_justif_renou_sts"></div>
+        <div class="wrap-drop-zone">
+            <div id="img_justif_renou_1" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if  imageJust1 == null %}
+                Figure 1
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageJust1 }}" alt="Figure 1" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+            <div id="img_justif_renou_2" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if  imageJust2 == null %}
+                Figure 2
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageJust2 }}" alt="Figure 2" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+            <div id="img_justif_renou_3" class="drop-zone" title="Faites glisser une image pour la téléverser">
+                {% if  imageJust3 == null %}
+                Figure 3
+                {% else %}
+                <img class="dropped" src="data:image/png;base64,{{ imageJust3 }}" alt="Figure 3" />
+                <img class="icone" src="{{ asset('icones/poubelle32.png') }}" alt="Supprimer cette figure" title="Supprimer cette figure">
+                {% endif %}
+            </div>
+         </div>
+        <hr class="retour">
+        {{ macrosmodifier.info_televersement(img_justif_renou_1,img_justif_renou_2,img_justif_renou_3) }}
+        </td>
+    </tr>
+    </tbody></table>
+    {% endif %}
+
+    <h4>Autres informations</h4>
+    <table class="projet"><tbody>
+        <tr>
+            <th>Financement<br><em> Si ce projet bénéficie d'un financement, précisez la source et le montant.</em></th>
+        </tr>
+        <tr>
+            <td>{{ form_widget(form.prjFinancement ,
+                { 'attr':
+                    {
+                    'size': '90',
+                    'style' : ''
+                     }
+                }) }}</td>
+        </tr>
+    </tbody></table>
+
+    <table class="projet"><tbody>
+        <tr><th colspan="2">Ressources offertes par GENCI<br>
+            <em>Si ce projet bénéficie ou a bénéficié dans les deux dernières années de temps de calcul sur un centre national, préciser quelle(s) machine(s), quel centre(s) et le nombre d'heures accordées.</em>
+            </th>
+        </tr>
+        <tr>
+            <th class="horiz">Centre(s)</th>
+            <td>{{ form_widget(form.prjGenciCentre, { 'attr': { 'size': '80' } }) }}</td>
+        </tr>
+        <tr>
+            <th class="horiz">Machine(s)</th>
+            <td>{{ form_widget(form.prjGenciMachines, { 'attr': { 'size': '80' } }) }}</td>
+        </tr>
+        <tr>
+            <th class="horiz"><label for="prj_genci_heures">Heures accordées</label></th>
+            <td>{{ form_widget(form.prjGenciHeures) }}</td>
+        </tr>
+        <tr>
+            <th class="horiz"><label for="prj_genci_dari">N° de projet Dari (le plus récent)</label></th>
+            <td>{{ form_widget(form.prjGenciDari) }}</td>
+        </tr>
+    </tbody></table>
+
+
+</div>

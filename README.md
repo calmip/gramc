@@ -3,7 +3,7 @@ INSTALLATION DE gramc sur une Debian ou dérivés
 ===============================================
 
 mysql
------ 
+-----
 
 **ATTENTION**
 - Ne fonctionne pas avec mysql 5.7 !
@@ -87,10 +87,44 @@ cp parameters.yml.dist parameters.yml
 Editer le fichier et paramétrer l'application:
 - Au moins les paramètres de connexion à la base de données
 - Aussi le nom du mésocentre, quelques url, etc.
+- Les types de projets supportés (1,2,3)
 - Et pour finir les idp "préférés" (dépend des établissements à proximité du mésocentre)
 
-**Bannière:**
-Déposer votre fichier de bannière dans `web/icones/banniere.png` (cf. `banniere.png.dist` pour un modèle)
+**Fichier adresses.txt:**
+Ce fichier est propre à gramc2, il est utilisé en mode "développement" (le point d'entrée est app_dev.php et pas app.php, cf. ci-dessus la
+configuration Apache). Il répertorie les adresses IP à partir desquelles il est possible d'utiliser gramc2.
+
+~~~~
+cd app/config
+cp adresses.txt.dist adresses.txt
+~~~~
+
+Editer le fichier et introduire les adresses IP de vos postes de développement
+
+**Hiérarchie de fichiers dépendant du mésocentre**
+
+Suivant votre mésocentre, vous pouvez recréer une hiérarchie de fichiers que vous pouvez personnaliser. Les fichiers pouvant être personnalisés
+se trouvent ici:
+
+~~~~
+mesocentres/calmip
+mesocentres/criann
+...
+~~~~
+
+Vous pouvez modifier ces fichiers (src/AppBundle/Entity/Version.php notamment, qui va permettre de modifier les champs de la table Version).
+
+***configuration pour l'un ou l'autre des mésocentres:***
+
+Configurer gramc pour un mésocentre revient à:
+- Créer le lien symbolique altermeso, à la racine de l'application ce lien pointera vers mesocentres/calmip ou vers mesocentres/criann:
+
+~~~~
+ln -s mesocentres/calmip altermeso
+~~~~
+
+- Editer le fichier parametres.yml et mettre les bons noms, urls, etc.
+- Déposer dans le répertoire mesocentres/xxx/web/icones les fichiers banniere.png et favicon.ico
 
 Base de données:
 ----
@@ -172,11 +206,11 @@ gramc2 est une application symfony, il repose donc sur le patron de conception M
 
         src/AppBundle                   Le code php de l'application
         src/AppBundle/Controller        Tous les contrôleurs (les points d'entrée de chaque requête)
-        src/AppBundle/Entity            Les objets permettant de communiquer avec la base de données en utilisant l'ORM Doctrine 
+        src/AppBundle/Entity            Les objets permettant de communiquer avec la base de données en utilisant l'ORM Doctrine
                                         (un objet par table, un membre par champ)
         src/AppBundle/Form              Les formulaires (correspondent aux entités)
         src/AppBundle/Repository        quelques fonctions non standards d'accès à la base de données
-        src/AppBundle/Workflow          Les workflows de l'application 
+        src/AppBundle/Workflow          Les workflows de l'application
                                         (changement d'états des objets Projet, Version, Rallonge)
         src/AppBundle/Utils             Des trucs bien utiles
         src/AppBundle/DataFixtures      Mise à jour de la base de données lors des changements de version
@@ -215,9 +249,9 @@ COMMENT MODIFIER LE CODE ?
 - OU
         Les logs apache2
 - OU
-        Les logs symfony: dans var/log 
+        Les logs symfony: dans var/log
 - Pour savoir quel contrôleur est appelé (et accéder au code), regarder le bandeau de Symfony en bas de page (mode Debug seulement)
-        
+
 COMMENT ACCEDER AUX PARAMETRES:
 ----
 - En php -> if ( AppBundle::hasParameter('un_parametre')) $un_parametre = AppBundle::getParameter('un_parametre');

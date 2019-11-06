@@ -29,7 +29,7 @@
                 <td>{{ rallonge.version.prjTitre }}</td>
                 <td>{{ rallonge.version.demHeures }}</td>
                 <td>{{ rallonge.version.attrHeures }}</td>
-                <td>{{ rallonge.version.conso }}</td>
+                <td>{{ rallonge.version.consocalcul }}</td>
                 <td>{{ rallonge.version.responsable }}</td>
             </tr>
             {% for item in rallonge.rallonges %}
@@ -45,7 +45,7 @@
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
             </tr>
-            {% endfor %}   
+            {% endfor %}
     {% endfor %}
         </tbody>
     </table>
@@ -74,7 +74,8 @@
                     <tr>
                         <td>{{ expertise.projetId }}</td>
                         <td>
-                            {% if( expertise.expert == true ) %}
+							{# Si la session est en etat demande l'expert n'est pas encore définitivement attribué #}
+                            {% if( expertise.expert == true and session.etatsession != 2) %}
                                 <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
                                 <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
                             {% else %}
@@ -114,9 +115,14 @@
           {% for expertise in expertises_hors_thematique %}
                     <tr>
                         <td>{{ expertise.projetId }}</td>
-                        <td>
-                            <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
-                            <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                        <td>{# Si la session est en etat demande l'expert n'est pas encore définitivement attribué #}
+							{% if( expertise.expert == true and session.etatsession != 2) %}
+                                <a href="{{ path('expertise_modifier', { 'id' : expertise.expertise.id } ) }}">
+                                <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
+                            {% else %}
+                                <a href="{{ path('consulter_projet', { 'id' : expertise.projetId } ) }}">
+                                <img src="{{ asset('icones/consulter.png') }}" alt="Expertiser" title="Lire le projet" class="bouton_poussoir"></a>
+                            {% endif %}
                         </td>
                         <td>{{ expertise.thematique }}</td>
                         <td>{{ expertise.titre }}</td>
@@ -130,9 +136,28 @@
 </section>
 {% endif %}
 
-{% if( not ( old_expertises == null ) ) %}
+{% if mes_commentaires_flag != null %}
+	<h2>Commentaires généraux</h2>
+	<section>
+	{% if mes_commentaires_maj != null %}
+		<p><strong><a href="{{ path('cree_ou_modif', { 'annee' : mes_commentaires_maj }) }}">Créer ou modifier</a></strong> le commentaire de l'année <strong>{{mes_commentaires_maj}}</strong></p>
+	{% endif %}
+
+	{% if mes_commentaires != null %}
+		{% for comm in mes_commentaires %}
+		<h3>{{comm.annee}}</h3>
+		<p><em>Dernière mise à jour le {{comm.majstamp|date('Y-m-d H:i:s')}}</em></p>
+		<p>{{comm.commentaire| e | nl2br}}</p>
+		{% endfor %}
+	{% else %}
+		<p><em>Vous n'avez entré aucun commentaire</em></p>
+	{% endif %}
+	</section>
+{% endif %}
+
+<h2>Anciennes expertises</h2>
 <section>
-    <h2>Anciennes expertises</h2>
+{% if( not ( old_expertises == null ) ) %}
     <table id="old_expertises">
     <thead>
         <tr>
@@ -166,6 +191,8 @@
     </tbody>
     </table>
     <hr>
+{% else %}
+<p><em>Vous n'avez pas d'anciennes expertises</em></p>
 </section>
 {% endif %}
 

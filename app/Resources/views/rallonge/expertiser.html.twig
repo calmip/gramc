@@ -1,6 +1,7 @@
 {% extends 'default/base.html.twig' %}
 
 {% block myjavascripts %}
+    <script type="text/javascript" src="{{asset('js/projet.js')}}" ></script>
     <script type="text/javascript" src="{{asset('js/expertiser.js')}}" ></script>
 {% endblock myjavascripts %}
 
@@ -18,6 +19,11 @@
 {% block body %}
 
 <section>
+	{% if noconso==false %}
+		<div id="dialog-compta"></div>
+	{% endif %}
+
+	<div id="dialog-compta"></div>
 
     <h1>Saisie de l'expertise de la demande de rallonge {{  rallonge }}</h1>
 
@@ -57,10 +63,10 @@
     </table>
 
     <div id="menu_expertiser" class="center">
-        <img id="bconso_1" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        <img id="bconso_1" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
         alt="Consommation {{anneePrec}}" title="Visualiser la consommation de {{anneePrec}}"
         data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneePrec })) }}"/>
-        <img id="bconso_2" class="bouton_poussoir bconso" src="{{ asset('icones/conso64.png') }}"
+        <img id="bconso_2" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
         alt="Consommation {{anneeCour}}" title="Visualiser la consommation {{anneeCour}}"
         data-href="{{ absolute_url(path('projet_conso', { 'id': rallonge.version.projet.idProjet, 'annee' : anneeCour })) }}" />
         <a href="{{ path('consulter_version', { 'id' : rallonge.version.projet.idProjet, 'version' : rallonge.version.idVersion } ) }}" target="_blank"><img class="bouton_poussoir" src="{{ asset('icones/consulter64.png') }}" title="Consulter le projet initial" alt="Consulter le projet initial" /></a>
@@ -119,9 +125,6 @@
             {{ form_widget(edit_form.envoyer) }}
     </fieldset>
     {{ form_end(edit_form) }}
-
-    <div id="graph_1" class="graphique"></div>
-    <div id="graph_2" class="graphique"></div>
 
 </section>
 

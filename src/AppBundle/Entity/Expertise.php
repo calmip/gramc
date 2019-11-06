@@ -34,14 +34,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpertiseRepository")
  * @Assert\Expression("this.getNbHeuresAttEte() <= this.getNbHeuresAtt()",
  *      message="Vous ne pouvez pas attribuer plus d'heures pour l'été que pour la session.")
- * 
+ *
  * @Assert\Expression("this.getNbHeuresAtt() == 0  or  this.getValidation() == 1",
  *      message="Vous ne pouvez pas attribuer des heures et les refuser à la fois")
  *
  * @Assert\Expression("this.getNbHeuresAtt() > 0  or  this.getValidation() != 1",
  *      message="Si vous ne voulez pas attribuer des heures pour cette session, choisissez ""Refuser pour cette session""")
- * 
- */ 
+ *
+ */
 class Expertise
 {
     /**
@@ -68,7 +68,7 @@ class Expertise
      * Expertise qui sera connue du comité d'attribution uniquement
      *
      * @ORM\Column(name="commentaire_interne", type="text", length=65535, nullable=false)
-     * @Assert\NotBlank(message="Vous n'avez pas rempli le champs de commentaire interne")
+     * @Assert\NotBlank(message="Vous n'avez pas rempli le champ de commentaire interne")
      */
     private $commentaireInterne = "";
 
@@ -78,7 +78,7 @@ class Expertise
      * Expertise qui sera connue du porteur de projet
      *
      * @ORM\Column(name="commentaire_externe", type="text", length=65535, nullable=false)
-     * @Assert\NotBlank(message="Vous n'avez pas rempli le champs de commentaire externe")
+     * @Assert\NotBlank(message="Vous n'avez pas rempli le champ de commentaire externe")
      */
     private $commentaireExterne = "";
 

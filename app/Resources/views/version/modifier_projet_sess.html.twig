@@ -1,0 +1,171 @@
+{% extends 'version/collaborateurs.html.twig' %}
+
+{% block myjavascripts %}
+
+{{ parent() }}
+
+<script   src="{{ asset('js/compteur_caracteres.js') }}" ></script>
+<script   src="{{ asset('js/figures.js') }}" ></script>
+<script   src="{{ asset('js/jquery-upload-file-master/js/jquery.uploadfile.min.js') }}" ></script>
+<script   src="{{ asset('js/upload.js') }}" ></script>
+<script   src="{{ asset('js/formulaire_onglet.js') }}" ></script>
+
+<script>
+  $( function()
+    {
+    $( "#onglets" ).tabs( { classes: { "ui-tabs": "highlight" } });
+    });
+</script>
+
+{% endblock myjavascripts %}
+
+{# ####################################################################################################### #}
+{% form_theme form _self %}
+{% form_theme collaborateur_form _self %}
+
+{% block form_start %} {# pour ajouter enctype="multipart/form-data" pour upload #}
+ {% set method = method|upper %}
+    {%- if method in ["GET", "POST"] -%}
+        {% set form_method = method %}
+    {%- else -%}
+        {% set form_method = "POST" %}
+    {%- endif -%}
+    <form name="{{ name }}" method="{{ form_method|lower }}"{% if action != '' %} action="{{ action }}"{% endif %}{% for attrname, attrvalue in attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}enctype="multipart/form-data">
+    {%- if form_method != method -%}
+        <input type="hidden" name="_method" value="{{ method }}" />
+    {%- endif -%}
+
+{% endblock form_start %}
+
+{# ####################################################################################################### #}
+
+{% import _self as macrosmodifier %}
+
+{% macro info_televersement(img_1,img_2,img_3) %}
+    <div class="message info" style="font-size:.8em"><h2>Téléversement par glisser-déposer</h2>
+        Vous pouvez téléverser des figures pour illustrer vos propos.
+        <ol style="text-align:left" >
+            <li><strong>Merci de redimensionner</strong> au préalable vos images à <strong>800x400 pixels max</strong></li>
+            <li>Vous pouvez glisser-déposer vos fichiers dans l'une des zônes ci-dessus</li>
+        </ol>
+    </div>
+    <div class="message info" style="font-size:.8em"><h2>... ou Téléversement classique</h2>
+        <ul style="text-align: left;">
+            <li>
+                <strong>Figure 1 {{ form_errors( img_1.filename ) }}</strong>
+                {{ form_widget( img_1.filename ) }}{{ form_widget( img_1.image ) }}
+            </li>
+            <li>
+                <strong>Figure 2 {{ form_errors( img_2.filename ) }}</strong>
+                {{ form_widget( img_2.filename ) }}{{ form_widget( img_2.image ) }}
+            </li>
+            <li>
+                <strong>Figure 3 {{ form_errors( img_3.filename ) }}</strong>
+                {{ form_widget( img_3.filename ) }}{{ form_widget( img_3.image ) }}
+            </li>
+        </ul>
+        <em>Cliquez sur <strong>FERMER</strong> pour téléverser définitivement vos figures</em>
+        <div class="quitter" >
+            <button type="submit" id="form_fermer" name="form[fermer]" title="Enregistrer et fermer le projet">Fermer</button>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% block body %}
+
+<h1>Demande de ressources - projet {{ version.projet }} (session {{ version.session }})</h1>
+
+{% if not todo is empty %}
+<div class="message warning">
+    <h2>Champs à compléter</h2>
+    Les champs ci-dessous <strong>doivent être complétés</strong> avant que vous puissiez envoyer votre projet en expertise.<br />
+
+    {% if 'prj_titre' in todo %}<a href="#form_prjTitre" class="gerer_onglets">titre du projet</a><br>{% endif %}
+    {% if 'dem_heures' in todo %}<a href="#form_demHeures" class="gerer_onglets">Nombre d'heures demandées</a><br>{% endif %}
+    {% if 'prj_id_thematique' in todo %}<a href="#form_prjThematique" class="gerer_onglets">Choix d'une thématique</a><br>{% endif %}
+    {% if 'prj_resume' in todo %}<a href="#form_prjResume" class="gerer_onglets">Résumé du projet</a><br>{% endif %}
+    {% if 'prj_expose' in todo %}<a href="#form_prjExpose" class="gerer_onglets">Exposé scientifique</a><br>{% endif %}
+    {% if 'code_nom' in todo %}<a href="#form_codeNom" class="gerer_onglets">Nom du logiciel</a><br>{% endif %}
+    {% if 'code_licence' in todo %}<a href="#form_codeLicence" class="gerer_onglets">Licence du logiciel</a><br>{% endif %}
+    {% if 'code_heures_p_job' in todo %}<a href="#form_codeHeuresPJob" class="gerer_onglets">Nombre d'heures par job</a><br>{% endif %}
+    {% if 'code_ram_p_coeur' in todo %}<a href="#form_codeRamPCoeur" class="gerer_onglets">Ram utilisée par coeur</a><br>{% endif %}
+    {% if 'code_ram_part' in todo %}<a href="#form_codeRamPart" class="gerer_onglets">Ram partagée utilisée</a><br>{% endif %}
+    {% if 'code_eff_paral' in todo %}<a href="#form_codeEffParal" class="gerer_onglets">Efficacité parallèle</a><br>{% endif %}
+    {% if 'code_vol_donn_tmp' in  todo %}<a href="#form_codeVolDonnTmp" class="gerer_onglets">Espace-disque nécessaire</a><br>{% endif %}
+    {% if 'dem_post_trait' in todo %}<a href="#form_demPostTrait" class="gerer_onglets">Visualisation à distance</a><br>{% endif %}
+    {% if 'gpu' in todo %}<a href="#form_gpu" class="gerer_onglets">Utilisation du GPU</a><br>{% endif %}
+    {% if 'sond_vol_donn_perm' in todo %}
+        <a href="#form_sondVolDonnPerm" class="gerer_onglets">Besoins en stockage permanent: Volume</a><br>{% endif %}
+    {% if 'prj_justif_renouv' in todo %}<a href="#form_prjJustifRenouv" class="gerer_onglets">Justification du renouvellement</a><br>{% endif %}
+    {% if 'sond_justif_donn_perm' in todo %}
+        <a href="#form_sondJustifDonnPerm" class="gerer_onglets">Justification du besoin en stockage permanent</a><br>{% endif %}
+    {% if 'collabs' in todo %}
+        <a href="#liste_des_collaborateurs" class="gerer_onglets">Liste des collaborateurs</a><br>{% endif %}
+    {% if 'rapport_activite' in todo %}<a href="#rapport_activite" class="gerer_onglets">Téléverser le rapport d'activité de l'année précédente</a><br>{% endif %}
+    {% if 'Format de métadonnées' in todo %}<a href="#form_dataMetadataFormat" class="gerer_onglets">Format de métadonnées</a><br>{% endif %}
+	{% if 'Nombre de jeux de données' in todo %}<a href="#form_dataNombreDatasets" class="gerer_onglets">Nombre de jeux de données</a><br>{% endif %}
+	{% if 'Taille de chaque jeu de données' in todo %}<a href="#form_dataTailleDatasets" class="gerer_onglets">Taille de chaque jeu de données</a><br>{% endif %}
+</div>
+{% endif %} {# {% if not todo is empty %}  #}
+
+<em>Dernière modification par {{ version.majInd }} le {{ version.majStamp | date('d.m.Y H:i:s') }}</em>
+
+
+
+{{ form_start( form , { 'attr': { 'id': 'form_projet' } } )  }}
+
+<div id="onglets" >
+
+<nav id="menu_formulaire">
+  <ul id="ul_formulaire" >
+    <li >
+        <a href="#tab1">I. Présentation</a>
+    </li>
+    <li >
+        <a href="#tab2">II. Description scientifique</a>
+    </li>
+    <li>
+        <a href="#tab3">III. Description technique</a>
+    </li>
+    <li >
+        <a href="#tab4">IV. Les données</a>
+    </li>
+    <li >
+        <a href="#tab5">V. Formation</a>
+    </li>
+  </ul>
+</nav>
+
+{% include('version/modifier_projet_sess_partie_I.html.twig') %}
+{% include('version/modifier_projet_sess_partie_II.html.twig') %}
+{% include('version/modifier_projet_sess_partie_III.html.twig') %}
+{% include('version/modifier_projet_sess_partie_IV.html.twig') %}
+{% include('version/modifier_projet_sess_partie_V.html.twig') %}
+
+{# ################################################################################## #}
+
+</div>
+
+<div id="quitter">
+
+{# <input id="id_version4" name="id_version" value="17BP17022" type="hidden"> #}
+    {% if renouvellement %}
+    <input class="invisible_if_no_js" name="RENOUVELER" id="Renouveler" value="Renouvellement" title="Renouveler le projet" type="submit"><br />
+    {% else %}
+    <input class="invisible_if_no_js"  type="submit" name="ENREGISTRER" id="Enregistrer" value="Enregistrer" title="Enregistrer le projet sans le fermer" />
+    {# {{ form_widget( form.enregistrer, { 'attr': { 'class' : 'invisible_if_no_js', 'title' : 'Enregistrer le projet sans le fermer' } }) }}  #}
+    {{ form_widget( form.annuler, { 'attr': { 'title' : 'Abandonner les modifications' } }) }}
+    {{ form_widget( form.fermer, { 'attr': { 'title' : 'Enregistrer et fermer le projet'  } }) }}
+    {# <input type="submit" name="QUITTER" value="FERMER" title="Enregistrer et fermer le projet"/> #}
+    {% endif %}
+    {# <input type="submit" name="ANNULER" value="Annuler" title="Abandonner les modifications"/> #}
+
+</div>
+
+{{ form_end(form) }}
+
+<div id="enregistrer_message" ></div>
+
+<p class="center"><small><strong>Protection de vos données personnelles: <a href="{{ path('mentions_legales') }}" title="Lire les mentions légales" target="_blank" >voir ici</a> notre charte de protection des données.</strong></small></p>
+{% endblock %}

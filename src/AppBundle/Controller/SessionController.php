@@ -58,6 +58,7 @@ class SessionController extends Controller
     /**
      * Lists all session entities.
      *
+     * @security("has_role('ROLE_ADMIN')")
      * @Route("/", name="session_index")
      * @Method("GET")
      */
@@ -250,11 +251,11 @@ class SessionController extends Controller
 
 
         return $this->render('session/gerer.html.twig',
-            [
+		[
             'menu'     => $menu,
             'sessions' => $sessions,
             //'sessions' => $new_sessions,
-            ]);
+		]);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -292,6 +293,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/modify", name="modifier_session")
      * @Method({"GET", "POST"})
      */
@@ -362,48 +364,53 @@ class SessionController extends Controller
 
         $sessions = AppBundle::getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
 
+		$ok = false;
         $mois = GramcDate::get()->format('m');
-
-
         if( $mois == 1 ||  $mois == 12 )
-            {
+		{
             if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session_courante) && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 foreach( $sessions as $session )
-                    {
+				{
                     if( $session->getIdSession() == $session_courante->getIdSession() )
                         continue;
 
                     $workflow   = new SessionWorkflow($session);
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
-                        $workflow->execute( Signal::CLK_SESS_FIN, $session);
-                    }
+                        $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
+				}
 
-                $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
+                $ok = $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
-            }
+			}
+		}
         elseif( $mois == 6 ||  $mois == 7 )
             if( $workflow->canExecute(Signal::CLK_SESS_DEB , $session_courante)  && $etat_session_courante == Etat::EN_ATTENTE )
-                {
+			{
                 //foreach( $sessions as $session )
                 //    {
                 //    $workflow   = new SessionWorkflow($session);
                 //    if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session) )
                 //        $workflow->execute( Signal::CLK_SESS_DEB, $session);
                 //    }
-                $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
+                $ok = $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
                 AppBundle::getManager()->flush();
-                return $this->redirectToRoute('gerer_sessions');
-                }
+			}
 
-        return $this->render('default/error.html.twig',
-                [
-                'message'   => "Impossible d'activer la session",
+		if ($ok==true)
+		{
+			return $this->redirectToRoute('gerer_sessions');
+		}
+		else
+		{
+	        return $this->render('default/error.html.twig',
+			[
+                'message'   => "Impossible d'activer la session, allez voir le journal !",
                 'titre'     =>  'Erreur',
-                ]);
+			]);
+		}
     }
+
     /**
      *
      * @Security("has_role('ROLE_ADMIN') or has_role('ROLE_PRESIDENT')")
@@ -659,7 +666,6 @@ class SessionController extends Controller
 
     /**
      *
-     *
      * @Route("/bilan", name="bilan_session")
      * @Method({"GET","POST"})
      */
@@ -677,18 +683,19 @@ class SessionController extends Controller
 
     /**
      *
-     *
      * @Route("/bilan_annuel", name="bilan_annuel")
+     * @Security("has_role('ROLE_OBS')")
      * @Method({"GET","POST"})
      */
     public function bilanAnnuelAction(Request $request)
     {
         $data   =   Functions::selectAnnee($request);
-
+		$avec_commentaires = AppBundle::hasParameter('commentaires_experts_d');
         return $this->render('session/bilanannuel.html.twig',
             [
             'form' => $data['form']->createView(),
             'annee'=> $data['annee'],
+            'avec_commentaires' => $avec_commentaires
             //'versions'  =>  AppBundle::getRepository(Version::class)->findBy( ['session' => $data['session'] ] )
             ]);
     }
@@ -767,6 +774,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @Security("has_role('ROLE_OBS')")
      * @Route("/{annee}/bilan_annuel_csv", name="bilan_annuel_csv")
      * @Method("GET")
      *
@@ -776,19 +784,21 @@ class SessionController extends Controller
         $entetes = ['Projet','Thématique','Titre','Responsable','Quota'];
 
         // Les mois pour les consos
-        array_push($entetes,'Janvier','Février','Mars','Avril',
-            'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
+        array_push($entetes,'Janvier','Février','Mars','Avril', 'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
 
         $entetes[] = "total";
         $entetes[] = "Total(%/quota)";
 
         $sortie     =   join("\t",$entetes) . "\n";
 
+		// Sommes-nous dans l'année courante ?
+		$annee_courante_flg = (GramcDate::get()->showYear()==$annee);
+
         //////////////////////////////
 
         $conso_flds = ['m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11','m12'];
 
-        // $annee = 2017, 2018, etc. (4 caractères)
+        // 2019 -> 19A et 19B
         $session_id_A = substr($annee, 2, 2) . 'A';
         $session_id_B = substr($annee, 2, 2) . 'B';
         $session_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_A ]);
@@ -807,20 +817,9 @@ class SessionController extends Controller
         }
 
         // Les totaux
-        $tq  = 0;
-        $t01 = 0;
-        $t02 = 0;
-        $t03 = 0;
-        $t04 = 0;
-        $t05 = 0;
-        $t06 = 0;
-        $t07 = 0;
-        $t08 = 0;
-        $t09 = 0;
-        $t10 = 0;
-        $t11 = 0;
-        $t12 = 0;
-        $tttl= 0;
+        $tq  = 0;		// Le total des quotas
+        $tm  = [0,0,0,0,0,0,0,0,0,0,0,0];		// La conso totale par mois
+        $tttl= 0;		// Le total de la conso
 
         // Calcul du csv, ligne par ligne
         foreach ( $id_projets as $id_projet => $paire )
@@ -833,75 +832,33 @@ class SessionController extends Controller
             $line[] = $p->getTitre();
             $r      = $v->getResponsable();
             $line[] = $r->getPrenom() . ' ' . $r->getNom();
-            $conso  = $v->getConsommation();
-            if( $conso != null )
-            {
-                $quota  =   $conso->getLimite();
-                $m01    =   $conso->getM01();
-                $m02    =   $conso->getM02();
-                $m03    =   $conso->getM03();
-                $m04    =   $conso->getM04();
-                $m05    =   $conso->getM05();
-                $m06    =   $conso->getM06();
-                $m07    =   $conso->getM07();
-                $m08    =   $conso->getM08();
-                $m09    =   $conso->getM09();
-                $m10    =   $conso->getM10();
-                $m11    =   $conso->getM11();
-                $m12    =   $conso->getM12();
-            }
-            else
-            {
-                $quota  =   0;
-                $m01    =   0;
-                $m02    =   0;
-                $m03    =   0;
-                $m04    =   0;
-                $m05    =   0;
-                $m06    =   0;
-                $m07    =   0;
-                $m08    =   0;
-                $m09    =   0;
-                $m10    =   0;
-                $m11    =   0;
-                $m12    =   0;
-            }
+            $quota  = $v->getQuota();
             $line[] = $quota;
-            $line[] = $m01;
-            $line[] = ($m02>0) ? $m02-$m01: 0;
-            $line[] = ($m03>0) ? $m03-$m02: 0;
-            $line[] = ($m04>0) ? $m04-$m03: 0;
-            $line[] = ($m05>0) ? $m05-$m04: 0;
-            $line[] = ($m06>0) ? $m06-$m05: 0;
-            $line[] = ($m07>0) ? $m07-$m06: 0;
-            $line[] = ($m08>0) ? $m08-$m07: 0;
-            $line[] = ($m09>0) ? $m09-$m08: 0;
-            $line[] = ($m10>0) ? $m10-$m09: 0;
-            $line[] = ($m11>0) ? $m11-$m10: 0;
-            $line[] = ($m12>0) ? $m12-$m11: 0;
+            for ($m=0;$m<12;$m++)
+            {
+				$c = $p->getConsoMois($annee,$m);
+				$line[] = $c;
+				$tm[$m] += $c;
+			}
 
-            $ttl    = ($m12>0) ? $m12 : 'N/A';
-            $ttlp   = ($m12>0) ? 100.0 * $m12 / $quota : 'N/A';
+			// Si on est dans l'année courante on ne fait pas le total
+            $ttl    = ($annee_courante_flg) ? 'N/A' : $p->getConsoCalcul($annee);
+            if ($quota>0)
+            {
+	            $ttlp   = ($annee_courante_flg) ? 'N/A' : 100.0 * $ttl / $quota;
+			}
+			else
+			{
+				$ttlp = 0;
+			}
             $line[] = $ttl;
-            $line[] = intval($ttlp);
+            $line[] = ($ttlp=='N/A') ? $ttlp : intval($ttlp);
 
             $sortie .= join("\t",$line) . "\n";
 
             // Mise à jour des totaux
-            $tq  += $quota;
-            $t01 += $m01;
-            if ($m02>0) $t02 += $m02-$m01;
-            if ($m03>0) $t03 += $m03-$m02;
-            if ($m04>0) $t04 += $m04-$m03;
-            if ($m05>0) $t05 += $m05-$m04;
-            if ($m06>0) $t06 += $m06-$m05;
-            if ($m07>0) $t07 += $m07-$m06;
-            if ($m08>0) $t08 += $m08-$m07;
-            if ($m09>0) $t09 += $m09-$m08;
-            if ($m10>0) $t10 += $m10-$m09;
-            if ($m11>0) $t11 += $m11-$m10;
-            if ($m12>0) $t12 += $m12-$m11;
-            $tttl            += $ttl;
+            $tq   += $quota;
+            $tttl += $ttl;
         }
 
         // Dernière ligne
@@ -911,19 +868,12 @@ class SessionController extends Controller
         $line[] = '';
         $line[] = '';
         $line[] = $tq;
-        $line[] = $t01;
-        $line[] = $t02;
-        $line[] = $t03;
-        $line[] = $t04;
-        $line[] = $t05;
-        $line[] = $t06;
-        $line[] = $t07;
-        $line[] = $t08;
-        $line[] = $t09;
-        $line[] = $t10;
-        $line[] = $t11;
-        $line[] = $t12;
+        for ($m=0; $m<12; $m++)
+        {
+			$line[] = $tm[$m];
+		}
         $line[] = $tttl;
+
         if ($tq > 0) {
             $line[] = intval(100.0 * $tttl / $tq);
         } else {
@@ -936,6 +886,7 @@ class SessionController extends Controller
 
     /**
      *
+     * @Security("has_role('ROLE_OBS')")
      * @Route("/{annee}/bilan_annuel_labo_csv", name="bilan_annuel_labo_csv")
      * @Method("GET")
      *
@@ -1006,7 +957,7 @@ class SessionController extends Controller
             $id_projets = [];
             foreach ($projets as $p)
             {
-                $c += $p -> getConso($annee);
+                $c += $p -> getConsoCalcul($annee);
                 $id_projets[] = $p -> getIdProjet();
             }
 
@@ -1075,8 +1026,6 @@ class SessionController extends Controller
 
         //////////////////////////////
 
-        $conso_flds = ['m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11','m12'];
-
         $totaux=
             [
             "dem_heures_prec"       =>  0,
@@ -1093,6 +1042,7 @@ class SessionController extends Controller
             "conso_gpu"             =>  0,
             "recuperable"           =>  0,
             ];
+        $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
         foreach  ($conso_flds as $m)    $totaux[$m] =   0;
 
         //////////////////////////////
@@ -1103,8 +1053,22 @@ class SessionController extends Controller
 
         $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
 
+        /*
+         * Calcul de la date pour savoir s'il y a des heures à récupérer
+         * Seulement utile pour la session B s'il y a une version du projet en session A
+         */
+        $date_recup = GramcDate::Get();
+        $d30j       = new \DateTime($annee_cour.'-06-30'); // Le 30 Juin
+      	// Si on est après le 30 juin on considère le 30 juin comme date de conso de référence
+      	// Si on est avant, on considère la date du jour
+      	// Evidemment elle ne devrait pas être trop éloignée du 30 juin sinon cela n'a pas trop de sens !
+        if ($date_recup > $d30j)
+        {
+			$date_recup = $d30j;
+		}
+
         foreach( $versions as $version )
-            {
+		{
             if( $session_precedente_A != null )
                 $version_precedente_A = AppBundle::getRepository(Version::class)
                             ->findOneVersion($session_precedente_A, $version->getProjet() );
@@ -1151,66 +1115,44 @@ class SessionController extends Controller
             if( $version_courante_A != null ) $attr_heures_A +=
                 $version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
 
-            if ($type_session=='A')
-            {
-                if      ( $version_precedente_A != null ) $consommation = $version_precedente_A->getConsommation();
-                elseif  ( $version_precedente_B != null ) $consommation = $version_precedente_B->getConsommation();
-                else    $consommation = null;
-                //return new Response( $consommation );
-            }
-            else // ($type_session=='B')
-            {
-                if      ( $version != null ) {
-                    $consommation = $version->getConsommation();
-                    $conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
-                }
-                else
-                {
-                    $consommation = null;
-                    $conso_gpu    = 0;
-                }
-            }
+			$conso     = 0;
+			$conso_gpu = 0;
+			$quota     = 0;
+			if ($type_session=='A')
+			{
+				if ($version_precedente_A != null) {
+					$conso = $version_precedente_A->getConsoCalcul();
+					$quota = $version_precedente_A->getQuota();
+					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
+				}
+				elseif ( $version_precedente_B != null ) {
+					$conso = $version_precedente_B->getConsoCalcul();
+					$quota = $version_precedente_A->getQuota();
+					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
+				}
+			}
+			// type B
+			else
+			{
+				$conso = $version->getConsoCalcul();
+				$quota = $version->getQuota();
+				$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
+			}
 
             $dem_heure_cour     =   $version->getDemHeures();
             $attr_heure_cour    =   $version->getAttrHeures();
 
-            if( $consommation != null )
-            {
-                $quota  =   $consommation->getLimite();
-                $m01    =   $consommation->getM01();
-                $m02    =   $consommation->getM02();
-                $m03    =   $consommation->getM03();
-                $m04    =   $consommation->getM04();
-                $m05    =   $consommation->getM05();
-                $m06    =   $consommation->getM06();
-                $m07    =   $consommation->getM07();
-                $m08    =   $consommation->getM08();
-                $m09    =   $consommation->getM09();
-                $m10    =   $consommation->getM10();
-                $m11    =   $consommation->getM11();
-                $m12    =   $consommation->getM12();
-            }
-            else
-                {
-                $quota  =   null;
-                $m01    =   null;
-                $m02    =   null;
-                $m03    =   null;
-                $m04    =   null;
-                $m05    =   null;
-                $m06    =   null;
-                $m07    =   null;
-                $m08    =   null;
-                $m09    =   null;
-                $m10    =   null;
-                $m11    =   null;
-                $m12    =   null;
-                }
-
+			// Calcul des heures récupérables au printemps
             if( $version_courante_A != null )
-                $recuperable        =   static::calc_recup_heures_printemps( $m06, $attr_heures_A);
+            {
+				// TODO - VERIFIER EN 2020 QUE CA MARCHE !
+				$conso_juin = $version->getConsoCalcul($date_recup->format('Y-m-d'));
+                $recuperable        =   static::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
+			}
             else
+            {
                 $recuperable        =   0;
+			}
 
             $ligne =
                     [
@@ -1235,21 +1177,23 @@ class SessionController extends Controller
                     $dem_heure_cour,
                     $attr_heure_cour,
                     $quota,
-                    ( $consommation != null ) ? $consommation->conso(): 0,
+                    //( $consommation != null ) ? $consommation->conso(): 0,
+                    $conso,
                     $conso_gpu,
-                    ( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
+                    //( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
+                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
                     ]);
 
-            if ($type_session=='B') $ligne[] =  $recuperable;
+	        if ($type_session=='B') $ligne[] =  $recuperable;
 
-             $ligne = array_merge( $ligne,
-                    [
-                    $m01,($m02-$m01 > 0) ? $m02-$m01: 0,( $m03-$m02 > 0 ) ? $m03-$m02 : 0,
-                    ($m04-$m03 > 0 ) ? $m04-$m03 : 0 ,( $m05-$m04 > 0 ) ? $m05-$m04 : 0,
-                    ($m06-$m05 > 0 ) ? $m06-$m05 : 0 , ( $m07-$m06 > 0 ) ? $m07-$m06 : 0,
-                    ( $m08 > $m07 ) ? $m08-$m07 : 0 ,( $m09 > $m08 ) ? $m09-$m08 : 0 ,
-                    ( $m10 > $m09 ) ? $m10-$m09 : 0,( $m11 > $m10 ) ? $m11-$m10 : 0 ,( $m12 > $m11 ) ? $m12-$m11 : 0,
-                    ]);
+			for ($m=0;$m<12;$m++)
+			{
+				$consmois= $version->getProjet()->getConsoMois($annee_cour,$m);
+				$index   = 'm' . ($m<10?'0':'') . $m;
+
+				$ligne[] = $consmois;
+				$totaux[$index] += $consmois;
+			};
 
             $sortie     .=   join("\t",$ligne) . "\n";
 
@@ -1263,22 +1207,9 @@ class SessionController extends Controller
             $totaux["dem_heures_A"]             +=  $dem_heures_A;
             $totaux["attr_heures_A"]            +=  $attr_heures_A;
             $totaux["quota"]                    +=  $quota;
-            $totaux["conso_an"]                 += ( $consommation != null ) ? $consommation->conso(): 0;
+            $totaux["conso_an"]                 +=  $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
             $totaux["conso_gpu"]                +=  $conso_gpu;
             $totaux["recuperable"]              +=  $recuperable;
-
-            $totaux["m01"]  +=  $m01;
-            $totaux["m02"]  +=  ($m02-$m01 > 0) ? $m02-$m01: 0;
-            $totaux["m03"]  +=  ( $m03-$m02 > 0 ) ? $m03-$m02 : 0;
-            $totaux["m04"]  +=  ($m04-$m03 > 0 ) ? $m04-$m03 : 0;
-            $totaux["m05"]  +=  ( $m05-$m04 > 0 ) ? $m05-$m04 : 0;
-            $totaux["m06"]  +=  ($m06-$m05 > 0 ) ? $m06-$m05 : 0;
-            $totaux["m07"]  +=  ( $m07-$m06 > 0 ) ? $m07-$m06 : 0;
-            $totaux["m08"]  +=  ( $m08 > $m07 ) ? $m08-$m07 : 0;
-            $totaux["m09"]  +=  ( $m09 > $m08 ) ? $m09-$m08 : 0;
-            $totaux["m10"]  +=  ( $m10 > $m09 ) ? $m10-$m09 : 0;
-            $totaux["m11"]  +=  ( $m11 > $m10 ) ? $m11-$m10 : 0;
-            $totaux["m12"]  +=  ( $m12 > $m11 ) ? $m12-$m11 : 0;
 
             } // fin de la boucle principale
 
@@ -1310,8 +1241,8 @@ class SessionController extends Controller
 
           $ligne  = array_merge( $ligne,
                 [
-                $totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],$totaux["m06"],
-                $totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],$totaux["m12"],
+                $totaux["m00"],$totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],
+                $totaux["m06"],$totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],
                 ]);
 
         $sortie     .=   join("\t",$ligne) . "\n";

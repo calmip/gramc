@@ -33,6 +33,7 @@ use AppBundle\Entity\Version;
 use AppBundle\Entity\Expertise;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Utils\GramcDate;
+use AppBundle\Utils\NextProjetId;
 
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -46,6 +47,10 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
  */
 class Projet
 {
+	const PROJET_SESS = 1;		// Projet créé lors d'une session d'attribution
+	const PROJET_TEST = 2;		// Projet test, créé au fil de l'eau, non renouvelable
+	const PROJET_FIL  = 3;		// Projet créé au fil de l'eau, renouvelable lors des sessions
+
     /**
      * @var integer
      *
@@ -53,10 +58,18 @@ class Projet
      */
     private $etatProjet;
 
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="type_projet", type="integer", nullable=false)
+     */
+    private $typeProjet;
+
     /**
      * @var string
      *
-     * @ORM\Column(name="id_projet", type="string", length=6)
+     * @ORM\Column(name="id_projet", type="string", length=10)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -123,17 +136,19 @@ class Projet
     public function getId(){ return $this->getIdProjet(); }
     public function __toString(){ return $this->getIdProjet(); }
 
-
     /**
      * Constructor
      */
-    public function __construct( $type = 'P' )
+    public function __construct($type)
     {
         $this->publi        = new \Doctrine\Common\Collections\ArrayCollection();
         $this->version      = new \Doctrine\Common\Collections\ArrayCollection();
         $this->rapportActivite = new \Doctrine\Common\Collections\ArrayCollection();
         $this->etatProjet   = Etat::EDITION_DEMANDE;
-        $this->idProjet     = AppBundle::getRepository(Projet::class)->nextId( Functions::getSessionCourante(), $type );
+        $this->typeProjet   = $type;
+        $annee              = Functions::getSessionCourante()->getAnneeSession();
+        $this->idProjet     = NextProjetId::NextProjetId($annee, $type);
+        //$this->idProjet     = AppBundle::getRepository(Projet::class)->nextId( Functions::getSessionCourante(), $type );
     }
 
     /**
@@ -151,6 +166,20 @@ class Projet
     }
 
     /**
+     * Set typeProjet
+     *
+     * @param integer $typeProjet
+     *
+     * @return Projet
+     */
+    public function setTypeProjet($typeProjet)
+    {
+        $this->typeProjet = $typeProjet;
+
+        return $this;
+    }
+
+    /**
      * Get etatProjet
      *
      * @return integer
@@ -158,6 +187,16 @@ class Projet
     public function getEtatProjet()
     {
         return $this->etatProjet;
+    }
+
+    /**
+     * Get typeProjet
+     *
+     * @return integer
+     */
+    public function getTypeProjet()
+    {
+        return $this->typeProjet;
     }
 
     /**
@@ -421,19 +460,21 @@ class Projet
             return null;
     }
 
+	/*
+	 * Renvoie true si le projet est un projet test, false sinon
+	 *
+	 */
     public function isProjetTest()
     {
-    $idProjet   =  $this->getIdProjet();
-    if( is_string($idProjet ) )
-        {
-        $type = substr( $idProjet , 0, 1 );
-        if( $type == 'T' )
-            return true;
-        elseif( $type == 'P' )
-            return false;
-        }
-
-    Functions::createException(__METHOD__ . ":" . __LINE__ . " mauvais type de projet " . Functions::show( $type) );
+		$type = $this->getTypeProjet();
+		if ($this->getTypeProjet() === Projet::PROJET_TEST)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
     }
 
     // Le Meta-état des projets, pour affichage
@@ -571,160 +612,194 @@ class Projet
 
     /////////////////////////////////////////////////////
 
-    public function proposeExpert( $collaborateurs = [] )
+	/**
+    * Propose un expert pour l'expertise [0] de la dernière version du projet
+    *         Si l'expert est déjà renseigné dans cette expertise, renvoie null
+    *         TODO - Pour les projets à plusieurs expertises on pourrait faire mieux
+    *
+	* params = $exclus Un liste d'individus exclus du choix (par exemple les collaborateurs)
+	*
+	* return = je ne sais pas quoi
+	*
+	******/
+    public function proposeExpert( $exclus = [] )
     {
-    if( $this->isProjetTest() )
+	    $version = $this->derniereVersion();
+	    if( $version == null )
         {
-        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
-        if( $presidents != null ) return $presidents[0];
+	        Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " projet " . $this->getIdProjet() . " n'a pas de dernière version !");
+	        return null;
         }
 
-    if( $collaborateurs == [] )
-        $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
+		// Pas d'expertise associée à cette version, ou expert déjà attribué: return null
+		//$expertise = $version->getOneExpertise();
+		//if ($expertise == null || $expertise->getExpert() != null)
+		//{
+		//	return null;
+		//}
 
-    $derniereVersion = $this->derniereVersion();
-    if( $derniereVersion == null )
-        {
-        Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " projet " . $this->getIdProjet() . " n'a pas de dernière version !");
-        return null;
+		// Pour les projets de type PROJET_TEST et PROJET_FIL on propose le président[0]
+		if ($this->getTypeProjet() == Projet::PROJET_TEST || $this->getTypeProjet() == Projet::PROJET_FIL)
+		{
+	        $presidents = AppBundle::getRepository(Individu::class)->findBy(['president'=>true]);
+	        if( $presidents != null ) return $presidents[0];
+	        return null;
         }
 
-    // on veut garder l'expert de la version précédente
+		// Par défaut les exclus sont les collaborateurs
+	    if( $exclus == [] )
+	    {
+	        $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs( $this );
+		}
 
-    $versionPrecedente  =  $derniereVersion->versionPrecedente ();
-    if( $versionPrecedente == null )
-        $derniereExpertise = null;
-    else
-        $derniereExpertise  =   $versionPrecedente->getOneExpertise();
+	    // on veut garder l'expert de la version précédente
 
-    if( $derniereExpertise != null  )
+	    $versionPrecedente  =  $version->versionPrecedente ();
+	    if( $versionPrecedente == null )
+	        $derniereExpertise = null;
+	    else
+	        $derniereExpertise  =   $versionPrecedente->getOneExpertise();
+
+	    if( $derniereExpertise != null  )
         {
-        $expert = $derniereExpertise->getExpert();
-        if( $expert == null )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expertise de la version précédente " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
-        elseif( $expert->isExpert() == false )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
-        elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente  " .
-                    $derniereVersion->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
-        else
-            return $expert;
+	        $expert = $derniereExpertise->getExpert();
+	        if( $expert == null )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expertise de la version précédente " .
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") n'a pas d'expert !");
+	        elseif( $expert->isExpert() == false )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente " .
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " n'est plus un expert");
+	        elseif( array_key_exists( $expert->getIdIndividu(), $exclus ) )
+	            Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version précédente  " .
+	                    $version->getIdVersion(). "(" .$derniereExpertise->getId() . ") " . $expert . " est un collaborateur");
+	        else
+	            return $expert;
         }
-    elseif( $versionPrecedente != null )
-        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " La version précédente " . $versionPrecedente . " n'a pas d'expertise !");
 
-    $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
+	    elseif( $versionPrecedente != null )
+	        Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " La version précédente " . $versionPrecedente . " n'a pas d'expertise !");
 
-    // sinon on cherche des experts des expertises précédentes
-    $dernierIdVersion = $derniereVersion->getIdVersion();
-    foreach( $versions as $version )
+	    $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
+
+	    // sinon on cherche des experts des expertises précédentes
+	    $dernierIdVersion = $version->getIdVersion();
+	    foreach( $versions as $version )
         {
-        $expertises = $version->getExpertise();
-        if( $expertises != null && isset($expertises[0]) && $version->getIdVersion() != $dernierIdVersion )
+	        $expertises = $version->getExpertise();
+	        if( $expertises != null && isset($expertises[0]) && $version->getIdVersion() != $dernierIdVersion )
             {
-            $expertise = $expertises[0];
-            $expert = $expertise->getExpert();
-            if ( $expert == null )
-                Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " L'expertise de la version " .  $version->getIdVersion(). "(" .$expertise->getId() . ") n'a pas d'expert !");
-            elseif(  $expert->isExpert() == false  )
-                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
-                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " n'est plus un expert");
-            elseif( array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
-                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " est un collaborateur");
-            else
-                return $expert;
+	            $expertise = $expertises[0];
+	            $expert = $expertise->getExpert();
+	            if ( $expert == null )
+	                Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " L'expertise de la version " .  $version->getIdVersion(). "(" .$expertise->getId() . ") n'a pas d'expert !");
+	            elseif(  $expert->isExpert() == false  )
+	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
+	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " n'est plus un expert");
+	            elseif( array_key_exists( $expert->getIdIndividu(), $exclus ) )
+	                Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " L'expert de la version " .
+	                    $version->getIdVersion(). "(" .$expertise->getId() . ") " . $expert . " est un collaborateur");
+	            else
+	                return $expert;
             }
-        else
-            Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " II version " . $version->getIdVersion() . " n'a pas d'expertise !");
+	        //else
+	        //    Functions::noticeMessage(__METHOD__ .  ":" . __LINE__ . " II version " . $version->getIdVersion() . " n'a pas d'expertise !");
         }
-    //Functions::debugMessage(__METHOD__ ." après II " );
-    $thematique = $derniereVersion->getPrjThematique();
-    if( $thematique == null )
+
+	    //Functions::debugMessage(__METHOD__ ." après II " );
+	    $thematique = $version->getPrjThematique();
+	    if( $thematique == null )
         {
-        Functions::errorMessage(__METHOD__ ." version " . $derniereVersion->getIdVersion() . " n'a pas de thématique !" );
-        return null;
+	        Functions::errorMessage(__METHOD__ ." version " . $version->getIdVersion() . " n'a pas de thématique !" );
+	        return null;
         }
 
-    $experts = $thematique->getExpert();
-    if( $experts == null  )
+	    $experts = $thematique->getExpert();
+	    if( $experts == null  )
         {
-        Functions::warningMessage(__METHOD__  .  ":" . __LINE__ ." thematique " . $thematique . " n'a pas d'expert !" );
-        return null;
+	        Functions::warningMessage(__METHOD__  .  ":" . __LINE__ ." thematique " . $thematique . " n'a pas d'expert !" );
+	        return null;
         }
 
-    // on cherche un expert de la thématique le moins sollicité
+	   // on cherche un expert de la thématique le moins sollicité
 
-   // Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
-    $expertises = [];
-    foreach( $experts as $expert )
-        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $collaborateurs ) )
-            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
-        elseif( ! $expert->isExpert() )
+	   // Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
+	    $expertises = [];
+	    foreach( $experts as $expert )
+	    {
+	        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $exclus ) )
+	            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
+	        elseif( ! $expert->isExpert() )
             {
-            Functions::errorMessage(__METHOD__  .  ":" . __LINE__ . " " .  $expert . " est un expert de la thématique " . $thematique . " sans être un expert !");
-            Functions::noThematique( $expert );
+	            Functions::errorMessage(__METHOD__  .  ":" . __LINE__ . " " .  $expert . " est un expert de la thématique " . $thematique . " sans être un expert !");
+	            Functions::noThematique( $expert );
             }
+		}
 
-    if( $expertises != null )
+	    if( $expertises != null )
         {
-        ksort( $expertises );
-        return  reset($expertises);
+	        ksort( $expertises );
+	        return  reset($expertises);
         }
-    else
-        return null;
+	    else
+	        return null;
     }
 
     ////////////////////////////////////////////
 
+    // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS experts
+    //        Remplacée par Version::getExperts()
+
     public function getExpert(Session $session = null)
     {
-    if( $session == null ) $session = Functions::getSessionCourante();
+	    if( $session == null ) $session = Functions::getSessionCourante();
 
-    $expertise  = $this->getOneExpertise($session);
-    if( $expertise  == null )
-        return null;
-    else
-        return $expertise->getExpert();
+	    $expertise  = $this->getOneExpertise($session);
+	    if( $expertise  == null )
+	        return null;
+	    else
+	        return $expertise->getExpert();
     }
 
     ///////////////////////////////////////////////
+    // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS exprites
+    //        Remplacée par Version::getExpertise()
+    //
 
     public function getOneExpertise(Session $session)
     {
-    if( $this->isProjetTest() )
-        $version    =   $this->derniereVersion();
-    else
-        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
+	    if( $this->isProjetTest() )
+	        $version    =   $this->derniereVersion();
+	    else
+	        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
 
-    if( $version != null )
+	    if( $version != null )
         {
-        $expertises =   $version->getExpertise()->toArray();
-        if( $expertises !=  null )
+	        $expertises =   $version->getExpertise()->toArray();
+	        if( $expertises !=  null )
             {
-            $expertise  =   current( $expertises );
-            //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
-            //    . " expertises = " . Functions::show( $expertises ));
-            return $expertise;
+	            $expertise  =   current( $expertises );
+	            //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
+	            //    . " expertises = " . Functions::show( $expertises ));
+	            return $expertise;
             }
-        else
-            Functions::noticeMessage(__METHOD__ . " version " . $version . " n'a pas d'expertise !");
+	        //else
+	        //    Functions::noticeMessage(__METHOD__ . " version " . $version . " n'a pas d'expertise !");
         }
-    else
-        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
+	    else
+	        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
 
-    return null;
+	    return null;
     }
 
 	/************************************
 	* calcul de la consommation et du quota d'une ressource à une date donnée
+	* N'est utilisée que par les méthodes de cette classe
+	*
     * Renvoie [ $conso, $quota ]
     * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
     *
     ************/
-	public function getConsoDate($ressource, \DateTime $date)
+	private function getConsoDate($ressource, \DateTime $date)
 	{
         $loginName = strtolower($this->getIdProjet());
         $conso     = 0;
@@ -745,26 +820,40 @@ class Projet
         return [$conso, $quota];
 	}
 
-	/************************************
-	* calcul de la consommation et du quota d'une ressource pour une année donnée
-    * Si $annee==null -> On prend l'annee courante
-    * Si $annee==annee courante -> On prend l'info à la DATE DU JOUR
-    * Si $annee==autre année    -> On prend l'info au 31 Décembre
-    * Renvoie [ $conso, $quota ]
-    * NOTE - Si la table est chargée à 8h00 du matin, toutes les consos de l'année courante seront = 0 avant 8h00
-    *
-    ************/
-    public function getConsoRessource($ressource, $annee=null)
+	/***********************
+	* calcul de la consommation et du quota d'une ressource (cpu, gpu, work_space, etc.)
+	*
+	* param $ressource: La ressource
+	* param $annee_ou_date    : L'année ou la date
+	*       Si $annee_ou_date==null                -> On considère la date du jour
+	*       Si $annee_ou_date est annee courante   -> On considère la date du jour
+	*       Si $annee_ou_date est une autre année  -> On considère le 31 décembre de $annee_ou_date
+	*       Si $annee_ou_date est une DateTime     -> On considère la date
+	*       ATTENTION Si $annee_ou_date est un string qui représente une date... ça va merder !
+	*
+	* S'il n'y a pas de données à la date considérée (par exemple si c'est dans le futur), on renvoie [0,0]
+	*
+	* Renvoie [ $conso, $quota ]
+	*
+	* NOTE - Si la table est chargée à 8h00 du matin, toutes les consos seront mesurées à hier
+	*        Si on utilise avant 8h00 du matin toutes les consos sont à 0 !
+	*
+	*******************/
+    public function getConsoRessource($ressource, $annee_ou_date=null)
     {
-        $annee_courante = GramcDate::get()->showYear();
-        if ($annee==null) $annee = $annee_courante;
-        if ($annee==$annee_courante)
+		//return [0,0];
+        $annee_ou_date_courante = GramcDate::get()->showYear();
+        if ($annee_ou_date==$annee_ou_date_courante || $annee_ou_date===null)
         {
-            $date = new \DateTime();
-        }
-        else
-        {
-            $date = new \DateTime( $annee . '-12-31');
+            $date  = GramcDate::get();
+		}
+		elseif (is_object($annee_ou_date))
+		{
+			$date = $annee_ou_date;
+		}
+		else
+		{
+            $date = new \DateTime( $annee_ou_date . '-12-31');
         }
         return $this->getConsoDate($ressource, $date);
     }
@@ -809,73 +898,114 @@ class Projet
 		return ($conso_fin)?$conso_fin-$conso_debut:0;
 	}
 
-    // TODOCONSOMMATION - calcul de la consommation à partir de la table Consommation
-    public function getConso($annee)
+	/*******************
+	* calcul de la consommation "calcul" à une date donnée ou pour une année donnée
+	* REMPLACE L'ANCIENNE FONCTION getConso()
+	*
+	* Retourne: la consommation cpu + gpu à la date ou pour l'année donnée
+	*           Ne retourne pas le quota
+	*
+	*************************/
+    public function getConsoCalcul($annee_ou_date)
     {
-        $consommation   =   $this->getConsommation($annee);
-        $conso          =   0;
-
-        if( $consommation != null )
-        {
-            for ($i = 1; $i <= 12; $i++)
-            {
-                if( $i < 10 )
-                    $methodName = 'getM0'.$i;
-                else
-                    $methodName ='getM'.$i;
-                $c = $consommation->$methodName();
-                if( $c != null && $c > $conso ) $conso  =   $c;
-            }
-        }
-        return $conso;
+		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
+		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
+		return $conso_gpu[0] + $conso_cpu[0];
     }
 
-    public function getConsommation($annee)
+	/*******************
+	* calcul de la consommation "calcul" à une date donnée ou pour une année donnée, en pourcentage du quota
+	* REMPLACE L'ANCIENNE FONCTION getConsoP()
+	*
+	* Retourne: la consommation cpu + gpu à la date ou pour l'année donnée
+	*           en %age du quota cpu
+	*
+	*************************/
+    public function getConsoCalculP($annee_ou_date=null)
     {
-        return AppBundle::getRepository(Consommation::class)->findOneBy(
-                                                        [
-                                                        'annee'     => $annee,
-                                                        'projet'    => $this->getIdProjet()
-                                                        ]);
+		$conso_gpu = $this->getConsoRessource('gpu',$annee_ou_date);
+		$conso_cpu = $this->getConsoRessource('cpu',$annee_ou_date);
+		if ( $conso_cpu[1] <= 0 )
+		{
+			return 0;
+		}
+		else
+		{
+			return 100.0*($conso_gpu[0] + $conso_cpu[0])/$conso_cpu[1];
+		}
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //
-    // préparation du formulaire du choix d'expert
-    //
+	/***************
+	* Renvoie la consommation calcul (getConsoCalcul() de l'année et du mois
+	*
+	* params: $annee (2019 ou 19)
+	*         $mois (0..11)
+	*
+	* Retourne: La conso cpu+gpu, ou 0 si le mois se situe dans le futur
+	*
+	**************************/
+	public function getConsoMois($annee,$mois)
+	{
+		$now = GramcDate::get();
+		$annee_courante = $now->showYear();
+		$mois_courant   = $now->showMonth();
+		$mois += 1;	// 0..11 -> 1..12 !
 
-    public function getExpertForm(Session $session, $hash = "")
+		// 2019 - 2000 !
+		if ( ($annee==$annee_courante || abs($annee-$annee_courante)==2000) && $mois==$mois_courant)
+		{
+			$conso_fin = $this->getConsoCalcul($now);
+		}
+		else
+		{
+			// Pour décembre on mesure la consomation au 31 car il y a risque de remise à zéro le 1er Janvier
+			// Du coup on ignore la consommation du 31 Décembre...
+			if ($mois==12)
+			{
+				$d = strval($annee)."-12-31";
+				$conso_fin = $this->getConsoCalcul(new \DateTime($d));
+				//AppBundle::getLogger()->error("koukou1 " . $this->getIdProjet() . "$d -> $conso_fin");
+			}
+			// Pour les autres mois on prend la conso du 1er du mois suivant
+			else
+			{
+				$m = strval($mois + 1);
+				$conso_fin = $this->getConsoCalcul(new \DateTime($annee.'-'.$m.'-01'));
+			}
+		}
+
+		// Pour Janvier on prend zéro, pas la valeur au 1er Janvier
+		// La remise à zéro ne se fait jamais le 1er Janvier
+		if ($mois==1)
+		{
+			$conso_debut = 0;
+		}
+		else
+		{
+			$conso_debut = $this->getConsoCalcul(new \DateTime("$annee-$mois-01"));
+		}
+		if ($conso_fin>$conso_debut)
+		{
+			return $conso_fin-$conso_debut;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	/*
+	 * Renvoie le quota seul (pas la conso) des ressources cpu
+	 *
+	 * param : $annee ou $date (cf getConsoRessource)
+     * return: La consommation "calcul" pour l'année
+     *
+     */
+    public function getQuota($annee=null)
     {
-
-    $expert = $this->getExpert($session);
-    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($this);
-
-    if( $expert ==  null )
-        {
-        $expert  =  $this->proposeExpert( $collaborateurs );
-        Functions::debugMessage(__METHOD__ . ":" . __LINE__ ." nouvel expert proposé du projet " . $this . " : " . Functions::show( $expert ) );
-        }
-
-
-    return AppBundle::getContainer()->get( 'form.factory')
-            ->createNamedBuilder(   'expert'.$this->getIdProjet().$hash , FormType::class, null  ,  ['csrf_protection' => false ])
-                ->add('expert', ChoiceType::class,
-                    [
-                'multiple'  =>  false,
-                'required'  =>  false,
-                'label'     => '',
-                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
-                'data'          => $expert,
-                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
-                'choice_label' => function ($individu)
-                   { return $individu->__toString(); },
-                    ])
-                    ->getForm();
+		$conso_cpu = $this->getConsoRessource('cpu',$annee);
+		return $conso_cpu[1];
     }
-
-
-    /////////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////
 

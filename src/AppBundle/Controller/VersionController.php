@@ -141,7 +141,7 @@ class VersionController extends Controller
             ]
             );
     }
-    
+
 
     /**
      * Supprimer version
@@ -157,7 +157,7 @@ class VersionController extends Controller
     if( Menu::modifier_version($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
             " parce que : " . Menu::modifier_version($version)['raison'] );
-    
+
     $em =   AppBundle::getManager();
     $etat = $version->getEtatVersion();
     if( $version->getProjet() == null )
@@ -167,7 +167,7 @@ class VersionController extends Controller
         }
     else
         $idProjet   =  $version->getProjet()->getIdProjet();
-        
+
 
     if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
         {
@@ -175,11 +175,11 @@ class VersionController extends Controller
             $em->remove( $collaborateurVersion );
         $workflow = new ProjetWorkflow();
         $workflow->execute( Signal::CLK_ERASE, $version->getProjet() );
-        
+
         $expertises = $version->getExpertise();
         foreach( $expertises as $expertise)
             $em->remove( $expertise );
-        
+
         $em->remove( $version );
         $em->flush();
         }
@@ -225,7 +225,7 @@ class VersionController extends Controller
     }
 
     /**
-     * Finds and displays a version entity.
+     * Affiche au format pdf
      *
      * @Route("/{id}/pdf", name="version_pdf")
      * @Security("has_role('ROLE_DEMANDEUR')")
@@ -233,50 +233,48 @@ class VersionController extends Controller
      */
     public function pdfAction(Version $version, Request $request)
     {
+	    $projet =  $version->getProjet();
+	    if( ! Functions::projetACL( $projet ) )
+	            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    $projet =  $version->getProjet();
-    if( ! Functions::projetACL( $projet ) )
-            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
+	    $session = $version->getSession();
 
-    $session = $version->getSession();
+	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
+	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
+	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
 
-    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
-    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
-    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+	    /*
+	    if( $img_expose_1 == null )
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
+	    else
+	        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
+	    */
 
-    /*
-    if( $img_expose_1 == null )
-        Functions::debugMessage(__METHOD__.':'.__LINE__ ." img_expose1 null");
-    else
-        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
-    */
-
-    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
-    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
-    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+	    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
+	    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
+	    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
 
 
-    $html4pdf =  $this->render('version/pdf.html.twig',
-            [
-            'toomuch' => Functions::is_demande_toomuch($version->getAttrHeures(),$version->getDemHeures()),
-            'projet' => $projet,
-            'version'   =>  $version,
-            'session'   =>  $session,
-            'img_expose_1'  =>  $img_expose_1,
-            'img_expose_2'  =>  $img_expose_2,
-            'img_expose_3'  =>  $img_expose_3,
-            'img_justif_renou_1'    =>  $img_justif_renou_1,
-            'img_justif_renou_2'    =>  $img_justif_renou_2,
-            'img_justif_renou_3'    =>  $img_justif_renou_3,
-            ]
-            );
-    //return $html4pdf;
-    //$html4pdf->prepare($request);
-    //$pdf = AppBundle::getPDF($html4pdf);
-    $pdf = AppBundle::getPDF($html4pdf->getContent());
+	    $html4pdf =  $this->render('version/pdf.html.twig',
+	            [
+	            'toomuch' => Functions::is_demande_toomuch($version->getAttrHeures(),$version->getDemHeures()),
+	            'projet' => $projet,
+	            'version'   =>  $version,
+	            'session'   =>  $session,
+	            'img_expose_1'  =>  $img_expose_1,
+	            'img_expose_2'  =>  $img_expose_2,
+	            'img_expose_3'  =>  $img_expose_3,
+	            'img_justif_renou_1'    =>  $img_justif_renou_1,
+	            'img_justif_renou_2'    =>  $img_justif_renou_2,
+	            'img_justif_renou_3'    =>  $img_justif_renou_3,
+	            ]
+	            );
+	    //return $html4pdf;
+	    //$html4pdf->prepare($request);
+	    //$pdf = AppBundle::getPDF($html4pdf);
+	    $pdf = AppBundle::getPDF($html4pdf->getContent());
 
-    return Functions::pdf( $pdf );
-
+	    return Functions::pdf( $pdf );
     }
 
     /**
@@ -289,12 +287,12 @@ class VersionController extends Controller
     public function fichePdfAction(Version $version, Request $request)
     {
     $projet =  $version->getProjet();
-    
+
     // ACL
     if( Menu::telechargement_fiche($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de télécharger la fiche du projet " . $projet .
             " parce que : " . Menu::telechargement_fiche($version)['raison'] );
-    
+
     $session = $version->getSession();
 
     $html4pdf =  $this->render('version/fiche_pdf.html.twig',
@@ -329,7 +327,7 @@ class VersionController extends Controller
     if( Menu::televersement_fiche($version)['ok'] == false )
         Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de téléverser la fiche du projet " . $projet .
             " parce que : " . Menu::telechargement_fiche($version)['raison'] );
-            
+
     $format_fichier = new \Symfony\Component\Validator\Constraints\File(
                 [
                 'mimeTypes'=> [ 'application/pdf' ],
@@ -396,7 +394,7 @@ class VersionController extends Controller
                 $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
                                  $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
 
-                // on marque le téléversement de la fiche projet                 
+                // on marque le téléversement de la fiche projet
                 $version->setPrjFicheVal(true);
                 AppBundle::getManager()->flush();
                 $resultat[] =   " La fiche du projet " . $projet . " pour la session " . $session . " téléversé ";
@@ -480,7 +478,7 @@ class VersionController extends Controller
     private function createDeleteForm(Version $version)
     {
         return $this->createFormBuilder()
-            ->setAction($this->generateUrl('version_delete', array('id' => $version->getId())))
+            ->setAction($this->generateUrl('version_delete', array('id' => $version->getIdVersion())))
             ->setMethod('DELETE')
             ->getForm()
         ;
@@ -496,6 +494,10 @@ class VersionController extends Controller
      */
     public function changerResponsableAction(Version $version, Request $request)
     {
+
+	// Si changement d'état de la session alors que je suis connecté !
+	AppBundle::getSession()->remove('SessionCourante'); // remove cache
+
     // ACL
     $moi = AppBundle::getUser();
 
@@ -560,495 +562,6 @@ class VersionController extends Controller
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    //
-    // préparation de la liste des collaborateurs
-    //
-    /////////////////////////////////////////////////////////////////////////////
-
-    private static function prepareCollaborateurs(Version $version)
-    {
-    if( $version == null ) Functions::createException('VersionController:modifierCollaborateurs : version null');
-
-    // préparation de la liste des responsables potentiels
-
-    $dataR  =   [];
-    $dataNR =   [];
-    foreach( $version->getCollaborateurVersion() as $item )
-            {
-            $collaborateur   =  $item->getCollaborateur();
-            if( $collaborateur == null )
-                {
-                Functions::errorMessage("VersionController:modifierCollaborateurs : collaborateur null pour CollaborateurVersion ".
-                         $item->getId() );
-                continue;
-                }
-            else
-                {
-                $individuForm   =   new IndividuForm( $collaborateur );
-                $individuForm->setLogin( $item->getLogin() );
-                $individuForm->setResponsable( $item->getResponsable() );
-                if( $individuForm->getResponsable() == true )
-                    $dataR[] = $individuForm;
-                else
-                    $dataNR[] = $individuForm;
-                }
-            }
-
-    return array_merge($dataR, $dataNR);
-    }
-
-    /**
-     * Modifier les collaborateurs d'une version.
-     *
-     * @Route("/{id}/collaborateurs", name="modifier_collaborateurs")
-     * @Method({"GET", "POST"})
-     * @Security("has_role('ROLE_DEMANDEUR')")
-     */
-    public function modifierCollaborateursAction(Version $version, Request $request)
-    {
-    // ACL
-    //if( ! $version->isResponsable() )
-    //    Functions::createException(__METHOD__ . ':' . __LINE__  ': Seul le responsable du projet peut modifier les collaborateurs');
-
-    if( Menu::modifier_collaborateurs($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
-            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
-
-
-    $collaborateur_form = $this
-           ->get('form.factory')
-           ->createNamedBuilder('form_projet', FormType::class, [ 'individus' => self::prepareCollaborateurs($version) ])
-           ->add('individus', CollectionType::class, [
-               'entry_type'     =>  IndividuFormType::class,
-               'label'          =>  false,
-               'allow_add'      =>  true,
-               'allow_delete'   =>  true,
-               'prototype'      =>  true,
-               'required'       =>  true,
-               'by_reference'   =>  false,
-               'delete_empty'   =>  true,
-               'attr'         => ['class' => "profil-horiz",],
-           ])
-        //->add('my_test', TextType::class )
-        ->add('submit', SubmitType::class,
-            [
-            'label' => 'Sauvegarder',
-            ])
-        ->getForm();
-
-    $collaborateur_form->handleRequest($request);
-
-    $projet =  $version->getProjet();
-
-    if( $projet != null )
-            $idProjet   =   $projet->getIdProjet();
-    else
-            {
-            Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
-            $idProjet   =   null;
-            }
-
-    if ( $collaborateur_form->isSubmitted() && $collaborateur_form->isValid() )
-            {
-            $individu_forms =  $collaborateur_form->getData()['individus'];
-            $validated = static::validateIndividuForms( $individu_forms );
-            if( ! $validated )
-                return $this->render('version/collaborateurs_invalides.html.twig',
-                    [
-                    'projet' => $idProjet,
-                    'version'   =>  $version,
-                    'session'   =>  $version->getSession(),
-                    ]);
-
-            static::handleIndividuForms( $individu_forms, $version );
-
-            // return new Response( Functions::show( $resultat ) );
-            // return new Response( print_r( $mail, true ) );
-            //return new Response( print_r($request->request,true) );
-            return $this->redirectToRoute('modifier_collaborateurs',
-                [
-                //'version' => $version->getIdVersion(),
-                'id'    => $version->getIdVersion() ,
-                ]
-                );
-
-            }
-
-    //return new Response( dump( $collaborateur_form->createView() ) );
-     return $this->render('version/collaborateurs.html.twig',
-            [
-            'projet' => $idProjet,
-            'collaborateur_form'   => $collaborateur_form->createView(),
-            'version'   =>  $version,
-            'session'   =>  $version->getSession(),
-            ]
-            );
-
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////
-
-
-    private static function validateIndividuForms( $individu_forms, $definitif = false )
-    {
-    foreach(  $individu_forms as  $individu_form )
-        {                
-        if( $definitif ==  true  &&  
-                ( $individu_form->getPrenom() == null   || $individu_form->getNom() == null
-                || $individu_form->getEtablissement() == null
-                || $individu_form->getLaboratoire() == null || $individu_form->getStatut() == null
-                )
-            )   return false;
-        }
-            
-    if( $individu_forms != [] )
-        return true;
-    else
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    private static function handleIndividuForms( $individu_forms, Version $version )
-    {
-    foreach(  $individu_forms as  $individu_form )
-                {
-                $id =  $individu_form->getId();
-
-                if( $id != null ) // les utilisateurs existants
-                    {
-                    $individu = AppBundle::getRepository(Individu::class)->find( $id );
-                    //if( $individu_form->getMail()  == null )
-                    //    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . ' le mail du formulaire est null !');   
-                    }
-                elseif( $individu_form->getMail() != null )
-                    {
-                    $individu = AppBundle::getRepository(Individu::class)->findOneBy( [ 'mail' =>  $individu_form->getMail() ]);
-                    Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' le nouveau mail correspond à un utilisateur existant');
-                    }
-                else
-                    {
-                    //Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' mail et id sont nulls en même temps !');
-                    $individu = null;
-                    }
-
-                if( $individu == null && $id != null )
-                        Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' idIndividu ' . $id . 'du formulaire ne correspond pas à un utilisateur');
-                elseif( is_array( $individu_form ) )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu_form est array ' . Functions::show( $individu_form) );
-                elseif( is_array( $individu ) )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu est array ' . Functions::show( $individu) );
-                elseif( $individu != null && $individu_form->getMail() != null && $individu_form->getMail() != $individu->getMail() )
-                            Functions::errorMessage(__METHOD__ . ':' . __LINE__ ." l'adresse mails de l'utilisateur " .
-                            $individu . ' est incorrecte dans le formulaire :' . $individu_form->getMail() . ' != ' . $individu->getMail()); 
-                elseif( $individu != null && $individu_form->getDelete() == true ) // supprimer un collaborateur
-                    {
-                    Functions::infoMessage(__METHOD__ . ':' . __LINE__ ." le collaborateur " .
-                            $individu . " sera supprimé de la liste des collaborateurs de la version ".$version." s'il est présent");
-                    $version->supprimerCollaborateur( $individu );
-                    }
-                elseif( $individu != null ) // ancien utilisateur
-                    {
-                    $individu = $individu_form->modifyIndividu( $individu );
-                    $em =   AppBundle::getManager();
-
-                    if( ! $version->isCollaborateur( $individu ) )
-                        {
-                        Functions::infoMessage(__METHOD__ . ':' . __LINE__ .' utilisateur existant ' .
-                              $individu . ' ajouté à la version ' .$version );
-                        $collaborateurVersion   =   new CollaborateurVersion( $individu );
-                        $collaborateurVersion->setVersion( $version );
-                        $collaborateurVersion->setLogin( $individu_form->getLogin() );
-                        $em->persist( $collaborateurVersion );
-                        $em->flush();
-                        }
-                    else
-                        {
-                        Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' utilisateur '
-                            . $individu . ' existant juste modifié (ou pas)');
-                        $version->modifierLogin( $individu, $individu_form->getLogin() );
-                        
-                        // modification du labo du projet
-                        if( $version->isResponsable( $individu ) )
-                            $version->setLaboResponsable( $individu );
-                        }
-                    //$individu_form->setMail( $individu->getMail() );
-                    }
-                elseif( $individu_form->getMail() != null && $individu_form->getDelete() == false ) // nouvel utilisateur
-                    {
-                    $individu = $individu_form->nouvelIndividu();
-                    $collaborateurVersion   =   new CollaborateurVersion( $individu );
-                    $collaborateurVersion->setLogin( $individu_form->getLogin() );
-                    $collaborateurVersion->setVersion( $version );
-
-                    Functions::infoMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur ' . $individu .
-                        ' créé et ajouté comme collaborateur à la version ' . $version);
-
-                    $em =   AppBundle::getManager();
-                    $em->persist( $individu );
-                    $em->persist( $collaborateurVersion );
-                    $em->persist( $version );
-                    $em->flush();
-                    }
-                elseif( $individu_form->getMail() == null && $id == null)
-                    Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur vide ignoré');
-                if( $individu != null )
-                    $individu_form->setMail( $individu->getMail() );
-            }
-
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////////////
-
-    private static function imageConstraints()
-    {
-    return new \Symfony\Component\Validator\Constraints\File(
-                [
-                'mimeTypes'=> [ 'image/jpeg', 'image/gif', 'image/png' ],
-                'mimeTypesMessage'=>' Le fichier doit être un fichier jpeg, gif ou png. ',
-                'maxSize' => "2048k",
-                'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
-                'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
-                ]);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    private static function image_form( $name , $csrf_protection = true )
-    {
-    $format_fichier = static::imageConstraints();
-
-     return AppBundle::getContainer()
-           ->get('form.factory')
-           ->createNamedBuilder( $name, FormType::class, [], ['csrf_protection' => $csrf_protection ] )
-           ->add('filename', HiddenType::class, [ 'data'       =>  $name,] )
-           ->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig', 'constraints'=>[$format_fichier] ])
-           //->add('image', FileType::class, ['required'       =>  false, 'label' => 'Fig',  ])
-           ->getForm();
-    }
-
-
-
-
-    /////////////////////////////////////////////////////////////////////////////////////
-
-    private static function image_handle( $form, Version $version, $request)
-    {
-    $form->handleRequest($request);
-
-    if( $form->isSubmitted() && $form->isValid() )
-        {//return ['etat' => 'OKK'];
-        $filename               =    $form->getData()['filename'];
-        $image                  =    $form['image']->getData();
-
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' form submitted filename = ' . $filename .' , image = ' . $image);
-
-        $dir  =    Functions::image_directory($version);
-
-        $full_filename          =    $dir .'/' . $filename;
-
-        if( is_file($form->getData()['image'] ) )
-            {
-            $tempFilename = $form->getData()['image'];
-            static::redim_figure( $tempFilename );
-            //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' $tempFilename = ' . $form->getData()['image'] );
-            $contents = file_get_contents( $tempFilename );
-
-            $file = new File( $form->getData()['image'] );
-
-
-            if( file_exists( $full_filename ) && is_file( $full_filename ) ) unlink( $full_filename );
-            if( ! file_exists( $full_filename ) )
-                $file->move( $dir, $filename );
-            else
-                Functions::debugMessage('Version controller image_handle : mauvais fichier pour la version ' . $version->getIdVersion() );
-
-            //Functions::debugMessage('file  ' .$filename . ' : ' .  base64_encode( $contents ) );
-
-            return ['etat' => 'OK', 'contents' => $contents, 'filename' => $filename ];
-            }
-        else
-            {
-            Functions::debugMessage('VersionController:image_handle $tempFilename = (' . $form->getData()['image'] . ") n'existe pas");
-            return ['etat' => 'KO'];
-            }
-        }
-    elseif( $form->isSubmitted() && ! $form->isValid() )
-        {
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' wrong form submitted filename = ' . $filename .' , image = ' . $image);
-        if( isset( $form->getData()['filename']) )
-            $filename   =  $form->getData()['filename'];
-        else
-            $filename   =  'unkonwn';
-
-        if( isset( $form->getData()['image']) )
-            $image  =    $form->getData()['image'];
-        else
-            return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => 'Erreur indeterminée' ];
-
-        return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => Functions::formError( $image, [ static::imageConstraints() ] ) ];
-        //Functions::debugMessage('VersionController:image_handle form for ' . $filename . '('. $form->getData()['image'] . ') is not valide, error = ' .
-        //    (string) $form->getErrors(true,false)->current() );
-        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
-        //return ['etat' => 'nonvalide', 'filename' => $filename, 'error' => (string) $form->getErrors(true,false)->current() ];
-        }
-    else
-        {
-        //Functions::debugMessage('VersionController:image_handle form not submitted');
-        return ['etat' => null ];
-        }
-    }
-
-    ///////////////////////////////////////////////////////////
-
-    static public function image($filename, Version $version)
-    {
-    $full_filename  = Functions::image_filename( $filename, $version);
-
-    if( file_exists( $full_filename ) && is_file( $full_filename ) )
-        {
-        //Functions::debugMessage('VersionController image  ' .$filename . ' : ' . base64_encode( file_get_contents( $full_filename ) )  );
-        return base64_encode( file_get_contents( $full_filename ) );
-        }
-    else
-        return null;
-    }
-
-
-    ///////////////////////////////////////////////////////////
-
-
-    private function getCollaborateurForm(Version $version)
-    {
-    return $this
-           ->get('form.factory')
-           ->createNamedBuilder('form_projet', FormType::class, [ 'individus' => self::prepareCollaborateurs($version) ])
-           ->add('individus', CollectionType::class, [
-               'entry_type'     =>  IndividuFormType::class,
-               'label'          =>  false,
-               'allow_add'      =>  true,
-               'allow_delete'   =>  true,
-               'prototype'      =>  true,
-               'required'       =>  true,
-               'by_reference'   =>  false,
-               'delete_empty'   =>  true,
-               'attr'         => ['class' => "profil-horiz",],
-            ])
-            ->getForm();
-    }
-
-    /**
-     * Displays a form to edit an existing version entity.
-     *
-     * @Route("/{id}/renouveler", name="renouveler_version")
-     * @Security("has_role('ROLE_DEMANDEUR')")
-     * @Method({"GET", "POST"})
-     */
-    public function renouvellementAction(Request $request, Version $version)
-    {
-
-    // ACL
-    //if( Menu::renouveler_version($version)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-    if( Menu::renouveler_version($version)['ok'] == false )
-       Functions::createException("VersionController:renouvellementAction impossible de renouveler la version " . $version->getIdVersion() );
-
-    $session = AppBundle::getRepository(Session::class)->findOneBy( [ 'etatSession' => Etat::EDITION_DEMANDE ] );
-    //AppBundle::getSession()->remove('SessionCourante');
-        if( $session != null )
-        {
-            $idVersion = $session->getIdSession() . $version->getProjet()->getIdProjet();
-            if( AppBundle::getRepository( Version::class)->findOneBy( [ 'idVersion' =>  $idVersion] ) != null )
-            {
-                Functions::errorMessage("VersionController:renouvellementAction version " . $idVersion . " existe déjà !");
-                return $this->redirect( $this->generateUrl('modifier_version', [ 'id' => $version->getIdVersion() ]) );
-            }
-            else
-            {
-
-                $old_dir    = Functions::image_directory( $version);
-                // nouvelle version
-                $em =   AppBundle::getManager();
-                $projet = $version->getProjet();
-                //$em->detach( $version );
-                $new_version = clone $version;
-                //$em->detach( $new_version );
-
-                $new_version->setSession( $session );
-
-                // Mise à zéro de certains champs
-                $new_version->setDemHeures( 0 );
-                $new_version->setPrjJustifRenouv( null );
-                $new_version->setAttrHeures(0);
-                $new_version->setAttrHeuresEte(0);
-                $new_version->setAttrAccept(false);
-                $new_version->setPenalHeures(0);
-                $new_version->setPrjGenciCentre('');
-                $new_version->setPrjGenciDari('');
-                $new_version->setPrjGenciHeures('');
-                $new_version->setPrjGenciMachines('');
-                $new_version->setPrjFicheVal(false);
-                $new_version->setPrjFicheLen(0);
-                $new_version->setRapConf(0);
-
-                $new_version->setIdVersion( $session->getIdSession() . $version->getProjet()->getIdProjet()  );
-                $new_version->setProjet( $version->getProjet() );
-                //$new_version->setEtatVersion(Etat::EDITION_DEMANDE);
-                $new_version->setEtatVersion(Etat::CREE_ATTENTE);
-                $new_version->setLaboResponsable( $version->getResponsable() );
-
-                Functions::sauvegarder( $new_version );
-                // nouvelles collaborateurVersions
-
-                $collaborateurVersions = $version->getCollaborateurVersion();
-                foreach( $collaborateurVersions as $collaborateurVersion )
-                    {
-                    $newCollaborateurVersion    = clone  $collaborateurVersion;
-                    //$em->detach( $newCollaborateurVersion );
-                    $newCollaborateurVersion->setVersion( $new_version );
-                    $em->persist( $newCollaborateurVersion );
-                    }
-
-
-                //$projet = $version->getProjet();
-                //$projet->setVersionDerniere( $new_version );
-                //$projetWorkflow = new ProjetWorkflow();
-                //$projetWorkflow->execute( Signal::CLK_DEMANDE, $projet );
-                //return new Response( count( $new_version->getProjet()->getVersion() ) );
-
-                $projet->setVersionDerniere( $new_version );
-                $projetWorkflow = new ProjetWorkflow();
-                $projetWorkflow->execute( Signal::CLK_DEMANDE, $projet );
-                $em->persist( $projet );
-                $em->flush();
-                //return new Response( count( $new_version->getProjet()->getVersion() ) );
-
-                // images: On reprend les images "img_expose" de la version précédente
-                //         On ne REPREND PAS les images "img_justif_renou" !!!
-                $new_dir    =  Functions::image_directory( $new_version);
-                for ($id=1;$id<4;$id++)
-                {
-                    $f='img_expose_'.$id;
-                    $old_f = $old_dir . '/' . $f;
-                    $new_f = $new_dir . '/' . $f;
-                    if (is_file($old_f))
-                       {
-                       $rvl = copy( $old_f,$new_f );
-                       if ($rvl==false) 
-                           Functions::errorMessage("VersionController:erreur dans la fonction copy $old_f => $new_f");
-                       }
-                }
-
-                return $this->redirect( $this->generateUrl('modifier_version', [ 'id' => $new_version->getIdVersion() ]) );
-            }
-        }
-        else
-        {
-            Functions::errorMessage("VersionController:renouvellementAction il n'y a pas de session en état EDITION_DEMANDE !");
-            return $this->redirect( $this->generateUrl('modifier_version', [ 'id' => $version->getIdVersion() ]) );
-        }
-    }
 
     /**
      * Mettre une pénalité sur une version (en GET par aajx)
@@ -1081,7 +594,7 @@ class VersionController extends Controller
     }
 
     /**
-     * Displays a form to edit an existing version entity.
+     * Ecran affiché dans le cas où la demande est incomplète
      *
      * @Route("/{id}/avant_modifier", name="version_avant_modifier")
      * @Method({"GET", "POST"})
@@ -1099,516 +612,10 @@ class VersionController extends Controller
             'version'   => $version
             ]);
     }
-    
 
-    /**
-     * Displays a form to edit an existing version entity.
-     *
-     * @Route("/{id}/modifier", name="modifier_version")
-     * @Method({"GET", "POST"})
-     * @Security("has_role('ROLE_DEMANDEUR')")
-     */
-    public function modifierAction(Request $request, Version $version, $renouvellement = false )
-    {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
-
-    // if annuler on ne sauvegarde rien
-    // version est sauvegardée autrement et je ne sais pas pourquoi
-    $form = $this->createFormBuilder( new Version() )->add( 'annuler',   SubmitType::Class )->getForm();
-    $form->handleRequest($request);
-    if( $form->isSubmitted() && $form->get('annuler')->isClicked() )
-            {
-            Functions::debugMessage(__METHOD__ .':'. __LINE__ . ' annuler clicked');
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
-
-
-   // Functions::debugMessage('modifierAction ' .  print_r($_POST, true) );
-    $image_forms = [];
-
-    $image_forms['img_expose_1'] =   $this->image_form( 'img_expose_1', false );
-    $image_forms['img_expose_2'] =   $this->image_form( 'img_expose_2', false );
-    $image_forms['img_expose_3'] =   $this->image_form( 'img_expose_3', false );
-
-    $image_forms['img_justif_renou_1'] =   $this->image_form( 'img_justif_renou_1', false );
-    $image_forms['img_justif_renou_2'] =   $this->image_form( 'img_justif_renou_2' , false);
-    $image_forms['img_justif_renou_3'] =   $this->image_form( 'img_justif_renou_3', false );
-
-
-    //Functions::debugMessage('modifierAction image_handle');
-    foreach( $image_forms as $my_form )
-        static::image_handle( $my_form, $version, $request );
-    //Functions::debugMessage('modifierAction après image_handle');
-
-    //Functions::debugMessage('modifierAction ajax ');
-    // upload image ajax
-
-    $image_form = $this->image_form( 'image_form', false );
-    //Functions::debugMessage('modifierAction ajax form');
-
-    $ajax = $this->image_handle( $image_form, $version, $request );
-    //Functions::debugMessage('modifierAction ajax handled');
-    // Functions::debugMessage('modifierAction ajax = ' .  print_r($ajax, true) );
-
-    if( $ajax['etat'] != null )
-    {
-        $div_sts  = substr($ajax['filename'], 0,strlen($ajax['filename'])-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
-        if( $ajax['etat'] == 'OK' )
-        {
-            $html[$ajax['filename']] = '<img class="dropped" src="data:image/png;base64, ' . base64_encode( $ajax['contents'] ) .'" />';
-
-            $twig = clone AppBundle::getTwig();
-            $twig->setLoader(new \Twig_Loader_String());
-            $html[$ajax['filename']] .= $twig
-                ->render( '<img class="icone" src=" {{ asset(\'icones/poubelle32.png\') }}" alt="Supprimer cette figure" title="Supprimer cette figure" />' );
-
-            $html[$div_sts] = '<div class="message info">votre figure a été correctement téléversée</div>';
-        }
-        elseif( $ajax['etat'] == 'KO' )
-            $html[$div_sts] = "Le téléchargement de l'image a échoué";
-        elseif( $ajax['etat'] == 'nonvalide' )
-            $html[$div_sts] = '<div class="message warning">'.$ajax['error'].'</div>';
-
-        if( $request->isXMLHttpRequest() )
-            return new Response( json_encode($html) );
-    }
-
-    // formulaire remove image
-
-    $remove_form = $this
-       ->get('form.factory')
-       ->createNamedBuilder('remove_form', FormType::class, [], [ 'csrf_protection' => false ] )
-       ->add('filename', TextType::class, [ 'required'       =>  false,] )
-       ->getForm();
-
-    $remove_form->handleRequest($request);
-
-    if ($remove_form->isSubmitted() &&  $remove_form->isValid() )
-    {
-        Functions::debugMessage('remove_form is valid');
-        $filename  =   $remove_form->getData()['filename'];
-
-        $rem_nb         = substr($filename,strlen($filename)-1,1);
-        $filename       =   basename($filename); // sécurité !
-        $full_filename = Functions::image_directory($version).'/'.$filename;
-        if( file_exists( $full_filename ) && is_file( $full_filename ) )
-            unlink( $full_filename );
-        else
-            Functions::errorMessage('VersionController modifierAction Fichier '. $full_filename . " n'existe pas !");
-        $div_sts  = substr($filename, 0,strlen($filename)-1).'sts'; // img_justif_renou_1 ==>  img_justif_renou_sts
-        $html[$div_sts] = '<div class="message info">La figure ' . $rem_nb . ' a été supprimée</div>';
-        $html[$filename] = 'Figure ' . $rem_nb;
-
-        return new Response( json_encode($html) );
-    }
-
-        // traitement de la liste des collaborateurs
-
-        $collaborateur_form = $this->getCollaborateurForm( $version );
-        $collaborateur_form->handleRequest($request);
-        $data   =   $collaborateur_form->getData();
-
-        if( $data != null && array_key_exists('individus', $data ) )
-            {
-            Functions::debugMessage('modifierAction traitement des collaborateurs');
-            static::handleIndividuForms( $data['individus'], $version );
-
-            // ACTUCE : le mail est disaibled en HTML et en cas de POST il est annulé
-            // nous devons donc refaire le formulaire pour récupérer ces mails
-            $collaborateur_form = static::getCollaborateurForm( $version );
-            }
-
-       // formulaire projet test
-       // attention un TWIG différent pour le projet test
-
-        if( $version->isProjetTest() )
-        {
-        if( AppBundle::hasParameter('heures_projet_test' ) )
-            $heures_projet_test =  AppBundle::getParameter('heures_projet_test' );
-        else
-            $heures_projet_test =  5000;
-
-        $version->setDemHeures( $heures_projet_test );
-        $form = $this->createFormBuilder($version)
-            ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
-            ->add('prjThematique', EntityType::class,
-                    [
-                    'required'       =>  false,
-                    'multiple' => false,
-                    'class' => 'AppBundle:Thematique',
-                    'label'     => '',
-                    'placeholder' => '-- Indiquez la thématique',
-                    ])
-            ->add('demHeures', IntegerType::class,
-                [
-                'required'       =>  false,
-                'data' => $heures_projet_test,
-                'disabled' => 'disabled' ]
-                )
-            ->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'codeNom', TextType::class, [ 'required'       =>  false ] )
-            ->add( 'codeFor',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeAutre',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeLangage', TextType::class, [ 'required'       =>  false ])
-            ->add( 'codeLicence', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'codeUtilSurMach', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demLogiciels', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demBib', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add('gpu', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "Oui" => "Oui",
-                                "Non" => "Non",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'fermer',   SubmitType::Class )
-            ->add( 'annuler',   SubmitType::Class )
-            ->getForm();
-
-        $form->handleRequest($request);
-
-        if( $form->isSubmitted() && $form->isValid()  )
-            {
-            // on sauvegarde tout de même mais il semble que c'est déjà fait avant
-            $version->setDemHeures( $heures_projet_test );
-            $return = Functions::sauvegarder( $version );
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
-
-        $version->setDemHeures($heures_projet_test  );
-        return $this->render('version/modifier_projet_test.html.twig',
-            [
-            'form'      => $form->createView(),
-            'version'   => $version,
-            'collaborateur_form' => $collaborateur_form->createView(),
-            'todo'          => static::versionValidate($version),
-            ]);
-        }
-
-       // formulaire principal
-
-        $form = $this->createFormBuilder($version)
-            ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
-            ->add('prjThematique', EntityType::class,
-                    [
-                    'required'       =>  false,
-                    'multiple' => false,
-                    'class' => 'AppBundle:Thematique',
-                    'label'     => '',
-                    'placeholder' => '-- Indiquez la thématique',
-                    ])
-            ->add('prjSousThematique', TextType::class, [ 'required'       =>  false ])
-            ->add('demHeures', IntegerType::class, [ 'required'       =>  false ])
-            ->add('prjFinancement', TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciCentre',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciMachines',   TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciHeures',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjResume', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add('prjExpose', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'prjAlgorithme', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add( 'prjConception', CheckboxType::class, [ 'required'       =>  false ] )
-            ->add( 'prjDeveloppement', CheckboxType::class, [ 'required'       =>  false ] )
-            ->add( 'prjParallelisation', CheckboxType::class, [ 'required'       =>  false ] )
-            ->add( 'prjUtilisation', CheckboxType::class, [ 'required'       =>  false ] )
-            ->add( 'codeNom', TextType::class, [ 'required'       =>  false ] )
-            ->add( 'codeFor',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeAutre',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'codeLangage', TextType::class, [ 'required'       =>  false ])
-            ->add( 'codeLicence', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'codeUtilSurMach', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'codeHeuresPJob', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 6000 heures" => "< 6000 heures",
-                                "< 18000 heures" => "< 18000 heures",
-                                "< 72000 heures" => "< 72000 heures",
-                                "> 72000 heures" => "> 72000 heures",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add('gpu', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "Oui" => "Oui",
-                                "Non" => "Non",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'codeRamPCoeur', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 5Go" => "< 5Go",
-                                "> 5Go" => "> 5Go",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'codeRamPart', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 192Go" => "< 192Go",
-                                "> 192Go" => "> 192Go",
-                                "< 500Go" => "< 500Go",
-                                "< 1To" => "< 1To",
-                                "> 2To" => "> 2To",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'codeEffParal', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 36" => "< 36",
-                                "36-360" => "36-360",
-                                "> 360" => "> 360",
-                                "< 1008" => "< 1008",
-                                "> 1008" => "> 1008",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'codeVolDonnTmp', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 10Go" => "< 10Go",
-                                "< 100Go" => "< 100Go",
-                                "< 1To" => "< 1To",
-                                "< 10To" => "< 10To",
-                                "> 10To" => "> 10To",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'demLogiciels', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demBib', TextAreaType::class, [ 'required'       =>  false ]  )
-            ->add( 'demPostTrait', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "Oui" => "Oui",
-                                "Non" => "Non",
-                                "Je ne sais pas" => "je ne sais pas",
-                                ],
-                ])
-            ->add( 'demFormPrise',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormDebogage',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOptimisation',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormFortran',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormCpp',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormPython',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormMPI',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenMP',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormOpenACC',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormParaview',  CheckboxType::class, [ 'required'       =>  false ])
-            ->add( 'demFormAutresAutres',  TextAreaType::class, [ 'required'       =>  false ])
-            ->add( 'sondVolDonnPerm', ChoiceType::class,
-                [
-                'required'       =>  false,
-                'placeholder'   =>  "-- Choisissez une option",
-                'choices'  =>   [
-                                "< 1To" => "< 1To",
-                                "1 To" => "1 To",
-                                "2 To" => "2 To",
-                                "3 To" => "3 To",
-                                "4 To" => "4 To",
-                                "5 To" => "5 To",
-                                "10 To" => "10 To",
-                                "25 To" => "25 To",
-                                "50 To" => "50 To",
-                                "75 To" => "75 To",
-                                "100 To" => "100 To",
-                                "500 To" => "500 To",
-                                "je ne sais pas" => "je ne sais pas",
-                                ],
-                'required'       =>  false,
-                ])
-            ->add( 'sondJustifDonnPerm',    TextAreaType::class , [ 'required'       =>  false ]  )
-            ->add( 'fermer',   SubmitType::Class )
-                //->add( 'enregistrer',   SubmitType::Class )
-            ->add( 'annuler',   SubmitType::Class );
-
-        if( count( $version->getProjet()->getVersion() ) > 1  )
-             $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
-
-        $form = $form->getForm();
-
-        //Functions::debugMessage('modifierAction before principal form handle Request');
-        $form->handleRequest($request);
-        //Functions::debugMessage('modifierAction after principal form handle Request');
-
-
-
-        // traitement du formulaire principal
-
-        if( $form->isSubmitted() && $form->isValid() )
-            {
-            if( $form->get('annuler')->isClicked() )
-                {
-                // on ne devrait jamais y arriver !
-                Functions::errorMessage(__METHOD__ . ' seconde annuler clicked !');
-                return $this->redirectToRoute( 'projet_accueil' );
-                }
-
-           // on sauvegarde tout de même mais il semble que c'est déjà fait avant
-           $return = Functions::sauvegarder( $version );
-           //AppBundle::getManager()->persist( $version );
-           //AppBundle::getManager()->flush();
-
-            if( $request->isXmlHttpRequest() )
-                {
-                Functions::debugMessage(__METHOD__ . ' isXmlHttpRequest clicked');
-                if( $return == true )
-                    return new Response( json_encode('OK - Votre projet est correctement enregistré') );
-                else
-                    return new Response( json_encode("ERREUR - Votre projet n'a PAS été enregistré !") );
-                }
-            /*
-            if( $form->get('fermer')->isClicked() )
-                Functions::debugMessage(__METHOD__ . ' fermer clicked');
-            else
-                Functions::warningMessage(__METHOD__ . ' autre chose clicked');
-            */
-            return $this->redirectToRoute( 'consulter_projet', ['id' => $version->getProjet()->getIdProjet() ] );
-            }
-
-        return $this->render('version/modifier.html.twig',
-            [
-            'form'      => $form->createView(),
-            'version'   => $version,
-            'img_expose_1'   => $image_forms['img_expose_1']->createView(),
-            'img_expose_2'   => $image_forms['img_expose_2']->createView(),
-            'img_expose_3'   => $image_forms['img_expose_3']->createView(),
-            'imageExp1'    => static::image('img_expose_1',$version),
-            'imageExp2'    => static::image('img_expose_2',$version),
-            'imageExp3'    => static::image('img_expose_3',$version),
-            'img_justif_renou_1'    =>  $image_forms['img_justif_renou_1']->createView(),
-            'img_justif_renou_2'    =>  $image_forms['img_justif_renou_2']->createView(),
-            'img_justif_renou_3'    =>  $image_forms['img_justif_renou_3']->createView(),
-            'imageJust1'    =>   static::image('img_justif_renou_1',$version),
-            'imageJust2'    =>   static::image('img_justif_renou_2',$version),
-            'imageJust3'    =>   static::image('img_justif_renou_3',$version),
-            'collaborateur_form' => $collaborateur_form->createView(),
-            'todo'          => static::versionValidate($version),
-            'renouvellement'    => $renouvellement,
-            ]);
-    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-private static function redim_figure($image)
-    {
-     $cmd = "identify -format '%w %h' $image";
-     //Functions::debugMessage('redim_figure cmd identify = ' . $cmd);
-     $format = `$cmd`;
-     list($width,$height) = explode(' ',$format);
-     $width = intval($width);
-     $height= intval($height);
-     $rap_w = 0;
-     $rap_h = 0;
-     $rapport = 0;      // Le rapport de redimensionnement
-
-     $max_fig_width = AppBundle::getParameter('max_fig_width');
-     if ($width > $max_fig_width && $max_fig_width > 0 )
-            $rap_w = (1.0 * $width) /  $max_fig_width;
-
-     $max_fig_height = AppBundle::getParameter('max_fig_height');
-     if ($height > $max_fig_height && $max_fig_height > 0 )
-            $rap_h = (1.0 * $height) / $max_fig_height;
-
-     // Si l'un des deux rapports est > 0, on prend le plus grand
-     if ($rap_w + $rap_h > 0)
-        {
-        $rapport = ($rap_w > $rap_h) ? 1/$rap_w : 1/$rap_h;
-        $rapport = 100 * $rapport;
-        }
-
-     // Si un rapport a été calculé, on redimensionne
-     if ($rapport > 1)
-        {
-        $cmd = "convert $image -resize $rapport% $image";
-        //Functions::debugMessage('redim_figure cmd convert = ' . $cmd);
-        `$cmd`;
-        }
-    }
-
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static function versionValidate(Version $version)
-    {
-    $todo   =   [];
-
-    if( $version->getPrjTitre() == null ) $todo[] = 'prj_titre';
-    if( $version->getDemHeures() == null ) $todo[] = 'dem_heures';
-    if( $version->getPrjThematique() == null ) $todo[] = 'prj_id_thematique';
-    if( $version->getPrjResume() == null ) $todo[] = 'prj_resume';
-    if( $version->getCodeNom() == null ) $todo[] = 'code_nom';
-    if( $version->getCodeLicence() == null ) $todo[] = 'code_licence';
-    if( $version->getGpu() == null ) $todo[] = 'gpu';
-
-    if( ! $version->isProjetTest() )
-        {
-        if( $version->getPrjExpose() == null ) $todo[] = 'prj_expose';
-        if( $version->getCodeHeuresPJob() == null ) $todo[] = 'code_heures_p_job';
-        if( $version->getCodeRamPCoeur() == null ) $todo[] = 'code_ram_p_coeur';
-        if( $version->getCodeRamPart() == null ) $todo[] = 'code_ram_part';
-
-        if( $version->getCodeEffParal() == null ) $todo[] = 'code_eff_paral';
-        if( $version->getCodeVolDonnTmp() == null ) $todo[] = 'code_vol_donn_tmp';
-        if( $version->getDemPostTrait() == null ) $todo[] = 'dem_post_trait';
-
-        // s'il s'agit d'un renouvellement
-        if( count( $version->getProjet()->getVersion() ) > 1 && $version->getPrjJustifRenouv() == null )
-            $todo[] = 'prj_justif_renouv';
-
-        if( $version->getSondVolDonnPerm() == null )
-            $todo[] = 'sond_vol_donn_perm';
-        elseif( $version->getSondJustifDonnPerm() == null
-            &&  $version->getSondVolDonnPerm() != '< 1To'
-            &&  $version->getSondVolDonnPerm() != '1 To'
-            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas'
-            ) $todo[] = 'sond_justif_donn_perm';
-        }
-
-    if( $version->typeSession()  == 'A' )
-        {
-        $version_precedente = $version->versionPrecedente();
-        if( $version_precedente != null )
-            {
-            $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
-                    [
-                    'projet' => $version_precedente->getProjet(),
-                    'annee' => $version_precedente->getAnneeSession(),
-                    ]);
-            if( $rapportActivite == null )  $todo[] = 'rapport_activite';
-            }
-        }
-
-    if( ! static::validateIndividuForms( self::prepareCollaborateurs($version), true  )) $todo[] = 'collabs';
-
-    return $todo;
-    }
-
-    ///////////////////////////////////////////////////////////////
 
     /**
      * Téléverser le rapport d'actitivé de l'année précedente
@@ -1725,7 +732,7 @@ private static function redim_figure($image)
                 $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
                                  $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
 
-                // on marque le téléversement de la fiche projet                 
+                // on marque le téléversement de la fiche projet
                 $version = AppBundle::getRepository(Version::class)->findOneBy( ['projet' => $projet, 'session' => $session ] );
                 if( $version != null )
                     {
@@ -1734,7 +741,7 @@ private static function redim_figure($image)
                     }
                 else
                     Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Il n'y a pas de version du projet " . $projet . " pour la session " . $session );
-                
+
                 $resultat[] =   " Fichier " . $filename . " téléversé";
                 }
             elseif( $type = "r" )
@@ -1747,7 +754,7 @@ private static function redim_figure($image)
                 static::modifyRapport( $projet, $annee, $filename, false );
                 }
 
-           
+
             }
 
         }
@@ -1856,7 +863,7 @@ private static function redim_figure($image)
                 ])
            ->getForm();
      //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
-    
+
      $form->handleRequest( $request );
 
      if( $form->isSubmitted() && $form->isValid() )
@@ -1871,9 +878,9 @@ private static function redim_figure($image)
             return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
         else
             return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
-        
+
         $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
-        
+
         if(  ! file_exists( $dir ) )
             mkdir( $dir );
         elseif( ! is_dir(  $dir ) )
@@ -1881,7 +888,7 @@ private static function redim_figure($image)
             unlink( $dir );
             mkdir( $dir );
             }
-        
+
         //$file->move( $dir, $version->getIdVersion() . ".pdf" );
         //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
         $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
@@ -1889,7 +896,7 @@ private static function redim_figure($image)
         $filename = $dir . "/" . $filename;
 
         Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
-        
+
         //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
         // création de la table RapportActivite
         $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
@@ -1922,7 +929,7 @@ private static function redim_figure($image)
     else
         return $form;
 
-     
+
 
     }
 

@@ -14,7 +14,6 @@
 
 {{ gramcmacros.menu(menu) }}
 
-
 <section>
 
     <h1>Demande de rallonge pour le projet {{ projet }} (session {{ session }})</h1>
@@ -25,6 +24,10 @@
                 <th class="horiz">Nombre d'heures demandées</th>
                 <td>{{ rallonge.demHeures }}</td>
             </tr>
+            <tr>
+                <th class="horiz">Nombre d'heures attribuées</th>
+                <td>{{ rallonge.attrHeures }}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -34,7 +37,7 @@
                 <th>Justification scientifique de la demande</th>
             </tr>
             <tr>
-                <td>{{ rallonge.prjJustifRallonge }}</td>
+                <td>{{ rallonge.prjJustifRallonge| e | nl2br }}</td>
             </tr>
         </tbody>
     </table>
@@ -49,10 +52,20 @@
             </tr>
         </tbody>
     </table>
+    <table class="projet">
+        <tbody>
+             <tr>
+                <th>Commentaire pour le comité</th>
+            </tr>
+            <tr>
+                <td>{{ rallonge.commentaireInterne }}</td>
+            </tr>
+        </tbody>
+    </table>
 
 </section>
 
+<div class="center"><a href="{{ path('consulter_version', { 'id': version.projet.idProjet, 'version': version.idVersion }) }}" title="Consulter le projet" class="lien_actif">Vers le projet </a></div>
 
 
-   
 {% endblock %}

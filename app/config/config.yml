@@ -41,7 +41,7 @@ twig:
     strict_variables: "%kernel.debug%"
     globals:
        init: "@app.init_controller"
-       version_gramc: '2.2.8'
+       version_gramc: '2.3.0'
        mailadmin: '%mailadmin%'
        mesoc: '%mesoc%'
        mesoc_web: '%mesoc_web%'
@@ -49,9 +49,13 @@ twig:
        mesoc_merci: '%mesoc_merci%'
        mesoc_cgu: '%mesoc_cgu%'
        mesoc_visu: '%mesoc_visu%'
+       mesoc_address: '%mesoc_address%'
        conso_seuil_1: '%conso_seuil_1%'
        conso_seuil_2: '%conso_seuil_2%'
-
+       noconso: '%noconso%'
+       prj_prefix: '%prj_prefix%'
+       max_expertises_nb: '%max_expertises_nb%'
+       ressources_conso_group: '%ressources_conso_group%'
 
 # Doctrine Configuration
 doctrine:

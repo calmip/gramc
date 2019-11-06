@@ -112,7 +112,7 @@
         <td><input type="checkbox" class="cb" id="avec_expert" checked="checked" /></td>
     </tr>
     {% endif %}
-    
+
     {% if( nombreEditionTest > 0 ) %}
     <tr>
         <th>Projets test en édition</th>
@@ -126,6 +126,22 @@
         <th>Projets test en expertise</th>
         <td>{{ nombreExpertiseTest }}</td>
         <td><input type="checkbox" class="cb" id="expertiseTest" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreEditionFil > 0 ) %}
+    <tr>
+        <th>Projets Fil en édition</th>
+        <td>{{ nombreEditionFil }}</td>
+        <td><input type="checkbox" class="cb" id="editionFil" checked="checked" /></td>
+     </tr>
+     {% endif %}
+
+    {% if( nombreExpertiseFil > 0 ) %}
+    <tr>
+        <th>Projets Fil en expertise</th>
+        <td>{{ nombreExpertiseFil }}</td>
+        <td><input type="checkbox" class="cb" id="expertiseFil" checked="checked" /></td>
      </tr>
      {% endif %}
 
@@ -145,7 +161,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreAttente > 0 ) %}
     <tr>
         <th>Projets en attente</th>
@@ -154,7 +170,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreActif > 0 ) %}
     <tr>
         <th>Projets actifs</th>
@@ -163,7 +179,7 @@
      </tr>
      {% endif %}
 
-     
+
     {% if( nombreNouvelleDem > 0 ) %}
     <tr>
         <th>Projets dont le renouvellement est accepté</th>
@@ -172,16 +188,16 @@
      </tr>
      {% endif %}
 
-    {#  
+    {#
     {% if( nombreTermine > 0 ) %}
     <tr>
         <th>Projets terminés</th>
         <td>{{ nombreTermine }}</td>
         <td><input type="checkbox" class="cb" id="nbTermine" checked="checked" /></td>
      </tr>
-     {% endif %}    
+     {% endif %}
     #}
-      
+
     {% if( nombreAnnule > 0 ) %}
     <tr>
         <th>Projets annulés</th>
@@ -189,7 +205,7 @@
         <td><input type="checkbox" class="cb" id="annule" checked="checked" /></td>
      </tr>
      {% endif %}
-         
+
 </table>
 
 </div></div>
@@ -211,6 +227,9 @@
             <th>H dem</th>
             <th>H attr</th>
             <th>H cons</th>
+            <th>Type de metadonnées</th>
+            <th>Taille approximative des datasets</th>
+            <th>Nombre de datasets envisagé</th>
             <th>Signature</th>
             {% if( showRapport == true )%}
             <th>Rapport d'Activité</th>
@@ -235,7 +254,7 @@
             	<a class="fermeture" href="{{ path('fermer_projet', { 'id': version.projet.idProjet }) }}" title="Fermer le projet">
                 	<img src="{{ asset('icones/process-stop.png') }}" alt="Fermer" />
             	</a>
-            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' ) %}
+            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' or version.libelleEtat == 'EXPERTISE_TEST' ) %}
             	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
                 	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
             	</a>
@@ -256,6 +275,7 @@
                    { 'id': version.projet.derniereVersion.idVersion, 'rtn' : 'projet_session' })}}" title="Supprimer le projet {{ version.projet.idProjet }}">
                    <img class="bouton_poussoir" src="{{ asset('icones/poubelle16.png') }}" alt="Supprimer" /></a>
                 {% endif %}
+                {% if noconso==false %}
                 {% if( not version.isNouvelle() ) %}
                     {% if version.typeSession=='A' %}
                         {% set annee_conso = version.anneeSession - 1 %}
@@ -266,8 +286,9 @@
                     title="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}" alt="{{ version.projet.idProjet }}: Evolution de la consommation pour {{annee_conso}}"
                         data-href="{{ absolute_url(path('projet_conso', { 'id': version.projet.idProjet, 'annee' : annee_conso })) }}" />
                 {% endif %}
+                {% endif %}
 
- 
+
             </td>
            	 <td class="{{ version.projet.metaEtat | lower }}">{{ gramcmacros.metagraph(version.projet.metaetat) }}</td>
             <td>
@@ -286,8 +307,10 @@
             </td>
             <td>
                 {% if( version.responsable != null ) %}
+                {% if ( is_granted('ROLE_ADMIN') ) %}
                 <a class="sudo" href="{{ path('sudo',  { 'id': version.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+                {% endif %}
                 <a href="mailto:{{ version.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ version.responsable.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
                 {{ version.responsable.prenom }} {{ version.responsable.nom }}
@@ -301,20 +324,24 @@
                     <span title="{{ version.PrjLLabo }}">{{ version.acroLaboratoire }}</span>
                 {% endif %}
             </td>
-            {% if( version.expert != null ) %}
+            {% if( version.experts|length > 0 ) %}
             <td class="avec_expert" >
-                <a class="sudo" href="{{ path('sudo',  { 'id': version.expert.id }) }}?" title="Changer d'identité">
-                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
-                <a href="mailto:{{ version.expert.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ version.expert.mail }}">
-                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
-                {{ version.expert.prenom }} {{ version.expert.nom }}
+				{% for exp in version.experts %}
+	                {% if ( is_granted('ROLE_ADMIN') ) %}
+	                <a class="sudo" href="{{ path('sudo',  { 'id': exp.id }) }}?" title="Changer d'identité">
+	                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+	                {% endif %}
+	                <a href="mailto:{{ exp.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ exp.mail }}">
+	                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
+	                {{ exp.prenom }} {{ exp.nom }}<br />
+	            {% endfor %}
             {% else %}
             <td>
             {% endif %}
             </td>
             <td>{{ version.demHeures }}</td>
             <td>{{ version.attrHeures }}</td>
-            <td>{{ version.conso }}</td>
+            <td>{{ version.consocalcul }}</td>
                 {% if version.issigne %}
                 <td class="prj_fiche_val">
                     <a href="{{ path('signature',  { 'id': version.idVersion }) }}?">
@@ -324,6 +351,9 @@
                 {% else %}
                 <td>-</td>
                 {% endif %}
+            <td>{{ version.dataMetaDataFormat }}</td>	
+            <td>{{ version.dataNombreDatasets }}</td>
+            <td>{{ version.dataTailleDatasets }}</td>
             {% if( showRapport ==true ) %}
                 {% if( version.isNouvelle() ) %}
                     <td  class="rapport_activite">N/A

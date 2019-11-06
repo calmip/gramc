@@ -215,7 +215,8 @@ class RallongeController extends Controller
             'rallonge'  => $rallonge,
             'session'   => $session,
             'projet'    => $projet,
-            'menu'      => $menu,
+            'version'   => $version,
+            'menu'      => $menu
             ]);
     }
 
@@ -728,12 +729,12 @@ class RallongeController extends Controller
 	            $projets[ $idProjet ]['responsable']= $responsable;
 	            $projets[ $idProjet ]['labo']       = $labo;
 	            $projets[ $idProjet ]['thematique'] = $thematique;
-	            $projets[ $idProjet ]['etat']       = null;
+	            $projets[ $idProjet ]['etat']       = $projet->getMetaEtat();
 	            $projets[ $idProjet ]['etatProjet']         = $projet->getEtatProjet();
 	            $projets[ $idProjet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
 	            $projets[ $idProjet ]['etatVersion']        = $version->getEtatVersion();
 	            $projets[ $idProjet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
-	            $projets[ $idProjet ]['conso']      = $projet->getConso(  $version->getAnneeSession() );
+	            $projets[ $idProjet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
 
 	            if( $version->isNouvelle() )
 	                $projets[ $idProjet ]['NR']   =   'N';
@@ -751,17 +752,7 @@ class RallongeController extends Controller
         {
 	        foreach( $projet['rallonges'] as $rallonge )
             {
-	            $etatRallonge   =   $rallonge->getEtatRallonge();
-	            $etatProjet     =   $projet['etat'];
-	            if( $etatProjet != Etat::EDITION_DEMANDE ) $nbDemandes++;
-	            if( $etatProjet ==  null || $etatProjet == Etat::ANNULE || $etatRallonge == Etat::EDITION_DEMANDE || $etatRallonge == Etat::EDITION_EXPERTISE )
-					$projets[$key]['etat'] =  $rallonge->getMetaEtat();
-	            elseif( $etatProjet == Etat::TERMINE && $etatRallonge== Etat::ACTIF )
-                    $projets[$key]['etat'] =  $rallonge->getMetaEtat();
-	            if( $rallonge->getExpert() == null )
-	                $projets[$key]['affecte']   =   false;
-	            else
-	                $projets[$key]['affecte']   =   true;
+	            if( $projet['etat'] != Etat::EDITION_DEMANDE ) $nbDemandes++;
             }
 	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
         }

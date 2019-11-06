@@ -195,6 +195,7 @@ class MailController extends Controller
      * Renvoie la liste des responsables de projet (et des projets) qui n'ont pas (encore)
      * renouvelé leur projet pour la session $session
      *
+     * TODO -> A TESTER !!!!
      ************************************************************/
     private static function getResponsables(Session $session)
     {
@@ -235,11 +236,7 @@ class MailController extends Controller
             else
                 {
                 if( $derniereVersion->getSession()->getLibelleTypeSession() == 'B' ) continue;
-                $consommation = $derniereVersion->getConsommation();
-                if( $consommation != null )
-                    $conso = $consommation->conso();
-                else
-                    $conso = 0;
+                $conso = $derniereVersion->getConsoCalcul();
 
                 if( $derniereVersion->getAttrHeures() > 0 )
                     $rapport = $conso / $derniereVersion->getAttrHeures() * 100;

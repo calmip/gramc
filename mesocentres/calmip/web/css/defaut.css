@@ -1,0 +1,1042 @@
+/* ATTENTION .- DES TRUCS QUI VONT PAS SUITE A LA FUSION REGARDER EN PARTICULIER #legende !!!!! */
+
+h1{
+	margin-top:12px;
+	margin-bottom: 3px;
+	text-align: center;
+	color: #000088;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+h2{
+	text-align: center;
+	color: #000088;
+    font-family: sans-serif;
+    font-weight: bold;
+    padding-bottom: 20px;
+}
+
+html, body {
+	height: 100%;
+	top: 0;
+	font-family: sans-serif;
+/*	background-image:url("https://attribution-ressources.calmip.univ-toulouse.fr/global/icones/beta.jpeg"); */
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-color: #eeeeeeee
+
+}
+
+/* Comme son nom l'indique, un truc qu'on ne voit pas */
+.invisible {
+	display: none;
+}
+.visible {
+    display: inline;
+}
+
+/* Un truc qu'on ne voit pas à moins que javascript ne nous le montre !
+   Actuellement utilisé seulement par formulaire_projet.php/.js */
+.invisible_if_no_js {
+	display: none;
+}
+
+/* Permet de casser le float:left */
+hr.retour {
+	visibility: hidden;
+	clear: both;
+}
+
+#co_deco{
+	height: 18px;
+	margin-top: -4px;
+	margin-bottom: -5px;
+    text-align: right;
+	font-size: .8em;
+	font-weight: bold;
+}
+
+
+.droite{
+	margin-top: -4px;
+	margin-bottom: -5px;
+    text-align: right;
+}
+
+.gauche{
+    margin-top: -4px;
+	margin-bottom: -5px;
+    text-align: left;
+}
+
+div.gauche {
+	width: 20%;
+	float: left;
+	background-color: blue;
+	font-weight: bold;
+}
+div.droite {
+	margin-left: 20%;
+}
+
+.petit {
+    font-size: .7em;
+ }
+
+.petite_col{
+	width:100px;
+}
+
+#contenu{
+	margin-top: -10px;
+}
+
+a img
+{
+	border: none;
+}
+div.lien-pdf {
+	float: left;
+	font-weight: bold;
+	text-align: center;
+	background-color: #d8d8d8;
+	padding: .2em;
+	border: ridge green 4px;
+	box-shadow: 3px 3px 3px black;
+}
+
+
+#fil_ariane{
+	margin-bottom: 3px;
+	font-size: .5em;
+	font-weight: bold;
+	text-align: left;
+	margin-top: 120px;
+}
+
+
+form{
+/*	width: 1000px;
+	margin: 10px auto;  */
+/*	margin-left: auto;
+	margin-right: auto; */
+}
+
+table {
+	border: medium solid #6495ed;
+	border-collapse: collapse;
+	margin: 0 auto 1em auto;
+}
+th {
+	border: thin solid #6495ed;
+	background-color: #D0E3FA;
+	text-align: center;
+}
+th .light {
+	font-weight: 100;
+}
+td {
+	border: thin solid #6495ed;
+	text-align: justify;
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: #eeeeee;
+}
+
+/* Le formulaire de profil vertical */
+table#profil th {
+	width: 30%;
+}
+
+table#profil td {
+	width: 40em;
+}
+
+table#profil td select,table#profil td input {
+	width: 20em;
+}
+
+/* Le formulaire de profil horizontal */
+table#profil_horiz {
+	font-size: .8em;
+}
+
+table#profil_horiz td select {
+	width: 16em;
+}
+table#profil_horiz td input {
+	width: 10em;
+}
+table#profil_horiz tr td.resp {
+	background-color: black;
+}
+
+/* formulaire de projet => Boutons sauvegarder etc. */
+/* Page affectation (presque) pareil */
+#quitter {
+	position: fixed;
+	top: 115px;
+	right: 0;
+	text-align: right;
+	max-width: 200px;
+	background-color:  black;
+	border: red 2px solid;
+
+}
+#bouton_affecter {
+	width: 200px;
+	position: fixed;
+	top: 100px;
+	right: 0;
+	text-align: right;
+	background-color:  black;
+	border: red 2px solid;
+	padding: 3px;
+}
+#bouton_affecter h2 {
+	color: white;
+	margin-bottom: -5px;;
+}
+#bouton_affecter button {
+	margin: 2px 5px;
+	width: 190px;
+	text-align: center;
+	font-size:.8em;
+	border: 4px outset #c0c0c0;
+}
+
+
+#quitter input, #quitter button, .quitter button {
+	margin: 10px;
+	width: 180px;
+}
+#quitter input:first-child, #quitter button:first-child {
+	margin-bottom: 0;
+}
+#quitter input:last-child, #quitter button:last-child {
+	margin-top: 0;
+}
+
+/* Le bouton Fermer dans le téléchargement d'images "classique" */
+.quitter {
+	max-width: 200px;
+	background-color:  black;
+	border: red 2px solid;
+	margin: 1em auto;
+}
+
+.quitter em {
+	text-align: center;
+}
+
+/* Les div de classe projet (vont prochainement remplacer les tables de classe projet) */
+div.projet {
+	width: 90%;
+	border: 3px solid #6495ed;
+	margin: 1em auto;
+	background-color: #EEEEEE;
+	overflow: auto;
+}
+div.projet h3 {
+	border: thin solid #6495ed;
+	background-color: #D0E3FA;
+	text-align: center;
+	margin:0;
+	font-size: 1em;
+}
+div.projet p {
+	padding: .5ex .5em;
+}
+div.projet .label {
+	width: 50%;
+	text-align: right;
+	float: left;
+    margin: 0 1em;
+}
+div.projet .field {
+	text-align: left;
+    margin: 1.5ex 1em;
+
+}
+
+/* Table page projets par session */
+table#table_projets_session img.conso {
+	width: 15px;
+}
+table#table_projets_session a {
+	text-decoration: none;
+}
+
+/* div de classe publis */
+div.publis {
+	width: 90%;
+	border: 3px solid #6495ed;
+	margin: 1em auto;
+	background-color: #EEEEEE;
+	overflow: auto;
+	font-size: .8em;
+}
+
+/* Les tables projet (devraient disparaitre a la prochaine revision) */
+table.projet {
+	width: 90%;
+}
+
+table.projet th.horiz {
+	width: 33%;
+}
+
+/* Le formulaire projet */
+#form_projet {
+	width: auto;
+}
+
+#form_projet legend {
+	font-size: 1em;
+	font-weight: bold;
+}
+
+#form_projet fieldset {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.invi{
+	border:none;
+}
+
+.invi td{
+	border:none;
+}
+
+.contien_tab{
+	padding-left: 0px;
+    padding-right: 0px;
+}
+
+#table_form_col td, #table_form_resp td {
+	border: thin solid #6495ed;
+	text-align: center;
+	width:auto;
+}
+
+/* Le formulaire de lecture du journal */
+#form_lire fieldset {
+	width: 29%;
+	margin: 5px;
+	float: left;
+	height: 8ex;
+	position: relative;
+}
+#form_lire fieldset input, #form_lire fieldset select {
+	position: absolute;;
+	left: 40%;
+}
+#form_lire fieldset br {
+	margin-bottom: .5em;
+}
+
+/* je ne sais pas pourquoi il a fallu spécifier la largeur de cet élément, cf. jquery uploader */
+div.ajax-file-upload {
+	width: 80%
+}
+
+/* remplace le vieux tag <center> qui n'existe plus en html5 */
+td.center,h3.center {
+	text-align: center;
+}
+
+a.center {
+	display: block;
+	text-align: center;
+	width:auto;
+}
+
+p.center {
+	margin: 0.5em auto;
+	width: 50%;
+}
+
+h3.center {
+	text-align: center;
+}
+
+div.center {
+	margin: 1em auto;
+	text-align: center;
+}
+
+/* Pour la page gerer_projets.php et gerer_projets_annee.php */
+#projets {
+	font-size: 0.7em;
+	margin: 0 1em;
+	margin-left: 35em;
+}
+
+#bilan_legende {
+	width: 350px;
+	position: absolute;
+	margin: 0 1em;
+}
+#bilan {
+	font-size: 0.7em;
+}
+
+#bilan table {
+	width: 100%;
+}
+
+/* Pour la page lire.php (lire le journal) */
+#jentrees {
+	font-size: 0.7em;
+}
+
+/* header, section et footer */
+header {
+	height: 100px;
+	background-repeat: no-repeat;
+	border-bottom: solid black 2px;
+}
+header {
+	left: 0px;
+    position: absolute;
+    width: 100%;
+    top: 10px;
+}
+
+
+header img {
+	float: left;
+}
+section {
+    padding-bottom: 2.8ex;
+	margin: 1em 0;
+	width: 100%;
+}
+section.admin {
+	background-image: url("../icones/adminbgrnd.png");
+	background-repeat: repeat-x repeat-y;
+}
+
+/* Le pied de page */
+footer {
+	background-color: #10457A;
+	color: white;
+	font-weight: bold;
+	border-top: 3px solid black;
+    border-bottom: 2px solid white;
+	float: none;
+	position: fixed;
+	bottom: 0px;
+	width: 100%;
+	padding: 2px 1em;
+}
+
+footer p {
+	display: inline;
+}
+
+footer span.petit {
+    float: right;
+	font-size: .7em;
+	margin-right: 30px;
+}
+
+footer span.petit a {
+	color: lightblue;
+}
+
+/* Les liens de navigation */
+nav ul{
+	text-align: center;
+	list-style-type: none;
+}
+
+nav li{
+	display: inline-block;
+    margin: 8px;
+}
+
+/* Liens actifs ou inactifs */
+.lien_actif, .lien_inactif {
+	padding: 3px 6px;
+	margin: 15px 10px;
+}
+
+.lien_actif {
+	font-size: 0.85em;
+	font-weight: bold;
+	background-color: #FFEEEE;
+	color: #000044;
+}
+
+.lien_inactif {
+	font-size: 0.85em;
+	color: #666666;
+	background-color: #CCCCCC;
+}
+
+/* infobulles - rouge si inactif, jaune si actif ! */
+div.infobulleok,div.infobulleko {
+	display: inline;
+	position: relative;
+	top:-.8ex;
+	left: -.5em;
+}
+
+div.infobulleok:hover::after {
+	background-color: yellow;
+	box-shadow: 6px 6px 6px black;
+	border: solid 1px red;
+	padding: .5ex .5em;
+	content: attr(data-title);
+	position: absolute;
+	width: 10em;
+	z-index:1;
+	left: -7em;
+	top: -2ex;
+}
+
+div.infobulleko:hover::after {
+	background-color: red;
+	box-shadow: 6px 6px 6px black;
+	padding: .5ex .5em;
+	color: white;
+	border: solid 1px black;
+	content: attr(data-title);
+	position: absolute;
+	width: 10em;
+	z-index:1;
+	left: -7em;
+	top: -2ex;
+}
+
+/* Les messages (cf. afficher_info, afficher_warning, afficher_erreur) */
+div.message {
+	padding: 1em;
+	width: 50%;
+	margin: 1em auto;
+	padding: 0.2em;
+	box-shadow: 6px 6px 6px black;
+	background-color: #D8D8D8;
+}
+
+div.message br {
+	margin-bottom: .5em;
+}
+
+div.message h2{
+	text-align: center;
+	color: #000088;
+    font-weight: bold;
+	margin: 0.2em;
+	padding: 0.1em;
+	font-size: 1.1em;
+}
+
+/* Le tableau de lecture du journal */
+div.warning {
+	border: 7px orange ridge;
+}
+div.erreur {
+	border: 7px red ridge;
+}
+div.info {
+	border: 7px green ridge;
+}
+
+
+/* Mettre en rouge et en gras certains passage importants */
+span.attention {
+	color: red;
+	font-weight: bold;
+	font-style: italic;
+}
+
+/* Le tableau de lecture du journal */
+td.ATTENTION {
+	color: orange;
+	font-weight: bold;
+}
+td.INFO {
+	color: green;
+	font-weight: bold;
+}
+td.ERREUR {
+	color: red;
+	font-weight: bold;
+}
+
+/* Les boutons */
+/* bouton_poussoir: je presse une fois et ça revient */
+img.bouton_poussoir, input.bouton_poussoir {
+	border: 2px outset #c0c0c0;
+	opacity: 0.6;
+	padding: 1px;
+}
+
+img.bouton_poussoir:hover, input.bouton_poussoir:hover {
+	opacity: 1.0;
+}
+
+img.bouton_poussoir:active {
+	border: 2px inset #c0c0c0;
+	opacity: 1.0;
+}
+
+/* bouton_on, bouton_off: je presse une fois et ça reste enfoncé, ou ça remonte */
+img.bouton_off {
+	border: 2px outset #c0c0c0;
+	opacity: 0.6;
+	padding: 1px;
+}
+
+img.bouton_off:hover {
+	opacity: 1.0;
+}
+
+img.bouton_off:active, img.bouton_on {
+	border: 2px inset #c0c0c0;
+	opacity: 1.0;
+	padding: 1px;
+}
+
+img.bouton_on:hover {
+	opacity: 0.6;
+}
+
+#img_up {
+	width: 15px;
+	height: 15px;
+	}
+/* Bouton de tri du tableaux utilisateurs */
+#utilisateurs button {
+	background: none;
+	}
+
+/* lignes des tableaux alternent entre gris et blanc une fois sur deux */
+#utilisateurs tr:nth-child(2n+1) td, #sessions tr:nth-child(2n+1) td, #laboratoires tr:nth-child(2n+1) td, #thematiques tr:nth-child(2n+1) td, #experts tr:nth-child(2n+1) td, #anciennes_expertises tr:nth-child(2n+1) td{
+	background-color: white;
+	}
+
+
+.odd td{
+	background-color: white;
+	}
+
+.event td{
+	background-color: grey;
+	}
+
+
+
+/* Alerte du tableau projets par année si quota != attr_heures ou des seuils_conso */
+.conso_seuil_1 td {
+	color: #FF9E00;
+	font-weight: bold;
+	}
+
+.conso_seuil_2 td {
+	color: red;
+	font-weight: bold;
+	}
+.alerte td { /* priorité sur les alertes */
+	background-color: #FE2E2E;
+	color: white;
+	font-weight: bold;
+	font-style: italic;
+	}
+
+
+/* Légende page projets par année */
+#camembert {
+	position: absolute;
+	margin: 23em 1em;
+}
+#legende {
+	margin: 3em;
+	font-size: .4em;
+}
+#legende br {
+	margin-bottom: 1em;
+}
+
+#legende_conso_1 {
+	color: #FF9E00;
+	font-weight: bold;
+}
+
+#legende_conso_2 {
+	color: red;
+	font-weight: bold;
+}
+
+#legende_alerte {
+	background-color: #FE2E2E;
+	color: white;
+	font-weight: bold;
+	font-style: italic;
+}
+
+#legende p:first-child {
+	text-decoration: underline;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+/* Onglets dans la page nouveau projet */
+#onglets {
+	margin-top: 50px;
+	}
+
+
+#projet_test_expertise {
+	text-align: center
+}
+
+#menu_formulaire {
+    float: right;
+    left: -50%;
+    position: relative;
+}
+
+/* Le système d'onglets du formulaire de projet */
+#ul_formulaire{
+	list-style-type: none;
+	padding: 6px;
+	padding-bottom: 0;
+	margin: 0px;
+	left: 50%;
+	position: relative;
+	background: none;
+	border: none;
+}
+#ul_formulaire li {
+	margin-right: -10px;
+	border-radius: 10px 2px 0 0;
+}
+.onglet {
+	margin-top: 50px;
+	}
+.onglet h3 {
+	text-align: center;	color: #000088;
+    font-family: sans-serif;
+    font-weight: bold;
+	}
+
+#onglets {
+	border: none;
+	}
+
+#tab5 {
+text-align: center;
+}
+
+/* Page expertiser */
+#menu_expertiser img {
+	margin: 1em;
+}
+
+#prj_justif_renouv, #prj_expose{
+    width: 600px;
+    height: 250px;
+    border: 1px solid black;
+    padding: 5px;
+    overflow: auto;
+    margin: 0 80px;
+    margin-top: 1em;
+    background: white;
+}
+
+#projet_test_anciens {
+	text-align: center;
+}
+
+.center_italic {
+	 font-style: italic;
+
+}
+
+.projet h1 {
+	color: black;
+	font-size: 30px;
+	text-align: left;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.projet h2 {
+	color: black;
+	font-size: 25px;
+	text-align: left;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+
+}
+.projet h3 {
+	color: black;
+	font-size: 20px;
+	text-align: left;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding-bottom: 0px;
+	padding-top: 0px;
+}
+
+.projet p {
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+/* Formulaire projet: drag-and-drop pour téléverser des images */
+.wrap-drop-zone {
+	margin: 0 auto;
+	width: 618px; /* 200px + 6 x 3 px (margin) */
+}
+.drop-zone {
+	position: relative;   /* Pour mettre la poubelle en bas à gauche */
+	width: 200px;
+	height: 200px;
+	border: 3px dashed #BBBBBB;
+	line-height:100px;
+	text-align: center;
+	background: white;
+	float: left;
+	overflow: hidden;
+}
+.drop-zone:hover {
+	background: grey;
+}
+
+/* L'image téléversée prend toute la zone en hauteur */
+.drop-zone img.dropped {
+	height: 100%;
+	margin: 0 auto;
+}
+
+/* La poubelle en bas à gauche */
+.drop-zone img.icone {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+/* Affichage du projet: le tableau de figures */
+.figure {
+	max-width: 200px;
+	cursor: pointer;
+}
+.figures td {
+	font-size: .8em;
+	font-weight: bold;
+	text-align: center;
+}
+
+.cellule_canvas {
+	width: 100px;
+	height: 25px;
+}
+
+canvas {
+	cursor: pointer;
+}
+
+
+/*pour la page statistiques.php*/
+#navigation {
+	font-size: 0.7em;
+	float: left;
+	width: 350px;
+	margin: 0 1em;
+	position: absolute;
+	z-index : 2;
+}
+
+#navigation table {
+	width: 100%;
+}
+
+#navigation table .left {
+	text-align: left;
+}
+
+/*
+#tab_nb_projets_total_annee, #tab_heures_calcul_total_annee, #tableau_affichage, #tableau_affichage2 {
+	width: 100%;
+}
+
+ #tab_statistiques_statut, #tab_statistiques_etab, #tab_statistiques_meta_thematiques{
+ 	width: 70%;
+}
+
+#tab_incoh_utilisateurs_statut, #tab_incoh_utilisateurs_etablissement, #tab_pb_login{
+ 	width: 100%;
+}
+*/
+
+#navigation a{
+	text-decoration: none;
+	color: black;
+}
+#navigation a:hover,#tab_incoh_utilisateurs_statut a:hover,#tab_incoh_utilisateurs_etablissement a:hover, #tab_pb_login a:hover{
+	text-decoration : underline;
+	font-style: italic;
+}
+
+/* Dialogue graphique (courbes de consommation) */
+div.ui-dialog {
+	box-shadow: 10px 10px 5px #888888;
+}
+/* TODO - Pas terrible il faudra arranger cela ! */
+#graph0,#graph1,#graph2,#graph3,#graph4,#graph5,#graph6,#graph7,#graph8  {
+	background-color: silver;
+}
+/* TODO - Passer plutôt par des classes et homogéniser tout ça, c'est le bordel */
+#dialog-compta img,#graph_1 img, #graph_2 img {
+	width: 100%;
+}
+
+/* NE PAS redimensionner les boutons poussoirs !!! */
+#dialog-compta img.bouton_poussoir {
+	width: inherit;
+}
+#dialog-compta ul {
+	list-style: none;
+}
+#tab_incoh_utilisateurs_statut a, #tab_pb_login a, #tab_incoh_utilisateurs_etablissement a{
+	text-decoration: none;
+	color: black;
+	background-color: transparent;
+}
+
+#tab_statistiques_statut tr:last-child{
+	font-weight: bold;
+}
+
+#tab_statistiques_etab tr:last-child{
+	font-weight: bold;
+}
+
+#id_statistiques_labo, #id_statistiques_statut, #id_statistiques_etab, #id_statistiques_meta_thematiques, #incoherences, #id_nb_collab_projets, #id_nb_login_projets{
+	font-size: 0.7em;
+	margin: 0 1em;
+	margin-left: 400px;
+}
+
+/* Le header et le footer sont fixes, le corps du tableau peut scroller
+ * Que du css-hack, horreur !!!! */
+#tab_statistiques_labo {
+	width : 630px;
+	background-color: #D0E3FA;
+}
+#tab_statistiques_labo tbody {
+	display: block;
+	overflow-y: scroll;
+	height: 30em;
+}
+#tab_statistiques_labo th, #tab_statistiques_labo td {
+	width: 100px;
+	display: block;
+	float: left;
+	border: 1px solid blue;
+	padding: 10px;
+	margin: 0;
+	border-top: 0;
+	border-left: 0;
+}
+#tab_statistiques_labo tfoot td{
+	text-align: left;
+	border-top: 1px solid blue;
+	height: 2.6em;
+}
+#seuil_autre_graph{
+	font-size: .9em;
+}
+#seuil_autre_graph input{
+	width: 1em;
+	font-size: 1em;
+}
+#seuil_autre_graph button{
+	font-size: 1em;
+}
+
+
+#statistiques {
+	height: 550px;
+	overflow-y : auto;
+}
+
+.bouton_conso {
+	border : none;
+	background : none;
+}
+
+
+#affecte_experts select {
+	width: 150px;
+	margin: 5px auto;
+}
+
+#expertise input.validation {
+	float: left;
+	margin-left: 3em;
+	padding: 1em;
+}
+#expertise label.validation {
+	display: block;
+	margin: -.2em 5em;
+	width: 30%:
+}
+
+
+/* Tableaux scrollables: Le header et le footer sont fixes, le corps du tableau peut scroller
+ * Que du css-hack, horreur !!!! */
+.scrtable {
+	background-color: #D0E3FA;
+	direction: rtl;
+}
+.scrtable thead {
+	display: block;
+	height: 2.8em;
+	overflow-y: scroll;
+}
+
+.scrtable tbody {
+	display: block;
+	overflow-y: scroll;
+	height: 60em;
+}
+.scrtable th, .scrtable td {
+	display: block;
+	float: left;
+	border: 1px solid blue;
+	padding: 10px;
+	margin: 0;
+	border-top: 0;
+	border-left: 0;
+	direction: ltr;
+}
+.scrtable tfoot td{
+	text-align: left;
+	border-top: 1px solid blue;
+/*	height: 2.6em;   */
+}
+
+.scrtable .w15  { width:15px; height: 35px; padding:3px 17px 3px 3px; border-bottom: none }
+.scrtable .w25  { width:25px; height: 35px; padding:3px 10px; border-bottom: none }
+.scrtable .w35  { width:35px; height: 35px; padding:3px 10px; border-bottom: none }
+.scrtable .w45  { width:45px; height: 35px; padding:3px 10px; border-bottom: none }
+.scrtable .w80  { width:80px; height: 35px; padding:3px 10px; border-bottom: none }
+.scrtable .w170 { width:170px; height: 35px; padding:3px 10px; border-bottom: none }
+.scrtable .w180 { width:180px; height: 35px; padding:3px 10px; border-bottom: none }
+
+/* Les onglets du formulaire de projet */
+.ui-widget-content {
+	background: inherit;
+}

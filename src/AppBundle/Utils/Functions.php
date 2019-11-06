@@ -30,7 +30,6 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Templates;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Version;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\CollaborateurVersion;
@@ -272,7 +271,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails
+     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
      *
      *********/
     static public function sendMessage( $twig_sujet, $twig_contenu, $params, $users = null )
@@ -382,7 +381,17 @@ class Functions
                         $users  =  array_merge( $users, $new_users );
                         }
                     break;
-                case 'P': //président
+                case 'S': // sysadmin
+                    $new_users  =  AppBundle::getRepository(Individu::class)->findBy(['sysadmin'  =>  true ]);
+                    if(  $new_users == null )
+                        Functions::warningMessage(__METHOD__ . ":"  . __LINE__ .' Aucun sysadmin !');
+                    else
+                        {
+                        if( ! is_array( $new_users ) ) $new_users = $new_users->toArray();
+                        $users  =  array_merge( $users, $new_users );
+                        }
+                    break;
+                 case 'P': //président
                     $new_users  =   AppBundle::getRepository(Individu::class)->findBy(['president'  =>  true ]);
                     if(  $new_users == null )
                         Functions::warningMessage(__METHOD__ . ":" .  __LINE__ .' Aucun président !');
@@ -504,6 +513,9 @@ class Functions
 
     //////////////////////////////////////////////////
 
+	/***************
+	 * Téléchargement d'un fichier csv
+	 *****************/
     static public function csv($content, $filename = 'filename')
     {
         $response = new Response();
@@ -518,20 +530,23 @@ class Functions
         return $response;
     }
 
+	/***************
+	 * Téléchargement d'un fichier pdf
+	 *****************/
     static public function pdf($filename)
     {
         $response = new Response();
         if( preg_match( '/^\%PDF/', $filename ) )
-            {
+		{
             //$filename = preg_replace('~[\r\n]+~', '', $filename);
             $response->setContent($filename );
             $response->headers->set('Content-Disposition', 'inline; filename="document_gramc.pdf"' );
-            }
+		}
         elseif( $filename != null && file_exists( $filename ) && ! is_dir( $filename ) )
-            {
+		{
             $response->setContent(file_get_contents( $filename ) );
             $response->headers->set('Content-Disposition', 'inline; filename="' . basename($filename) .'"' );
-            }
+		}
         else
             $response->setContent('');
 
@@ -603,63 +618,11 @@ class Functions
 
     ////////////////////////////////////////////////
 
-    public static function getConsommation(Version $version)
-    {
-        return static::calculConsommation($version->getConsommation() , false);
-    }
-
-    public static function getProjetConsommation( Projet $projet, $annee = null, $pourcentage_flg = true  )
-    {
-        // si $annee == null $annee = GramcDate::get()->showYear()
-        return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommation($projet, $annee),$pourcentage_flg );
-    }
-
-// VIRE PAR MANU car 1/ Non utilise 2/ getConsommationTest a change de prototype (maintenant pareil que getConsommation)
-    //public static function getProjetTestConsommation( ProjetTest $projet, $pourcentage_flg = true  )
-    //{
-        //return static::calculConsommation( AppBundle::getRepository(Consommation::class)->getConsommationTest($projet),$pourcentage_flg );
-    //}
-
-
-    public static function calculConsommation( $consommation, $pourcentage_flg = false )
-    {
-        $conso          =   0;
-
-        if( $consommation != null )
-            {
-            for ($i = 1; $i <= 12; $i++)
-                 {
-                    if( $i < 10 )
-                        ${"methodName"} = 'getM0'.$i;
-                    else
-                        ${"methodName"} = 'getM'.$i;
-                    $c = $consommation->${"methodName"}();
-                    if( $c != null && $c > $conso ) $conso  =   $c;
-                   }
-
-        // on calcule la consommation comme pourcentage
-            if( $pourcentage_flg == true )
-            {
-            $limite =  $consommation->getLimite();
-            if( $limite <= 0 )
-                static::errorMessage('Functions : getConsommation : limite nulle ou négative');
-            else
-                {
-                $conso   /=  $limite;
-                $conso   *= 100;
-                }
-
-            }
-        }
-
-        return $conso;
-    }
-
     // ACL pour Projet
 
     public static function projetACL(\AppBundle\Entity\Projet $projet)
     {
-        if (  AppBundle::isGranted('ROLE_ADMIN') ||  AppBundle::isGranted('ROLE_PRESIDENT'))
+        if (  AppBundle::isGranted('ROLE_OBS') ||  AppBundle::isGranted('ROLE_PRESIDENT'))
             return true;
         else
             return self::userProjetACL($projet);
@@ -704,46 +667,46 @@ class Functions
         return false;
     }
 
-    // Renvoie une représentation en "string" de la varaible passée en input
+    // Renvoie une représentation en "string" de la variable passée en input
     // Utilisé pour déboguer
     public static function show( $input )
     {
-    if( $input instanceof \DateTime )
-        return $input->format("d F Y H:i:s");
-    elseif( is_object( $input ) )
-        {
-        $reflect    = new \ReflectionClass($input);
-        if(  method_exists( $input, '__toString') )
-            return '{'.$reflect->getShortName() .':'.$input->__toString().'}';
-        elseif( method_exists( $input, 'toArray') )
-            return '{'.$reflect->getShortName() .':' . static::show( $input->toArray()) .'}';
-        else
-            {
-            ob_start();
-            Debug::dump( $input, 1);
-            //return '{'.$reflect->getShortName().'}';
-            return ob_get_clean();
-            }
-        }
-    elseif( is_string( $input ) )
-        return "'" . $input . "'";
-    elseif( $input === [] )
-        return '[]';
-    elseif( is_array( $input ) )
-        {
-        $output = '[ ';
-        foreach( $input as $key => $value ) $output .= static::show( $key ) . '=>' . static::show( $value ) . ' ';
-        return $output .= ']';
-        }
-    elseif( $input === NULL )
-        return 'null';
-    elseif( is_bool( $input ) )
-        {
-        if( $input == true ) return 'true';
-        else return 'false';
-        }
-    else
-        return $input;
+	    if( $input instanceof \DateTime )
+	        return $input->format("d F Y H:i:s");
+	    elseif( is_object( $input ) )
+	        {
+	        $reflect    = new \ReflectionClass($input);
+	        if(  method_exists( $input, '__toString') )
+	            return '{'.$reflect->getShortName() .':'.$input->__toString().'}';
+	        elseif( method_exists( $input, 'toArray') )
+	            return '{'.$reflect->getShortName() .':' . static::show( $input->toArray()) .'}';
+	        else
+	            {
+	            ob_start();
+	            Debug::dump( $input, 1);
+	            //return '{'.$reflect->getShortName().'}';
+	            return ob_get_clean();
+	            }
+	        }
+	    elseif( is_string( $input ) )
+	        return "'" . $input . "'";
+	    elseif( $input === [] )
+	        return '[]';
+	    elseif( is_array( $input ) )
+	        {
+	        $output = '[ ';
+	        foreach( $input as $key => $value ) $output .= static::show( $key ) . '=>' . static::show( $value ) . ' ';
+	        return $output .= ']';
+	        }
+	    elseif( $input === NULL )
+	        return 'null';
+	    elseif( is_bool( $input ) )
+	        {
+	        if( $input == true ) return 'true';
+	        else return 'false';
+	        }
+	    else
+	        return $input;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -768,14 +731,14 @@ class Functions
 
     public static function dataError( $data, $groups = ['Default'] )
     {
-    $validator = AppBundle::getContainer()->get('validator');
-    if( is_string( $groups ) ) $groups = [$groups];
-    $violations = $validator->validate($data, null, $groups);
+	    $validator = AppBundle::getContainer()->get('validator');
+	    if( is_string( $groups ) ) $groups = [$groups];
+	    $violations = $validator->validate($data, null, $groups);
 
-    $erreurs = [];
-    foreach( $violations as $violation )
-        $erreurs[]  =   $violation->getMessage();
-    return $erreurs;
+	    $erreurs = [];
+	    foreach( $violations as $violation )
+	        $erreurs[]  =   $violation->getMessage();
+	    return $erreurs;
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1053,9 +1016,6 @@ class Functions
         $versions_A= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_A ] );
         $versions_B= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_B ] );
 
-        // $projets_tests= AppBundle::getRepository(ProjetTest::class)->findBy( ['session' => $session_A ] );
-        $consommation_repo = AppBundle::getRepository(Consommation::class);
-
         // $mois est utilisé pour calculer les éventuelles pénalités d'été
         // Si on n'est pas à l'année courante, on le met à 0 donc elles ne seront jamais calculées
         $annee_courante=GramcDate::get()->showYear();
@@ -1294,7 +1254,7 @@ class Functions
     //
 
     public static function utilisateurs_a_effacer($individus = [])
-        {
+	{
         $individus_effaces = [];
 
         foreach( $individus as $individu )
@@ -1310,5 +1270,30 @@ class Functions
                 $individus_effaces[] = $individu;
 
          return $individus_effaces;
-        }
+	}
+
+	////////////////////////
+	// Supprime TOUS les fichiers du répertoire de sessions
+	// Tant pis s'il y avait des fichiers autres que des fichiers de session symfony
+	// (ils n'ont rien à faire ici de toute manière)
+	//
+	public static function clear_phpsessions()
+	{
+		$dir = session_save_path();
+	    $scan = scandir( $dir );
+	    $result = true;
+	    foreach ( $scan as $filename )
+	    {
+			if( $filename != '.' && $filename != '..' )
+			{
+				$path = $dir . '/' . $filename;
+				if (@unlink($path)==false)
+				{
+					Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le fichier $path n'a pas pu être supprimé !" );
+					$result = false;
+				}
+			}
+		}
+		return $result;
+	}
 }

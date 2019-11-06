@@ -30,12 +30,12 @@ use AppBundle\Entity\Individu;
 use AppBundle\Entity\Templates;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\Version;
-use AppBundle\Entity\Consommation;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Rallonge;
 use AppBundle\Entity\RapportActivite;
 
 use AppBundle\Controller\VersionController;
+use AppBundle\Controller\VersionModifController;
 
 use AppBundle\Utils\GramcDate;
 use AppBundle\Utils\ExactGramcDate;
@@ -73,55 +73,91 @@ use AppBundle\Workflow\Session\SessionWorkflow;
 
 class Menu
 {
-    public static function  nouveau_projet()
+	public static Function nouveau_projet($type)
+	{
+        $prj_prefix = AppBundle::getParameter('prj_prefix');
+        if (!isset($prj_prefix[$type] ))
+        {
+			return null;
+		}
+
+		switch ($type)
+		{
+			case Projet::PROJET_FIL:
+				return self::nouveau_projet_fil();
+				break;
+			case Projet::PROJET_SESS:
+				return self::nouveau_projet_sess();
+				break;
+			case Projet::PROJET_TEST:
+				return self::nouveau_projet_test();
+				break;
+		}
+	}
+
+	/*
+	 * Création d'un projet de type PROJET_SESS:
+	 *     - Peut être créé seulement lors des sessions d'attribution
+	 *     - Renouvelable à chaque session
+	 *     - Créé seulement par un permanent, qui devient responsable du projet
+	 *
+	 */
+    private static function  nouveau_projet_sess()
     {
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet actuellement";
         $menu['name']   =   'avant_nouveau_projet';
-        //$menu['params'] =   [ 'type' =>  'P' ];
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_SESS ];
         $menu['lien']   =   'Nouveau projet';
         $menu['ok'] = false;
 
         $session =  Functions::getSessionCourante();
         if( $session == null )
-            {
+		{
             $menu['raison'] = "Il n'y a pas de session courante";
             return $menu;
-            }
+		}
 
         $etat_session   =   $session->getEtatSession();
 
         if(  ! self::peut_creer_projets() )
-            $menu['raison'] = "Seuls les personnels permanents de l'ESR Occitanie ont la possibilité de créer un projet";
+        {
+            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés peuvent créer un projet";
+		}
         elseif( $etat_session == Etat::EDITION_DEMANDE )
-            {
+		{
             $menu['raison'] = '';
             $menu['commentaire'] = "Créez un nouveau projet, vous en serez le responsable";
             $menu['ok'] = true;
-            }
+		}
         else
             $menu['raison'] = 'Nous ne sommes pas en période de demande, pas possible de créer un nouveau projet';
 
         return $menu;
     }
 
-    /////////////////////////////////
-
+	/*
+	 * Création d'un projet de type PROJET_TEST:
+	 *     - Peut être créé seulement EN-DEHORS des sessions d'attribution
+	 *     - Non renouvelable
+	 *     - Créé par n'importe qui, qui devient responsable du projet
+	 *
+	 */
     public static function  nouveau_projet_test()
     {
         $menu   =   [];
         $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet test actuellement";
         $menu['name']   =   'nouveau_projet';
-        $menu['params'] =   [ 'type' =>  'T' ];
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_TEST ];
         $menu['lien']   =   'Nouveau projet test';
         $menu['ok'] = false;
 
         $session =  Functions::getSessionCourante();
         if( $session == null )
-            {
+		{
             $menu['raison'] = "Il n'y a pas de session courante";
             return $menu;
-            }
+		}
 
         $etat_session   =   $session->getEtatSession();
         //Functions:: debugMessage(__METHOD__ . ':' . __LINE__ . "countProjetsTestResponsable = " .
@@ -131,8 +167,9 @@ class Menu
             $menu['raison'] = "Vous n'êtes pas connecté";
         elseif( AppBundle::getRepository(Projet::class)->countProjetsTestResponsable( AppBundle::getUser() ) > 0 )
             $menu['raison'] = "Vous êtes déjà responsable d'un projet test";
-        elseif( ! self::peut_creer_projets() )
-            $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
+        // manu, 11 juin 2019: tout le monde peut créer un projet test. Vraiment ???
+        //elseif( ! self::peut_creer_projets() )
+        //    $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
         elseif( $etat_session == Etat::EDITION_DEMANDE )
             $menu['raison'] = "Il n'est pas possible de créer un projet test en période d'attribution";
         else
@@ -144,12 +181,53 @@ class Menu
         return $menu;
     }
 
-    //////////////////////////////
+	/*
+	 * Création d'un projet de type PROJET_FIL:
+	 *     - Peut être créé n'importe quand ("au fil de l'eau")
+	 *     - Renouvelable seulement à chaque session
+	 *     - Créé seulement par un permanent, qui devient responsable du projet
+	 *
+	 */
+    private static function  nouveau_projet_fil()
+    {
+        $menu   =   [];
+
+        $menu['commentaire']    =   "Vous ne pouvez pas créer de nouveau projet actuellement";
+        $menu['name']   =   'avant_nouveau_projet';
+        $menu['params'] =   [ 'type' =>  Projet::PROJET_FIL ];
+        $menu['lien']   =   'Nouveau projet';
+        $menu['ok']     = false;
+
+        $session =  Functions::getSessionCourante();
+        if( $session == null )
+		{
+            $menu['raison'] = "Il n'y a pas de session courante";
+            return $menu;
+		}
+
+        $etat_session   =   $session->getEtatSession();
+        if(  ! self::peut_creer_projets() )
+        {
+            $menu['raison'] = "Seuls les personnels permanents des laboratoires enregistrés peuvent créer un projet";
+		}
+        elseif( $etat_session != Etat::EDITION_EXPERTISE )
+		{
+            $menu['raison'] = '';
+            $menu['commentaire'] = "Créez un nouveau projet, vous en serez le responsable";
+            $menu['ok'] = true;
+		}
+        else
+            $menu['raison'] = 'La période de saisie des projets est terminée, pas possible de créer un nouveau projet pour l\'instant';
+
+        return $menu;
+    }
+
+	////////////////////////////////
 
     public static function peut_creer_projets($user = null)
     {
     if( $user == null ) $user   =   AppBundle::getUser();
-    
+
     if( $user != null && $user->peut_creer_projets() )
         return true;
     else
@@ -212,7 +290,7 @@ class Menu
     $menu['lien']           =   "Bilan de session";
 
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok'] = true;
         }
@@ -234,7 +312,7 @@ class Menu
         $menu['lien']           =   "Bilan annuel";
 
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -255,7 +333,7 @@ class Menu
         $menu['commentaire']    =   "Gérer les projets par session";
         $menu['lien']           =   "Projets ( par session )";
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -276,7 +354,7 @@ class Menu
         $menu['commentaire']    =   "Gérer les projets par année";
         $menu['lien']           =   "Projets ( par année )";
 
-        if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
             $menu['ok'] = true;
         }
@@ -298,7 +376,7 @@ class Menu
     $menu['lien']           =   "Tous les projets";
 
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok'] = true;
         }
@@ -336,63 +414,63 @@ class Menu
 
     public static function laboratoires()
     {
-    $menu['name']   =   'gerer_laboratoires';
-    $menu['commentaire']    =   "Gérer la liste des laboratoires enregistrés";
-    $menu['lien']           =   "Laboratoires";
+	    $menu['name']   =   'gerer_laboratoires';
+	    $menu['commentaire']    =   "Gérer la liste des laboratoires enregistrés";
+	    $menu['lien']           =   "Laboratoires";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
-        {
-        $menu['ok'] = true;
-        }
-    else
-        {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
-        }
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
 
-    return $menu;
+	    return $menu;
     }
 
     //////////////////////////////////////
 
     public static function thematiques()
     {
-    $menu['name']   =   'gerer_thematiques';
-    $menu['commentaire']    =   "Gérer la liste des thématiques";
-    $menu['lien']           =   "Thématiques";
+	    $menu['name']   =   'gerer_thematiques';
+	    $menu['commentaire']    =   "Gérer la liste des thématiques";
+	    $menu['lien']           =   "Thématiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
-        {
-        $menu['ok'] = true;
-        }
-    else
-        {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
-        }
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
 
-    return $menu;
+	    return $menu;
     }
 
     //////////////////////////////////////
 
     public static function metathematiques()
     {
-    $menu['name']   =   'gerer_metaThematiques';
-    $menu['commentaire']    =   "Gérer la liste des méta-thématiques";
-    $menu['lien']           =   "Méta-Thématiques";
+	    $menu['name']   =   'gerer_metaThematiques';
+	    $menu['commentaire']    =   "Gérer la liste des méta-thématiques";
+	    $menu['lien']           =   "Méta-Thématiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    if( AppBundle::isGranted('ROLE_OBS') )
         {
-        $menu['ok'] = true;
+	        $menu['ok'] = true;
         }
-    else
+	    else
         {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
         }
 
-    return $menu;
+	    return $menu;
     }
     //////////////////////////////////////
 
@@ -504,27 +582,19 @@ class Menu
         if( AppBundle::isGranted('ROLE_ADMIN') )
         {
             $menu['commentaire']    =   "Modifier les collaborateurs en tant qu'administrateur";
-            $menu['raison']         =   "L'admininstrateur peut TOUJOURS modifier les collaborateurs du projet quelque soit son état !";
             $menu['ok']             = true;
-            return $menu;
         }
-
-        $menu['ok']             = false;
-        $menu['commentaire']    =   "Vous ne pouvez pas modifier les collaborateurs";
-
-        if( static::modifier_version( $version )['ok'] == true )
-            $menu['raison']     =  "Vous devez utiliser le lien Modifier pour gérer les collaborateurs";
-        elseif( $version->getEtatVersion() == Etat::TERMINE )
-            $menu['raison']     =  "Cette version de projet est terminée";
         elseif( ! $version->isResponsable() )
-            $menu['raison']     =  "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
-        else
         {
+        	$menu['ok']     = false;
+        	$menu['commentaire']     = 'Bouton inactif';
+            $menu['raison'] = "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
+		}
+		else
+		{
             $menu['ok']          = true;
-            $menu['commentaire'] = "Modifier les collaborateurs du projet";
-            $menu['todo']        = "Vérifier les <strong>profils des collaborateurs</strong> du projet";
-        }
-
+            $menu['commentaire'] = "Modifier la liste des collaborateurs du projet";
+		}
         return $menu;
     }
 
@@ -723,9 +793,11 @@ class Menu
         $menu['raison']         =   "";
         $menu['incomplet']      =   false;
 
-        $version        =   $projet->derniereVersion();
-        $etatVersion    =   $version->getEtatVersion();
-        $isProjetTest   =   $version->isProjetTest();
+        $version      = $projet->derniereVersion();
+        $etatVersion  = $version->getEtatVersion();
+        // true si le projet est un projet test OU un projet fil de l'eau
+        $type_projet  = $version->getProjet()->getTypeProjet();
+        $isProjetTest = ($type_projet == Projet::PROJET_FIL || $type_projet == Projet::PROJET_TEST);
 
         if( $version->getSession() != null )
             $etatSession = $version->getSession()->getEtatSession();
@@ -744,12 +816,14 @@ class Menu
         }
         elseif( $version->isResponsable() == false )
             $menu['raison'] = "Seul le responsable du projet peut envoyer ce projet à l'expert";
-        elseif( $version->isResponsable() == true &&  ! static::peut_creer_projets() )
-            {
+
+        // manu - 11 juin 2019 - Tout le monde peut créer un projet test !
+        elseif( $isProjetTest == false && $version->isResponsable() == true &&  ! static::peut_creer_projets() )
+		{
             $menu['raison'] = "Le responsable du projet n'a pas le droit de créer des projets";
             Functions::warningMessage(__METHOD__ . ':' . __LINE__ ." Le responsable " . AppBundle::getUser()
                 . " du projet " . $projet . " ne peut pas créer des projets");
-            }
+		}
         elseif( $etatVersion ==  Etat::EDITION_EXPERTISE  )
             $menu['raison'] = "Le projet a déjà été envoyé à l'expert !";
         elseif( $isProjetTest == true && $etatVersion ==  Etat::ANNULE )
@@ -760,17 +834,17 @@ class Menu
             $menu['raison'] = "Le responsable du projet n'a pas demandé de renouvellement";
         elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
             $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
-        elseif(    VersionController::versionValidate( $version ) != []  )
-            {
+        elseif( VersionModifController::versionValidate( $version ) != [] )
+		{
+			//Functions::debugMessage(__METHOD__ . ' '.$version->getIdVersion() . ' ' . print_r(VersionModifController::versionValidate( $version ), true));
+
             $menu['raison']         = "Votre demande est incomplète";
             $menu['name']           =   'version_avant_modifier';
             $menu['commentaire']    =   "Vous ne pouvez pas envoyer ce projet à l'expert parce que votre demande est incomplète";
             $menu['incomplet']      =   true;
             $menu['ok']             =   true;
             $menu['param']          =   $version->getIdVersion();
-            }
-        //elseif( $version->getPrjFicheVal()  == false )
-        //    $menu['raison'] = "La fiche projet n'a pas encore été téléversée";
+		}
         else
         {
             $menu['ok']          = true;
@@ -796,13 +870,6 @@ class Menu
         {
             $menu['raison']     =   "Vous n'avez pas le rôle président";
         }
-        // Supprimé par manu - On peut affecter les experts en permanence, à cause des projets tests
-        /*
-        elseif ( $session->getEtatSession()!=Etat::EDITION_EXPERTISE && $session->getEtatSession()!=Etat::EN_ATTENTE)
-        {
-            $menu['raison']     =   "La session n'est pas en phase d'expertise";
-        }
-        */
         else
         {
             $menu['ok']             =   true;
@@ -816,7 +883,7 @@ class Menu
 
     public static function affectation_test()
     {
-        $session = Functions::getSessionCourante();
+        //$session = Functions::getSessionCourante();
 
         $menu['name']        =   'affectation_test';
         $menu['lien']        =   "Projets test";
@@ -875,7 +942,7 @@ class Menu
 
     public static function avancer()
     {
-    $session = Functions::getSessionCourante();
+    //$session = Functions::getSessionCourante();
     $menu['name']           =   'param_avancer';
     $menu['lien']           =   "Avancer dans le temps";
     $menu['commentaire']    =   "Vous ne pouvez pas avancer dans le temps";
@@ -1016,7 +1083,7 @@ class Menu
 
     return $menu;
     }
-    
+
  ////////////////////////////////////////////////////////////////////////////
 
     public static function presidents()
@@ -1172,7 +1239,7 @@ class Menu
 
     public static function affectation_rallonges()
     {
-    $session = Functions::getSessionCourante();
+    //$session = Functions::getSessionCourante();
     $menu['name']           =   'rallonge_affectation';
     $menu['lien']           =   "Rallonge de ressources";
     $menu['commentaire']    =   "Affecter les experts pour les rallonges";
@@ -1333,7 +1400,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par établissement";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par établissement !";
@@ -1347,7 +1414,7 @@ class Menu
 
     return $menu;
     }
-    
+
  //////////////////////////////////////////////////////////////////////////
 
     public static function statistiques_laboratoire($annee = null)
@@ -1358,7 +1425,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par laboratoire";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par laboratoire !";
@@ -1383,7 +1450,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par thématique";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par thématique !";
@@ -1408,7 +1475,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques par metathématique";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques par metathématique !";
@@ -1430,7 +1497,7 @@ class Menu
     $menu['name']           =   'statistiques';
     $menu['lien']           =   "Statistiques";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques  !";
@@ -1455,7 +1522,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques concernant les collaborateurs";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques concernant les collaborateurs !";
@@ -1480,7 +1547,7 @@ class Menu
     $menu['params']          =   ['annee' => $annee];
     $menu['lien']           =   "Statistiques concernant la répartition des projets";
 
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez accéder aux statistiques concernant la répartition des projets !";
@@ -1493,5 +1560,34 @@ class Menu
         }
 
     return $menu;
+    }
+
+	/*
+	 * Demandes concernant stockage et partage des données
+	 */
+    public static function donnees( Version $version )
+    {
+        $menu['name']  = 'donnees';
+        $menu['param'] = $version->getIdVersion();
+        $menu['lien']  = "Vos données";
+
+        if( AppBundle::isGranted('ROLE_ADMIN') )
+        {
+            $menu['commentaire']    =   "Gestion et valorisation des données en tant qu'admin";
+            $menu['ok']             = true;
+        }
+		elseif( ! $version->isResponsable() )
+		{
+			$menu['ok']          = false;
+	        $menu['commentaire'] = "Bouton inactif";
+            $menu['raison']      = "Vous n'êtes pas responsable du projet";
+		}
+		else
+		{
+            $menu['ok']          = true;
+            $menu['commentaire'] = "Gestion et valorisation des données";
+        }
+
+        return $menu;
     }
 }

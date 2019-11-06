@@ -1,0 +1,92 @@
+{# app/Resources/views/default/accueil.html.twig #}
+{% extends 'default/base.html.twig' %}
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+<section>
+<h1>Bienvenue sur la plateforme d'attribution de ressources de {{mesoc}} </h1>
+
+<nav><ul>
+
+{# link demandeur #}
+
+<li>
+{% if is_granted('ROLE_DEMANDEUR') %}
+    {{ gramcmacros.actif('projet_accueil','Demandeur',"Allez à l'espace demandeur !") }}
+{% else %}
+    {{ gramcmacros.inactif('projet_accueil','Demandeur',
+        "Vous ne pouvez pas rejoindre l'espace demandeur (vous n'êtes pas enregistré en tant que demandeur") }}
+{% endif %}
+</li>
+
+{# link expert #}
+
+<li>
+{% if is_granted('ROLE_EXPERT') %}
+    {{ gramcmacros.actif('expertise_liste','Expert',"Allez à l'espace expert !") }}
+{% else %}
+     {{ gramcmacros.inactif( 'expertise_liste','Expert',
+        "Vous ne pouvez pas rejoindre l'espace expertise (vous n'êtes pas enregistré en tant qu'expert)" ) }}
+{% endif %}
+</li>
+
+{# link administrateur #}
+
+<li>
+{% if is_granted('ROLE_OBS') %}
+    {{ gramcmacros.actif('admin_accueil','Administrateur',"Allez à l'espace administrateur !") }}
+{% else %}
+     {{ gramcmacros.inactif('admin_accueil','Administrateur',
+            "Vous ne pouvez pas rejoindre l'espace administrateur (vous n'êtes pas enregistré en tant qu'administateur)" ) }}
+{% endif %}
+</li>
+
+<li>
+{% if is_granted('ROLE_PRESIDENT') %}
+    {{ gramcmacros.actif('president_accueil','Président',"Allez à l'espace président !") }}
+{% else %}
+     {{ gramcmacros.inactif('president_accueil','Président',
+            "Vous ne pouvez pas rejoindre l'espace président (vous n'êtes pas enregistré en tant que président)" ) }}
+{% endif %}
+</li>
+
+{# link aide #}
+
+<li><a  class="lien_actif" href=" {{ path('aide') }} " title="">Aide</a></li>
+
+{# link GRAMC 1 #}
+
+</ul></nav>
+
+{# message #}
+
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+
+<div class="message info"><h2>Informations</h2>
+
+{{ block ('message') }}
+<p>En attendant, <strong>vous pouvez demander un supplément de ressources</strong>
+ pour votre projet en écrivant à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a><br />
+
+<p>Ce fichier peut être personnalisé: <tt>mesocentres/xxxxx/app/Resources/views/default/accueil.html.twig</tt></p>
+{% if projet_test %}
+Si vous ne connaissez pas encore {{mesoc}}, vous pouvez demander un <strong>projet&nbsp;test</strong>
+(cliquer sur le lien Demandeur)
+{% endif %}
+
+</p>
+</div>
+
+{% else %}
+
+<div class="message info"><h2>Démarrage</h2>
+Merci de cliquer sur connexion en haut à droite de l'écran pour démarrer.<br />
+Vous devrez utiliser les identifiants de votre établissement d'appartenance.
+(Si vous ne comprenez pas ce message, merci de <em><a href="mailto:{{ mailadmin }}">prendre contact avec nous</a></em>)
+</div>
+
+{% endif %}
+</section>
+<br>
+{% endblock %}

@@ -42,33 +42,35 @@
 <nav>
     <ul>
         {% for item in menu %}
-        {% if item.ok %}
-        <li><a class="lien_actif" title="{{ item.commentaire }}"
-                {% if item.param is defined %}
-                    href="{{ path(item.name, { 'id' : item.param }) }}"
-                {% elseif item.params is defined %}
-                    href="{{ path(item.name, item.params) }}"
-                {% else %}
-                    href="{{ path(item.name) }}"
-                {% endif %}
-            >{{ item.lien }}</a>
-            <div class="infobulleok" data-title="{{ item.commentaire }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
-        </li>
-        {% else %}
-        <li><a class="lien_inactif"
-            {% if  app.debug %}
-                {% if item.param is defined %}
-                    href="{{ path(item.name, { 'id' : item.param }) }}"
-                {% elseif item.params is defined %}
-                    href="{{ path(item.name, item.params) }}"
-                {% else %}
-                    href="{{ path(item.name) }}"
-                {% endif %}
-            {% endif %}
-            title="{{ item.commentaire }} - {{ item.raison }}">{{ item.lien }}</a>
-            <div class="infobulleko" data-title="{{ item.commentaire }} - {{ item.raison }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
-        </li>
-        {% endif %}
+        {% if not item==null %}
+	        {% if item.ok %}
+	        <li><a class="lien_actif" title="{{ item.commentaire }}"
+	                {% if item.param is defined %}
+	                    href="{{ path(item.name, { 'id' : item.param }) }}"
+	                {% elseif item.params is defined %}
+	                    href="{{ path(item.name, item.params) }}"
+	                {% else %}
+	                    href="{{ path(item.name) }}"
+	                {% endif %}
+	            >{{ item.lien }}</a>
+	            <div class="infobulleok" data-title="{{ item.commentaire }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
+	        </li>
+	        {% else %}
+	        <li><a class="lien_inactif"
+	            {% if  app.debug %}
+	                {% if item.param is defined %}
+	                    href="{{ path(item.name, { 'id' : item.param }) }}"
+	                {% elseif item.params is defined %}
+	                    href="{{ path(item.name, item.params) }}"
+	                {% else %}
+	                    href="{{ path(item.name) }}"
+	                {% endif %}
+	            {% endif %}
+	            title="{{ item.commentaire }} - {{ item.raison }}">{{ item.lien }}</a>
+	            <div class="infobulleko" data-title="{{ item.commentaire }} - {{ item.raison }}" ><img src="{{ asset('icones/q16.png') }}" alt="?" /></div>
+	        </li>
+	        {% endif %}
+	    {% endif %}
         {% endfor %}
     </ul>
 </nav>

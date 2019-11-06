@@ -31,7 +31,7 @@ $(document).ready(function() { // table utilisateurs
 		"bPaginate": false,
 		"bFilter":	 false,
 		"info":    	 false,
-				"aoColumnDefs": [{bSortable: false,aTargets: [ 1 ]}]
+		"aoColumnDefs": [{bSortable: false,aTargets: [0,1,2]}]
 	});
 });
 

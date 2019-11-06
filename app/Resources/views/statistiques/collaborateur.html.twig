@@ -14,7 +14,7 @@
 
 <section>
 
-<h1>Répartition du nombre des collaborateurs de l'année {{ annee }}</h1>
+<h1>Répartition des collaborateurs - année {{ annee }}</h1>
 
 {{ form_start(form) }}
 {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
@@ -25,9 +25,9 @@
 <table>
     <thead>
          <tr>
-        <td>Statut</td>
-        <td>Nombre de collaborateurs</td>
-        <td>Pourcentage de collaborateurs</td> 
+        <th>Statut</th>
+        <th>Nombre de collaborateurs</th>
+        <th>Pourcentage de collaborateurs</th>
     </tr>
     </thead>
     <tbody>
@@ -57,9 +57,9 @@
 <table>
     <thead>
          <tr>
-        <td>Laboratoire</td>
-        <td>Nombre de collaborateurs</td>
-        <td>Pourcentage de collaborateurs</td> 
+        <th>Laboratoire</th>
+        <th>Nombre de collaborateurs</th>
+        <th>Pourcentage de collaborateurs</th>
     </tr>
     </thead>
     <tbody>
@@ -88,9 +88,9 @@
 <table>
     <thead>
          <tr>
-        <td>Établissement</td>
-        <td>Nombre de collaborateurs</td>
-        <td>Pourcentage de collaborateurs</td> 
+        <th>Établissement</th>
+        <th>Nombre de collaborateurs</th>
+        <th>Pourcentage de collaborateurs</th>
     </tr>
     </thead>
     <tbody>
@@ -116,25 +116,58 @@
     </tbody>
 </table>
 
+<h2>Anomalies détectées - année {{ annee }}</h2>
+
+{% if( individusIncomplets != []) %}
+<table>
+    <thead>
+         <tr>
+            <th colspan="6">Utilisateurs incomplètement renseignés</th>
+         </tr>
+         <tr>
+			<th>Version</th>
+            <th>Personne</th>
+            <th>Courriel</th>
+            <th>Laboratoire</th>
+            <th>Etablissement</th>
+            <th>Statut</th>
+         </tr>
+    </thead>
+    <tbody>
+    {% for item in individusIncomplets %}
+        <tr>
+            <td>{{ item.version }}</td>
+            <td>{{ item.collaborateur }}</td>
+            <td>{{item.collaborateur.mail}}</td>
+            <td>{% if (item.labo==null) %} <strong>null</strong>{% else %} {{item.labo.acrolabo}} {%endif%}
+            <td>{% if (item.etab==null) %} <strong>null</strong>{% else %} {{item.etab}} {%endif%}
+            <td>{% if (item.statut==null) %} <strong>null</strong>{% else %} {{item.statut}} {%endif%}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
 {% if( anomaliesStatut != [] ) %}
 <table>
     <thead>
          <tr>
-            <td colspan="5">Anomalies dans le statut des utilisateurs</td>
+            <th colspan="6">Anomalies dans le statut des utilisateurs</th>
          </tr>
          <tr>
-            <td>Personne</td>
-            <td>version 1</td>
-            <td>version 2</td>
-            <td>statut 1</td>
-            <td>statut 2</td>
+            <th>Personne</th>
+            <th>Courriel</th>
+            <th>version 1</th>
+            <th>version 2</th>
+            <th>statut 1</th>
+            <th>statut 2</th>
          </tr>
     </thead>
     <tbody>
     {% for item in anomaliesStatut %}
         <tr>
             <td>{{ item.individu }}</td>
+            <td>{{item.individu.mail}}</td>
             <td>{{ item.version1 }}</td>
             <td>{{ item.version2 }}</td>
             <td>{{ item.statut1 }}</td>
@@ -149,24 +182,26 @@
 <table>
     <thead>
          <tr>
-            <td colspan="5">Anomalies dans le laboratoire des utilisateurs</td>
+            <th colspan="6">Anomalies dans le laboratoire des utilisateurs</th>
          </tr>
          <tr>
-            <td>Personne</td>
-            <td>version 1</td>
-            <td>version 2</td>
-            <td>laboratoire 1</td>
-            <td>laboratoire 2</td>
+            <th>Personne</th>
+            <th>Courriel</th>
+            <th>version 1</th>
+            <th>version 2</th>
+            <th>laboratoire 1</th>
+            <th>laboratoire 2</th>
          </tr>
     </thead>
     <tbody>
     {% for item in anomaliesLaboratoire %}
         <tr>
             <td>{{ item.individu }}</td>
+            <td>{{item.individu.mail}}</td>
             <td>{{ item.version1 }}</td>
             <td>{{ item.version2 }}</td>
-            <td>{{ item.laboratoire1 }}</td>
-            <td>{{ item.laboratoire2 }}</td>
+            <td>{{ item.laboratoire1.acrolabo }}</td>
+            <td>{{ item.laboratoire2.acrolabo }}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -177,20 +212,22 @@
 <table>
     <thead>
          <tr>
-            <td colspan="5">Anomalies dans l'établissement des utilisateurs</td>
+            <th colspan="5">Anomalies dans l'établissement des utilisateurs</th>
          </tr>
          <tr>
-            <td>Personne</td>
-            <td>version 1</td>
-            <td>version 2</td>
-            <td>établissement 1</td>
-            <td>établissement 2</td>
+            <th>Personne</th>
+            <th>Courriel</th>
+            <th>version 1</th>
+            <th>version 2</th>
+            <th>établissement 1</th>
+            <th>établissement 2</th>
          </tr>
     </thead>
     <tbody>
     {% for item in anomaliesEtablissement %}
         <tr>
             <td>{{ item.individu }}</td>
+            <td>{{item.individu.mail}}</td>
             <td>{{ item.version1 }}</td>
             <td>{{ item.version2 }}</td>
             <td>{{ item.etablissement1 }}</td>

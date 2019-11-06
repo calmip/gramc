@@ -24,8 +24,6 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Consommation;
-
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -34,6 +32,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+//use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
@@ -42,6 +42,7 @@ use AppBundle\Utils\Etat;
 
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
+use AppBundle\Entity\Session;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Compta;
@@ -67,16 +68,20 @@ class AdminuxController extends Controller
      */
      public function UpdateComptaBatchAction(Request $request)
      {
+        if ( AppBundle::getParameter('noconso')==true )
+        {
+			throw new AccessDeniedException("Forbidden because of parameter noconso");
+		}
         $conso_repository = AppBundle::getRepository(Compta::class);
         $em = AppBundle::getManager();
-    
+
         $putdata = fopen("php://input", "r");
         //$input = [];
-        
+
         while ( $ligne  =   fgetcsv($putdata) )
-            {
+        {
             if( sizeof( $ligne ) < 5 ) continue; // pour une ligne erronée ou incomplète
-                
+
             $date       =   $ligne[0]; // 2019-02-05
             $date       =   new \DateTime( $date . "T00:00:00");
             $loginname  =   $ligne[1]; // login
@@ -92,40 +97,41 @@ class AdminuxController extends Controller
 
             $compta =  $conso_repository->findOneBy( [ 'date' => $date, 'loginname' =>  $loginname,  'ressource' => $ressource, 'type' => $type_nb ] );
             if ( $compta == null ) // new item
-                {
+            {
                 $compta = new Compta();
                 $compta->setDate( $date );
                 $compta->setLoginname( $loginname );
                 $compta->setRessource( $ressource );
                 $compta->setType( $type_nb );
                 $em->persist( $compta );
-                }
+            }
 
             $conso  =   $ligne[4]; // consommation
-            
+
             if( array_key_exists( 5, $ligne ) )
                 $quota  =   $ligne[5]; // quota
             else
                 $quota  =   -1;
 
-            
+
             $compta->setConso( $conso );
             $compta->setQuota( $quota );
-            
+
             //$input[]    =   $compta;
             //return new Response( Functions::show( $ligne ) );
-            }
-            
-        try {
+        }
+
+        try
+        {
             $em->flush();
-            }   
+        }
         catch (\Exception $e)
-            {
+        {
             return new Response('KO');
-            }
-            
+        }
+
         //return new Response( Functions::show( $conso_repository->findAll() ) );
-        
+
         return $this->render('consommation/conso_update_batch.html.twig');
     }
 
@@ -133,151 +139,330 @@ class AdminuxController extends Controller
     ///////////////////////////////////////////////////////////////////////////////
 
    /**
-     * Met à jour la consommation de tous les projets à partir d'un unique fichier csv
-     *
-     * @Route("/conso_update_batch", name="consommation_update_batch")
-     * @Method({"PUT"})
-     */
-     public function updateConsoBatchAction(Request $request)
-     {
-        $em = $this->getDoctrine()->getManager();
-        $conso_repository = $em->getRepository('AppBundle:Consommation');
-        $conso_lignes = 0;
-
-        $putdata = fopen("php://input", "r");
-        while ($ligne=fgetcsv($putdata)) {
-            // Affreuse bidouille on met la date sur la première ligne à la place d'un header dont on ne se sert pas !
-            if ($ligne[0] == 'Date')
-            {
-                $dat = $ligne[1];
-                $annee = substr($dat,0,4);
-                $mois = substr($dat,4,2);
-                $day = substr($dat,6,2);
-            }
-
-            // Il doit y avoir 7 colonnes dans le fichier csv sinon on saute la ligne
-            // Ligne mal formattée, ou fin de fichier
-            if (count($ligne)!=7)
-            {
-                continue;
-            }
-            else
-            {
-                $id_projet = strtoupper($ligne[0]);
-                $id_projet = preg_replace('/T20([01])([0-9])([0-9][0-9])/','T${1}${2}0${3}',$id_projet); // T201604 ==> T16004
-                $conso     = $ligne[1];
-                $limite    = $ligne[2];
-
-                // Contrainte d'unicité: on fait soit un update soit un insert !
-                $consommation = $conso_repository->findOneBy( [ 'projet' => $id_projet, 'annee' => $annee ] );
-                if ($consommation == null)
-                {
-                    $consommation = new Consommation();
-                    $consommation->setAnnee($annee);
-                    $consommation->setProjet($id_projet);
-                    $consommation->setM01(0);
-                    $consommation->setM02(0);
-                    $consommation->setM03(0);
-                    $consommation->setM04(0);
-                    $consommation->setM05(0);
-                    $consommation->setM06(0);
-                    $consommation->setM07(0);
-                    $consommation->setM08(0);
-                    $consommation->setM09(0);
-                    $consommation->setM10(0);
-                    $consommation->setM11(0);
-                    $consommation->setM12(0);
-                }
-                $consommation->setLimite($limite);
-                $m = intval($mois);
-                switch ($m) {
-                case 1:
-                    $consommation->setM01(intval($conso));
-                    break;
-                case 2:
-                    $consommation->setM02(intval($conso));
-                    break;
-                case 3:
-                    $consommation->setM03(intval($conso));
-                    break;
-                case 4:
-                    $consommation->setM04(intval($conso));
-                    break;
-                case 5:
-                    $consommation->setM05(intval($conso));
-                    break;
-                case 6:
-                    $consommation->setM06(intval($conso));
-                    break;
-                case 7:
-                    $consommation->setM07(intval($conso));
-                    break;
-                case 8:
-                    $consommation->setM08(intval($conso));
-                    break;
-                case 9:
-                    $consommation->setM09(intval($conso));
-                    break;
-                case 10:
-                    $consommation->setM10(intval($conso));
-                    break;
-                case 11:
-                    $consommation->setM11(intval($conso));
-                    break;
-                case 12:
-                    $consommation->setM12(intval($conso));
-                    break;
-                }
-
-                $em->persist($consommation);
-                $em->flush();
-
-                $conso_lignes += 1;
-            }
-        }
-        if ($conso_lignes>0)
-        {
-            Functions::infoMessage("Fichier de consommation téléversé - $conso_lignes lignes ajoutées");
-        }
-
-        return $this->render('consommation/conso_update_batch.html.twig');
-    }
-
-   /**
      * set loginname
      *
      * @Route("/setloginname/{idProjet}/projet/{idIndividu}/individu/{loginname}/loginname", name="set_loginname")
      * @Method({"GET"})
      */
-    public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
-     {
-     $error = [];
-     $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
-     if( $projet == null )
-        $error[]    =   'No Projet ' . $idProjet;
+	public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
+	{
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
+		}
+	    $error = [];
+	    $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
+	    if( $projet == null )
+	       $error[]    =   'No Projet ' . $idProjet;
 
-    $individu       =   AppBundle::getRepository(Individu::class)->find($idIndividu);
-    if( $individu == null )
-        $error[]    =   'No Individu ' . $idIndividu;
+	    $individu       =   AppBundle::getRepository(Individu::class)->find($idIndividu);
+	    if( $individu == null )
+	        $error[]    =   'No Individu ' . $idIndividu;
 
-    if ( $error != [] )    
-        return new Response( json_encode( ['KO' => $error ]) );
-        
-     $versions = $projet->getVersion();
-     foreach( $versions as $version )
-        if( $version->getEtatVersion() == Etat::ACTIF)
-            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-                {
-                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
-                if( $collaborateur != null && $collaborateur->isEqualTo( $individu ) )
-                    {
-                    $collaborateurVersion->setLoginname( $loginname );
-                    Functions::sauvegarder( $collaborateurVersion );
-                    return new Response(json_encode('OK'));
-                    }
-                }
-      return new Response(json_encode( ['KO' => 'No user found' ]));  
+	    if ( $error != [] )
+	        return new Response( json_encode( ['KO' => $error ]) );
+
+	    $versions = $projet->getVersion();
+	    foreach( $versions as $version )
+	        if( $version->getEtatVersion() == Etat::ACTIF)
+			{
+	            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+				{
+	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
+	                if( $collaborateur != null && $collaborateur->isEqualTo( $individu ) )
+					{
+	                    $collaborateurVersion->setLoginname( $loginname );
+	                    Functions::sauvegarder( $collaborateurVersion );
+	                    return new Response(json_encode('OK'));
+					}
+				}
+			}
+			return new Response(json_encode( ['KO' => 'No user found' ]));
      }
+
+	/**
+	 * get versions actives
+	 *
+	 * @Route("/version/get", name="get_version")
+	 *
+	 * Exemples de données POST (fmt json):
+	 * 			   ''
+	 *             ou
+	 *             '{ "projet" : null,     "session" : null }' -> Toutes les versions actives quelque soit la session
+	 *
+	 *             '{ "projet" : "P01234" }'
+	 *             ou
+	 *             '{ "projet" : "P01234", "session" : null }' -> LA version active du projet P01234
+	 *
+	 *             '{ "session" : "20A"}
+	 *             ou
+	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les versions actives de la session 20A
+	 *
+	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 si elle est active
+	 *
+	 * Donc on renvoie une ou plusieurs versions appartenant à différentes sessions, mais une ou zéro versions par projet
+	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
+	 *
+	 * Données renvoyées (fmt json):
+	 * 			    idProjet	P01234
+	 * 				idSession	20A
+	 * 				idVersion	20AP01234
+	 * 				mail		mail du responsable de la version
+	 * 				attrHeures	Heures cpu attribuées
+	 * 				quota		Quota sur la machine
+	 * 				gpfs		sondVolDonnPerm stockage permanent demandé (pas d'attribution pour le stockage)
+	 *
+	 * @Method({"POST"})
+	 *
+	 */
+
+	 public function versionGetAction(Request $request)
+	 {
+		$em = $this->getDoctrine()->getManager();
+		$versions = [];
+
+		$content  = json_decode($request->getContent(),true);
+		if ($content == null)
+		{
+			$id_projet = null;
+			$id_session= null;
+		}
+		else
+		{
+			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
+			$id_session = (isset($content['session']))? $content['session']: null;
+		}
+
+		$v_tmp = [];
+		// Tous les projets actifs
+		if ($id_projet == null && $id_session == null)
+		{
+			$sessions = $em->getRepository(Session::class)->get_sessions_non_terminees();
+			foreach ($sessions as $sess)
+			{
+				//$versions = $em->getRepository(Version::class)->findSessionVersionsActives($sess);
+				$v_tmp = array_merge($v_tmp,$em->getRepository(Version::class)->findSessionVersions($sess));
+			}
+		}
+
+		// Tous les projets actifs d'une session particulière
+		// ... A condition que la session ne soit pas terminée !
+		elseif ($id_projet == null)
+		{
+			$sess  = $em->getRepository(Session::class)->find($id_session);
+			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE)
+			{
+				$v_tmp = $em->getRepository(Version::class)->findSessionVersions($sess);
+			}
+		}
+
+		// La version active d'un projet donné
+		elseif ($id_session == null)
+		{
+			$projet = $em->getRepository(Projet::class)->find($id_projet);
+			if ($projet != null) $v_tmp[]= $projet->getVersionActive();
+		}
+
+		// Une version particulière
+		// ... A condition que la session ne soit pas terminée !
+		else
+		{
+			$projet = $em->getRepository(Projet::class)->find($id_projet);
+			$sess  = $em->getRepository(Session::class)->find($id_session);
+			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE && $projet != null)
+			{
+				$v_tmp[] = $em->getRepository(Version::class)->findOneVersion($sess,$projet);
+			}
+		}
+
+		// On ne garde que les versions actives... ou presque actives
+		$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
+		foreach ($v_tmp as $v)
+		{
+			if ($v == null) continue;
+			if ($v->getSession()->getEtatSession() != Etat::TERMINE)
+			{
+				if (in_array($v->getEtatVersion(),$etats,true))
+				//if ($v->getProjet()->getMetaEtat() === 'ACCEPTE' || $v->getProjet()->getMetaEtat() === 'NONRENOUVELE')
+				{
+					$versions[] = $v;
+				}
+			}
+		}
+
+		$retour = [];
+		foreach ($versions as $v)
+		{
+			$annee = 2000 + $v->getSession()->getAnneeSession();
+			$attr  = $v->getAttrHeures() - $v->getPenalHeures();
+			foreach ($v->getRallonge() as $r)
+			{
+				$attr += $r->getAttrHeures();
+			}
+
+			// Pour une session de type B = Aller chercher la version de type A correspondante et ajouter les attributions
+			// TODO - Des fonctions de haut niveau (au niveau projet par exemple) ?
+			if ($v->getSession()->getTypeSession())
+			{
+				$id_va = $v->getAutreIdVersion();
+				$va = $em->getRepository(Version::class)->find($id_va);
+				if ($va != null)
+				{
+					$attr += $va->getAttrHeures();
+					$attr -= $va->getPenalHeures();
+					foreach ($va->getRallonge() as $r)
+					{
+						$attr += $r->getAttrHeures();
+					}
+				}
+			}
+			$r = [];
+			$r['idProjet']        = $v->getProjet()->getIdProjet();
+			$r['idSession']       = $v->getSession()->getIdSession();
+			$r['idVersion']       = $v->getIdVersion();
+			$r['etatVersion']     = $v->getEtatVersion();
+			$r['mail']            = $v->getResponsable()->getMail();
+			$r['attrHeures']      = $attr;
+			$r['sondVolDonnPerm'] = $v->getSondVolDonnPerm();
+			$r['quota']			  = $v->getProjet()->getConsoRessource('cpu',$annee)[1];
+			// Pour le déboguage
+			// if ($r['quota'] != $r['attrHeures']) $r['attention']="INCOHERENCE";
+
+			$retour[] = $r;
+			//$retour[] = $v->getIdVersion();
+		};
+
+		// print_r est plus lisible pour le déboguage
+		// return new Response(print_r($retour,true));
+		return new Response(json_encode($retour));
+
+	 }
+
+	/**
+	 * get users
+	 *
+	 * @Route("/users/get", name="get_users")
+	 *
+	 * Exemples de données POST (fmt json):
+	 * 			   ''
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : null }' -> Tous les collaboratuers avec login
+	 *
+	 *             '{ "projet" : "P01234" }'
+	 *             ou
+	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234
+	 *
+	 *             '{ "mail" : "toto@exemple.fr"}
+	 *             ou
+	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login
+	 *
+	 *             '{ "projet" : "P01234", "session" : "toto@exemple.fr"}' -> Tout sur toto !
+	 *
+	 * On renvoie pour chaque projet non terminé, ou pour un projet donné, la liste des collaborateurs qui doivent avoir un login
+	 *
+	 * Données renvoyées (fmt json):
+	 * 				mail		toto@exemple.fr
+	 * 				idIndividu	75
+	 * 				nom			Toto
+	 * 				prenom		Ernest
+	 * 			    idProjet	P01234
+	 * 				login		toto
+	 * 			    idProjet	P56789
+	 * 				login		titi
+	 *
+	 * @Method({"POST"})
+	 *
+	 */
+
+	 public function usersGetAction(Request $request)
+	 {
+		$em = $this->getDoctrine()->getManager();
+		$content  = json_decode($request->getContent(),true);
+		if ($content == null)
+		{
+			$id_projet = null;
+			$mail      = null;
+		}
+		else
+		{
+			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
+			$mail       = (isset($content['mail']))? $content['mail']: null;
+		}
+
+//		$sessions  = $em->getRepository(Session::class)->get_sessions_non_terminees();
+		$users = [];
+		$projets   = [];
+
+		// Tous les collaborateurs de tous les projets non terminés
+		if ($id_projet == null && $mail == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les projets dans lesquels une personne donnée a un login
+		elseif ($id_projet == null)
+		{
+			$projets = $em->getRepository(Projet::class)->findNonTermines();
+		}
+
+		// Tous les collaborateurs d'un projet
+		elseif ($mail == null)
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p != null)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		// Un collaborateur particulier d'un projet particulier
+		else
+		{
+			$p = $em->getRepository(Projet::class)->find($id_projet);
+			if ($p->getEtatProjet() != Etat::TERMINE)
+			{
+				$projets[] = $p;
+			}
+		}
+
+		//
+		// Construire le tableau $users:
+		//      toto@exemple.com => [ 'idIndividu' => 34, 'nom' => 'Toto', 'prenom' => 'Ernest', 'projets' => [ 'p0123' => 'toto', 'p456' => 'toto1' ] ]
+		//
+		foreach ($projets as $p)
+		{
+			$v = $p->getVersionActive();
+			if ($v != null)
+			{
+				$collaborateurs = $v->getCollaborateurVersion();
+				foreach ($collaborateurs as $c)
+				{
+					if ($c->getLogin())
+					{
+						$m = $c -> getCollaborateur() -> getMail();
+						if ($mail != null && $mail != $m)
+						{
+							continue;
+						}
+
+						if (!isset($users[$m]))
+						{
+							$users[$m] = [];
+							$users[$m]['nom']        = $c -> getCollaborateur() -> getNom();
+							$users[$m]['prenom']     = $c -> getCollaborateur() -> getPrenom();
+							$users[$m]['idIndividu'] = $c -> getCollaborateur() -> getIdIndividu();
+							$users[$m]['projets']    = [];
+						}
+						$users[$m]['projets'][$p->getIdProjet()] = $c->getLoginname();
+					}
+				}
+			}
+		}
+
+		// print_r est plus lisible pour le déboguage
+		//return new Response(print_r($users,true));
+		return new Response(json_encode($users));
+	 }
 
     /**
      * set loginname
@@ -285,46 +470,54 @@ class AdminuxController extends Controller
      * @Route("/getloginnames/{idProjet}/projet", name="get_loginnames")
      * @Method({"GET"})
      */
-   public function getloginnamesAction($idProjet)
-   {
-   $projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
-   if( $projet == null )
-        return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
-        
-   
-   $versions    = $projet->getVersion();
-   $output      =   [];
-   $idProjet    =   $projet->getIdProjet();
-   
-   foreach( $versions as $version )
-        if( $version->getEtatVersion() == Etat::ACTIF)
-             foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-                {
-                if( $collaborateurVersion->getLogin() == false )
-                    continue;
-                    
-                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
-                if( $collaborateur != null )
+	public function getloginnamesAction($idProjet)
+	{
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
+		}
+		$projet      = AppBundle::getRepository(Projet::class)->find($idProjet);
+	    if( $projet == null )
+	    {
+			return new Response( json_encode( ['KO' => 'No Projet ' . $idProjet ]) );
+	    }
+
+		$versions    = $projet->getVersion();
+		$output      =   [];
+		$idProjet    =   $projet->getIdProjet();
+
+		foreach( $versions as $version )
+		{
+	        if( $version->getEtatVersion() == Etat::ACTIF)
+	        {
+				foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+				{
+	                if( $collaborateurVersion->getLogin() == false ) continue;
+
+	                $collaborateur  =  $collaborateurVersion->getCollaborateur() ;
+	                if( $collaborateur != null )
                     {
-                    $loginname  =   $collaborateurVersion->getLoginname();
-                    $prenom     =   $collaborateur->getPrenom();
-                    $nom        =   $collaborateur->getNom();
-                    $idIndividu =   $collaborateur->getIdIndividu();
-                    $mail       =   $collaborateur->getMail();
-                    $login      =   $collaborateurVersion->getLogin();
-                    $output[] =   [
-                            'idIndividu' => $idIndividu,
-                            'idProjet' =>$idProjet,
-                            'mail' => $mail,
-                            'prenom' => $prenom,
-                            'nom' => $nom,
-                            'login' => $login,
-                            'loginname' => $loginname,
-                            ];
+	                    $loginname  =   $collaborateurVersion->getLoginname();
+	                    $prenom     =   $collaborateur->getPrenom();
+	                    $nom        =   $collaborateur->getNom();
+	                    $idIndividu =   $collaborateur->getIdIndividu();
+	                    $mail       =   $collaborateur->getMail();
+	                    $login      =   $collaborateurVersion->getLogin();
+	                    $output[] =   [
+	                            'idIndividu' => $idIndividu,
+	                            'idProjet' =>$idProjet,
+	                            'mail' => $mail,
+	                            'prenom' => $prenom,
+	                            'nom' => $nom,
+	                            'login' => $login,
+	                            'loginname' => $loginname,
+	                            ];
                     }
                 }
-    return new Response( json_encode( $output) );
-   }
+			}
+		}
+	    return new Response( json_encode( $output) );
+	}
 
 
     /**
@@ -335,6 +528,11 @@ class AdminuxController extends Controller
      */
      public function quotaCheckAction(Request $request)
      {
+		if ( AppBundle::getParameter('noconso')==true )
+		{
+			throw new AccessDeniedException("Accès interdit (paramètre noconso)");
+		}
+
         $annee_courante=GramcDate::get()->showYear();
         $projets = Functions::projetsParAnnee($annee_courante)[0];
 
@@ -342,17 +540,19 @@ class AdminuxController extends Controller
         $msg = "";
         foreach ($projets as $p)
         {
-            if ($p['attrib'] != $p['q']) {
+            if ($p['attrib'] != $p['q'])
+            {
                 $msg .= $p['p']->getIdProjet() . "\t" . $p['attrib'] . "\t\t" . $p["q"] . "\n";
             }
         }
 
         if ($msg != "")
         {
-            $dest = AppBundle::getParameter('unixadmins');
+            $dest = Functions::mailUsers( [ 'S' ], null);
             Functions::sendMessage('notification/quota_check-sujet.html.twig','notification/quota_check-contenu.html.twig',[ 'MSG' => $msg ],$dest);
         }
 
         return $this->render('consommation/conso_update_batch.html.twig');
     }
 }
+
