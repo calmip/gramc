@@ -819,11 +819,11 @@ class Menu
 
         // manu - 11 juin 2019 - Tout le monde peut créer un projet test !
         elseif( $isProjetTest == false && $version->isResponsable() == true &&  ! static::peut_creer_projets() )
-            {
+		{
             $menu['raison'] = "Le responsable du projet n'a pas le droit de créer des projets";
             Functions::warningMessage(__METHOD__ . ':' . __LINE__ ." Le responsable " . AppBundle::getUser()
                 . " du projet " . $projet . " ne peut pas créer des projets");
-            }
+		}
         elseif( $etatVersion ==  Etat::EDITION_EXPERTISE  )
             $menu['raison'] = "Le projet a déjà été envoyé à l'expert !";
         elseif( $isProjetTest == true && $etatVersion ==  Etat::ANNULE )
@@ -834,15 +834,17 @@ class Menu
             $menu['raison'] = "Le responsable du projet n'a pas demandé de renouvellement";
         elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
             $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
-        elseif(    VersionModifController::versionValidate( $version ) != []  )
-            {
+        elseif( VersionModifController::versionValidate( $version ) != [] )
+		{
+			//Functions::debugMessage(__METHOD__ . ' '.$version->getIdVersion() . ' ' . print_r(VersionModifController::versionValidate( $version ), true));
+
             $menu['raison']         = "Votre demande est incomplète";
             $menu['name']           =   'version_avant_modifier';
             $menu['commentaire']    =   "Vous ne pouvez pas envoyer ce projet à l'expert parce que votre demande est incomplète";
             $menu['incomplet']      =   true;
             $menu['ok']             =   true;
             $menu['param']          =   $version->getIdVersion();
-            }
+		}
         else
         {
             $menu['ok']          = true;
