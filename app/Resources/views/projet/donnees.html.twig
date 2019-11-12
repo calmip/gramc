@@ -1,0 +1,176 @@
+{% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/projets_experts.js') }}" ></script>
+<script  type="text/javascript" src="{{ asset('js/gerer_projets_annee.js') }}" ></script>
+<script  type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
+{% block body %}
+
+<div id="dialog-compta"></div>
+
+<section>
+    <h2>Projets ayant du stockage pérenne</h2>
+
+    {{ form_start(form) }}
+        {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+    {{ form_end(form) }}
+
+    <br />
+    {% if noconso==false %}
+{#
+	<form action="{{ path('projet_annee_csv', {'annee': annee }) }}">
+        <input type="submit" value="Télécharger en csv pour l'année {{ annee }}" />
+    </form>
+#}
+    <hr />
+
+	<div id="legende">
+	    <h3>Légende</h3>
+	    <span id="legende_conso_1">Occupation dépassant {{conso_seuil_1}} %</span><br />
+	    <span id="legende_conso_2">Occupation dépassant {{conso_seuil_2}} %</span><br />
+	</div>
+    {% endif %}
+
+	 <div id="bilan_legende"><div id="bilan">
+
+		 <table>
+		    <tr>
+		        <th colspan="2">Stockage</th>
+		    </tr>
+		    <tr>
+		        <th>Nombre de projets total</th>
+		        <td>{{total.prj}}</td>
+		    </tr>
+		    <tr>
+		        <th>Nombre de demandes de stockage</th>
+		        <td>{{total.sprj}}</td>
+		    </tr>
+		    <tr>
+				<th>Stockage attribué<br />automatiquement (To)</th>
+				<td>{{total.autostk}}</td>
+		    </tr>
+		     <tr>
+		        <th>Stockage demandé (To)</th>
+		        <td>{{total.demstk}}</td>
+		    </tr>
+		     <tr>
+		        <th>Stockage alloué<br />suite à demande (To)</th>
+		        <td>{{total.attrstk}}</td>
+		    </tr>
+		 </table>
+		 <table>
+		    <tr>
+		        <th colspan="2">Partage</th>
+		    </tr>
+		     <tr>
+		        <th>Nombre de projets</th>
+		        <td>{{total.pprj}}</td>
+		    </tr>
+		 </table>
+	</div>
+</div>
+
+<div id="projets" >
+    <table id="table_projets_annee" class="dataTable no-footer" >
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th></th>
+                {% if noconso==false %}<th title="Consommation">C</th>{% endif %}
+                <th>Titre</th>
+                <th>Thématique</th>
+                <th>Responsable</th>
+                <th>Laboratoire</th>
+                <th>Demandes<br />(To)</th>
+                {% if noconso==false %}
+                <th>Quota (To)</th>
+                <th>Occupation (To)</th>
+                <th>Occupation (%)</th>
+                {% endif %}
+                <th>meta</th>
+                <th>nombre</th>
+                <th>taille</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for k,prj_array in projets %}
+
+			{% if prj_array != null %}
+	            {% set projet=prj_array.p %}
+					{% if noconso==false %}
+			            {% if prj_array.cp >= conso_seuil_2 %}
+				            <tr class="conso_seuil_2" >
+			            {% elseif prj_array.cp >= conso_seuil_1 %}
+				            <tr class="conso_seuil_1" >
+			            {% else %}
+				            <tr>
+			            {% endif %}
+			        {% else %}
+						<tr>
+					{%endif%}
+	                <td>{{ projet.id }}</td>
+	                <td>
+	                    {% set version=annee|slice(2,2) ~ 'A' ~ projet %}
+	                    <a href="{{ path('consulter_version', { 'id':projet.idprojet,'version': version }) }}" title="Consulter le projet">
+	                        <img class="bouton_poussoir" src="{{ asset('icones/consulter.png') }}" alt="Consulter" />
+	                    </a>
+	                </td>
+
+	                {% if noconso==false %}
+	                <td class="w15">
+	                    <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
+	                    title="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}" alt="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}"
+	                    data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
+	                </td>
+	                {% endif %}
+
+	                <td>
+	                    {{ gramcmacros.afftitre(projet.titre) }}
+	                </td>
+	                <td>
+	                    {{ gramcmacros.tronquer_chaine(projet.thematique,20) }}
+	                </td>
+	                <td>
+	                    <a href="mailto:{{ projet.responsable.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ projet.responsable.prenom }} {{ projet.responsable.nom }}
+	                </td>
+	                <td>
+	                    {{ gramcmacros.tronquer_chaine(projet.laboratoire,20) }}
+	                </td>
+	                <td>
+						{{prj_array.sondVolDonnPermTo}}
+					</td>
+					{% if noconso==false %}
+					<td>
+						{{prj_array.qt}}
+						{% if (prj_array.qt != prj_array.sondVolDonnPermTo) %}<img src="{{ asset('icones/attention16.png') }}" alt="Quota différent de la demande" title="Quota différent de la demande" />{% endif %}
+					</td>
+					<td>
+						{{ (prj_array.c / (1024*1024*1024))|number_format(2, ',', ' ')}}
+					</td>
+					<td>
+						{{ prj_array.cp|number_format(0, ',', ' ')}}
+					</td>
+					<td>
+						{{ prj_array.dataMetaDataFormat }}
+					</td>
+					<td>
+						{{ prj_array.dataNombreDatasets }}
+					</td>
+					<td>
+						{{ prj_array.dataTailleDatasets }}
+					</td>
+					{% endif %}
+				{% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div id="formulaire_confirmation"></div>
+
+</section>
+
+{% endblock body %}
