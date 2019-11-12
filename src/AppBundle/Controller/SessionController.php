@@ -969,23 +969,38 @@ class SessionController extends Controller
 
     /**
      *
+     * Génère le bilan de session au format CSV
      *
      * @Route("/{id}/bilan_csv", name="bilan_session_csv")
      * @Method("GET")
      */
     public function bilanCsvAction(Request $request,Session $session)
     {
-        $type_session   =   $session->getLibelleTypeSession(); // A ou B
-        $id_session     =   $session->getIdSession();
+        $type_session       = $session->getLibelleTypeSession(); // A ou B
+        $id_session         = $session->getIdSession();
+        $annee_cour         = $session->getAnneeSession();
+        $session_courante_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_cour .'A']);
+        if( $session_courante_A == null ) return new Response('Session courante nulle !');
 
-        $annee_cour     =   $session->getAnneeSession();
+        if ($type_session == 'A')
+        {
+			return $this->bilanCsvAction_A($request,$session, $id_session, $annee_cour, $session_courante_A);
+		}
+		//else
+		//{
+		//	return $this->bilanCsvAction_B(Request $request,Session $session, $id_session, $annee_cour, $session_courante_A);
+		//}
+
+		// On laisse ce code jusqu'au printemps 2020 !
+		// Au printemps 2020 on écrira la fonction bilanCsvAction_B
+		//
+
         $annee_prec     =   $annee_cour - 1;
         $full_annee_prec= 2000 + $annee_prec;
         $full_annee_cour= 2000 + $annee_cour;
 
         $session_precedente_A   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
         $session_precedente_B   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
-        $session_courante_A     = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_cour .'A']);
 
 
         if( $session_courante_A == null ) return new Response('Session courante nulle !');
@@ -1245,6 +1260,211 @@ class SessionController extends Controller
                 ]);
 
         $sortie     .=   join("\t",$ligne) . "\n";
+
+        return Functions::csv($sortie,'bilan_session_'.$session->getIdSession().'.csv');
+    }
+
+	/*******
+	 * Appelée par bilanAction
+	 *********/
+	private function bilanCsvAction_A(Request $request,Session $session, $id_session, $annee_cour, $session_courante_A)
+	{
+        $annee_prec      = $annee_cour - 1;
+        $full_annee_prec = 2000 + $annee_prec;
+        $full_annee_cour = 2000 + $annee_cour;
+
+        $session_precedente_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
+        $session_precedente_B = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
+
+        // type A: on regarde la conso annee precedente
+        $annee_conso = $annee_prec;
+
+        $entetes = ['Projet',
+                    'Thématique',
+                    'Responsable scientifique',
+                    'Laboratoire',
+                    'Rapport',
+                    'Expert',
+                    'Demandes '     .$full_annee_prec,
+                    'Dem rall '     .$full_annee_prec,
+                    'Attr rall '    .$full_annee_prec,
+                    'Pénalités '    .$full_annee_prec,
+                    'Attributions ' .$full_annee_prec,
+                    ];
+
+        array_push($entetes,'Demandes '.$id_session,'Attributions '.$id_session,"Quota $annee_prec",
+                                "Consommation $annee_conso","Conso gpu normalisée","Consommation $annee_conso (%)");
+
+        // Les mois pour les consos
+        array_push($entetes,'Janvier','Février','Mars','Avril',
+            'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
+
+        $sortie = join("\t",$entetes) . "\n";
+
+        //////////////////////////////
+
+        $totaux=
+		[
+            "dem_heures_prec"       =>  0,
+            "attr_heures_prec"      =>  0,
+            "dem_rall_heures_prec"  =>  0,
+            "attr_rall_heures_prec" =>  0,
+            "penal_heures_prec"     =>  0,
+            "dem_heures_cour"       =>  0,
+            "attr_heures_cour"      =>  0,
+            "quota"                 =>  0,
+            "conso_an"              =>  0,
+            "conso_gpu"             =>  0,
+            "recuperable"           =>  0,
+		];
+        $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
+        foreach  ($conso_flds as $m)    $totaux[$m] =   0;
+
+        //////////////////////////////
+        //
+        // boucle principale
+        //
+        //////////////////////////////
+
+        $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
+
+        foreach( $versions as $version )
+		{
+            if( $session_precedente_A != null )
+                $version_precedente_A = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_precedente_A, $version->getProjet() );
+            else $version_precedente_A = null;
+
+            if( $session_precedente_B != null )
+                $version_precedente_B = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_precedente_B, $version->getProjet() );
+            else $version_precedente_B = null;
+
+            if( $session_courante_A != null )
+                $version_courante_A = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_courante_A, $version->getProjet() );
+            else $version_courante_A = null;
+
+			$projet = $version -> getProjet();
+
+            $dem_heures_prec           = 0;
+            if( $version_precedente_A != null ) $dem_heures_prec += $version_precedente_A->getDemHeures();
+            if( $version_precedente_B != null ) $dem_heures_prec += $version_precedente_B->getDemHeures();
+
+            $attr_heures_prec          = 0;
+            if( $version_precedente_A != null ) $attr_heures_prec += $version_precedente_A->getAttrHeures();
+            if( $version_precedente_B != null ) $attr_heures_prec += $version_precedente_B->getAttrHeures();
+
+            $penal_heures              = 0;
+            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
+            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
+
+            $dem_heures_rallonge       = 0;
+            if( $version_precedente_A != null ) $dem_heures_rallonge    += $version_precedente_A->getDemHeuresRallonge();
+            if( $version_precedente_B != null ) $dem_heures_rallonge    += $version_precedente_B->getDemHeuresRallonge();
+
+            $attr_heures_rallonge      = 0;
+            if( $version_precedente_A != null ) $attr_heures_rallonge   += $version_precedente_A->getAttrHeuresRallonge();
+            if( $version_precedente_B != null ) $attr_heures_rallonge   += $version_precedente_B->getAttrHeuresRallonge();
+
+            $penal_heures              = 0;
+            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
+            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
+
+            $dem_heures_A              = 0;
+            if( $version_courante_A != null ) $dem_heures_A += $version_courante_A->getDemHeures();
+
+            $attr_heures_A             = 0;
+            if( $version_courante_A != null ) $attr_heures_A +=
+                $version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
+
+			$consoRessource = $projet->getConsoRessource('cpu',$full_annee_prec);
+			$conso          = $consoRessource[0];
+			$quota          = $consoRessource[1];
+			$conso_gpu      = $projet->getConsoRessource('gpu',$full_annee_prec)[0];
+            $dem_heure_cour = $version->getDemHeures();
+            $attr_heure_cour= $version->getAttrHeures();
+			$recuperable    = 0;
+
+            $ligne =
+                    [
+                    $version->getProjet(),
+                    '"'. $version->getPrjThematique() .'"',
+                    '"'.$version->getResponsable() .'"',
+                    '"'.$version->getLabo().'"',
+                    ( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
+                    ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
+                    $dem_heures_prec,
+                    $dem_heures_rallonge,
+                    $attr_heures_rallonge,
+                    $penal_heures,
+                    $attr_heures_prec+$attr_heures_rallonge-$penal_heures,
+                    ];
+
+             $ligne = array_merge( $ligne,
+                    [
+                    $dem_heure_cour,
+                    $attr_heure_cour,
+                    $quota,
+                    $conso,
+                    $conso_gpu,
+                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
+                    ]);
+
+
+			for ($m=0;$m<12;$m++)
+			{
+				$consmois= $version->getProjet()->getConsoMois($full_annee_prec,$m);
+				$index   = 'm' . ($m<10?'0':'') . $m;
+
+				$ligne[] = $consmois;
+				$totaux[$index] += $consmois;
+			};
+
+            $sortie     .=   join("\t",$ligne) . "\n";
+
+            $totaux["dem_heures_prec"]          +=  $dem_heures_prec;
+            $totaux["attr_heures_prec"]         +=  $attr_heures_prec;
+            $totaux["dem_rall_heures_prec"]     +=  $dem_heures_rallonge;
+            $totaux["attr_rall_heures_prec"]    +=  $attr_heures_rallonge;
+            $totaux["penal_heures_prec"]        +=  $penal_heures;
+            $totaux["dem_heures_cour"]          +=  $dem_heure_cour;
+            $totaux["attr_heures_cour"]         +=  $attr_heure_cour;
+            $totaux["quota"]                    +=  $quota;
+            $totaux["conso_an"]                 +=  $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
+            $totaux["conso_gpu"]                +=  $conso_gpu;
+            $totaux["recuperable"]              +=  $recuperable;
+
+		} // fin de la boucle principale
+
+        $ligne  =
+			[
+			'TOTAL','','','','','',
+			$totaux["dem_heures_prec"],
+			$totaux["dem_rall_heures_prec"],
+			$totaux["attr_rall_heures_prec"],
+			$totaux["penal_heures_prec"],
+			$totaux["attr_heures_prec"]+$totaux["attr_rall_heures_prec"]-$totaux["penal_heures_prec"],
+			];
+
+		$ligne  =  array_merge( $ligne,
+			[
+			$totaux["dem_heures_cour"],
+			$totaux["attr_heures_cour"],
+			$totaux["quota"],
+			$totaux["conso_an"],
+			$totaux["conso_gpu"],
+			'', // %
+			]);
+
+
+		$ligne  = array_merge( $ligne,
+			[
+			$totaux["m00"],$totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],
+			$totaux["m06"],$totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],
+			]);
+
+        $sortie .= join("\t",$ligne) . "\n";
 
         return Functions::csv($sortie,'bilan_session_'.$session->getIdSession().'.csv');
     }
