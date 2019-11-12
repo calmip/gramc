@@ -1284,13 +1284,15 @@ class VersionModifController extends Controller
     public function renouvellementAction(Request $request, Version $version)
     {
 
-    // ACL
-    //if( Menu::renouveler_version($version)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-    if( Menu::renouveler_version($version)['ok'] == false )
-       Functions::createException("VersionController:renouvellementAction impossible de renouveler la version " . $version->getIdVersion() );
+	    // ACL
+	    //if( Menu::renouveler_version($version)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
+	    if( Menu::renouveler_version($version)['ok'] == false )
+	    {
+	       Functions::createException("VersionController:renouvellementAction impossible de renouveler la version " . $version->getIdVersion() );
+		}
 
-    $session = AppBundle::getRepository(Session::class)->findOneBy( [ 'etatSession' => Etat::EDITION_DEMANDE ] );
-    //AppBundle::getSession()->remove('SessionCourante');
+	    $session = AppBundle::getRepository(Session::class)->findOneBy( [ 'etatSession' => Etat::EDITION_DEMANDE ] );
+	    //AppBundle::getSession()->remove('SessionCourante');
         if( $session != null )
         {
             $idVersion = $session->getIdSession() . $version->getProjet()->getIdProjet();
@@ -1326,55 +1328,48 @@ class VersionModifController extends Controller
                 $new_version->setPrjFicheVal(false);
                 $new_version->setPrjFicheLen(0);
                 $new_version->setRapConf(0);
+                $new_version->setCgu(0);
 
                 $new_version->setIdVersion( $session->getIdSession() . $version->getProjet()->getIdProjet()  );
                 $new_version->setProjet( $version->getProjet() );
-                //$new_version->setEtatVersion(Etat::EDITION_DEMANDE);
                 $new_version->setEtatVersion(Etat::CREE_ATTENTE);
                 $new_version->setLaboResponsable( $version->getResponsable() );
 
-                Functions::sauvegarder( $new_version );
                 // nouvelles collaborateurVersions
+                Functions::sauvegarder( $new_version );
 
                 $collaborateurVersions = $version->getCollaborateurVersion();
                 foreach( $collaborateurVersions as $collaborateurVersion )
-                    {
+				{
                     $newCollaborateurVersion    = clone  $collaborateurVersion;
                     //$em->detach( $newCollaborateurVersion );
                     $newCollaborateurVersion->setVersion( $new_version );
                     $em->persist( $newCollaborateurVersion );
-                    }
-
-
-                //$projet = $version->getProjet();
-                //$projet->setVersionDerniere( $new_version );
-                //$projetWorkflow = new ProjetWorkflow();
-                //$projetWorkflow->execute( Signal::CLK_DEMANDE, $projet );
-                //return new Response( count( $new_version->getProjet()->getVersion() ) );
+				}
 
                 $projet->setVersionDerniere( $new_version );
                 $projetWorkflow = new ProjetWorkflow();
                 $projetWorkflow->execute( Signal::CLK_DEMANDE, $projet );
                 $em->persist( $projet );
                 $em->flush();
-                //return new Response( count( $new_version->getProjet()->getVersion() ) );
 
                 // images: On reprend les images "img_expose" de la version précédente
                 //         On ne REPREND PAS les images "img_justif_renou" !!!
                 $new_dir    =  Functions::image_directory( $new_version);
                 for ($id=1;$id<4;$id++)
                 {
-                    $f='img_expose_'.$id;
+					$f='img_expose_'.$id;
                     $old_f = $old_dir . '/' . $f;
                     $new_f = $new_dir . '/' . $f;
                     if (is_file($old_f))
-                       {
+					{
                        $rvl = copy( $old_f,$new_f );
                        if ($rvl==false)
+                       {
                            Functions::errorMessage("VersionController:erreur dans la fonction copy $old_f => $new_f");
                        }
+					}
                 }
-
                 return $this->redirect( $this->generateUrl('modifier_version', [ 'id' => $new_version->getIdVersion() ]) );
             }
         }
@@ -1385,7 +1380,6 @@ class VersionModifController extends Controller
         }
     }
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Validation du formulaire de version
      *
