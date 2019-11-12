@@ -660,8 +660,6 @@ class SessionController extends Controller
         return [ 'id' => $id_session, 'type' => $type ];
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     ////////////////////////////////////////////////////////////////////
 
     /**
@@ -714,56 +712,55 @@ class SessionController extends Controller
      */
     public function questionnaireCsvAction(Request $request,Session $session)
     {
-    $entetes =  [
-                'Projet',
-                'Titre',
-                'Thématique',
-                'Responsable scientifique',
-                'Laboratoire',
-		'Langages utilisés',
-		'gpu',
-                'Nom du code',
-                'Licence',
-                'Heures/job',
-                'Ram/cœur',
-                'Ram partagée',
-                'Efficacité parallèle',
-                'Stockage temporaire',
-                'Post-traitement',
-                ];
-    $sortie     =   join("\t",$entetes) . "\n";
+	    $entetes =  [
+			'Projet',
+			'Titre',
+			'Thématique',
+			'Responsable scientifique',
+			'Laboratoire',
+			'Langages utilisés',
+			'gpu',
+			'Nom du code',
+			'Licence',
+			'Heures/job',
+			'Ram/cœur',
+			'Ram partagée',
+			'Efficacité parallèle',
+			'Stockage temporaire',
+			'Post-traitement',
+		];
+	    $sortie = join("\t",$entetes) . "\n";
 
-    $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
+	    $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
 
-    foreach( $versions as $version )
-        {
-        $langage = "";
-        if( $version->getCodeCpp()== true )     $langage .= " C++ ";
-        if( $version->getCodeC()== true )       $langage .= " C ";
-        if( $version->getCodeFor()== true )     $langage .= " Fortran ";
-        $langage .=  Functions::string_conversion($version->getCodeLangage());
-        $ligne  =   [
-                ($version->getIdVersion() != null) ? $version->getIdVersion() : 'null',
-                Functions::string_conversion($version->getPrjTitre()),
-                Functions::string_conversion($version->getPrjThematique()),
-                $version->getResponsable(),
-                $version->getLabo(),
-		trim($langage),
-                Functions::string_conversion($version->getGpu()),
-                Functions::string_conversion($version->getCodeNom()),
-                Functions::string_conversion($version->getCodeLicence()),
-                Functions::string_conversion($version->getCodeHeuresPJob()),
-                Functions::string_conversion($version->getCodeRamPCoeur()),
-                Functions::string_conversion($version->getCodeRamPart()),
-                Functions::string_conversion($version->getCodeEffParal()),
-                Functions::string_conversion($version->getCodeVolDonnTmp()),
-                //($version->getDemPostTrait() == true ) ? 'OUI' : 'NON',
-                Functions::string_conversion($version->getDemPostTrait()),
-                ];
-        $sortie     .=   join("\t",$ligne) . "\n";
-        }
+	    foreach( $versions as $version )
+		{
+	        $langage = "";
+	        if( $version->getCodeCpp()== true )     $langage .= " C++ ";
+	        if( $version->getCodeC()== true )       $langage .= " C ";
+	        if( $version->getCodeFor()== true )     $langage .= " Fortran ";
+	        $langage .=  Functions::string_conversion($version->getCodeLangage());
+	        $ligne = [
+				($version->getIdVersion() != null) ? $version->getIdVersion() : 'null',
+				Functions::string_conversion($version->getPrjTitre()),
+				Functions::string_conversion($version->getPrjThematique()),
+				$version->getResponsable(),
+				$version->getLabo(),
+				trim($langage),
+				Functions::string_conversion($version->getGpu()),
+				Functions::string_conversion($version->getCodeNom()),
+				Functions::string_conversion($version->getCodeLicence()),
+				Functions::string_conversion($version->getCodeHeuresPJob()),
+				Functions::string_conversion($version->getCodeRamPCoeur()),
+				Functions::string_conversion($version->getCodeRamPart()),
+				Functions::string_conversion($version->getCodeEffParal()),
+				Functions::string_conversion($version->getCodeVolDonnTmp()),
+				Functions::string_conversion($version->getDemPostTrait()),
+			];
+	        $sortie     .=   join("\t",$ligne) . "\n";
+		}
 
-    return Functions::csv($sortie,'bilan_reponses__session_'.$session->getIdSession().'.csv');
+	    return Functions::csv($sortie,'bilan_reponses__session_'.$session->getIdSession().'.csv');
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1027,7 +1024,7 @@ class SessionController extends Controller
         //////////////////////////////
 
         $totaux=
-            [
+		[
             "dem_heures_prec"       =>  0,
             "attr_heures_prec"      =>  0,
             "dem_rall_heures_prec"  =>  0,
@@ -1041,7 +1038,7 @@ class SessionController extends Controller
             "conso_an"              =>  0,
             "conso_gpu"             =>  0,
             "recuperable"           =>  0,
-            ];
+		];
         $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
         foreach  ($conso_flds as $m)    $totaux[$m] =   0;
 
@@ -1122,12 +1119,14 @@ class SessionController extends Controller
 			{
 				if ($version_precedente_A != null) {
 					$conso = $version_precedente_A->getConsoCalcul();
-					$quota = $version_precedente_A->getQuota();
+					//$quota = $version_precedente_A->getQuota();
+					$quota = 1;
 					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
 				}
 				elseif ( $version_precedente_B != null ) {
 					$conso = $version_precedente_B->getConsoCalcul();
-					$quota = $version_precedente_A->getQuota();
+					//$quota = $version_precedente_A->getQuota();
+					$quota = 1;
 					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
 				}
 			}
