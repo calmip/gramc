@@ -1326,6 +1326,7 @@ class VersionModifController extends Controller
                 $new_version->setPrjFicheVal(false);
                 $new_version->setPrjFicheLen(0);
                 $new_version->setRapConf(0);
+                $new_version->setCgu(0);
 
                 $new_version->setIdVersion( $session->getIdSession() . $version->getProjet()->getIdProjet()  );
                 $new_version->setProjet( $version->getProjet() );
