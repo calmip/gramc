@@ -525,27 +525,31 @@ class ProjetController extends Controller
     public function fwdAction(Version $version, Request $request)
     {
         if( $request->isMethod('POST') )
-            {
+		{
             $confirmation = $request->request->get('confirmation');
 
             if( $confirmation == 'OUI' )
-                {
+			{
                 //$versionWorkflow = new VersionWorkflow();
                 //if( $versionWorkflow->canExecute( Signal::CLK_VAL_DEM, $version) )
                 //     $versionWorkflow->execute( Signal::CLK_VAL_DEM, $version);
                 $projetWorkflow = new ProjetWorkflow();
                 if( $projetWorkflow->canExecute( Signal::CLK_VAL_DEM, $version->getProjet() ) )
+                {
                      $projetWorkflow->execute( Signal::CLK_VAL_DEM, $version->getProjet());
+				}
 
                 // TODO il faut ajouter des notifications !!!!
-                }
+			}
             return $this->redirectToRoute('projet_session'); // NON - on ne devrait jamais y arriver !
-            }
+		}
         else
+        {
            return $this->render('projet/dialog_fwd.html.twig',
             [
             'version' => $version,
             ]);
+		}
     }
 
     /**

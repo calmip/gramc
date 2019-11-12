@@ -1,3 +1,26 @@
+v 2.3.1 - 12 Nov 2019
+---------------------
+    - BUG - Le champ 'cgu' de Version n'était pas remis à zéro lors d'un renouvellement
+
+v 2.3.0 - 5 Nov 2019
+--------------------
+    - Certains contrôleurs et certaines vues peuvent avoir plusieurs variantes selon le mésocentre
+    - Refonte de l'écran d'affectation des experts
+    - Possibilité d'avoir plusieurs experts pour un même projet
+    - Ecran "Données" séparé du formulaire principal et accessible en-dehors des sessions
+    - Trois sortes de projets:
+      - Type 1 (ne peuvent être créés que lors des sessions d'attribution)
+      - Type 2 (projets-tests)
+      - Type 3 (peuvent être créés au fil de l'eau, mais renouvelés seulement lors des sessions d'attribution)
+    - Les experts peuvent en fin d'année entrer un "commentaire général", qui pourra être repris dans le rapport d'activité de l'unité
+    - Refonte des graphiques de consommation, peuvent maintenant afficher les infos de stockage
+    - Un paramètre permet de s'affranchir de toutes données de consommation
+    - En mode dev, la liste des IP autorisées se trouve dans un fichier (plus simple à maintenir)
+    - Role OBServateur, voit les mêmes chose que Admin mais ne reçoit pas les mails et ne peut faire de modifications
+    - Rôle Admin système, pour les admins système du supercalculateur
+    - Ajout des fonctions d'API REST users/Get et version/Get
+    - Mise à jour de la documentation
+
 v 2.2.7 - 26 Août 2019
 ---------------------
     - Remise en service des pénalités d'Automne qui avaient disparu suite à la mise en service de la nouvelle table compta
