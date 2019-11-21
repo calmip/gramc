@@ -1,3 +1,7 @@
+v 2.3.2 - 21 Nov 2019
+---------------------
+    - BUG - Trois colonnes de trop dans l'écran des projets par session
+
 v 2.3.1 - 12 Nov 2019
 ---------------------
     - BUG - Le champ 'cgu' de Version n'était pas remis à zéro lors d'un renouvellement
