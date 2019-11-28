@@ -867,11 +867,11 @@ class ProjetController extends Controller
 		list($projets,$total) = Functions::donneesParProjet($annee);
 
 		return $this->render('projet/donnees.html.twig',
-				['form'    => $data['form']->createView(), // formulaire
-				 'annee'   => $annee,
-				 'projets' => $projets,
-				 'total'   => $total,
-				 ]);
+			['form'    => $data['form']->createView(), // formulaire
+			 'annee'   => $annee,
+			 'projets' => $projets,
+			 'total'   => $total,
+			 ]);
 	}
 
     /**
