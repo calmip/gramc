@@ -1265,16 +1265,30 @@ class SessionController extends Controller
     }
 
 	/*******
-	 * Appelée par bilanAction
+	 * Appelée par bilanAction dans le cas d'une session A
+	 *
 	 *********/
 	private function bilanCsvAction_A(Request $request,Session $session, $id_session, $annee_cour, $session_courante_A)
 	{
+		// NOTE - Pour la session 20A, $full_annee_cour=2020, $full_anne_prec=2019 !
         $annee_prec      = $annee_cour - 1;
         $full_annee_prec = 2000 + $annee_prec;
         $full_annee_cour = 2000 + $annee_cour;
 
         $session_precedente_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
         $session_precedente_B = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
+
+		// Pour les ressources de stockage
+		$ressources = AppBundle::getParameter('ressources_conso_group');
+		foreach ($ressources as $k=>$r)
+		{
+			if ($r['type']==='stockage')
+			{
+				$ress     = $r['ress'];
+				$nom_ress = $r['nom'];
+			}
+		}
+		$t_fact = 1024*1024*1024;	// Conversion octets -> To
 
         // type A: on regarde la conso annee precedente
         $annee_conso = $annee_prec;
@@ -1294,6 +1308,9 @@ class SessionController extends Controller
 
         array_push($entetes,'Demandes '.$id_session,'Attributions '.$id_session,"Quota $annee_prec",
                                 "Consommation $annee_conso","Conso gpu normalisée","Consommation $annee_conso (%)");
+
+        // Occupation du volume gpfs
+        array_push($entetes,"quota $nom_ress (To)","occup $nom_ress (%)");
 
         // Les mois pour les consos
         array_push($entetes,'Janvier','Février','Mars','Avril',
@@ -1316,6 +1333,8 @@ class SessionController extends Controller
             "conso_an"              =>  0,
             "conso_gpu"             =>  0,
             "recuperable"           =>  0,
+            "conso_stock"           =>  0,
+            "quota_stock"           =>  0,
 		];
         $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
         foreach  ($conso_flds as $m)    $totaux[$m] =   0;
@@ -1385,10 +1404,24 @@ class SessionController extends Controller
             $dem_heure_cour = $version->getDemHeures();
             $attr_heure_cour= $version->getAttrHeures();
 			$recuperable    = 0;
+			$stockRessource = $projet->getConsoRessource($ress,$full_annee_prec);
+			$conso_stock    = $stockRessource[0];	// Occupation de l'espace-disque
+			$quota_stock    = $stockRessource[1];	// Quota de disque
+			if ($quota_stock != 0)
+			{
+				$totaux['conso_stock'] += $conso_stock;
+				$totaux['quota_stock'] += $quota_stock;
+				$conso_stock = intval(100 * $conso_stock/$quota_stock);
+				$quota_stock = intval($quota_stock / $t_fact);
+			}
+			else
+			{
+				$conso_stock = 0;
+			}
 
             $ligne =
-                    [
-                    $version->getProjet(),
+				[
+                    $projet,
                     '"'. $version->getPrjThematique() .'"',
                     '"'.$version->getResponsable() .'"',
                     '"'.$version->getLabo().'"',
@@ -1399,17 +1432,19 @@ class SessionController extends Controller
                     $attr_heures_rallonge,
                     $penal_heures,
                     $attr_heures_prec+$attr_heures_rallonge-$penal_heures,
-                    ];
+				];
 
              $ligne = array_merge( $ligne,
-                    [
+				[
                     $dem_heure_cour,
                     $attr_heure_cour,
                     $quota,
                     $conso,
                     $conso_gpu,
-                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
-                    ]);
+                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0,
+                    $quota_stock,
+                    $conso_stock
+				]);
 
 
 			for ($m=0;$m<12;$m++)
@@ -1447,6 +1482,8 @@ class SessionController extends Controller
 			$totaux["attr_heures_prec"]+$totaux["attr_rall_heures_prec"]-$totaux["penal_heures_prec"],
 			];
 
+		$totaux_quota_stock = intval($totaux['quota_stock']/$t_fact);
+		$totaux_conso_stock = intval($totaux['conso_stock']/$t_fact);
 		$ligne  =  array_merge( $ligne,
 			[
 			$totaux["dem_heures_cour"],
@@ -1455,8 +1492,9 @@ class SessionController extends Controller
 			$totaux["conso_an"],
 			$totaux["conso_gpu"],
 			'', // %
+			"$totaux_quota_stock (To)",
+			"$totaux_conso_stock (To)",
 			]);
-
 
 		$ligne  = array_merge( $ligne,
 			[
