@@ -728,6 +728,9 @@ class SessionController extends Controller
 			'Efficacité parallèle',
 			'Stockage temporaire',
 			'Post-traitement',
+			'Meta données',
+			'Nombre de datasets',
+			'Taille des datasets'
 		];
 	    $sortie = join("\t",$entetes) . "\n";
 
@@ -756,6 +759,10 @@ class SessionController extends Controller
 				Functions::string_conversion($version->getCodeEffParal()),
 				Functions::string_conversion($version->getCodeVolDonnTmp()),
 				Functions::string_conversion($version->getDemPostTrait()),
+				Functions::string_conversion($version->getDataMetaDataFormat()),
+				Functions::string_conversion($version->getDataNombreDatasets()),
+				Functions::string_conversion($version->getDataTailleDatasets()),
+
 			];
 	        $sortie     .=   join("\t",$ligne) . "\n";
 		}
