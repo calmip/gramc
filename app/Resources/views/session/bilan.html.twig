@@ -51,8 +51,10 @@
                 <th>Efficacité parallèle</th>
                 <th>Données temporaires</th>
                 <th>Post-traitement</th>
-                <th>Données permanentes</th>
                 {# <th>Durée</th> #}
+                <th>meta données</th>
+                <th>nombre de datasets</th>
+                <th>taille de chaque dataset</th>
 
             </tr>
         </thead>
@@ -80,8 +82,9 @@
             <td>{{ version.codeEffParal }}</td>
             <td>{{ version.codeVolDonnTmp }}</td>
             <td>{{ version.demPostTrait }}</td>
-            <td>{{ version.sondVolDonnPerm }}</td>
-            {# <td>{{ version.sondDureeDonnPerm }}</td> #}
+            <td>{{ version.datametadataformat }}</td>
+            <td>{{ version.datanombredatasets }}</td>
+            <td>{{ version.datatailledatasets }}</td>
         </tr>
         {% endfor %}
         </tbody>

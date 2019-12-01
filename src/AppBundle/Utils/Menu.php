@@ -275,7 +275,7 @@ class Menu
     else
         {
         $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+        $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
     return $menu;
@@ -297,7 +297,7 @@ class Menu
     else
         {
         $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+        $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
     return $menu;
@@ -319,7 +319,7 @@ class Menu
         else
         {
             $menu['ok'] = false;
-            $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+            $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
         return $menu;
@@ -340,7 +340,7 @@ class Menu
         else
         {
             $menu['ok'] = false;
-            $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+            $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
         return $menu;
@@ -350,9 +350,9 @@ class Menu
 
     public static function projet_annee()
     {
-        $menu['name']   =   'projet_annee';
-        $menu['commentaire']    =   "Gérer les projets par année";
-        $menu['lien']           =   "Projets ( par année )";
+        $menu['name']        =   'projet_annee';
+        $menu['commentaire'] =   "Gérer les projets par année";
+        $menu['lien']        =   "Projets ( par année )";
 
         if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
@@ -361,12 +361,32 @@ class Menu
         else
         {
             $menu['ok'] = false;
-            $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+            $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
         return $menu;
     }
 
+    //////////////////////////////////////
+
+    public static function projet_donnees()
+    {
+        $menu['name']        =   'projet_donnees';
+        $menu['commentaire'] =   "Projets ayant des besoins en stockage ou partage de données";
+        $menu['lien']        =   "Données (par année)";
+
+        if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        {
+            $menu['ok'] = true;
+        }
+        else
+        {
+            $menu['ok'] = false;
+            $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
+        }
+
+        return $menu;
+    }
     //////////////////////////////////////
 
     public static function projet_tous()
@@ -383,7 +403,7 @@ class Menu
     else
         {
         $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur ou le président pour accéder à cette page";
+        $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
     return $menu;
@@ -868,7 +888,7 @@ class Menu
         $menu['ok']          =   false;
         if( !AppBundle::isGranted('ROLE_PRESIDENT') )
         {
-            $menu['raison']     =   "Vous n'avez pas le rôle président";
+            $menu['raison']     =   "Vous n'avez pas le rôprésident";
         }
         else
         {
@@ -892,7 +912,7 @@ class Menu
         $menu['ok']          =   false;
         if( !AppBundle::isGranted('ROLE_PRESIDENT') )
         {
-            $menu['raison']     =   "Vous n'avez pas le rôle président";
+            $menu['raison']     =   "Vous n'avez pas le rôprésident";
         }
         // Supprimé par manu - On peut affecter les experts en permanence, à cause des projets tests
         /*
@@ -924,7 +944,7 @@ class Menu
         $menu['ok']             =   false;
         if( !AppBundle::isGranted('ROLE_PRESIDENT') )
         {
-            $menu['raison']     =   "Vous n'avez pas le rôle président";
+            $menu['raison']     =   "Vous n'avez pas le rôprésident";
         }
         elseif ( ! $workflow->canExecute( Signal::CLK_ATTR_PRS, $session) && AppBundle::isGranted('ROLE_PRESIDENT') )
         {
@@ -980,7 +1000,7 @@ class Menu
     $menu['lien']           =   "Mail - projets non renouvelés";
     $menu['commentaire']    =   "Vous ne pouvez pas envoyer un mail aux responsables des projets qui ne l'ont pas renouvelé";
     $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur ou le président";
+    $menu['raison']         =   "Vous n'êtes pas un administrateur ou président";
 
     $session    =   Functions::getSessionCourante();
     if( $session != null )
@@ -1024,7 +1044,7 @@ class Menu
     $menu['lien']           =   "Mail - projets sans fiche";
     $menu['commentaire']    =   "Vous ne pouvez pas envoyer un mail aux responsables des projets qui n'ont pas téléversé leur fiche projet";
     $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur ou le président";
+    $menu['raison']         =   "Vous n'êtes pas un administrateur ou président";
 
     $session    =   Functions::getSessionCourante();
     if( $session != null )
@@ -1244,7 +1264,7 @@ class Menu
     $menu['lien']           =   "Rallonge de ressources";
     $menu['commentaire']    =   "Affecter les experts pour les rallonges";
     $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas le président";
+    $menu['raison']         =   "Vous n'êtes pas président";
 
     if( AppBundle::isGranted('ROLE_ADMIN') ||  AppBundle::isGranted('ROLE_PRESIDENT') )
         {
