@@ -373,7 +373,7 @@ class Menu
     {
         $menu['name']        =   'projet_donnees';
         $menu['commentaire'] =   "Projets ayant des besoins en stockage ou partage de données";
-        $menu['lien']        =   "Données (par projets)";
+        $menu['lien']        =   "Données (par année)";
 
         if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
