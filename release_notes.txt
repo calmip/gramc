@@ -1,3 +1,8 @@
+v 2.4.0 - 1 déc 2019
+--------------------
+    - Ecran donnes par annee et par projet
+    - Refonte de l'ecran bilan de session
+
 v 2.3.2 - 21 Nov 2019
 ---------------------
     - BUG - Trois colonnes de trop dans l'écran des projets par session
