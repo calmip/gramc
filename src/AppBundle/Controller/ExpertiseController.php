@@ -587,11 +587,11 @@ class ExpertiseController extends Controller
         $moi    =   AppBundle::getUser();
         if( is_string( $moi ) ) Functions::createException();
 
-        $mes_thematiques    =   $moi->getThematique();
-
+        $mes_thematiques     =   $moi->getThematique();
         $expertiseRepository = AppBundle::getRepository(Expertise::class);
         $session             = Functions::getSessionCourante();
 
+	// Les expertises affectées à cet expert
         $expertises  = $expertiseRepository->findExpertisesByExpert($moi, $session);
         $my_expertises  =   [];
         foreach( $expertises as $expertise )
@@ -600,32 +600,31 @@ class ExpertiseController extends Controller
             if ( $expertise->getDefinitif()) continue;
 
             $version    =   $expertise->getVersion();
-
             $projetId   =   $version->getProjet()->getIdProjet();
             $thematique =   $version->getPrjThematique();
 
             $my_expertises[ $version->getIdVersion() ] = [
-	                                                        'expertise' => $expertise,
-	                                                        'demHeures' => $version->getDemHeures(),
-	                                                        'versionId' => $version->getIdVersion(),
-	                                                        'projetId'  => $projetId,
-	                                                        'titre'     => $version->getPrjTitre(),
-	                                                        'thematique'    => $thematique,
-	                                                        'responsable'   => $version->getResponsable(),
-	                                                        'expert'        => true,
+							    'expertise' => $expertise,
+							    'demHeures' => $version->getDemHeures(),
+							    'versionId' => $version->getIdVersion(),
+							    'projetId'  => $projetId,
+							    'titre'     => $version->getPrjTitre(),
+							    'thematique'    => $thematique,
+							    'responsable'   => $version->getResponsable(),
+							    'expert'        => true,
                                                          ];
         }
 
-		//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
-		//Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
+	//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
+	// Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
 
-        ////////////////
+        // Les projets associés à une de mes thématiques
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
         {
-            $expertises_thematique =  $expertiseRepository->findExpertisesByThematique($thematique, $session);
+            // $expertises_thematique =  $expertiseRepository->findExpertisesByThematique($thematique, $session);
+            $expertises_thematique =  $expertiseRepository->findExpertisesByThematiqueForAllSessions($thematique);
             //Functions::debugMessage(__METHOD__ . " expertises pour thématique ".Functions::show($thematique). '-> '.Functions::show($expertises_thematique));
-            //$expertises_thematique =  $expertiseRepository->findExpertisesByThematiqueForAllSessions($thematique);
             $expertises =   [];
             foreach( $expertises_thematique as $expertise )
             {
