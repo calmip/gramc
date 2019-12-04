@@ -324,13 +324,16 @@
             {% if( version.experts|length > 0 ) %}
             <td class="avec_expert" >
 				{% for exp in version.experts %}
-	                {% if ( is_granted('ROLE_ADMIN') ) %}
+                {# exp peut être nul si le système n'a pas pu affecter d'expert automatiquement ! #}
+                {% if exp != null %}
+	                {% if ( is_granted('ROLE_ADMIN')) %}
 	                <a class="sudo" href="{{ path('sudo',  { 'id': exp.id }) }}?" title="Changer d'identité">
 	                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
 	                {% endif %}
 	                <a href="mailto:{{ exp.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ exp.mail }}">
 	                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
 	                {{ exp.prenom }} {{ exp.nom }}<br />
+                {% endif %}
 	            {% endfor %}
             {% else %}
             <td>
