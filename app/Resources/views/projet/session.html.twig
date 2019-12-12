@@ -251,6 +251,7 @@
             	<a class="fermeture" href="{{ path('fermer_projet', { 'id': version.projet.idProjet }) }}" title="Fermer le projet">
                 	<img src="{{ asset('icones/process-stop.png') }}" alt="Fermer" />
             	</a>
+                {# SUPPRIME POUR CAUSE DE BUG (plus prudent)
             	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' or version.libelleEtat == 'EXPERTISE_TEST' ) %}
             	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
                 	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
@@ -258,7 +259,7 @@
             	{% elseif( version.libelleEtat == 'EDITION_DEMANDE' and session.libelleEtat != 'ACTIF') %}
             	<a href="{{ path('fwd_version', { 'id': version.idVersion }) }}" title="Envoyer pour expertise">
                 	<img src="{{ asset('icones/forward.png') }}" alt="En avant" />
-            	</a>
+            	</a>#}
             	{% else %}
             	&nbsp;
             	{% endif %}
@@ -324,13 +325,16 @@
             {% if( version.experts|length > 0 ) %}
             <td class="avec_expert" >
 				{% for exp in version.experts %}
-	                {% if ( is_granted('ROLE_ADMIN') ) %}
+                {# exp peut être nul si le système n'a pas pu affecter d'expert automatiquement ! #}
+                {% if exp != null %}
+	                {% if ( is_granted('ROLE_ADMIN')) %}
 	                <a class="sudo" href="{{ path('sudo',  { 'id': exp.id }) }}?" title="Changer d'identité">
 	                            <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
 	                {% endif %}
 	                <a href="mailto:{{ exp.mail }}" title="Envoyer un courriel à l'expert à l'adresse {{ exp.mail }}">
 	                            <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
 	                {{ exp.prenom }} {{ exp.nom }}<br />
+                {% endif %}
 	            {% endfor %}
             {% else %}
             <td>

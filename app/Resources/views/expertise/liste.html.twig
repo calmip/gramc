@@ -80,7 +80,7 @@
                                 <img src="{{ asset('icones/modifier.png') }}" alt="Expertiser" title="Expertiser le projet" class="bouton_poussoir"></a>
                             {% else %}
                                 <a href="{{ path('consulter_projet', { 'id' : expertise.projetId } ) }}">
-                                <img src="{{ asset('icones/consulter.png') }}" alt="Expertiser" title="Lire le projet" class="bouton_poussoir"></a>
+                                <img src="{{ asset('icones/consulter.png') }}" alt="Lire" title="Lire le projet" class="bouton_poussoir"></a>
                             {% endif %}
                         </td>
                         <td>{{ expertise.thematique }}</td>
