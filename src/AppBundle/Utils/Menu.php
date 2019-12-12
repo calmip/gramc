@@ -852,7 +852,8 @@ class Menu
             $menu['raison'] = "Le projet test a déjà été envoyé à l'expert !";
         elseif( $etatVersion !=  Etat::EDITION_DEMANDE && $etatVersion !=  Etat::EDITION_TEST )
             $menu['raison'] = "Le responsable du projet n'a pas demandé de renouvellement";
-        elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
+        //elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
+        elseif( $etatSession != Etat::EDITION_DEMANDE && $isProjetTest == false )
             $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
         elseif( VersionModifController::versionValidate( $version ) != [] )
 		{

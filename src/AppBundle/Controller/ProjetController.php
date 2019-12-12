@@ -537,7 +537,7 @@ class ProjetController extends Controller
                 if( $projetWorkflow->canExecute( Signal::CLK_VAL_DEM, $version->getProjet() ) )
                 {
 		    $projetWorkflow->execute( Signal::CLK_VAL_DEM, $version->getProjet());
-		    
+
 		    // On crée une expertise pour ce projet, mais on n'affecte pas d'experts
 		    $expertise  =   new Expertise();
 		    $expertise->setVersion( $version );
@@ -909,7 +909,8 @@ class ProjetController extends Controller
                     'pénalités B',
                     'heures attribuées',
                     'quota machine',
-                    'heures consommées'
+                    'heures consommées',
+                    'heures gpu',
                     ];
 
         $sortie     .=   join("\t",$header) . "\n";
@@ -945,6 +946,7 @@ class ProjetController extends Controller
             $line[] = $prj_array['attrib'];
             $line[] = $prj_array['q'];
             $line[] = $prj_array['c'];
+            $line[] = $prj_array['g'];
 
             $sortie     .=   join("\t",$line) . "\n";
         }
