@@ -181,24 +181,24 @@ class AdminuxController extends Controller
      }
 
 	/**
-	 * get versions actives
+	 * get versions non terminées
 	 *
 	 * @Route("/version/get", name="get_version")
 	 *
 	 * Exemples de données POST (fmt json):
 	 * 			   ''
 	 *             ou
-	 *             '{ "projet" : null,     "session" : null }' -> Toutes les versions actives quelque soit la session
+	 *             '{ "projet" : null,     "session" : null }' -> Toutes les VERSIONS ACTIVES quelque soit la session
 	 *
 	 *             '{ "projet" : "P01234" }'
 	 *             ou
-	 *             '{ "projet" : "P01234", "session" : null }' -> LA version active du projet P01234
+	 *             '{ "projet" : "P01234", "session" : null }' -> LA VERSION ACTIVE du projet P01234
 	 *
 	 *             '{ "session" : "20A"}
 	 *             ou
-	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les versions actives de la session 20A
+	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les VERSIONS NON TERMINEES de la session 20A
 	 *
-	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 si elle est active
+	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 SI ELLE EST NON TERMINEE
 	 *
 	 * Donc on renvoie une ou plusieurs versions appartenant à différentes sessions, mais une ou zéro versions par projet
 	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
@@ -275,19 +275,28 @@ class AdminuxController extends Controller
 			}
 		}
 
-		// On ne garde que les versions actives... ou presque actives
-		$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
-		foreach ($v_tmp as $v)
+		// SEULEMENT si session n'est pas spécifié: On ne garde que les versions actives... ou presque actives
+		if ( $id_session == null )
 		{
-			if ($v == null) continue;
-			if ($v->getSession()->getEtatSession() != Etat::TERMINE)
+			$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
+			foreach ($v_tmp as $v)
 			{
-				if (in_array($v->getEtatVersion(),$etats,true))
-				//if ($v->getProjet()->getMetaEtat() === 'ACCEPTE' || $v->getProjet()->getMetaEtat() === 'NONRENOUVELE')
+				if ($v == null) continue;
+				if ($v->getSession()->getEtatSession() != Etat::TERMINE)
 				{
-					$versions[] = $v;
+					if (in_array($v->getEtatVersion(),$etats,true))
+					//if ($v->getProjet()->getMetaEtat() === 'ACCEPTE' || $v->getProjet()->getMetaEtat() === 'NONRENOUVELE')
+					{
+						$versions[] = $v;
+					}
 				}
 			}
+		}
+
+		// Si la session est spécifiée: On renvoie la version demandée, quelque soit son état
+		else
+		{
+			$versions = $v_tmp;
 		}
 
 		$retour = [];
@@ -346,19 +355,22 @@ class AdminuxController extends Controller
 	 * Exemples de données POST (fmt json):
 	 * 			   ''
 	 *             ou
-	 *             '{ "projet" : null,     "mail" : null }' -> Tous les collaboratuers avec login
+	 *             '{ "projet" : null,     "mail" : null }' -> Tous les collaborateurs avec login
 	 *
 	 *             '{ "projet" : "P01234" }'
 	 *             ou
-	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234
+	 *             '{ "projet" : "P01234", "mail" : null }' -> Tous les collaborateurs avec login du projet P01234 (version ACTIVE)
 	 *
 	 *             '{ "mail" : "toto@exemple.fr"}
 	 *             ou
-	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login
+	 *             '{ "projet" : null,     "mail" : "toto@exemple.fr"}' -> Tous les projets dans lesquels ce collaborateur a un login (version ACTIVE de chaque projet)
 	 *
-	 *             '{ "projet" : "P01234", "session" : "toto@exemple.fr"}' -> Tout sur toto !
+	 *             '{ "projet" : "P01234", "mail" : "toto@exemple.fr" }' -> rien ou toto si toto avait un login sur ce projet
 	 *
-	 * On renvoie pour chaque projet non terminé, ou pour un projet donné, la liste des collaborateurs qui doivent avoir un login
+	 * Par défaut on ne considère QUE les version actives de CHAQUE PROJET
+	 * MAIS si on AJOUTE un PARAMETRE "session" : "20A" on travaille sur la session passée en paramètres (ici 20A)
+	 *
+	 * On renvoie pour chaque projet, ou pour un projet donné, la liste des collaborateurs qui doivent avoir un login
 	 *
 	 * Données renvoyées (fmt json):
 	 * 				mail		toto@exemple.fr
@@ -387,6 +399,7 @@ class AdminuxController extends Controller
 		{
 			$id_projet  = (isset($content['projet'])) ? $content['projet'] : null;
 			$mail       = (isset($content['mail']))? $content['mail']: null;
+			$id_session = (isset($content['session']))? $content['session']: null;
 		}
 
 //		$sessions  = $em->getRepository(Session::class)->get_sessions_non_terminees();
@@ -431,7 +444,19 @@ class AdminuxController extends Controller
 		//
 		foreach ($projets as $p)
 		{
-			$v = $p->getVersionActive();
+			// Si session non spécifiée, on prend la version active de chaque projet !
+			if ($id_session==null)
+			{
+				$v = $p->getVersionActive();
+			}
+
+			// Sinon, on prend la version de cette session... si elle existe
+			else
+			{
+				$id_version = $id_session . $p->getIdProjet();
+				$v          = $em->getRepository(Version::class)->find($id_version);
+			}
+
 			if ($v != null)
 			{
 				$collaborateurs = $v->getCollaborateurVersion();
