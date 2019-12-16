@@ -302,6 +302,7 @@ class AdminuxController extends Controller
 		$retour = [];
 		foreach ($versions as $v)
 		{
+			if ($v==null) continue;
 			$annee = 2000 + $v->getSession()->getAnneeSession();
 			$attr  = $v->getAttrHeures() - $v->getPenalHeures();
 			foreach ($v->getRallonge() as $r)
