@@ -994,6 +994,9 @@ div.ui-dialog {
 	width: 30%:
 }
 
+#expertise h3 {
+	text-align: center;
+}
 
 /* Tableaux scrollables: Le header et le footer sont fixes, le corps du tableau peut scroller
  * Que du css-hack, horreur !!!! */
