@@ -122,10 +122,6 @@ parameters:
     # L'adresse From lorsqu'on envoie un mail
     mailfrom: ne-pas-repondre@calmip.univ-toulouse.fr
 
-    # liste d'admins Unix du supercalculateur
-    # TODO - Remplacer par un Rôle !!!
-    unixadmins: ['emmanuel.courcelle@inp-toulouse.fr']
-
     # Bouton Nettoyer le journal: on garde les enregistrements plus récents que ce nombre (en années)
     old_journal: 5
 
