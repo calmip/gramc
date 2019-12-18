@@ -546,6 +546,8 @@ const LIBELLE_STATUT =
      */
     public function setResponsable($responsable)
     {
+		throw new Exception("setResponsable: METHODE ET CHAMP EN VOIE DE DISPARITION");
+
         $this->responsable = $responsable;
 
         return $this;
@@ -558,6 +560,7 @@ const LIBELLE_STATUT =
      */
     public function getResponsable()
     {
+		throw new Exception("getResponsable: METHODE ET CHAMP EN VOIE DE DISPARITION");
         return $this->responsable;
     }
 
@@ -570,8 +573,8 @@ const LIBELLE_STATUT =
      */
     public function setCollaborateur($collaborateur)
     {
+		throw new Exception("setCollaborateur: METHODE ET CHAMP EN VOIE DE DISPARITION");
         $this->collaborateur = $collaborateur;
-
         return $this;
     }
 
@@ -582,6 +585,7 @@ const LIBELLE_STATUT =
      */
     public function getCollaborateur()
     {
+		throw new Exception("getCollaborateur: METHODE ET CHAMP EN VOIE DE DISPARITION");
         return $this->collaborateur;
     }
 
@@ -595,7 +599,6 @@ const LIBELLE_STATUT =
     public function setPresident($president)
     {
         $this->president = $president;
-
         return $this;
     }
 
