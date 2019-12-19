@@ -489,18 +489,15 @@ class ProjetController extends Controller
 
             if( $confirmation == 'OUI' )
 			{
-                //$versionWorkflow = new VersionWorkflow();
-                //if( $versionWorkflow->canExecute( Signal::CLK_ARR, $version) )
-                //     $versionWorkflow->execute( Signal::CLK_ARR, $version);
                 $projetWorkflow = new ProjetWorkflow();
                 if( $projetWorkflow->canExecute( Signal::CLK_ARR, $version->getProjet() ) )
                 {
                      $projetWorkflow->execute( Signal::CLK_ARR, $version->getProjet());
                      // Supprime toutes les expertises
                      $expertises = $version->getExpertise()->toArray();
+		             $em = $this->getDoctrine()->getManager();
                      foreach ($expertises as $e)
                      {
-			             $em = $this->getDoctrine()->getManager();
 						 $em->remove($e);
 					 }
 					 $em->flush();
