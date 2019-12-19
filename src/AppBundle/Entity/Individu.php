@@ -122,20 +122,6 @@ const LIBELLE_STATUT =
     /**
      * @var boolean
      *
-     * @ORM\Column(name="responsable", type="boolean", nullable=false)
-     */
-    private $responsable = false;
-
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="collaborateur", type="boolean", nullable=false)
-     */
-    private $collaborateur = false;
-
-    /**
-     * @var boolean
-     *
      * @ORM\Column(name="president", type="boolean", nullable=false)
      */
     private $president = false;
@@ -535,58 +521,6 @@ const LIBELLE_STATUT =
     public function getExpert()
     {
         return $this->expert;
-    }
-
-    /**
-     * Set responsable
-     *
-     * @param boolean $responsable
-     *
-     * @return Individu
-     */
-    public function setResponsable($responsable)
-    {
-		throw new Exception("setResponsable: METHODE ET CHAMP EN VOIE DE DISPARITION");
-
-        $this->responsable = $responsable;
-
-        return $this;
-    }
-
-    /**
-     * Get responsable
-     *
-     * @return boolean
-     */
-    public function getResponsable()
-    {
-		throw new Exception("getResponsable: METHODE ET CHAMP EN VOIE DE DISPARITION");
-        return $this->responsable;
-    }
-
-    /**
-     * Set collaborateur
-     *
-     * @param boolean $collaborateur
-     *
-     * @return Individu
-     */
-    public function setCollaborateur($collaborateur)
-    {
-		throw new Exception("setCollaborateur: METHODE ET CHAMP EN VOIE DE DISPARITION");
-        $this->collaborateur = $collaborateur;
-        return $this;
-    }
-
-    /**
-     * Get collaborateur
-     *
-     * @return boolean
-     */
-    public function getCollaborateur()
-    {
-		throw new Exception("getCollaborateur: METHODE ET CHAMP EN VOIE DE DISPARITION");
-        return $this->collaborateur;
     }
 
     /**

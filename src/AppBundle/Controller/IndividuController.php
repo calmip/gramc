@@ -855,8 +855,6 @@ class IndividuController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
 
-        //$individus = $em->getRepository('AppBundle:Individu')->findAll();
-
         $form = AppBundle::getFormBuilder('tri', GererUtilisateurType::class, [] )->getForm();
         $form->handleRequest($request);
 
@@ -878,33 +876,27 @@ class IndividuController extends Controller
             $individus = $em->getRepository(Individu::class)->getActiveUsers();
 
         // statistiques
-
         $total = AppBundle::getRepository(Individu::class)->countAll();
         $actifs = 0;
-        $responsables = 0;
-        $collaborateurs = 0;
         $idps = [];
         foreach( $individus as $individu )
-            {
-                if( $individu->getResponsable() == true )  $responsables++;
-                if( $individu->getCollaborateur() == true ) $collaborateurs++;
+		{
+			$individu_ssos = $individu->getSso()->toArray();
+			if( count( $individu_ssos ) > 0 && $individu->getDesactive() == false ) $actifs++;
 
-                $individu_ssos = $individu->getSso()->toArray();
-                if( count( $individu_ssos ) > 0 && $individu->getDesactive() == false ) $actifs++;
-
-                $idps = array_merge( $idps,
-                    array_map(
-                        function($value)
-                            {
-                            $str = $value->__toString();
-                            preg_match ( '/^(.+)(@.+)$/', $str, $matches );
-                            if( array_key_exists ( 2, $matches ) )
-                                return $matches[2];
-                            else
-                                return '@';
-                            }
-                        , $individu_ssos ) );
-            }
+			$idps = array_merge( $idps,
+				array_map(
+					function($value)
+					{
+						$str = $value->__toString();
+						preg_match ( '/^(.+)(@.+)$/', $str, $matches );
+						if( array_key_exists ( 2, $matches ) )
+							return $matches[2];
+						else
+							return '@';
+					},
+					$individu_ssos ) );
+		}
         $idps = array_count_values ( $idps );
 
         return $this->render('individu/liste.html.twig',
@@ -912,8 +904,6 @@ class IndividuController extends Controller
             'idps'  => $idps,
             'total' => $total,
             'actifs' => $actifs,
-            'responsables' => $responsables,
-            'collaborateurs' => $collaborateurs,
             'form'  => $form->createView(),
             'individus' => $individus,
             ]);
