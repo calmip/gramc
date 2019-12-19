@@ -1425,9 +1425,18 @@ class VersionModifController extends Controller
 	            &&  $version->getSondVolDonnPerm() != '< 1To'
 	            &&  $version->getSondVolDonnPerm() != '1 To'
 	            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas')
-	            {
-					$todo[] = 'sond_justif_donn_perm';
-				}
+            {
+				$todo[] = 'sond_justif_donn_perm';
+			}
+
+			// Centres nationaux
+			if ( $version->getPrjGenciCentre()     == null
+				|| $version->getPrjGenciMachines() == null
+				|| $version->getPrjGenciHeures()   == null
+				|| $version->getPrjGenciDari()     == null)
+			{
+				$todo[] = 'genci';
+			};
 
 	        // Partage de données
 	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';

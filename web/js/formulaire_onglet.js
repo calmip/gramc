@@ -1,7 +1,7 @@
 
 
 
-$(document).ready(function() { // table projets par session
+$(document).ready(function() {
 
     $('.invisible_if_no_js').show();
 
@@ -36,60 +36,63 @@ $(document).ready(function() { // table projets par session
 
     // Lorsqu'on clique sur le bouton Enregistrer, on déclenche une requête ajax
     $('#Enregistrer').on('click', function(e) {
-	e.preventDefault();
-	e.stopPropagation();
+		e.preventDefault();
+		e.stopPropagation();
 
-	// Récupère les données du formulaire, ajouter ENREGISTRER car ça ne se fait pas tout seul
-	// (à cause de stopPropagation ou de preventDefault)
-	form = $('#form_projet');
-	form_data = form.serializeArray();
-	//form_data.push({name:'ENREGISTRER',value:1});
-	h = document.URL;
-	//h += '&ajax=1';
-	//console.log(h);
-	//console.log(form.serialize());
+		// Récupère les données du formulaire, ajouter ENREGISTRER car ça ne se fait pas tout seul
+		// (à cause de stopPropagation ou de preventDefault)
+		form = $('#form_projet');
+		form_data = form.serializeArray();
+		//form_data.push({name:'ENREGISTRER',value:1});
+		h = document.URL;
+		//h += '&ajax=1';
+		//console.log(h);
+		//console.log(form.serialize());
 
-	$.ajax(
+		$.ajax(
         {
-	    type: 'POST',
-	    url: h,
-	    data: form_data,
-	    processData: true,
-	    success: function( data )
+		    type: 'POST',
+		    url: h,
+		    data: form_data,
+		    processData: true,
+		    success: function( data )
             {
-		    //console.log(data);
-		    msg = $.parseJSON(data);
-		    if ( msg.match(/ERREUR/) != null) {
-		        msg = '<div class="message erreur"><h2>ATTENTION !</h2>'+msg+'</div>';
-		    } else {
-		        msg='<div class="message info"><h2>Projet enregistré</h2>'+msg+'</div>';
-		    }
-		    enregistrer_message.html(msg);
-		    enregistrer_message.dialog("open");
+			    //console.log(data);
+			    msg = $.parseJSON(data);
+			    if ( msg.match(/ERREUR/) != null) {
+			        msg = '<div class="message erreur"><h2>ATTENTION !</h2>'+msg+'</div>';
+			    } else {
+			        msg='<div class="message info"><h2>Projet enregistré</h2>'+msg+'</div>';
+			    }
+			    enregistrer_message.html(msg);
+			    enregistrer_message.dialog("open");
 
-		    // Supprime les lignes des collaborateurs supprimés
-		    supprime_aff_collabs();
-		    $('#liste_des_collaborateurs').find("input[id$='_mail'][type='text']" ).each(function() {
-		    if ($(this).val() != "" ) {
-			//alert($(this).val());
-			$(this).prop("disabled",true).attr("title","Vous ne pouvez plus changer l'adresse de courriel !");
-		    }
-	});
-
+			    // Supprime les lignes des collaborateurs supprimés
+			    supprime_aff_collabs();
+			    $('#liste_des_collaborateurs').find("input[id$='_mail'][type='text']" ).each(function() {
+				    if ($(this).val() != "" ) {
+						//alert($(this).val());
+						$(this).prop("disabled",true).attr("title","Vous ne pouvez plus changer l'adresse de courriel !");
+				    }
+				});
 	        },
-	    error: function(response)
+		    error: function(response)
             {
-		alert("ERREUR ! Pas possible d'enregistrer !");
-	    }
+				alert("ERREUR ! Pas possible d'enregistrer !");
+		    }
 	    });
     });
+
+    // Lorsqu'on clique sur le bouton nogenci, on remplit quelques champs
+    $('#nogenci').on('click', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$('#form_prjGenciCentre').val('aucun');
+		$('#form_prjGenciMachines').val('N/A');
+		$('#form_prjGenciHeures').val('N/A');
+		$('#form_prjGenciDari').val('N/A');
+	});
 } );
-
-
-
-
-
-
 
 
 /*************

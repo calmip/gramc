@@ -159,11 +159,8 @@
         </tr>
     </tbody></table>
 
-    <table class="projet"><tbody>
-        <tr><th colspan="2">Ressources offertes par GENCI<br>
-            <em>Si ce projet bénéficie ou a bénéficié dans les deux dernières années de temps de calcul sur un centre national, préciser quelle(s) machine(s), quel centre(s) et le nombre d'heures accordées.</em>
-            </th>
-        </tr>
+    <table id="form_genci" class="projet"><tbody>
+        <tr><th colspan="2">Ressources offertes par GENCI ces deux dernières années</th></tr>
         <tr>
             <th class="horiz">Centre(s)</th>
             <td>{{ form_widget(form.prjGenciCentre, { 'attr': { 'size': '80' } }) }}</td>
@@ -177,8 +174,13 @@
             <td>{{ form_widget(form.prjGenciHeures) }}</td>
         </tr>
         <tr>
-            <th class="horiz"><label for="prj_genci_dari">N° de projet Dari (le plus récent)</label></th>
+            <th class="horiz"><label for="prj_genci_dari">N° de projet Dari le plus récent<br />
+            <small>(exemple: A0070911xxx)</small></label></th>
             <td>{{ form_widget(form.prjGenciDari) }}</td>
+        </tr>
+		<tr>
+            <th class="horiz"><label for="prj_genci_dari">...sinon cliquez ici !</label></th>
+            <td><input class="invisible_if_no_js"  type="submit" name="nogenci" id="nogenci" value="PAS DE GENCI" title="Je n'ai pas déposé de projet sur les centres nationaux" /></td>
         </tr>
     </tbody></table>
 
