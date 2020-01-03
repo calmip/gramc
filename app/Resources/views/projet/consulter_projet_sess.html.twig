@@ -91,7 +91,13 @@
 
 <p>
 {% if app.debug %}<strong>DEBUG </strong><em>Etat du projet {{projet.id }}= {{ projet.getEtatProjet }} - Etat de la version {{version.idVersion }}= {{ version.getEtatVersion }}</em>{% endif %}<br />
+{# patch 3 janvier 2020 = NE PAS AFFICHER le nom de l'expert !!!! 
+   Mais il faudra améliorer ça en ne mettant pas le nom de l'expert dans la B.D..... #}
+{% for user in version.CollaborateurVersion %}
+{% if version.majInd.idindividu == user.collaborateur.idindividu %}
 <em>Dernière modification par {{ version.majInd }} le {{ version.majStamp|date('Y-m-d H:i:s') }}</em>
+{% endif %}
+{% endfor %}
 </p>
 
 {% endblock before_body %}
