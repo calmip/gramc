@@ -31,6 +31,7 @@ use AppBundle\Utils\Etat;
  * State - Une classe pour décrire des états d'objets, ainsi que les 
  *         transitions possibles à partir de ces objets
  *         Les transitions sont aussi des objets
+ *         Les transitions acceptables à partir d'un objet donné se trouvent dans l'array protégé $transitions
  * 
  *****************/
 class State
@@ -38,11 +39,18 @@ class State
     protected $transitions      = [];
     protected $stateIdentifier  = null;
 
+	/***********
+	 * Le constructeur
+	 * 
+	 * params:
+	 * 		$stateIdentifier L'état (un entier, cf. Utils/Etat.php)
+	 *      $transitions     Un array de transitions
+	 **********************/ 
     public function __construct($stateIdentifier, $transitions)
     {
         $this->stateIdentifier = $stateIdentifier;
         $this->transitions = $transitions;
-    } // public function __construct()
+    }
 
     public function __toString()
     {
@@ -52,10 +60,10 @@ class State
         return $output . '}' ;   
     }
 
-    function addTransition($transitionConstant,$transitionObject)
-    {
-        $this->states[$transitionConstant] = $transitionObject;
-    }
+    //function addTransition($transitionConstant,$transitionObject)
+    //{
+        //$this->states[$transitionConstant] = $transitionObject;
+    //}
           
     public function getTransitions()
     {
@@ -76,7 +84,14 @@ class State
         else return false;
     }
 
-    // Renvoie true/false suivant que la transition peut être exécutée ou pas
+    /****************
+     * La transition $name peut-elle être exécutée sur l'objet $objet ?
+     * 
+     * params:
+     *      $name   = Un nom (TODO - ??????????????) de transition
+     *      $object = Un objet associé
+     * 
+     ********************************/
     public function canExecute($name,$object)
     {
         if(  $this->hasTransition($name))
@@ -91,7 +106,14 @@ class State
         }    
     }
 
-    // Exécute la transition
+    /****************
+     * Exécute la transition $name sur l'objet $objet
+     * 
+     * params:
+     *      $name   = Un nom (TODO - ??????????????) de transition
+     *      $object = Un objet associé
+     * 
+     ********************************/
     public function execute($name,$object)
     {
         if( $this->hasTransition($name) )
@@ -108,8 +130,8 @@ class State
         }    
     }
     
-    public function getStateIdentifier()
-    {
-        return $this->stateIdentifier();
-    }
+//    public function getStateIdentifier()
+//    {
+//        return $this->stateIdentifier();
+//    }
 }

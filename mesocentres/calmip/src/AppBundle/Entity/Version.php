@@ -2628,10 +2628,10 @@ class Version
         return $this->expertise;
     }
 
-    /////////////////////////////////
-
-    // pour workflow
-
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatVersion/setEtatVersion !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatVersion();
@@ -2644,8 +2644,8 @@ class Version
         return $this;
     }
 
-    public function getSubWorkflow()    { return new \AppBundle\Workflow\RallongeWorkflow(); }
-    public function getSubObjects()     { return $this->getRallonge();   }
+    //public function getSubWorkflow()    { return new \AppBundle\Workflow\RallongeWorkflow(); }
+    //public function getSubObjects()     { return $this->getRallonge();   }
 
     ///////////////////////////////////////////////////////////////////////////////////
 

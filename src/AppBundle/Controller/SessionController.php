@@ -375,7 +375,7 @@ class SessionController extends Controller
                     if( $session->getIdSession() == $session_courante->getIdSession() )
                         continue;
 
-                    $workflow   = new SessionWorkflow($session);
+                    $workflow   = new SessionWorkflow();
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
                         $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
 				}
@@ -389,7 +389,7 @@ class SessionController extends Controller
 			{
                 //foreach( $sessions as $session )
                 //    {
-                //    $workflow   = new SessionWorkflow($session);
+                //    $workflow   = new SessionWorkflow();
                 //    if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session) )
                 //        $workflow->execute( Signal::CLK_SESS_DEB, $session);
                 //    }

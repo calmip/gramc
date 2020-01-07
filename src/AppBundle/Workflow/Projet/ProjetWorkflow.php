@@ -25,8 +25,6 @@
 namespace AppBundle\Workflow\Projet;
 
 use AppBundle\Workflow\Workflow;
-//use AppBundle\Exception\WorkflowException;
-//use AppBundle\Utils\Functions;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 use AppBundle\Workflow\NoTransition;
@@ -35,12 +33,10 @@ use AppBundle\Workflow\NoTransition;
 class ProjetWorkflow extends Workflow
 {
 
-    public function __construct(Projet $object = null)
+    public function __construct()
     {
         $this->workflowIdentifier   = get_class($this);
-        $this->object               = $object;
         parent::__construct();
-
         
         $this
             ->addState( Etat::RENOUVELABLE,

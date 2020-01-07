@@ -41,8 +41,8 @@ class Signal
     const CLK_ARR           = 14;
     const CLK_VAL_PRS       = 15;
 
-    const CLK_SESS_DEB           = 20;
-    const CLK_SESS_FIN          = 21;
+    const CLK_SESS_DEB      = 20;
+    const CLK_SESS_FIN      = 21;
     const CLK_FERM          = 22;
 
     const DAT_STDBY         = 30;

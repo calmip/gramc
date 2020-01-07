@@ -38,7 +38,6 @@ use AppBundle\Entity\Version;
 use AppBundle\Entity\Individu;
 
 use AppBundle\Utils\Functions;
-use AppBundle\Workflow\MessageTransition;
 
 use libphonenumber\PhoneNumberUtil;
 use libphonenumber\NumberParseException;
@@ -119,51 +118,6 @@ class DefaultController extends Controller
     return new Response( $output['to'] );
     return new Response( $output['contenu'] );
     return new Response( $output['subject'] );
-    }
-
-    /**
-     * @Route("/message", name="message")
-     * @Security("has_role('ROLE_ADMIN')")
-     */
-    public function messageAction(Request $request)
-    {
-    $users  =   [ 'a@x', 'b@x' ];
-    $users  =   AppBundle::getRepository(Individu::class)->findBy( ['president' => true ] );
-    $versions   =  AppBundle::getRepository(Version::class)->findAll();
-    $users  =   Functions::mailUsers( [ 'E','R' ], $versions[301] );
-    $version    =  $versions[301];
-    $transition =   new MessageTransition( $version->getEtatVersion(), null, 'expertise', [ 'E','R' ] );
-    $string     =   $transition->__toString();
-    $transition->execute( $version );
-    return new Response( $string );
-
-    $output = Functions::sendMessage( 'projet/dialog_back.html.twig' ,'projet/dialog_back.html.twig' , [ 'projet' => [ 'idProjet' => 'ID' ] ], $users);
-
-    //return new Response ( $users[0] );
-
-    //return new Response ( Functions::getSessionCourante()->getPresident() );
-
-    return new Response( $output['to'] );
-    return new Response( $output['contenu'] );
-    return new Response( $output['subject'] );
-    }
-
-    /**
-     * @Route("/message2", name="message2")
-     * @Security("has_role('ROLE_ADMIN')")
-     */
-    public function message2Action(Request $request)
-    {
-    $version = AppBundle::getRepository(Version::class)->findOneBy(['idVersion' => '18BP18045' ] );
-    if( $version != null )
-        {
-        //return new Response( Functions::show( $version->getPolitique() ));
-        return new Response( Functions::show( $version->getData() ));
-        }
-    else
-        return new Response( '$version == null' );
-
-    return $this->render('notification/compte_ouvert-contenu.html.twig');
     }
 
   /**

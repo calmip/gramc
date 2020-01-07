@@ -33,22 +33,19 @@ class NoTransition implements TransitionInterface
 
     public function __toString()
     {
-	return "NoTransition";
+		return "NoTransition";
     }
 
-
     ////////////////////////////////////////////////////
-    
     public function canExecute($object)
     {
-	return true;
+		return true;
     }
 
     ///////////////////////////////////////////////////////
-    
     public function execute($object)
     {
-	return true;
+		return true;
     }
 
 }

@@ -28,6 +28,10 @@ namespace AppBundle\Workflow;
  * Transition - Implémente une transition d'états
  *              Classe abstraite triviale
  *              canExecute pemet de définir des ACL: suivant la personne connectée la transition peut être exécutée ou pas.
+ * 					retourne true/false
+ * 				execute essaie d'exécuter la transition:
+ * 					retourne true  -> la transition est exécutée
+ * 					retourne false -> il y a eu un pb (voir le journal) la transition ne s'est pas faite
  ************************/
 interface TransitionInterface
 {

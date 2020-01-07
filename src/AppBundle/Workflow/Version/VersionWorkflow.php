@@ -26,8 +26,6 @@ namespace AppBundle\Workflow\Version;
 
 use AppBundle\Workflow\Workflow;
 use AppBundle\Workflow\NoTransition;
-//use AppBundle\Exception\WorkflowException;
-//use AppBundle\Utils\Functions;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 
@@ -35,10 +33,9 @@ use AppBundle\Utils\Signal;
 class VersionWorkflow extends Workflow
 {
 
-    public function __construct(Version $object = null)
+    public function __construct()
     {
         $this->workflowIdentifier   = get_class($this);
-        $this->object               = $object;
         parent::__construct();
 
 
