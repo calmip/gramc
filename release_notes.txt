@@ -1,3 +1,30 @@
+v 3.4.6 - 7 Jan 2020
+--------------------
+	- BUG - Refonte du système de métaetats des projets, l'affichage était insuffisant lorsque la session devient active
+
+v 3.4.5 - 3 Jan 2020
+--------------------
+	- BUG - Suppression de l'affichage de dernière modification si la personne responsable de la 
+	  modif ne fait pas partie des collaborateurs (experts, admins)
+	  
+v 2.4.3 - 16 Déc 2019
+---------------------
+    - Demande des experts: rappel du nom du labo et du responsable en haut de la page d'expertise
+
+v 2.4.2 - 12 Dec 2019
+---------------------
+	- BUG: Possibilité d'envoyer des projets alors que la session était en expertise !
+
+v 2.4.1 - 4 Dec 2019
+--------------------
+	- Correction de divers bugs d'affichage
+
+v 2.4.0 - 1er Dec 2019
+----------------------
+	- Introduction de l'écran "valorisation des données"
+	- Bilan de session: réécriture correcte pour les sessions de type 'A'
+	- infos sur la valorisation des données et l'occupation disque
+
 v 2.3.2 - 21 Nov 2019
 ---------------------
     - BUG - Trois colonnes de trop dans l'écran des projets par session
