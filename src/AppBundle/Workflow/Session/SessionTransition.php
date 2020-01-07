@@ -140,12 +140,12 @@ class SessionTransition implements TransitionInterface
 
     public function execute($object)
     {
-        Functions::debugMessage( __FILE__ . ":" . __LINE__ . " entrer dans execute" );
+        //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " entrer dans execute" );
         if ( $object instanceof Session )
 		{
             $rtn = true;
 
-			// Si on ne peut pas remettre toutes les session à zéro, renvoie false
+			// Si on ne peut pas remettre toutes les sessions php à zéro, renvoie false
 			// La transition n'a pas eu lieu
 			// Cela est une sécurité afin de s'assurer que personne ne reste connecté, ne sachant pas que la session
 			// a changé d'état !
@@ -159,7 +159,6 @@ class SessionTransition implements TransitionInterface
 				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
 			}
 
-            Functions::debugMessage( __FILE__ . ":" . __LINE__ . " execute" );
             if( $this->signal_projet == null )
                 Functions::debugMessage( __FILE__ . ":" . __LINE__ . " signal projet null" );
 
@@ -168,7 +167,7 @@ class SessionTransition implements TransitionInterface
                 $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
                 $workflow = new VersionWorkflow();
 
-                Functions::debugMessage( __FILE__ . ":" . __LINE__ . " size versions = " . count($versions) );
+                //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " size versions = " . count($versions) );
 
                 foreach( $versions as $version )
 				{
@@ -179,6 +178,7 @@ class SessionTransition implements TransitionInterface
                     //        . Etat::getLibelle( $version->getEtatVersion() ));
 					//}
 
+					//Functions::debugMessage( __FILE__ . ":" . __LINE__ . "  Envoi du signal " . $this->signal_projet . " à la version " . $version->getIdVersion());
                     $output = $workflow->execute( $this->signal_projet, $version );
 
                     //if( $version->getIdVersion() == "19AP17002" )
@@ -193,7 +193,7 @@ class SessionTransition implements TransitionInterface
 
                 if( $this->toProjets == true )
 				{
-                    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " session courante " );
+                    //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " session courante " );
                     $projets = AppBundle::getRepository(Projet::class)->findAll();
                     $workflow = new ProjetWorkflow();
                     foreach( $projets as $projet )
@@ -210,9 +210,9 @@ class SessionTransition implements TransitionInterface
                     Functions::debugMessage( __FILE__ . ":" . __LINE__ . " $this->toProjets == false " );
 			}
 
+            Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Session = " . $object->getIdSession() . " transition de " . $object->getEtatSession() . " vers " . $this->etat . " suite à signal " .$this->signal_projet);
             $object->setEtatSession( $this->etat );
             Functions::sauvegarder( $object );
-            Functions::debugMessage("SessionTransition : état est passé à " . $object->getEtatSession());
             return $rtn;
 		}
         else

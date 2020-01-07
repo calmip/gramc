@@ -494,7 +494,10 @@ class Projet
         // Projet terminé
 		if ($etat_projet == Etat::TERMINE) return 'TERMINE';
 		
-		// Projet non renouvelable (sera bientôt terminé car expert a dit "refusé")
+		// Projet non renouvelable:
+		//    - Projet test   = toujours non renouvelable
+		//    - Autres projets= sera bientôt terminé car expert a dit "refusé"
+		//
 		if ($etat_projet == Etat::NON_RENOUVELABLE && $this->getTypeProjet() != Projet::PROJET_TEST) return 'REFUSE';
 
         $veract      = $this->versionActive(); 
