@@ -44,7 +44,7 @@ class VersionTransition implements TransitionInterface
     protected   $mail                    = [];
     
     //
-    // si $signal_rallonge est un array is est considéré comme $mail et $signal_rallonge = null
+    // si $signal_rallonge est un array il est considéré comme $mail et $signal_rallonge = null
     //
 
     public function __construct( $etat, $signal_rallonge = null, $mail =[])
@@ -104,12 +104,13 @@ class VersionTransition implements TransitionInterface
     public function execute($object)
     {
         if ( $object instanceof Version )
-            {
+        {
+			// Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Version = " . $object->getIdVersion() . "transition de " . $object->getEtatVersion() . " vers " . $this->etat );
             $rtn = true;
             $object->setEtatVersion($this->etat);
 
             foreach( $this->mail as $mail_role => $template )
-                {
+            {
                 $users = Functions::mailUsers([$mail_role], $object);
                 //Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
                 $params['object'] = $object;
@@ -119,28 +120,10 @@ class VersionTransition implements TransitionInterface
                 
                 Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
                      $params , $users );
-                }
-           /*
-            if( $this->signal_rallonge != null )
-                {
-                    $rallonges = $object->getRallonge();
-                    if( is_array( $rallonges ) && count( $rallonges  > 0 ) )
-                        {
-                        $workflow = new RallongeWorkflow();
-                        foreach( $rallonges as $rallonge )
-                            {
-                            $return = $workflow->execute( $this->signal_rallonge, $rallonge );
-                            
-                            if( $return == false )
-                                $return = [[ 'signal' =>  $this->signal_rallonge, 'object' => $rallonge , 'user' => AppBundle::getUser() ]];
-                            
-                            $rtn = Functions::merge_return( $rtn, $return ); 
-                            }
-                        }
-                } */
+            }
             Functions::sauvegarder( $object );   
             return $rtn;
-            }
+        }
         else
             return false;   
     }

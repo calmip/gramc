@@ -1001,10 +1001,11 @@ class ProjetController extends Controller
     {
         $projets = AppBundle::getRepository(Projet::class)->findAll();
 
-        $etat_projet['expertise']   =   0;
-        $etat_projet['accepte']     =   0;
-        $etat_projet['refuse']      =   0;
-        $etat_projet['edition']     =   0;
+		foreach (['termine','standby','accepte','refuse','edition','expertise','nonrenouvele'] as $e)
+		{
+			$etat_projet[$e]         = 0;
+			$etat_projet[$e.'_test'] = 0;
+		}
 
         $data = [];
 
@@ -1015,14 +1016,22 @@ class ProjetController extends Controller
         foreach ( $projets as $projet )
         {
 
-            $info       =   $versionRepository->info($projet); // les stats du projet
-            $version    =   $versionRepository->findVersionDerniere($projet);
-            $etat       =   Etat::getLibelle( $projet->getEtatProjet() );
+            $info     = $versionRepository->info($projet); // les stats du projet
+            $version  = $versionRepository->findVersionDerniere($projet);
+            $metaetat = strtolower($projet->getMetaEtat());
 
+            if ( $projet->getTypeProjet() == Projet::PROJET_TEST )
+            {
+				$etat_projet[$metaetat.'_test'] += 1;
+			}
+			else
+			{
+				$etat_projet[$metaetat] += 1;
+			}
+			
             $data[] = [
                     'projet'        => $projet,
                     'version'       =>  $version,
-                    'etat'          =>  $etat,
                     'etat_version'  => ($version != null ) ? Etat::getLibelle( $version->getEtatVersion() ): 'SANS_VERSION',
                     'count'         =>  $info[1],
                     'dem'           =>  $info[2],
@@ -1032,22 +1041,8 @@ class ProjetController extends Controller
 
         }
 
-        $etat_projet['en_attente']                  =   $projetRepository->countEtat('EN_ATTENTE');
-        $etat_projet['actif']                       =   $projetRepository->countEtat('ACTIF');
-        $etat_projet['en_standby']                  =   $projetRepository->countEtat('EN_STANDBY');
-        $etat_projet['en_sursis']                   =   $projetRepository->countEtat('EN_SURSIS');
-        $etat_projet['nouvelle_version_demandee']   =   $projetRepository->countEtat('NOUVELLE_VERSION_DEMANDEE');
-        $etat_projet['termine']                     =   $projetRepository->countEtat('TERMINE');
-        $etat_projet['annule']                      =   $projetRepository->countEtat('ANNULE');
-        $etat_projet['total']                       =   $projetRepository->countAll();
-
-        $etat_projet['total_test']      =   $projetRepository->countAllTest();
-        $etat_projet['actif_test']      =   $projetRepository->countEtatTest('ACTIF_TEST');
-        $etat_projet['edition_test']    =   $projetRepository->countEtatTest('EDITION_TEST');
-        $etat_projet['expertise_test']  =   $projetRepository->countEtatTest('EXPERTISE_TEST');
-        $etat_projet['en_attente_test'] =   $projetRepository->countEtatTest('EN_ATTENTE');
-        $etat_projet['termine_test']    =   $projetRepository->countEtatTest('TERMINE');
-        $etat_projet['annule_test']     =   $projetRepository->countEtatTest('ANNULE');
+        $etat_projet['total']      = $projetRepository->countAll();
+        $etat_projet['total_test'] = $projetRepository->countAllTest();
 
         return $this->render('projet/projets_tous.html.twig',
         [

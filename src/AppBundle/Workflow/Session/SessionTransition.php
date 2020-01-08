@@ -143,7 +143,7 @@ class SessionTransition implements TransitionInterface
 		{
             $rtn = true;
 
-			// Si on ne peut pas remettre toutes les session à zéro, renvoie false
+			// Si on ne peut pas remettre toutes les sessions php à zéro, renvoie false
 			// La transition n'a pas eu lieu
 			// Cela est une sécurité afin de s'assurer que personne ne reste connecté, ne sachant pas que la session
 			// a changé d'état !
@@ -194,14 +194,12 @@ class SessionTransition implements TransitionInterface
 				}
 			}
 
-            $object->setEtatSession( $this->etat );
-            Functions::sauvegarder( $object );
             if (TransitionInterface::DEBUG)
             {
 				$old_etat = $object->getEtatSession();
 	            $object->setEtatSession( $this->etat );
 	            Functions::sauvegarder( $object );
-				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La session " . $object->getIdSession() . " est passée de l'état " . $old_etat . " à " . $object->getEtatSession() . "suite au signal " . $this->signal);
+				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La session " . $object->getIdSession() . " est passée de l'état " . $old_etat . " à " . $object->getEtatSession() . " suite au signal " . $this->signal);
 			}
 			else
 			{

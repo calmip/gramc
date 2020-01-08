@@ -25,7 +25,9 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Session;
+use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
+
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -357,45 +359,49 @@ class SessionController extends Controller
      */
     public function activerAction(Request $request)
     {
+		// Suppression du cache, du coup toutes les personnes connectées seront virées
         AppBundle::getSession()->remove('SessionCourante'); // remove cache
+
         $session_courante       =   Functions::getSessionCourante();
         $etat_session_courante  =   $session_courante->getEtatSession();
-        $workflow   = new SessionWorkflow();
 
-        $sessions = AppBundle::getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
+		$em       = $this->getDoctrine()->getManager();
+        $sessions = $em->getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
 
 		$ok = false;
         $mois = GramcDate::get()->format('m');
+
+        $workflow = new SessionWorkflow();
+        
+        // On active une session A
         if( $mois == 1 ||  $mois == 12 )
 		{
             if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session_courante) && $etat_session_courante == Etat::EN_ATTENTE )
 			{
+				// On termine les deux sessions A et B de l'année précédente
                 foreach( $sessions as $session )
 				{
-                    if( $session->getIdSession() == $session_courante->getIdSession() )
-                        continue;
+					// On ne termine pas la session qui va démarrer !
+                    if( $session->getIdSession() == $session_courante->getIdSession() ) continue;
 
                     $workflow   = new SessionWorkflow();
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
                         $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
 				}
-
                 $ok = $workflow->execute( Signal::CLK_SESS_DEB, $session_courante );
-                AppBundle::getManager()->flush();
+                $em->flush();                
 			}
 		}
+		
+		// On active une session B
         elseif( $mois == 6 ||  $mois == 7 )
+        {
             if( $workflow->canExecute(Signal::CLK_SESS_DEB , $session_courante)  && $etat_session_courante == Etat::EN_ATTENTE )
 			{
-                //foreach( $sessions as $session )
-                //    {
-                //    $workflow   = new SessionWorkflow();
-                //    if( $workflow->canExecute( Signal::CLK_SESS_DEB, $session) )
-                //        $workflow->execute( Signal::CLK_SESS_DEB, $session);
-                //    }
                 $ok = $workflow->execute(Signal::CLK_SESS_DEB , $session_courante );
                 AppBundle::getManager()->flush();
 			}
+		}
 
 		if ($ok==true)
 		{
