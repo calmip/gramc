@@ -477,35 +477,55 @@ class Projet
 		}
     }
 
-    // Le Meta-état des projets, pour affichage
-    // Renvoie une chaine de caractère décrivant l'état du projet, pour que ce soit compréhensible par les utilisateurs
-    // Note - Le méta-état du projet dépend de l'état de la dernière version !
+	/**************************************************************************
+	 *
+	 * Renvoie le "méta état" du projet, pour affichage
+	 * c'est-à-dire une chaine de caractères décrivant l'état du projet, 
+	 * qui doit être compréhensible par les utilisateurs
+	 * 
+	 * Peut renvoyer: TERMINE,REFUSE,ACCEPTE,STANDBY,EDITION,EXPERTISE,NONRENOUVELE
+	 * 
+	 **************************************************************************/
+    
     public function getMetaEtat()
     {
         $etat_projet = $this->getEtatProjet();
+        
+        // Projet terminé
+		if ($etat_projet == Etat::TERMINE) return 'TERMINE';
+		
+		// Projet non renouvelable:
+		//    - Projet test   = toujours non renouvelable
+		//    - Autres projets= sera bientôt terminé car expert a dit "refusé"
+		//
+		if ($etat_projet == Etat::NON_RENOUVELABLE && $this->getTypeProjet() != Projet::PROJET_TEST) return 'REFUSE';
 
-        if      (   $etat_projet    ==  Etat::EN_STANDBY    )   return 'STANDBY'; //En attente, renouvellement possible
-        elseif  (   $etat_projet    ==  Etat::TERMINE       )   return 'TERMINE';
-
+        $veract      = $this->versionActive(); 
         $version        =   $this->derniereVersion();
-        if($version == null)    return 'SANS VERSION';
+        // Ne doit pas arriver: un projet a toujours une dernière version !
+        if($version == null) {
+			AppBundle::getLogger()->error(__METHOD__ . ":" . __LINE__ . "Incohérence dans la BD: le projet " . 
+											$this->getIdProjet() . " version active: $veract n'a PAS de version dernière !");
+			return 'STANDBY';
+		}
         $etat_version   =   $version->getEtatVersion();
 
-        if      (   $etat_version   ==  Etat::ANNULE                )   return 'ANNULE';
-        elseif  (   $etat_version   ==  Etat::EDITION_DEMANDE       )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EDITION_EXPERTISE     )   return 'EXPERTISE';
-        elseif  (   $etat_version   ==  Etat::EDITION_TEST          )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EXPERTISE_TEST        )   return 'EXPERTISE';
-        elseif  (   $version->getAttrAccept()   ==  true            )
+        if ( $etat_version ==  Etat::EDITION_DEMANDE       ) return 'EDITION';
+        elseif ( $etat_version ==  Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
+        elseif ( $etat_version ==  Etat::EDITION_TEST      ) return 'EDITION';
+        elseif ( $etat_version ==  Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
+        elseif ( $etat_version ==  Etat::ACTIF             )
         {
+			// Permet d'afficher un signe particulier pour les projets non renouvelés en période de demande pour une session A
             $session = Functions::getSessionCourante();
             if( $session->getEtatSession() == Etat::EDITION_DEMANDE &&  $session->getLibelleTypeSession() === 'A' )
                 return 'NONRENOUVELE'; // Non renouvelé
             else
                 return 'ACCEPTE'; // Projet ou rallonge accepté par le comité d'attribution
         }
-        else    return 'REFUSE';
-    }
+        elseif ( $etat_version ==  Etat::EN_ATTENTE        ) return 'ACCEPTE';
+        elseif ($veract == null                            ) return 'STANDBY';
+	}
 
      /**
      * derniereVersion
@@ -562,28 +582,50 @@ class Projet
      */
     public function versionActive()
     {
-        // si la clé étrangère est correcte return cette clé sinon on la calcule
+		$em = AppBundle::getManager();
+
         $versionActive    =   $this->getVersionActive();
-
+        
+        // Si le projet est terminé = renvoyer null
+        if ( $this->getEtatProjet() == Etat::TERMINE ) 
+        {
+			if ($versionActive != null)
+			{
+	            $this->setVersionActive( null );
+	            $em->persist($this);
+	            $em->flush();
+			}
+			return null;
+		}
+        
+		// Vérifie que la version active est vraiment active
         if( $versionActive != null &&
-                ( $versionActive->getEtatVersion() == Etat::ACTIF || $versionActive->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
-            )
-            return $versionActive;
+          ( $versionActive->getEtatVersion() == Etat::ACTIF || $versionActive->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
+          )
+          {
+	          return $versionActive;
+		  }
 
-       $result     =   null;
-
-      foreach( $this->getVersion() as $version )
-            if( $version->getEtatVersion() == Etat::ACTIF ||  $version->getEtatVersion() == Etat::NOUVELLE_VERSION_DEMANDEE )
+		// Sinon on la recherche, on la garde, puis on la renvoie
+		$result = null;
+		foreach( array_reverse($this->getVersion()->toArray()) as $version )
+		{
+            if( $version->getEtatVersion() == Etat::ACTIF || 
+                $version->getEtatVersion() == Etat::NOUVELLE_VERSION_DEMANDEE ||
+                $version->getEtatVersion() == Etat::EN_ATTENTE )
+            {
                 $result = $version;
+                break;
+			}
+		}
 
         // update BD
-        if( $versionActive != null || $result != null ) // seulement s'il y a un changement
-            {
+        if( $versionActive != $result ) // seulement s'il y a un changement
+		{
             $this->setVersionActive( $result );
-            $em = AppBundle::getManager();
             $em->persist($this);
             $em->flush();
-            }
+		}
         return $result;
     }
 
@@ -600,14 +642,14 @@ class Projet
 
     public function getCollaborateurs( $versions = [] )
     {
-    if( $versions == [] ) $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
-
-    $collaborateurs = [];
-    foreach( $versions as $version )
-        foreach( $version->getCollaborateurs() as $collaborateur )
-            $collaborateurs[ $collaborateur->getIdIndividu() ] = $collaborateur;
-
-    return $collaborateurs;
+	    if( $versions == [] ) $versions = AppBundle::getRepository(Version::class)->findVersions( $this );
+	
+	    $collaborateurs = [];
+	    foreach( $versions as $version )
+	        foreach( $version->getCollaborateurs() as $collaborateur )
+	            $collaborateurs[ $collaborateur->getIdIndividu() ] = $collaborateur;
+	
+	    return $collaborateurs;
     }
 
     /////////////////////////////////////////////////////
