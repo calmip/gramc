@@ -44,15 +44,15 @@ class SessionWorkflow extends Workflow
         $this
             ->addState( Etat::CREE_ATTENTE,
                 [
-                Signal::DAT_DEB_DEM => new SessionTransition(Etat::EDITION_DEMANDE),
+                Signal::DAT_DEB_DEM => new SessionTransition(Etat::EDITION_DEMANDE, Signal::DAT_DEB_DEM),
                 ])
             ->addState( Etat::EDITION_DEMANDE,
                 [
-                Signal::DAT_FIN_DEM => new SessionTransition(Etat::EDITION_EXPERTISE),
+                Signal::DAT_FIN_DEM => new SessionTransition(Etat::EDITION_EXPERTISE, Signal::DAT_FIN_DEM),
                 ])
             ->addState( Etat::EDITION_EXPERTISE,
                 [
-                Signal::CLK_ATTR_PRS => new SessionTransition(Etat::EN_ATTENTE),
+                Signal::CLK_ATTR_PRS => new SessionTransition(Etat::EN_ATTENTE, Signal::CLK_ATTR_PRS),
                 ])
             ->addState( Etat::EN_ATTENTE,
                 [

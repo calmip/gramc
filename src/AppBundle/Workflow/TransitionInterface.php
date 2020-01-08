@@ -35,6 +35,8 @@ namespace AppBundle\Workflow;
  ************************/
 interface TransitionInterface
 {
+	const DEBUG = true;					// Activer - ou pas - le debug dans les transitions
+										// ATTENTION ! Mettre à false pour la prod, sinon perte de perfs !
     public function canExecute($object);
     public function execute($object);
     public function __toString();
