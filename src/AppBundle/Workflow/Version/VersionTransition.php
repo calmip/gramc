@@ -43,23 +43,12 @@ class VersionTransition implements TransitionInterface
     protected   $signal_rallonge         = null;
     protected   $mail                    = [];
     
-    //
-    // si $signal_rallonge est un array il est considéré comme $mail et $signal_rallonge = null
-    //
-
-    public function __construct( $etat, $signal_rallonge = null, $mail =[])
+    public function __construct( $etat, $signal, $mail=[], $signal_rallonge = null)
     {
-        $this->etat                 =   (int)$etat;
-        if( is_array( $signal_rallonge ) )
-            {
-            $this->signal_rallonge  =   null;
-            $this->mail             =   $signal_rallonge;
-            }
-        else
-            {
-            $this->signal_rallonge  =   $signal_rallonge;
-            $this->mail             =   $mail;
-            }
+        $this->etat            = (int)$etat;
+        $this->signal          = $signal;
+        $this->mail            = $mail;
+        $this->signal_rallonge = $signal_rallonge;
     }
 
     public function __toString()
@@ -76,27 +65,28 @@ class VersionTransition implements TransitionInterface
     ////////////////////////////////////////////////////
     
     public function canExecute($object)
-    {
+    { 
        if ( $object instanceof Version )
-            {
+		{
             $rtn = true;
-           /*
-            if( $this->signal_rallonge != null )
-                {
-                    $rallonges = $object->getRallonge();
-                    if( $rallonges != null )
-                        {
-                        $workflow = new RallongeWorkflow();
-                        
-                        foreach( $rallonges as $rallonge )
-                            $rtn = $rtn && $workflow->canExecute( $this->signal_rallonge, $rallonge );
-                        }
-                }*/
+            if (TransitionInterface::FAST == false && $this->signal_rallonge != null )
+			{
+				$rallonges = $object->getRallonge();
+				if( $rallonges != null )
+				{
+					$workflow = new RallongeWorkflow();
+					foreach( $rallonges as $rallonge )
+					{
+						$rtn = $rtn && $workflow->canExecute( $this->signal_rallonge, $rallonge );
+					}
+                }
+			}
             return $rtn;
-            
-            }
+		}
         else
+        {
             return false;        
+		}
     }
 
     ///////////////////////////////////////////////////////
@@ -105,27 +95,55 @@ class VersionTransition implements TransitionInterface
     {
         if ( $object instanceof Version )
         {
-			// Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Version = " . $object->getIdVersion() . "transition de " . $object->getEtatVersion() . " vers " . $this->etat );
             $rtn = true;
-            $object->setEtatVersion($this->etat);
 
+			// Propage le signal $signal_rallonge aux rallonges
+			if ($this->signal_rallonge != null)
+			{
+				$rallonges = $object->getRallonge();
+	
+				if (count($rallonges) > 0)
+				{
+	                $workflow = new RallongeWorkflow();
+	
+					// Envoie le signal_rallonge à toutes les rallonges qui dépendent de cette version
+	                foreach( $rallonges as $rallonge )
+					{
+	                    $output = $workflow->execute( $this->signal_rallonge, $rallonge );
+	                    $rtn = Functions::merge_return( $rtn, $output );
+					}
+				}
+			}
+
+            if (TransitionInterface::DEBUG)
+            {
+				$old_etat = $object->getEtatVersion();
+	            $object->setEtatVersion( $this->etat );
+	            Functions::sauvegarder( $object );
+				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La version " . $object->getIdVersion() . " est passée de l'état " . $old_etat . " à " . $object->getEtatVersion() . " suite au signal " . $this->signal);
+			}
+			else
+			{
+	            $object->setEtatVersion( $this->etat );
+	            Functions::sauvegarder( $object );
+			}
+	
+			// Envoi des notifications demandées
             foreach( $this->mail as $mail_role => $template )
             {
                 $users = Functions::mailUsers([$mail_role], $object);
                 //Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
                 $params['object'] = $object;
                 $params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-
-                //Functions::debugMessage(__METHOD__ ." : ". Functions::show($params['liste_mail_destinataires']) );
-                
                 Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
                      $params , $users );
             }
-            Functions::sauvegarder( $object );   
             return $rtn;
         }
         else
-            return false;   
+        {
+            return false;
+		}
     }
 
 }

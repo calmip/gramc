@@ -686,6 +686,7 @@ class RallongeController extends Controller
 	    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
 	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
 
+		$projets   = [];
 	    $idProjets = [];
 	    foreach( $all_rallonges as $rallonge )
         {

@@ -27,10 +27,6 @@ namespace AppBundle\Workflow\Rallonge;
 use AppBundle\Workflow\TransitionInterface;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
-
-//use AppBundle\Exception\WorkflowException;
-//use AppBundle\Utils\Functions;
-
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 use AppBundle\Entity\Rallonge;
@@ -42,20 +38,17 @@ class RallongeTransition implements TransitionInterface
     protected   $etat                    = null;
     protected   $mail                    = [];
     
-    //
-    // 
-    //
-
-    public function __construct( $etat, $mail =[])
+    public function __construct( $etat, $signal, $mail =[])
     {
-        $this->etat                 =   (int)$etat;
-        $this->mail                 =   $mail;
+        $this->etat   = (int)$etat;
+        $this->signal = $signal;
+        $this->mail   = $mail;
     }
 
     public function __toString()
     {
-        $reflect    = new \ReflectionClass($this);
-        $output = $reflect->getShortName().':etat='. Etat::getLibelle($this->etat);
+        $reflect = new \ReflectionClass($this);
+        $output  = $reflect->getShortName().':etat='. Etat::getLibelle($this->etat);
         if( $this->mail != [] )
             $output .= ', mail=' .Functions::show($this->mail);
         return $output;
@@ -76,24 +69,30 @@ class RallongeTransition implements TransitionInterface
     public function execute($object)
     {
         if ( $object instanceof Rallonge )
+		{
+            if (TransitionInterface::DEBUG)
             {
-            $object->setEtatRallonge($this->etat);
-            Functions::sauvegarder( $object );
+				$old_etat = $object->getEtatRallonge();
+	            $object->setEtatRallonge( $this->etat );
+	            Functions::sauvegarder( $object );
+				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La Rallonge " . $object->getIdRallonge() . " est passée de l'état " . $old_etat . " à " . $object->getEtatRallonge() . " suite au signal " . $this->signal);
+			}
+			else
+			{
+	            $object->setEtatRallonge( $this->etat );
+	            Functions::sauvegarder( $object );
+			}
 
             foreach( $this->mail as $mail_role => $template )
-                {
+			{
                 $users = Functions::mailUsers([$mail_role], $object);
-                //Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
                 $params['object'] = $object;
                 $params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-
-                //Functions::debugMessage(__METHOD__ ." : ". __LINE__ . " destinataires : " . Functions::show($params['liste_mail_destinataires']) );
-                
                 Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
                      $params , $users );
-                }  
+			}  
             return true;
-            }
+		}
         else
             return false;   
     }

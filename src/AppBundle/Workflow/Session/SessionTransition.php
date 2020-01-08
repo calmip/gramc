@@ -76,7 +76,8 @@ class SessionTransition implements TransitionInterface
 		{
 			$rtn = true;
 
-            if( $this->signal != null )
+			// TODO - VIRER TOUT CE BORDEL PAS LA PEINE DE FAIRE DE LA PROPAGATION POUR canExecute !!!
+            if( TransitionInterface::FAST == false)
             {
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 // nous devons envoyer des signaux aux versions avant les projets
@@ -85,7 +86,6 @@ class SessionTransition implements TransitionInterface
                 $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
                 $workflow = new VersionWorkflow();
 
-                // POUR DEBUG
 				if( $versions == null && TransitionInterface::DEBUG)
 				{
 					Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " aucune version pour la session " . $object );
@@ -95,7 +95,6 @@ class SessionTransition implements TransitionInterface
                 {
                     $output = $workflow->canExecute( $this->signal, $version );
                     $rtn = Functions::merge_return( $rtn, $output );
-                    // POUR DEBUG
 					if( $output != true && TransitionInterface::DEBUG)
 					{
                         Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Version " . $version . "  ne passe pas en état "
