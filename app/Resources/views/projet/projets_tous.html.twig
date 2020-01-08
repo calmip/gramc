@@ -18,82 +18,15 @@
         <table>
             <tbody>
                 <tr><th colspan="3">Etats des projets</th></tr>
-                {% if( etat_projet.edition > 0 ) %}
+                {% for etat in ['termine','standby','accepte','refuse','edition','expertise','nonrenouvele'] %}
+                {% if ( attribute(etat_projet,etat) > 0 ) %}
                 <tr>
-                    <th>Projets en édition</th>
-                    <td>{{ etat_projet.edition }}</td>
-                    <td><input class="cb" id="edition" checked="checked" type="checkbox"></td>
+                    <th>{{ etat }}</th>
+                    <td>{{ attribute(etat_projet,etat) }}</td>
+                    <td><input class="cb" id="{{etat}}" checked="checked" type="checkbox"></td>
                 </tr>
                 {% endif %}
-                {% if( etat_projet.expertise > 0 ) %}
-                <tr>
-                    <th>Projets en expertise</th>
-                    <td>{{ etat_projet.expertise }}</td>
-                    <td><input class="cb" id="expertise" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.accepte > 0 ) %}
-                <tr>
-                    <th>Projets acceptés</th>
-                    <td>{{ etat_projet.accepte }}</td>
-                    <td><input class="cb" id="accepte" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.refuse > 0 ) %}
-                <tr>
-                    <th>Projets refusés</th>
-                    <td>{{ etat_projet.refuse }}</td>
-                    <td><input class="cb" id="refuse" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.actif > 0 ) %}
-                <tr>
-                    <th>Projets actifs</th>
-                    <td>{{ etat_projet.actif }}</td>
-                    <td><input class="cb" id="actif" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.nouvelle_version_demandee > 0 ) %}
-                <tr>
-                    <th>Nouvelle version demandée</th>
-                    <td>{{ etat_projet.nouvelle_version_demandee }}</td>
-                    <td><input class="cb" id="nouvelle_version_demandee" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.en_sursis > 0 ) %}
-                <tr>
-                    <th>Projets en sursis</th>
-                    <td>{{ etat_projet.en_sursis }}</td>
-                    <td><input class="cb" id="en_sursis" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.termine > 0 ) %}
-                <tr>
-                    <th>Projets terminés</th>
-                    <td>{{ etat_projet.termine }}</td>
-                    <td><input class="cb" id="termine" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.annule > 0 ) %}
-                <tr>
-                    <th>Projets annulés</th>
-                    <td>{{ etat_projet.annule }}</td>
-                    <td><input class="cb" id="annule" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.en_standby > 0 ) %}
-                <tr>
-                    <th>Projets en standby</th>
-                    <td>{{ etat_projet.en_standby }}</td>
-                    <td><input class="cb" id="en_standby" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
-                {% if( etat_projet.en_attente > 0 ) %}
-                <th>Projets en attente</th>
-                    <td>{{ etat_projet.en_attente }}</td>
-                    <td><input class="cb" id="en_attente" checked="checked" type="checkbox"></td>
-                </tr>
-                {% endif %}
+                {% endfor %}
                 <tr>
                     <th>Total</th>
                     <td>{{ etat_projet.total }}</td>
@@ -104,66 +37,17 @@
 
         <table>
             <tbody>
+                <tr><th colspan="3">Etats des projets test</th></tr>
+                {% for etat in ['termine_test','standby_test','accepte_test','refuse_test','edition_test','expertise_test','nonrenouvele_test'] %}
+                {% if ( attribute(etat_projet,etat) > 0 ) %}
                 <tr>
-                    <th colspan="3">Etats des projets test</th>
-                </tr>
-                {% if( etat_projet.edition_test > 0 ) %}
-                <tr>
-                    <th>Projets en édition</th>
-                    <td>{{ etat_projet.edition_test }}</td>
-                    <td><input type="checkbox" class="cb" id="edition_demande_test" checked="checked" />
-                </tr>
-                {% endif %}
-                {% if( etat_projet.expertise_test > 0 ) %}
-                <tr>
-                    <th>Projets en expertise</th>
-                    <td>{{ etat_projet.expertise_test }}</td>
-                    <td><input type="checkbox" class="cb" id="edition_expertise_test" checked="checked" />
+                    <th>{{ etat }}</th>
+                    <td>{{ attribute(etat_projet,etat) }}</td>
+                    <td><input class="cb" id="{{etat}}" checked="checked" type="checkbox"></td>
                 </tr>
                 {% endif %}
-{#                {% if( etat_projet.accepte_test > 0 ) %}
-                <tr>
-                    <th>Projets acceptés</th>
-                    <td>{{ etat_projet.accepte_test }}</td>
-                    <td><input type="checkbox" class="cb" id="accepte_test" checked="checked" />
-                </tr>
-                {% endif %}
-                {% if( etat_projet.refuse_test > 0 ) %}
-                <tr>
-                    <th>Projets refusés</th>
-                    <td>{{ etat_projet.refuse_test }}</td>
-                    <td><input type="checkbox" class="cb" id="refuse_test" checked="checked" />
-                </tr>
-                {% endif %}
-#}
-                {% if( etat_projet.en_attente_test > 0 ) %}
-                <tr>
-                    <th>Projets en attente</th>
-                    <td>{{ etat_projet.en_attente_test }}</td>
-                    <td><input type="checkbox" class="cb" id="en_attente_test" checked="checked" />
-                </tr>
-                {% endif %}
-                {% if( etat_projet.actif_test > 0 ) %}
-                <tr>
-                    <th>Projets actifs</th>
-                    <td>{{ etat_projet.actif_test }}</td>
-                    <td><input type="checkbox" class="cb" id="actif_test" checked="checked" />
-                </tr>
-                {% endif %}
-                {% if( etat_projet.termine_test > 0 ) %}
-                <tr>
-                    <th>Projets terminés</th>
-                    <td>{{ etat_projet.termine_test }}</td>
-                    <td><input type="checkbox" class="cb" id="termine_test" checked="checked" />
-                </tr>
-                {% endif %}
-                {% if( etat_projet.annule_test > 0 ) %}
-                <tr>
-                    <th>Projets annulés</th>
-                    <td>{{ etat_projet.annule_test }}</td>
-                    <td><input type="checkbox" class="cb" id="annule_test" checked="checked" />
-                </tr>
-                {% endif %}
+                {% endfor %}
+                
                 <tr>
                     <th>Total</th>
                     <td>{{ etat_projet.total_test }}</td>
@@ -198,7 +82,7 @@
                 <tr role="row" class="odd">
 
                     <td class="sorting_1">
-                    {% if( item.etat == 'EN_STANDBY' and not ( item.etat_version == 'EDITION_EXPERTISE' ) ) %}
+                    {% if (item.projet.metaetat == 'STANDBY') %}
                         <a class="fermeture" href="{{ path('fermer_projet', { 'id': item.projet.idProjet }) }}?" title="Fermer le projet">
                             <img src="{{ asset('icones/process-stop.png') }}" alt="Fermer">
                         </a>
@@ -213,18 +97,11 @@
                     </td>
 
                     {% if( item.projet.isProjetTest() == true ) %}
-                        <td class="{{ item.etat|lower }}_test">
+                        <td class="{{ item.projet.metaetat|lower }}_test">
                     {% else %}
-                        <td class="{{ item.etat|lower }}">
+                        <td class="{{ item.projet.metaetat|lower }}">
                     {% endif %}
-                    {#
-                            {% if( item.etat == 'NOUVELLE_EDITION_DEMANDE' or item.etat == 'EN_STANDBY' ) %}
-                                {{ item.etat }}<br />{{ item.etat_version|lower }}
-                            {% else %}
-                                {{ item.etat }}
-                            {% endif %}
-                    #}
-                            {{ gramcmacros.metagraph(item.projet.metaetat) }}
+					{{ gramcmacros.metagraph(item.projet.metaetat) }}
                         </td>
 
                     <td>

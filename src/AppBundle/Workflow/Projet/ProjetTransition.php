@@ -92,6 +92,7 @@ class ProjetTransition implements TransitionInterface
     {
         if ( ! $object instanceof Projet ) return [[ 'signal' =>  $this->signal, 'object' => $object ]];
 
+		//Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Projet = " . $object->getIdProjet() . " transition de " . $object->getEtatProjet() . " vers " . $this->etat . " suite à signal " .$this->signal);
         $object->setEtatProjet( $this->etat );
 
         $rtn    =   true;
