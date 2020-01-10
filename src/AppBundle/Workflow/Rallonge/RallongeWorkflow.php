@@ -45,7 +45,8 @@ class RallongeWorkflow extends Workflow
                 [
                 Signal::CLK_DEMANDE      => new RallongeTransition(Etat::EDITION_DEMANDE, Signal::CLK_DEMANDE,
 							                [ 'R' => 'creation_rallonge_pour_demandeur']),
-                Signal::FERMER_RALLONGE  => new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
             ->addState( Etat::EDITION_DEMANDE,
                 [
@@ -53,14 +54,16 @@ class RallongeWorkflow extends Workflow
 							                [ 'R' => 'depot_rallonge_pour_demandeur',
 							                  'A' => 'depot_rallonge_pour_admin',
 							                  'P' => 'depot_rallonge_pour_president']),
-                Signal::FERMER_RALLONGE  => new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
             ->addState( Etat::DESAFFECTE,
                 [
                 Signal::CLK_AFFECTER     => new RallongeTransition(Etat::EDITION_EXPERTISE, Signal::CLK_AFFECTER,
 							                [ 'E' => 'affectation_expert_rallonge']),
                 Signal::CLK_DESAFFECTER  => new NoTransition(),
-                Signal::FERMER_RALLONGE  => new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
             ->addState( Etat::EDITION_EXPERTISE,
                 [
@@ -74,7 +77,8 @@ class RallongeWorkflow extends Workflow
 							                  'P' => 'expertise_rallonge_pour_president']),
                 Signal::CLK_DESAFFECTER =>  new RallongeTransition(Etat::DESAFFECTE, Signal::CLK_DESAFFECTER),
                 Signal::CLK_AFFECTER    =>  new NoTransition(),
-                Signal::FERMER_RALLONGE =>  new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
             ->addState( Etat::EN_ATTENTE,
                 [
@@ -83,21 +87,25 @@ class RallongeWorkflow extends Workflow
 							                  'A' => 'expertise_rallonge_finale_pour_admin',
 							                  'E' => 'expertise_rallonge_finale_pour_expert',
 							                  'P' => 'expertise_rallonge_finale_pour_president']),
-                Signal::FERMER_RALLONGE =>  new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
             ->addState( Etat::ACTIF,
                 [
-                Signal::FERMER_RALLONGE =>  new RallongeTransition(Etat::TERMINE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::TERMINE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::TERMINE, Signal::CLK_FERM),
                 ])
 
             ->addState( Etat::TERMINE,
                 [
-                Signal::FERMER_RALLONGE =>  new RallongeTransition(Etat::TERMINE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new NoTransition(),
+                Signal::CLK_FERM         => new NoTransition(),
                 ])
 
             ->addState( Etat::ANNULE,
                 [
-                Signal::FERMER_RALLONGE =>  new RallongeTransition(Etat::ANNULE, Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::TERMINE, Signal::CLK_SESS_FIN),
+                Signal::CLK_FERM         => new RallongeTransition(Etat::TERMINE, Signal::CLK_FERM),
                 ]);
     }
 }

@@ -580,7 +580,7 @@ class RallongeController extends Controller
         if( $rallonge->getValidation() == true )
             $workflow->execute( Signal::CLK_VAL_PRS, $rallonge );
         else
-            $workflow->execute( Signal::FERMER_RALLONGE, $rallonge );
+            $workflow->execute( Signal::CLK_FERM, $rallonge );
 
         $version = $rallonge->getVersion();
         if( $version != null )

@@ -153,57 +153,63 @@ class VersionController extends Controller
      */
     public function supprimerAction(Version $version, $rtn )
     {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
+	    // ACL
+	    if( Menu::modifier_version($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
+	            " parce que : " . Menu::modifier_version($version)['raison'] );
 
-    $em =   AppBundle::getManager();
-    $etat = $version->getEtatVersion();
-    if( $version->getProjet() == null )
+	    $em =   AppBundle::getManager();
+	    $etat = $version->getEtatVersion();
+	    if( $version->getProjet() == null )
         {
-        $idProjet = null;
-        $idVersion == $version->getIdVersion();
+	        $idProjet = null;
+	        $idVersion == $version->getIdVersion();
         }
-    else
-        $idProjet   =  $version->getProjet()->getIdProjet();
+	    else
+	    {
+	        $idProjet   =  $version->getProjet()->getIdProjet();
+		}
 
 
-    if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
+	    if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
         {
-        foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-            $em->remove( $collaborateurVersion );
-        $workflow = new ProjetWorkflow();
-        $workflow->execute( Signal::CLK_ERASE, $version->getProjet() );
+			// Suppression des collaborateurs
+	        foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+	            $em->remove( $collaborateurVersion );
 
-        $expertises = $version->getExpertise();
-        foreach( $expertises as $expertise)
-            $em->remove( $expertise );
+			// Suppression des expertises éventuelles
+	        $expertises = $version->getExpertise();
+	        foreach( $expertises as $expertise)
+	            $em->remove( $expertise );
 
-        $em->remove( $version );
-        $em->flush();
+	        $em->remove( $version );
+	        $em->flush();
         }
 
-    if( $idProjet == null )
-        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $idVersion . " sans projet supprimée");
-    else
+	    if( $idProjet == null )
+	        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $idVersion . " sans projet supprimée");
+	    else
         {
-        $projet =   AppBundle::getRepository(Projet::class)->findOneBy(['idProjet' => $idProjet]);
-        if( $projet != null && $projet->getVersion() != null && count( $projet->getVersion() ) == 0 )
+	        $projet =   AppBundle::getRepository(Projet::class)->findOneBy(['idProjet' => $idProjet]);
+	        
+	        // Si pas d'autre version, on supprime le projet
+	        if( $projet != null && $projet->getVersion() != null && count( $projet->getVersion() ) == 0 )
             {
-            $em->remove( $projet );
-            $em->flush();
+	            $em->remove( $projet );
+	            $em->flush();
             }
-        elseif( $projet != null )
-            $projet->calculDerniereVersion();
+	        elseif( $projet != null )
+	        {
+	            $projet->calculDerniereVersion();
+			}
         }
 
-    //return $this->redirectToRoute( 'projet_accueil' );
-    // Il faudrait plutôt revenir là d'où on vient !
-    if( $rtn == "X" )
-        return $this->redirectToRoute( 'projet_accueil' );
-    else
-        return $this->redirectToRoute( $rtn );
+	    //return $this->redirectToRoute( 'projet_accueil' );
+	    // Il faudrait plutôt revenir là d'où on vient !
+	    if( $rtn == "X" )
+	        return $this->redirectToRoute( 'projet_accueil' );
+	    else
+	        return $this->redirectToRoute( $rtn );
     }
 
     //////////////////////////////////////////////////////////////////////////

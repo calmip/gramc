@@ -56,7 +56,7 @@ class VersionWorkflow extends Workflow
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE        , Signal::CLK_FERM),
                 Signal::CLK_DEMANDE     => new VersionTransition(Etat::TERMINE        , Signal::CLK_DEMANDE),
                 Signal::CLK_SESS_DEB    => new NoTransition(),
-                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE        , Signal::CLK_SESS_FIN),
+                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE        , Signal::CLK_SESS_FIN, []),
                 ])
             ->addState( Etat::ACTIF_TEST,
                 [
@@ -126,9 +126,9 @@ class VersionWorkflow extends Workflow
             ->addState( Etat::ACTIF,
                 [
                 Signal::CLK_SESS_DEB    => new NoTransition(),
-                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
                 Signal::CLK_VAL_EXP_OK  => new VersionTransition(Etat::NOUVELLE_VERSION_DEMANDEE, Signal::CLK_VAL_EXP_OK),
-                Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], Signal::FERMER_RALLONGE),
+                Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], true),
                 Signal::CLK_VAL_EXP_KO  => new NoTransition(),
                 Signal::CLK_VAL_EXP_CONT=> new NoTransition(),
                 Signal::CLK_VAL_DEM     => new NoTransition(),
@@ -137,9 +137,9 @@ class VersionWorkflow extends Workflow
                 ])
              ->addState( Etat::NOUVELLE_VERSION_DEMANDEE, // quand une autre version est EN_ATTENTE
                 [
-                Signal::CLK_SESS_DEB    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_DEB, [], Signal::FERMER_RALLONGE),
-                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], Signal::FERMER_RALLONGE),
-                Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], Signal::FERMER_RALLONGE),
+                Signal::CLK_SESS_DEB    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_DEB, [], true),
+                Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
+                Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], true),
                 ])
              ->addState( Etat::TERMINE,
                 [

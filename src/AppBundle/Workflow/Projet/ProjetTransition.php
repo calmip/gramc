@@ -42,14 +42,15 @@ use AppBundle\Workflow\Version\VersionWorkflow;
 
 class ProjetTransition implements TransitionInterface
 {
-    protected   $etat                               = null;
-    protected   $signal                             = null;
+    protected   $etat                = null;
+    protected   $signal              = null;
+    private static $execute_en_cours = false;
 
-    public function __construct( $etat, $signal = null )
+    public function __construct( $etat, $signal, $mail=[], $propage_signal = false)
     {
         $this->etat                 =   (int)$etat;
         $this->signal               =   $signal;
-        $this->execute_en_cours = false;
+        $this->propage_signal = $propage_signal;
     }
 
     public function __toString()
@@ -65,8 +66,11 @@ class ProjetTransition implements TransitionInterface
     {
         if ( ! $object instanceof Projet ) return false;
 
+		// Pour éviter une boucle infinie entre projet et version !
+		if (self::$execute_en_cours) return true;
+		else                         self::$execute_en_cours = true;
         $rtn    =   true;
-        if( $this->signal == null ) return $rtn;
+
 
         $versionWorkflow    =    new VersionWorkflow();
         foreach( $object->getVersion() as $version )
@@ -92,8 +96,8 @@ class ProjetTransition implements TransitionInterface
     public function execute($object)
     {
 		// Pour éviter une boucle infinie entre projet et version !
-		if ($this->execute_en_cours) return true;
-		else                         $this->execute_en_cours = true;
+		if (self::$execute_en_cours) return true;
+		else                         self::$execute_en_cours = true;
 		
         if ( ! $object instanceof Projet ) return [[ 'signal' =>  $this->signal, 'object' => $object ]];
 
@@ -103,22 +107,25 @@ class ProjetTransition implements TransitionInterface
         $rtn    =   true;
         if( $this->signal == null ) return $rtn;
 
-        $versionWorkflow    =    new VersionWorkflow();
-        foreach( $object->getVersion() as $version )
-        {
-            if( $version->getEtatVersion() != Etat::TERMINE && $version->getEtatVersion() != Etat::ANNULE )
-			{
-                $return = $versionWorkflow->execute( $this->signal, $version );
-
-                // ? if( $return == false )
-                // ?    $return = [[ 'signal' =>  $this->signal, 'object' => $version, 'user' => AppBundle::getUser() ]];
-
-                $rtn = Functions::merge_return( $rtn, $return );
+		if ($this->propage_signal) 
+		{
+	        $versionWorkflow    =    new VersionWorkflow();
+	        foreach( $object->getVersion() as $version )
+	        {
+	            if( $version->getEtatVersion() != Etat::TERMINE && $version->getEtatVersion() != Etat::ANNULE )
+				{
+	                $return = $versionWorkflow->execute( $this->signal, $version );
+	
+	                // ? if( $return == false )
+	                // ?    $return = [[ 'signal' =>  $this->signal, 'object' => $version, 'user' => AppBundle::getUser() ]];
+	
+	                $rtn = Functions::merge_return( $rtn, $return );
+				}
 			}
 		}
         Functions::sauvegarder( $object );
 
-		$this->execute_en_cours = false;
+		self::$execute_en_cours = false;
         return $rtn;
     }
 

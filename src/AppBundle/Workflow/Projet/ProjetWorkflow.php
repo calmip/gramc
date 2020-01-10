@@ -63,7 +63,7 @@ class ProjetWorkflow extends Workflow
     
                 Signal::CLK_VAL_EXP_CONT    =>  new ProjetTransition(Etat::TERMINE, Signal::CLK_VAL_EXP_CONT),
                 Signal::CLK_VAL_EXP_KO      =>  new ProjetTransition(Etat::TERMINE,Signal::CLK_VAL_EXP_KO),
-                Signal::CLK_FERM            =>  new ProjetTransition(Etat::TERMINE,Signal::CLK_FERM),
+                Signal::CLK_FERM            =>  new ProjetTransition(Etat::TERMINE,Signal::CLK_FERM, [], true),
 
                 Signal::CLK_SESS_DEB        =>  new NoTransition(),
                 Signal::CLK_SESS_FIN        =>  new ProjetTransition(Etat::TERMINE, Signal::CLK_SESS_FIN),

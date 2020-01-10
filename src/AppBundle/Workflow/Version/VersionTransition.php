@@ -40,22 +40,20 @@ class VersionTransition implements TransitionInterface
     protected   $signal_rallonge         = null;
     protected   $propage_signal          = false;
     protected   $mail                    = [];
+    private static $execute_en_cours     = false;
     
-    public function __construct( $etat, $signal, $mail=[], $signal_rallonge = null)
+    public function __construct( $etat, $signal, $mail=[], $propage_signal = false)
     {
         $this->etat            = (int)$etat;
         $this->signal          = $signal;
         $this->mail            = $mail;
-        $this->signal_rallonge = $signal_rallonge;
-        if ($signal_rallonge != null) $this->propage_signal = true;
+        $this->propage_signal  = $propage_signal;
     }
 
     public function __toString()
     {
         $reflect    = new \ReflectionClass($this);
         $output = $reflect->getShortName().':etat='. Etat::getLibelle($this->etat);
-        if( $this->signal_rallonge != null )
-            $output .= ',signal_ralonge=' . Signal::getLibelle($this->signal_rallonge);
         if( $this->mail != [] )
             $output .= ', mail=' .Functions::show($this->mail);
         return $output;
@@ -68,7 +66,7 @@ class VersionTransition implements TransitionInterface
        if ( $object instanceof Version )
 		{
             $rtn = true;
-            if (TransitionInterface::FAST == false && $this->signal_rallonge != null )
+            if (TransitionInterface::FAST == false && $propage_signal )
 			{
 				$rallonges = $object->getRallonge();
 				if( $rallonges != null )
@@ -76,7 +74,7 @@ class VersionTransition implements TransitionInterface
 					$workflow = new RallongeWorkflow();
 					foreach( $rallonges as $rallonge )
 					{
-						$rtn = $rtn && $workflow->canExecute( $this->signal_rallonge, $rallonge );
+						$rtn = $rtn && $workflow->canExecute( $this->signal, $rallonge );
 					}
                 }
 			}
@@ -88,17 +86,20 @@ class VersionTransition implements TransitionInterface
 		}
     }
 
-    ///////////////////////////////////////////////////////
-    // TODO - remplacer signal_rallonge par un boolen: $propage_signal
-    //        propager $signal seulement
     public function execute($object)
     {
+		Functions::debugMessage( __FILE__ . ":" . __LINE__ . " coucou version " . $object->getIdVersion() . " état " . $object->getEtatVersion() . " à " . $this->etat . " signal " . $this->signal);
+
         if ( $object instanceof Version )
         {
+			// Pour éviter une boucle infinie entre projet et version !
+			if (self::$execute_en_cours) return true;
+			else                         self::$execute_en_cours = true;
+			
             $rtn = true;
 
-			// Propage le signal $signal_rallonge aux rallonges si demandé
-			if ($this->signal_rallonge != null)
+			// Propage le signal aux rallonges si demandé
+			if ($this->propage_signal)
 			{
 				$rallonges = $object->getRallonge();
 	
@@ -106,19 +107,19 @@ class VersionTransition implements TransitionInterface
 				{
 	                $workflow = new RallongeWorkflow();
 	
-					// Envoie le signal_rallonge à toutes les rallonges qui dépendent de cette version
+					// Propage le signal à toutes les rallonges qui dépendent de cette version
 	                foreach( $rallonges as $rallonge )
 					{
-	                    $output = $workflow->execute( $this->signal_rallonge, $rallonge );
+	                    $output = $workflow->execute( $this->signal, $rallonge );
 	                    $rtn = Functions::merge_return( $rtn, $output );
 					}
 				}
 			}
 
 			// Propage le signal au projet si demandé
-			$projet = $object->getProjet();
 			if ($this->propage_signal)
 			{
+				$projet = $object->getProjet();
 				$workflow = new ProjetWorkflow();
 				$output   = $workflow->execute( $this->signal, $projet);
 				$rtn = Functions::merge_return( $rtn, $output);
@@ -146,61 +147,7 @@ class VersionTransition implements TransitionInterface
                 Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
                      $params , $users );
             }
-            return $rtn;
-        }
-        else
-        {
-            return false;
-		}
-    }
-
-    public function execute_obsolete($object)
-    {
-        if ( $object instanceof Version )
-        {
-            $rtn = true;
-
-			// Propage le signal $signal_rallonge aux rallonges
-			if ($this->signal_rallonge != null)
-			{
-				$rallonges = $object->getRallonge();
-	
-				if (count($rallonges) > 0)
-				{
-	                $workflow = new RallongeWorkflow();
-	
-					// Envoie le signal_rallonge à toutes les rallonges qui dépendent de cette version
-	                foreach( $rallonges as $rallonge )
-					{
-	                    $output = $workflow->execute( $this->signal_rallonge, $rallonge );
-	                    $rtn = Functions::merge_return( $rtn, $output );
-					}
-				}
-			}
-
-            if (TransitionInterface::DEBUG)
-            {
-				$old_etat = $object->getEtatVersion();
-	            $object->setEtatVersion( $this->etat );
-	            Functions::sauvegarder( $object );
-				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La version " . $object->getIdVersion() . " est passée de l'état " . $old_etat . " à " . $object->getEtatVersion() . " suite au signal " . $this->signal);
-			}
-			else
-			{
-	            $object->setEtatVersion( $this->etat );
-	            Functions::sauvegarder( $object );
-			}
-	
-			// Envoi des notifications demandées
-            foreach( $this->mail as $mail_role => $template )
-            {
-                $users = Functions::mailUsers([$mail_role], $object);
-                //Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
-                $params['object'] = $object;
-                $params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-                Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
-                     $params , $users );
-            }
+			self::$execute_en_cours = false;
             return $rtn;
         }
         else
