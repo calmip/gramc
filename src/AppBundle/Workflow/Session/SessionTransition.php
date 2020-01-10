@@ -24,14 +24,12 @@
 
 namespace AppBundle\Workflow\Session;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
-
-//use AppBundle\Exception\WorkflowException;
 
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
@@ -40,7 +38,7 @@ use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
 
 
-class SessionTransition implements TransitionInterface
+class SessionTransition extends Transition
 {
     private $etat      = null;
     private $signal    = null;
@@ -77,7 +75,7 @@ class SessionTransition implements TransitionInterface
 			$rtn = true;
 
 			// TODO - VIRER TOUT CE BORDEL PAS LA PEINE DE FAIRE DE LA PROPAGATION POUR canExecute !!!
-            if( TransitionInterface::FAST == false)
+            if( Transition::FAST == false)
             {
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 // nous devons envoyer des signaux aux versions avant les projets
@@ -86,7 +84,7 @@ class SessionTransition implements TransitionInterface
                 $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
                 $workflow = new VersionWorkflow();
 
-				if( $versions == null && TransitionInterface::DEBUG)
+				if( $versions == null && Transition::DEBUG)
 				{
 					Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " aucune version pour la session " . $object );
 				}
@@ -95,7 +93,7 @@ class SessionTransition implements TransitionInterface
                 {
                     $output = $workflow->canExecute( $this->signal, $version );
                     $rtn = Functions::merge_return( $rtn, $output );
-					if( $output != true && TransitionInterface::DEBUG)
+					if( $output != true && Transition::DEBUG)
 					{
                         Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Version " . $version . "  ne passe pas en état "
                             . Etat::getLibelle( $version->getEtatVersion() ) . " signal = " . signal::getLibelle( $this->signal ));
@@ -116,7 +114,7 @@ class SessionTransition implements TransitionInterface
 					{
                         $output = $workflow->canExecute( $this->signal, $projet );
                         /* POUR DEBUG */
-                        if( $output != true && TransitionInterface::DEBUG )
+                        if( $output != true && Transition::DEBUG )
                         {
 	                        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " Projet " . $projet . "  ne passe pas en état "
 	                            . Etat::getLibelle( $projet->getEtatProjet() ) . " signal = " . signal::getLibelle( $this->signal ));
@@ -154,7 +152,7 @@ class SessionTransition implements TransitionInterface
 			}
 			else
 			{
-				if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
+				if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
 			}
 
             if( $this->signal == null ) 
@@ -164,7 +162,7 @@ class SessionTransition implements TransitionInterface
 			else
 			{
                 $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
-                if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($versions)." versions");
+                if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($versions)." versions");
 
                 $workflow = new VersionWorkflow();
 
@@ -179,7 +177,7 @@ class SessionTransition implements TransitionInterface
                /* if( $this->toProjets == true )
 				{
                     $projets = AppBundle::getRepository(Projet::class)->findAll();
-	                if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($projets)." projets");
+	                if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($projets)." projets");
                     $workflow = new ProjetWorkflow();
                     foreach( $projets as $projet )
 					{
@@ -189,11 +187,11 @@ class SessionTransition implements TransitionInterface
 				}
                 else
                 {
-                    if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Pas de propagation du signal aux projets " );
+                    if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Pas de propagation du signal aux projets " );
 				} */
 			}
 
-            if (TransitionInterface::DEBUG)
+            if (Transition::DEBUG)
             {
 				$old_etat = $object->getEtatSession();
 	            $object->setEtatSession( $this->etat );

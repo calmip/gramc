@@ -24,12 +24,9 @@
 
 namespace AppBundle\Workflow\Projet;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
-
-//use AppBundle\Exception\WorkflowException;
-//use AppBundle\Utils\Functions;
 
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
@@ -40,7 +37,7 @@ use AppBundle\Workflow\Version\VersionWorkflow;
 
 
 
-class ProjetTransition implements TransitionInterface
+class ProjetTransition extends Transition
 {
     protected   $etat                = null;
     protected   $signal              = null;
@@ -65,6 +62,7 @@ class ProjetTransition implements TransitionInterface
     public function canExecute($object)
     {
         if ( ! $object instanceof Projet ) return false;
+        //if ( ! $object instanceof Projet ) throw new InvalidArgumentException;
 
 		// Pour éviter une boucle infinie entre projet et version !
 		if (self::$execute_en_cours) return true;

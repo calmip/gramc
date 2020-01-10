@@ -31,7 +31,7 @@
 
 namespace AppBundle\Workflow\Projet;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 

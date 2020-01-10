@@ -24,7 +24,7 @@
 
 namespace AppBundle\Workflow\Version;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 use AppBundle\Utils\Etat;
@@ -34,125 +34,98 @@ use AppBundle\Workflow\Rallonge\RallongeWorkflow;
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 
 
-class VersionTransition implements TransitionInterface
+class VersionTransition extends Transition
 {
-    protected   $etat                    = null;
-    protected   $signal_rallonge         = null;
-    protected   $propage_signal          = false;
-    protected   $mail                    = [];
     private static $execute_en_cours     = false;
     
-    public function __construct( $etat, $signal, $mail=[], $propage_signal = false)
-    {
-        $this->etat            = (int)$etat;
-        $this->signal          = $signal;
-        $this->mail            = $mail;
-        $this->propage_signal  = $propage_signal;
-    }
+    ////////////////////////////////////////////////////
+    public function canExecute($version)
+    { 
+		if ( !$version instanceof Version ) throw new InvalidArgumentException;
 
-    public function __toString()
-    {
-        $reflect    = new \ReflectionClass($this);
-        $output = $reflect->getShortName().':etat='. Etat::getLibelle($this->etat);
-        if( $this->mail != [] )
-            $output .= ', mail=' .Functions::show($this->mail);
-        return $output;
+		// Pour éviter une boucle infinie entre projet et version !
+		if (self::$execute_en_cours) return true;
+		else                         self::$execute_en_cours = true;
+
+		$rtn = true;
+		if (Transition::FAST == false && $this->getPropageSignal())
+		{
+			$rallonges = $version->getRallonge();
+			if( $rallonges != null )
+			{
+				$workflow = new RallongeWorkflow();
+				foreach( $rallonges as $rallonge )
+				{
+					$rtn = $rtn && $workflow->canExecute( $this->getSignal(), $rallonge );
+				}
+			}
+		}
+		
+		self::$execute_en_cours = false;
+		return $rtn;
     }
 
     ////////////////////////////////////////////////////
-    
-    public function canExecute($object)
-    { 
-       if ( $object instanceof Version )
-		{
-            $rtn = true;
-            if (TransitionInterface::FAST == false && $propage_signal )
-			{
-				$rallonges = $object->getRallonge();
-				if( $rallonges != null )
-				{
-					$workflow = new RallongeWorkflow();
-					foreach( $rallonges as $rallonge )
-					{
-						$rtn = $rtn && $workflow->canExecute( $this->signal, $rallonge );
-					}
-                }
-			}
-            return $rtn;
-		}
-        else
-        {
-            return false;        
-		}
-    }
-
-    public function execute($object)
+    public function execute($version)
     {
-		Functions::debugMessage( __FILE__ . ":" . __LINE__ . " coucou version " . $object->getIdVersion() . " état " . $object->getEtatVersion() . " à " . $this->etat . " signal " . $this->signal);
+		if ( !$version instanceof Version ) throw new InvalidArgumentException;
 
-        if ( $object instanceof Version )
-        {
-			// Pour éviter une boucle infinie entre projet et version !
-			if (self::$execute_en_cours) return true;
-			else                         self::$execute_en_cours = true;
-			
-            $rtn = true;
+		// Pour éviter une boucle infinie entre projet et version !
+		if (self::$execute_en_cours) return true;
+		else                         self::$execute_en_cours = true;
+		
+		$rtn = true;
 
-			// Propage le signal aux rallonges si demandé
-			if ($this->propage_signal)
+		// Propage le signal aux rallonges si demandé
+		if ($this->getPropageSignal())
+		{
+			$rallonges = $version->getRallonge();
+
+			if (count($rallonges) > 0)
 			{
-				$rallonges = $object->getRallonge();
-	
-				if (count($rallonges) > 0)
+                $workflow = new RallongeWorkflow();
+
+				// Propage le signal à toutes les rallonges qui dépendent de cette version
+                foreach( $rallonges as $rallonge )
 				{
-	                $workflow = new RallongeWorkflow();
-	
-					// Propage le signal à toutes les rallonges qui dépendent de cette version
-	                foreach( $rallonges as $rallonge )
-					{
-	                    $output = $workflow->execute( $this->signal, $rallonge );
-	                    $rtn = Functions::merge_return( $rtn, $output );
-					}
+                    $output = $workflow->execute( $this->getSignal(), $rallonge );
+                    $rtn = Functions::merge_return( $rtn, $output );
 				}
 			}
-
-			// Propage le signal au projet si demandé
-			if ($this->propage_signal)
-			{
-				$projet = $object->getProjet();
-				$workflow = new ProjetWorkflow();
-				$output   = $workflow->execute( $this->signal, $projet);
-				$rtn = Functions::merge_return( $rtn, $output);
-			}
-            if (TransitionInterface::DEBUG)
-            {
-				$old_etat = $object->getEtatVersion();
-	            $object->setEtatVersion( $this->etat );
-	            Functions::sauvegarder( $object );
-				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La version " . $object->getIdVersion() . " est passée de l'état " . $old_etat . " à " . $object->getEtatVersion() . " suite au signal " . $this->signal);
-			}
-			else
-			{
-	            $object->setEtatVersion( $this->etat );
-	            Functions::sauvegarder( $object );
-			}
-	
-			// Envoi des notifications demandées
-            foreach( $this->mail as $mail_role => $template )
-            {
-                $users = Functions::mailUsers([$mail_role], $object);
-                //Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
-                $params['object'] = $object;
-                $params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-                Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
-                     $params , $users );
-            }
-			self::$execute_en_cours = false;
-            return $rtn;
-        }
-        else
-        {
-            return false;
 		}
+
+		// Propage le signal au projet si demandé
+		if ($this->getPropageSignal())
+		{
+			$projet = $version->getProjet();
+			$workflow = new ProjetWorkflow();
+			$output   = $workflow->execute( $this->getSignal(), $projet);
+			$rtn = Functions::merge_return( $rtn, $output);
+		}
+		if (Transition::DEBUG)
+		{
+			$old_etat = $version->getEtatVersion();
+            $version->setEtatVersion( $this->getEtat() );
+            Functions::sauvegarder( $version );
+			Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La version " . $version->getIdVersion() . " est passée de l'état " . $old_etat . " à " . $version->getEtatVersion() . " suite au signal " . $this->getSignal());
+		}
+		else
+		{
+            $version->setEtatVersion( $this->getEtat() );
+            Functions::sauvegarder( $version );
+		}
+
+		// Envoi des notifications demandées
+		foreach( $this->getMail() as $mail_role => $template )
+		{
+			$users = Functions::mailUsers([$mail_role], $version);
+			//Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
+			$params['object'] = $version;
+			$params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
+			Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
+				 $params , $users );
+		}
+		self::$execute_en_cours = false;
+		return $rtn;
     }
 }

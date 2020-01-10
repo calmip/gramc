@@ -24,7 +24,7 @@
 
 namespace AppBundle\Workflow\Rallonge;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 use AppBundle\Utils\Etat;
@@ -33,7 +33,7 @@ use AppBundle\Entity\Rallonge;
 use AppBundle\Workflow\Rallonge\RallongeWorkflow;
 
 
-class RallongeTransition implements TransitionInterface
+class RallongeTransition extends Transition
 {
     protected   $etat                    = null;
     protected   $mail                    = [];
@@ -70,7 +70,7 @@ class RallongeTransition implements TransitionInterface
     {
         if ( $object instanceof Rallonge )
 		{
-            if (TransitionInterface::DEBUG)
+            if (Transition::DEBUG)
             {
 				$old_etat = $object->getEtatRallonge();
 	            $object->setEtatRallonge( $this->etat );

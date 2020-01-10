@@ -61,7 +61,7 @@ class RallongeWorkflow extends Workflow
                 [
                 Signal::CLK_AFFECTER     => new RallongeTransition(Etat::EDITION_EXPERTISE, Signal::CLK_AFFECTER,
 							                [ 'E' => 'affectation_expert_rallonge']),
-                Signal::CLK_DESAFFECTER  => new NoTransition(),
+                Signal::CLK_DESAFFECTER  => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
                 Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
@@ -76,7 +76,7 @@ class RallongeWorkflow extends Workflow
 							                  'E' => 'expertise_rallonge_pour_expert',
 							                  'P' => 'expertise_rallonge_pour_president']),
                 Signal::CLK_DESAFFECTER =>  new RallongeTransition(Etat::DESAFFECTE, Signal::CLK_DESAFFECTER),
-                Signal::CLK_AFFECTER    =>  new NoTransition(),
+                Signal::CLK_AFFECTER    =>  new NoTransition(0,0),
                 Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
                 Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
@@ -98,8 +98,8 @@ class RallongeWorkflow extends Workflow
 
             ->addState( Etat::TERMINE,
                 [
-                Signal::CLK_SESS_FIN     => new NoTransition(),
-                Signal::CLK_FERM         => new NoTransition(),
+                Signal::CLK_SESS_FIN     => new NoTransition(0,0),
+                Signal::CLK_FERM         => new NoTransition(0,0),
                 ])
 
             ->addState( Etat::ANNULE,

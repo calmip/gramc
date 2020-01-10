@@ -24,11 +24,11 @@
 
 namespace AppBundle\Workflow;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 
 
-class NoTransition implements TransitionInterface
+class NoTransition extends Transition
 {
 
     public function __toString()

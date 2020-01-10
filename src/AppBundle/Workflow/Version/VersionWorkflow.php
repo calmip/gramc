@@ -55,20 +55,20 @@ class VersionWorkflow extends Workflow
                                              'P' => 'depot_projet_test_pour_president' ]),
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE        , Signal::CLK_FERM),
                 Signal::CLK_DEMANDE     => new VersionTransition(Etat::TERMINE        , Signal::CLK_DEMANDE),
-                Signal::CLK_SESS_DEB    => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE        , Signal::CLK_SESS_FIN, []),
                 ])
             ->addState( Etat::ACTIF_TEST,
                 [
-                Signal::CLK_SESS_DEB    => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
-                Signal::CLK_VAL_EXP_OK  => new NoTransition(),
+                Signal::CLK_VAL_EXP_OK  => new NoTransition(0,0),
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], true),
-                Signal::CLK_VAL_EXP_KO  => new NoTransition(),
-                Signal::CLK_VAL_EXP_CONT=> new NoTransition(),
-                Signal::CLK_VAL_DEM     => new NoTransition(),
-                Signal::CLK_ARR         => new NoTransition(),
-                Signal::CLK_DEMANDE     => new NoTransition(),
+                Signal::CLK_VAL_EXP_KO  => new NoTransition(0,0),
+                Signal::CLK_VAL_EXP_CONT=> new NoTransition(0,0),
+                Signal::CLK_VAL_DEM     => new NoTransition(0,0),
+                Signal::CLK_ARR         => new NoTransition(0,0),
+                Signal::CLK_DEMANDE     => new NoTransition(0,0),
                 ])
             ->addState( Etat::EXPERTISE_TEST, 
                 [
@@ -83,7 +83,7 @@ class VersionWorkflow extends Workflow
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE        , Signal::CLK_FERM),
                 Signal::CLK_ARR         => new VersionTransition(Etat::EDITION_TEST   , Signal::CLK_ARR),
                 Signal::CLK_DEMANDE     => new VersionTransition(Etat::TERMINE        , Signal::CLK_DEMANDE),
-                Signal::CLK_SESS_DEB    => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE        , Signal::CLK_SESS_FIN),
                 ])
             ->addState( Etat::EDITION_DEMANDE,
@@ -111,7 +111,7 @@ class VersionWorkflow extends Workflow
                                            [ 'E' => 'expertise_pour_expert', 
                                              'A' => 'expertise_pour_admin', 
                                              'P' => 'expertise_refusee' ] ),
-                Signal::CLK_SESS_DEB    => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE   , Signal::CLK_SESS_FIN),
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE   , Signal::CLK_FERM),
                 Signal::CLK_ARR         => new VersionTransition(Etat::EDITION_DEMANDE, Signal::CLK_ARR),
@@ -125,15 +125,15 @@ class VersionWorkflow extends Workflow
                 ])
             ->addState( Etat::ACTIF,
                 [
-                Signal::CLK_SESS_DEB    => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
                 Signal::CLK_VAL_EXP_OK  => new VersionTransition(Etat::NOUVELLE_VERSION_DEMANDEE, Signal::CLK_VAL_EXP_OK),
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], true),
-                Signal::CLK_VAL_EXP_KO  => new NoTransition(),
-                Signal::CLK_VAL_EXP_CONT=> new NoTransition(),
-                Signal::CLK_VAL_DEM     => new NoTransition(),
-                Signal::CLK_ARR         => new NoTransition(),
-                Signal::CLK_DEMANDE     => new NoTransition(),
+                Signal::CLK_VAL_EXP_KO  => new NoTransition(0,0),
+                Signal::CLK_VAL_EXP_CONT=> new NoTransition(0,0),
+                Signal::CLK_VAL_DEM     => new NoTransition(0,0),
+                Signal::CLK_ARR         => new NoTransition(0,0),
+                Signal::CLK_DEMANDE     => new NoTransition(0,0),
                 ])
              ->addState( Etat::NOUVELLE_VERSION_DEMANDEE, // quand une autre version est EN_ATTENTE
                 [
@@ -143,9 +143,9 @@ class VersionWorkflow extends Workflow
                 ])
              ->addState( Etat::TERMINE,
                 [
-                Signal::CLK_SESS_DEB    => new NoTransition(),
-                Signal::CLK_SESS_FIN    => new NoTransition(),
-                Signal::CLK_FERM        => new NoTransition(),
+                Signal::CLK_SESS_DEB    => new NoTransition(0,0),
+                Signal::CLK_SESS_FIN    => new NoTransition(0,0),
+                Signal::CLK_FERM        => new NoTransition(0,0),
                 ])
             ->addState( Etat::ANNULE, // provisoire
                 [

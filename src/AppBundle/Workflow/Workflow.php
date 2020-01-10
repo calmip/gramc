@@ -78,7 +78,7 @@ abstract class Workflow
      * params: $stateConstant Un entier représentant l'état
      * params: $transition_array Tableau associatif représentant les transitions possibles
      *           key est un Entier représentant le signal (cf. Utils/Signal.php)
-     *           val est un objet qui implémente TransitionInterface
+     *           val est un objet qui dérive de Transition
      * 
      *******************************************************************/
     protected function addState($stateConstant,$transition_array)

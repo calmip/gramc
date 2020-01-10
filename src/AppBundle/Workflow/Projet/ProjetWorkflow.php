@@ -45,10 +45,10 @@ class ProjetWorkflow extends Workflow
                 Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_VAL_DEM),
                 Signal::CLK_ARR             =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_ARR),
                 
-                Signal::CLK_VAL_EXP_OK      =>  new DoubleProjetTransition(Etat::RENOUVELABLE, Signal::CLK_VAL_EXP_OK),
+                Signal::CLK_VAL_EXP_OK      =>  new DoubleProjetTransition(Etat::RENOUVELABLE, Signal::CLK_VAL_EXP_OK, [], true),
                 Signal::CLK_VAL_EXP_CONT    =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_VAL_EXP_CONT),
                 
-                Signal::CLK_SESS_FIN        =>  new NoTransition(),
+                Signal::CLK_SESS_FIN        =>  new NoTransition(0,0),
                 Signal::CLK_SESS_DEB        =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_SESS_DEB ),
                  
                 Signal::CLK_VAL_EXP_KO      =>  new ProjetTransition(Etat::NON_RENOUVELABLE,Signal::CLK_VAL_EXP_KO),
@@ -57,7 +57,7 @@ class ProjetWorkflow extends Workflow
              ->addState( Etat::NON_RENOUVELABLE,
                 [
                 Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_DEMANDE),
-                Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_DEM),
+                Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_DEM, [], true),
                 Signal::CLK_ARR             =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_ARR),
                 Signal::CLK_VAL_EXP_OK      =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_EXP_OK),
     
@@ -65,15 +65,15 @@ class ProjetWorkflow extends Workflow
                 Signal::CLK_VAL_EXP_KO      =>  new ProjetTransition(Etat::TERMINE,Signal::CLK_VAL_EXP_KO),
                 Signal::CLK_FERM            =>  new ProjetTransition(Etat::TERMINE,Signal::CLK_FERM, [], true),
 
-                Signal::CLK_SESS_DEB        =>  new NoTransition(),
+                Signal::CLK_SESS_DEB        =>  new NoTransition(0,0),
                 Signal::CLK_SESS_FIN        =>  new ProjetTransition(Etat::TERMINE, Signal::CLK_SESS_FIN),
                  ])
              
              ->addState( Etat::TERMINE,
                 [
-                Signal::CLK_SESS_FIN        =>  new NoTransition(),
-                Signal::CLK_SESS_DEB        =>  new NoTransition(),
-                Signal::CLK_FERM            =>  new NoTransition(),
+                Signal::CLK_SESS_FIN        =>  new NoTransition(0,0),
+                Signal::CLK_SESS_DEB        =>  new NoTransition(0,0),
+                Signal::CLK_FERM            =>  new NoTransition(0,0),
                 ]);
             
 

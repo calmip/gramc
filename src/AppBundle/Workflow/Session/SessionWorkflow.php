@@ -56,18 +56,18 @@ class SessionWorkflow extends Workflow
                 ])
             ->addState( Etat::EN_ATTENTE,
                 [
-                Signal::CLK_SESS_FIN => new NoTransition(), 
+                Signal::CLK_SESS_FIN => new NoTransition(0,0), 
                 Signal::CLK_SESS_DEB => new SessionTransition(Etat::ACTIF, Signal::CLK_SESS_DEB, true),
                 ])
             ->addState( Etat::ACTIF,
                 [
                 Signal::CLK_SESS_FIN => new SessionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, true),
-                Signal::CLK_SESS_DEB => new NoTransition(),
+                Signal::CLK_SESS_DEB => new NoTransition(0,0),
                 ])
              ->addState( Etat::TERMINE,
                 [
-                Signal::CLK_SESS_DEB => new NoTransition(),
-                Signal::CLK_SESS_FIN => new NoTransition(),
+                Signal::CLK_SESS_DEB => new NoTransition(0,0),
+                Signal::CLK_SESS_FIN => new NoTransition(0,0),
                 ]);
     }
 
