@@ -49,6 +49,7 @@ class ProjetTransition implements TransitionInterface
     {
         $this->etat                 =   (int)$etat;
         $this->signal               =   $signal;
+        $this->execute_en_cours = false;
     }
 
     public function __toString()
@@ -90,6 +91,10 @@ class ProjetTransition implements TransitionInterface
 
     public function execute($object)
     {
+		// Pour éviter une boucle infinie entre projet et version !
+		if ($this->execute_en_cours) return true;
+		else                         $this->execute_en_cours = true;
+		
         if ( ! $object instanceof Projet ) return [[ 'signal' =>  $this->signal, 'object' => $object ]];
 
 		//Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Projet = " . $object->getIdProjet() . " transition de " . $object->getEtatProjet() . " vers " . $this->etat . " suite à signal " .$this->signal);
@@ -105,14 +110,15 @@ class ProjetTransition implements TransitionInterface
 			{
                 $return = $versionWorkflow->execute( $this->signal, $version );
 
-                if( $return == false )
-                    $return = [[ 'signal' =>  $this->signal, 'object' => $version, 'user' => AppBundle::getUser() ]];
+                // ? if( $return == false )
+                // ?    $return = [[ 'signal' =>  $this->signal, 'object' => $version, 'user' => AppBundle::getUser() ]];
 
                 $rtn = Functions::merge_return( $rtn, $return );
 			}
 		}
         Functions::sauvegarder( $object );
 
+		$this->execute_en_cours = false;
         return $rtn;
     }
 

@@ -176,7 +176,7 @@ class SessionTransition implements TransitionInterface
 				}
 
 				// Si demandé, propage le signal à tous les projets qui dépendent de la session
-                if( $this->toProjets == true )
+               /* if( $this->toProjets == true )
 				{
                     $projets = AppBundle::getRepository(Projet::class)->findAll();
 	                if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($projets)." projets");
@@ -190,7 +190,7 @@ class SessionTransition implements TransitionInterface
                 else
                 {
                     if (TransitionInterface::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Pas de propagation du signal aux projets " );
-				}
+				} */
 			}
 
             if (TransitionInterface::DEBUG)
