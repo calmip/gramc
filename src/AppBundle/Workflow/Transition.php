@@ -37,7 +37,7 @@ abstract class Transition
 {
 	const DEBUG = true;					// Activer - ou pas - le debug dans les transitions
 										// ATTENTION ! Mettre à false pour la prod, sinon perte de perfs !
-	const FAST  = true;				    // TODO - VIRER TOUTE PROPAGATION DANS canExecute !!!
+	const FAST  = false;				    // TODO - VIRER TOUTE PROPAGATION DANS canExecute !!!
 										// Si FAST est à false, on appelle canExecute pour TOUS les objets
 										// Si canExecute sur Session on appelle canExecute pour tous les versions,
 										// Les versions appellent canExecute pour tous les projets etc.
