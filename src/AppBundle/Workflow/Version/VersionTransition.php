@@ -106,17 +106,11 @@ class VersionTransition extends Transition
 		// Change l'état de la version
 		$this->changeEtat($version);
 
-		// Envoi des notifications demandées
-		foreach( $this->getMail() as $mail_role => $template )
-		{
-			$users = Functions::mailUsers([$mail_role], $version);
-			//Functions::debugMessage(__METHOD__ .":" . __LINE__ . " mail_role " . $mail_role . " users : " . Functions::show($users) );
-			$params['object'] = $version;
-			$params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-			Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
-				 $params , $users );
-		}
+		// Envoi des notifications
+		$this->sendNotif($version);
+
 		self::$execute_en_cours = false;
+
 		return $rtn;
     }
 }

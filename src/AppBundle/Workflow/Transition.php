@@ -97,9 +97,9 @@ abstract class Transition
      * TODO- $object devrait sans doute implémenter un interface mais comment ça se 
      *       comporterait sachant que ces objets sont des Entitiy Synfony ?
      **************************************************************************************/
-     protected function changeEtat($object)
-     {
- 		if (Transition::DEBUG)
+    protected function changeEtat($object)
+    {
+		if (Transition::DEBUG)
 		{
 			$old_etat = $object->getObjectState();
             $object->setObjectState( $this->getEtat() );
@@ -113,6 +113,22 @@ abstract class Transition
 		{
             $object->setObjectState( $this->getEtat() );
             Functions::sauvegarder( $object );
+		}
+	}
+	
+	/*********************************************************************
+	 * Envoyer notification aux utilisateurs correspondant aux rôles de mail
+	 * cf. Functions::mailUsers
+	 ************************************************************************/
+	protected function sendNotif($object)
+	{
+		foreach( $this->getMail() as $mail_role => $template )
+		{
+			$users = Functions::mailUsers([$mail_role], $object);
+			$params['object'] = $object;
+			$params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
+			Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
+				 $params , $users );
 		}
 	}
 

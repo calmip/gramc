@@ -55,14 +55,9 @@ class RallongeTransition extends Transition
  		// Change l'état de la rallonge
 		$this->changeEtat($rallonge);
 
-		foreach( $this->getMail() as $mail_role => $template )
-		{
-			$users = Functions::mailUsers([$mail_role], $rallonge);
-			$params['object'] = $rallonge;
-			$params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-			Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
-				 $params , $users );
-		}  
+		// Envoyer les notifications
+		$this->sendNotif($rallonge);
+
 		return true;
     }
 
