@@ -50,33 +50,20 @@ class RallongeTransition extends Transition
     
     public function execute($rallonge)
     {
-        if ( $rallonge instanceof Rallonge )
-		{
-            if (Transition::DEBUG)
-            {
-				$old_etat = $rallonge->getEtatRallonge();
-	            $rallonge->setEtatRallonge( $this->getEtat() );
-	            Functions::sauvegarder( $rallonge );
-				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La Rallonge " . $rallonge->getIdRallonge() . " est passée de l'état " . $old_etat . " à " . $rallonge->getEtatRallonge() . " suite au signal " . $this->getSignal());
-			}
-			else
-			{
-	            $rallonge->setEtatRallonge( $this->getEtat() );
-	            Functions::sauvegarder( $rallonge );
-			}
+		if ( !$rallonge instanceof Rallonge ) throw new \InvalidArgumentException;
 
-            foreach( $this->getMail() as $mail_role => $template )
-			{
-                $users = Functions::mailUsers([$mail_role], $rallonge);
-                $params['object'] = $rallonge;
-                $params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
-                Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
-                     $params , $users );
-			}  
-            return true;
-		}
-        else
-            return false;   
+ 		// Change l'état de la rallonge
+		$this->changeEtat($rallonge);
+
+		foreach( $this->getMail() as $mail_role => $template )
+		{
+			$users = Functions::mailUsers([$mail_role], $rallonge);
+			$params['object'] = $rallonge;
+			$params['liste_mail_destinataires'] =   implode( ',' , Functions::usersToMail( $users ) );
+			Functions::sendMessage( 'notification/'.$template.'-sujet.html.twig','notification/'.$template.'-contenu.html.twig',
+				 $params , $users );
+		}  
+		return true;
     }
 
 }

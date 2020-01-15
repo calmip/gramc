@@ -23,6 +23,7 @@
  **/
 
 namespace AppBundle\Workflow;
+use AppBundle\Utils\Functions;
 
 /************************
  * Transition - Implémente une transition d'états
@@ -88,4 +89,31 @@ abstract class Transition
 			$output .= ', propagation OFF';
         return $output;
     }
+    
+    /********************************************************************
+     * Changer l'état de l'objet passé en paramètre
+     * NB - L'objet doit avoir une méthode appelée getObjectState
+     *      (version, projet, session, rallonge)
+     * TODO- $object devrait sans doute implémenter un interface mais comment ça se 
+     *       comporterait sachant que ces objets sont des Entitiy Synfony ?
+     **************************************************************************************/
+     protected function changeEtat($object)
+     {
+ 		if (Transition::DEBUG)
+		{
+			$old_etat = $object->getObjectState();
+            $object->setObjectState( $this->getEtat() );
+            Functions::sauvegarder( $object );
+			$reflect = new \ReflectionClass($object);
+			$classe  = $reflect->getShortName();
+
+			Functions::debugMessage( __FILE__ . ":" . __LINE__ . " $classe " . $object . " est passé de l'état " . $old_etat . " à " . $object->getObjectState() . " suite au signal " . $this->getSignal());
+		}
+		else
+		{
+            $object->setObjectState( $this->getEtat() );
+            Functions::sauvegarder( $object );
+		}
+	}
+
 }

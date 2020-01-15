@@ -146,18 +146,9 @@ class SessionTransition extends Transition
 		} */
 
 
-		if (Transition::DEBUG)
-		{
-			$old_etat = $session->getEtatSession();
-            $session->setEtatSession( $this->getEtat() );
-            Functions::sauvegarder( $session );
-			Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La session " . $session->getIdSession() . " est passée de l'état " . $old_etat . " à " . $session->getEtatSession() . " suite au signal " . $this->getSignal());
-		}
-		else
-		{
-            $session->setEtatSession( $this->getEtat() );
-            Functions::sauvegarder( $session );
-		}
+		// Change l'état de la session
+		$this->changeEtat($session);
+
 		return $rtn;
     }
 }

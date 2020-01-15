@@ -81,11 +81,9 @@ class ProjetTransition extends Transition
 
 		// Pour éviter une boucle infinie entre projet et version !
 		if (self::$execute_en_cours) return true;
-		else                         self::$execute_en_cours = true;
+		self::$execute_en_cours = true;
 
-        $projet->setEtatProjet( $this->getEtat() );
-        $rtn    =   true;
-
+		$rtn = true;
 		if ($this->getPropageSignal())
 		{
 	        $versionWorkflow    =    new VersionWorkflow();
@@ -98,7 +96,9 @@ class ProjetTransition extends Transition
 				}
 			}
 		}
-        Functions::sauvegarder( $projet );
+
+		// Change l'état du projet
+		$this->changeEtat($projet);
 
 		self::$execute_en_cours = false;
         return $rtn;

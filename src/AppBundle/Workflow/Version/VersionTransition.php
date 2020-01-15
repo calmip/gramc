@@ -72,7 +72,7 @@ class VersionTransition extends Transition
 
 		// Pour éviter une boucle infinie entre projet et version !
 		if (self::$execute_en_cours) return true;
-		else                         self::$execute_en_cours = true;
+		self::$execute_en_cours = true;
 		
 		$rtn = true;
 
@@ -102,18 +102,9 @@ class VersionTransition extends Transition
 			$output   = $workflow->execute( $this->getSignal(), $projet);
 			$rtn = Functions::merge_return( $rtn, $output);
 		}
-		if (Transition::DEBUG)
-		{
-			$old_etat = $version->getEtatVersion();
-            $version->setEtatVersion( $this->getEtat() );
-            Functions::sauvegarder( $version );
-			Functions::debugMessage( __FILE__ . ":" . __LINE__ . " La version " . $version->getIdVersion() . " est passée de l'état " . $old_etat . " à " . $version->getEtatVersion() . " suite au signal " . $this->getSignal());
-		}
-		else
-		{
-            $version->setEtatVersion( $this->getEtat() );
-            Functions::sauvegarder( $version );
-		}
+		
+		// Change l'état de la version
+		$this->changeEtat($version);
 
 		// Envoi des notifications demandées
 		foreach( $this->getMail() as $mail_role => $template )
