@@ -82,8 +82,8 @@ class SelectJournalType extends AbstractType
     {
         $resolver->setDefaults(
         [
-        'from'    => GramcDate::get()->sub( \DateInterval::createFromDateString( '3 months' ) ),
-        'untill'    => GramcDate::get()->add( \DateInterval::createFromDateString( '1 day' ) ),
+        'from'    => GramcDate::get(),
+        'untill'  => GramcDate::get()->add( \DateInterval::createFromDateString( '1 day' ) ),
         ]);
     }
 }

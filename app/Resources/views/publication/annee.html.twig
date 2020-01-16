@@ -1,0 +1,59 @@
+{% extends 'default/base.html.twig' %}
+
+
+{% block body %}
+
+<section>
+
+<h1>{{ publications|length}} publications déclarées pour l'année {{ annee }}</h1>
+
+<section>
+
+{% import "default/macros.html.twig" as gramcmacros %}
+
+    {{ form_start(form) }}
+        {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
+    {{ form_end(form) }}
+
+    <br />
+
+<div class="message info">Publications de {{annee}} citées par les collaborateurs de projets {{ mesoc }} et pour lesquelles les ressources de 
+calcul de {{ mesoc }} ont été utilisées</div>
+
+<div>
+    <table  class="projet" id="publis_projet" >
+    <thead>
+        <tr>
+            <th>Réference</th>
+            <th>Année</th>
+            <th>doi</th>
+            <th>URL pour accès ouvert</th>
+            <th>Projets</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+    {% for publication in publications %}
+        <tr>
+            <td>{{ publication.refbib }}</td>
+            <td>{% if( publication.annee > 0 ) %}{{ publication.annee }}{% endif %}</td>
+            <td>
+                {% if( not publication.doi == '' ) %}
+                    {% set doi = publication.doi|replace({'http://dx.doi.org/':'','http://doi.org/':'','https://dx.doi.org/':'','https://doi.org/':''}) %}
+                    <a href="https://dx.doi.org/{{ doi }}" target="_blank">{{ publication.doi | truncate(20)}}</a>
+                {% endif %}
+            </td>
+            <td>{% if( publication.openUrl != null ) %}<a href="{{ publication.openUrl }}">{{ publication.openUrl | truncate(20) }}</a>{% endif %}</td>
+            <td> {% for p in publication.projet %}
+	            <a href="{{ path('consulter_version', { 'id':p.idprojet }) }}" title="Consulter le projet {{p}}">{{p}} </a>
+            {% endfor %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    
+    </table>
+</div>
+    
+</section>
+          
+{% endblock body  %}

@@ -1515,22 +1515,43 @@ class Menu
 
     public static function statistiques()
     {
-    $menu['name']           =   'statistiques';
-    $menu['lien']           =   "Statistiques";
-
-    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
+	    $menu['name']           =   'statistiques';
+	    $menu['lien']           =   "Statistiques";
+	
+	    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Vous pouvez accéder aux statistiques  !";
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Vous pouvez accéder aux statistiques  !";
         }
-    else
+	    else
         {
-        $menu['ok']             =   false;
-        $menu['commentaire']    =   "Vous ne pouvez pas accéder aux statistiques  !";
-        $menu['raison']         =   "Vous devez être président ou administrateur pour y accéder";
+	        $menu['ok']             =   false;
+	        $menu['commentaire']    =   "Vous ne pouvez pas accéder aux statistiques  !";
+	        $menu['raison']         =   "Vous devez être président ou observateur";
         }
+	
+	    return $menu;
+    }
 
-    return $menu;
+    //////////////////////////////////////////////////////////////////////////
+
+    public static function publications()
+    {
+	    $menu['name']           =   'publication_annee';
+	    $menu['lien']           =   "Publications";
+	
+	    if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
+        {
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Liste des publications par année";
+        }
+	    else
+        {
+	        $menu['ok']             =   false;
+	        $menu['commentaire']    =   "Vous ne pouvez pas accéder aux publications  !";
+	        $menu['raison']         =   "Vous devez être président ou observateur";
+        }
+	    return $menu;
     }
 
     //////////////////////////////////////////////////////////////////////////
