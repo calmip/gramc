@@ -106,6 +106,7 @@ class GramcSessionController extends Controller
 
         $menu5[]= Menu::bilan_annuel();
         $menu5[]= Menu::statistiques();
+        $menu5[]= Menu::publications();
 
         $menu6[]= Menu::connexions();
         $menu6[]= Menu::journal();

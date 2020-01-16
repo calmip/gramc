@@ -199,11 +199,10 @@ class JournalController extends Controller
         else
         {
             // des valeurs par défaut
-            $data['dateDebut']  = new \DateTime();
-            $data['dateDebut']->add( \DateInterval::createFromDateString( '-3 month' ) ); // attention, cette valeur remplacée par la valeur dans la class Form
+            $data['dateDebut']  = new \DateTime();  // attention, cette valeur remplacée par la valeur dans Form/SelectJournalType
             $data['dateFin'] = new \DateTime();
-            $data['dateFin']->add( \DateInterval::createFromDateString( '1 day' ) ); // attention, cette valeur remplacée par la valeur dans la class Form
-            $data['niveau'] = Journal::INFO; // attention, cette valeur remplacée par la valeur dans la class Form
+            $data['dateFin']->add( \DateInterval::createFromDateString( '1 day' ) ); // attention, cette valeur remplacée par la valeur dans Form/SelectJournalType
+            $data['niveau'] = Journal::INFO; // attention, cette valeur remplacée par la valeur dans Form/SelectJournalType
         }
 
         // on regarde si le bouton 'chercher tout' défini dans SelectJournalType a été utilisé

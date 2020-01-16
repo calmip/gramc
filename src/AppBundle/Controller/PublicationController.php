@@ -144,6 +144,26 @@ class PublicationController extends Controller
     }
 
     /**
+     * @Route("/annee",name="publication_annee" )
+     * @Security("has_role('ROLE_OBS') or has_role('ROLE_PRESIDENT')")
+     * @Method({"GET", "POST"})
+     */
+    public function AnneeAction(Request $request)
+    {
+		$data  =   Functions::selectAnnee($request); // formulaire
+        $annee = $data['annee'];
+        $em    = $this->getDoctrine()->getManager();
+        $publications = $em->getRepository(Publication::class)->findBy( ['annee' => $annee ] );
+
+        return $this->render('publication/annee.html.twig',
+			[
+			'form'  => $data['form']->createView(), // formulaire
+			'annee' => $annee,
+			'publications' => $publications,
+			]);
+    }
+
+    /**
      * Creates a new publication entity.
      *
      * @Route("/new", name="publication_new")
