@@ -196,12 +196,13 @@ class AdminuxController extends Controller
 	 *
 	 *             '{ "session" : "20A"}
 	 *             ou
-	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les VERSIONS NON TERMINEES de la session 20A
+	 *             '{ "projet" : null,     "session" : "20A"}' -> Toutes les versions de la session 20A
 	 *
-	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234 SI ELLE EST NON TERMINEE
+	 *             '{ "projet" : "P01234", "session" : "20A"}' -> La version 20AP01234
 	 *
 	 * Donc on renvoie une ou plusieurs versions appartenant à différentes sessions, mais une ou zéro versions par projet
-	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE
+	 * Les versions renvoyées peuvent être en état: ACTIF, EN_ATTENTE, NOUVELLE_VERSION_DEMANDEE si "session" vaut null
+	 * Les versions renvoyées peuvent être dans n'importe quel état (sauf ANNULE) si "session" est spécifiée
 	 *
 	 * Données renvoyées (fmt json):
 	 * 			    idProjet	P01234
@@ -245,15 +246,11 @@ class AdminuxController extends Controller
 			}
 		}
 
-		// Tous les projets actifs d'une session particulière
-		// ... A condition que la session ne soit pas terminée !
+		// Tous les projets d'une session particulière  (on filtre les projets annulés)
 		elseif ($id_projet == null)
 		{
 			$sess  = $em->getRepository(Session::class)->find($id_session);
-			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE)
-			{
-				$v_tmp = $em->getRepository(Version::class)->findSessionVersions($sess);
-			}
+			$v_tmp = $em->getRepository(Version::class)->findSessionVersions($sess);
 		}
 
 		// La version active d'un projet donné
@@ -264,15 +261,11 @@ class AdminuxController extends Controller
 		}
 
 		// Une version particulière
-		// ... A condition que la session ne soit pas terminée !
 		else
 		{
 			$projet = $em->getRepository(Projet::class)->find($id_projet);
 			$sess  = $em->getRepository(Session::class)->find($id_session);
-			if ($sess != null && $sess->getEtatSession() != Etat::TERMINE && $projet != null)
-			{
-				$v_tmp[] = $em->getRepository(Version::class)->findOneVersion($sess,$projet);
-			}
+			$v_tmp[] = $em->getRepository(Version::class)->findOneVersion($sess,$projet);
 		}
 
 		// SEULEMENT si session n'est pas spécifié: On ne garde que les versions actives... ou presque actives
