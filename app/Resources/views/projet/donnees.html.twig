@@ -145,7 +145,11 @@
 					{% if noconso==false %}
 					<td>
 						{{prj_array.qt}}
-						{% if (prj_array.qt != prj_array.sondVolDonnPermTo) %}<img src="{{ asset('icones/attention16.png') }}" alt="Quota différent de la demande" title="Quota différent de la demande" />{% endif %}
+						{% if '<' in prj_array.sondVolDonnPermTo or 'sais pas' in prj_array.sondVolDonnPermTo %}
+							{% if (prj_array.qt != 1) %}<img src="{{ asset('icones/attention16.png') }}" alt="Pas de demande le quota devrait avoir la valeur par défaut" title="Pas de demande le quota devrait avoir la valeur par défaut" /> {% endif %}
+						{% else %}
+							 {% if (prj_array.qt != prj_array.sondVolDonnPermTo) %}<img src="{{ asset('icones/attention16.png') }}" alt="Quota différent de la demande" title="Quota différent de la demande" />{% endif %}
+						{% endif %}
 					</td>
 					<td>
 						{{ (prj_array.c / (1024*1024*1024))|number_format(2, ',', ' ')}}
