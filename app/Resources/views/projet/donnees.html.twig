@@ -20,11 +20,11 @@
 
     <br />
     {% if noconso==false %}
-{#
-	<form action="{{ path('projet_annee_csv', {'annee': annee }) }}">
+
+	<form action="{{ path('projet_donnees_csv', {'annee': annee }) }}">
         <input type="submit" value="Télécharger en csv pour l'année {{ annee }}" />
     </form>
-#}
+
     <hr />
 
 	<div id="legende">
@@ -48,10 +48,6 @@
 		        <th>Nombre de demandes de stockage</th>
 		        <td>{{total.sprj}}</td>
 		    </tr>
-		    <tr>
-				<th>Stockage attribué<br />automatiquement (To)</th>
-				<td>{{total.autostk}}</td>
-		    </tr>
 		     <tr>
 		        <th>Stockage demandé (To)</th>
 		        <td>{{total.demstk}}</td>
@@ -59,6 +55,14 @@
 		     <tr>
 		        <th>Stockage alloué<br />suite à demande (To)</th>
 		        <td>{{total.attrstk}}</td>
+		    </tr>
+		    <tr>
+				<th>Stockage attribué<br />automatiquement (To)</th>
+				<td>{{total.autostk}}</td>
+		    </tr>
+		    <tr>
+				<th>Stockage attribué<br />au total (To)</th>
+				<td>{{total.attrstk+total.autostk}}</td>
 		    </tr>
 		 </table>
 		 <table>

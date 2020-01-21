@@ -879,6 +879,79 @@ class ProjetController extends Controller
 	}
 
     /**
+     * Données en CSV
+     *
+     * @Route("{annee}/donnees_csv", name="projet_donnees_csv")
+     * @Method({"GET","POST"})
+     */
+    public function donneesCSVAction($annee)
+    {
+		list($projets,$total) = Functions::donneesParProjet($annee);
+
+        $header  = [
+                    'projet',
+                    'titre',
+                    'thématique',
+                    'courriel du resp',
+                    'prénom',
+                    'nom',
+                    'laboratoire',
+                    'justif',
+                    'demande',
+                    'quota',
+                    'DIFF',
+                    'occupation',
+                    'meta',
+                    'nombre',
+                    'taille'
+				   ];
+
+        $sortie     =   join("\t",$header) . "\n";
+        foreach ($projets as $prj_array) {
+			$line   = [];
+			$p = $prj_array['p'];
+			$line[] = $p->getIdProjet();
+            $line[] = $p->getTitre();
+            $line[] = $p->getThematique();
+            $line[] = $p->getResponsable()->getMail();
+            $line[] = $p->getResponsable()->getNom();
+            $line[] = $p->getResponsable()->getPrenom();
+            $line[] = $p->getLaboratoire();
+            $line[] = '"'.str_replace(["\n","\r\n","\t"],[' ',' ',' '],$prj_array['sondJustifDonnPerm']).'"';
+            $line[] = $prj_array['sondVolDonnPerm'];
+            $line[] = $prj_array['qt'];
+            if (strpos($prj_array['sondVolDonnPerm'],'sais pas')===false && strpos($prj_array['sondVolDonnPerm'],'<')===false)
+            {
+				if (intval($prj_array['sondVolDonnPerm']) != intval($prj_array['qt']))
+				{
+					$line[] = 1;
+				}
+				else
+				{
+					$line[] = 0;
+				}
+			}
+			else
+			{
+				if (intval($prj_array['qt']) != 1)
+				{
+					$line[] = 1;
+				}
+				else
+				{
+					$line[] = 0;
+				}
+			}
+			$line[] = $prj_array['c'];
+			$line[] = $prj_array['dataMetaDataFormat'];
+			$line[] = $prj_array['dataNombreDatasets'];
+			$line[] = $prj_array['dataTailleDatasets'];
+            $sortie .=   join("\t",$line) . "\n";
+        }
+        return Functions::csv($sortie,'donnees'.$annee.'.csv');
+    }
+
+    /**
      * Projets de l'année en CSV
      *
      * @Route("/{annee}/annee_csv", name="projet_annee_csv")
