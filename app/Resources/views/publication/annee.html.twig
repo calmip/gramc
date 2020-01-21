@@ -16,6 +16,9 @@
     {{ form_end(form) }}
 
     <br />
+	<form action="{{ path('publication_annee_csv', {'annee': annee }) }}">
+        <input type="submit" value="Télécharger en csv pour l'année {{ annee }}" />
+    </form>
 
 <div class="message info">Publications de {{annee}} citées par les collaborateurs de projets {{ mesoc }} et pour lesquelles les ressources de 
 calcul de {{ mesoc }} ont été utilisées</div>
@@ -25,7 +28,6 @@ calcul de {{ mesoc }} ont été utilisées</div>
     <thead>
         <tr>
             <th>Réference</th>
-            <th>Année</th>
             <th>doi</th>
             <th>URL pour accès ouvert</th>
             <th>Projets</th>
@@ -36,7 +38,6 @@ calcul de {{ mesoc }} ont été utilisées</div>
     {% for publication in publications %}
         <tr>
             <td>{{ publication.refbib }}</td>
-            <td>{% if( publication.annee > 0 ) %}{{ publication.annee }}{% endif %}</td>
             <td>
                 {% if( not publication.doi == '' ) %}
                     {% set doi = publication.doi|replace({'http://dx.doi.org/':'','http://doi.org/':'','https://dx.doi.org/':'','https://doi.org/':''}) %}
