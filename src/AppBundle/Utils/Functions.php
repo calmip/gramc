@@ -985,6 +985,7 @@ class Functions
 		$p['ptg']				 = false;
 		$p['sondVolDonnPerm']    = $v->getSondVolDonnPerm();
 		$p['sondVolDonnPermTo']  = preg_replace( '/^(\d+) .+/', '${1}', $p['sondVolDonnPerm']);
+		$p['sondJustifDonnPerm'] = $v->getSondJustifDonnPerm();
 		$p['dataMetaDataFormat'] = $v->getDataMetaDataFormat();
 		$p['dataNombreDatasets'] = $v->getDataNombreDatasets();
 		$p['dataTailleDatasets'] = $v->getDataTailleDatasets();

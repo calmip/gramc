@@ -52,9 +52,9 @@ par la mise en œuvre de mesures techniques et organisationnelles.</p>
 <h2>Droits de communication, modification, suppression</h2>
 <p>Conformément aux articles 39 et suivants de la loi n° 78-17 du 6 janvier 1978 modifiée en 2004 relative à l'informatique, aux fichiers et aux libertés, toute personne peut
  obtenir communication et, le cas échéant, opposition, rectification, suppression, portabilité des informations la concernant, en s'adressant à:</p>
- <p><small>{{ mesoc_address }} {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<tt>{{ init.mail_replace(mailadmin) }}</tt>{% endif %}</small></p>
+ <p><small>{{ mesoc_address }}</small> {% if is_granted('IS_AUTHENTICATED_FULLY') %}<a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a>{% else %}<strong><tt>{{ init.mail_replace(mailadmin) }}</strong></tt>{% endif %}</p>
  <p>ou à défaut à:</p>
- <p><small>DPD du CNRS - 17 rue Notre Dame des Pauvres - 54519 Vandœuvre lès Nancy Cedex <a href="mailto:dpd.demandes@cnrs.fr">dpd.demandes@cnrs.fr</a></small></p>
+ <p><small>Déléguée à la Protection des Données - Bâtiment Ariane 4 - 2 rue Jean Zay - 54500 VANDOEUVRE LES NANCY - </small>courriel: <strong><tt>dpd.demandes at cnrs.fr</tt></strong></p>
 
 <h2>Mise à jour de la charte de protection des données</h2>
 <p>La présente charte peut être mise à jour périodiquement et sans préavis. Dernière mise à jour = 7 Novembre 2019</p>
