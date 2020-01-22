@@ -164,6 +164,39 @@ class PublicationController extends Controller
     }
 
     /**
+     * @Route("/{annee}/annee_csv",name="publication_annee_csv" )
+     * @Security("has_role('ROLE_OBS') or has_role('ROLE_PRESIDENT')")
+     * @Method({"GET", "POST"})
+     */
+    public function AnneeCsvAction($annee)
+    {
+        $em    = $this->getDoctrine()->getManager();
+        $publications = $em->getRepository(Publication::class)->findBy( ['annee' => $annee ] );
+        
+		$header  = [
+                    'Référence',
+                    'annee',
+                    'doi',
+                    'URL',
+                    'Projets'
+                    ];
+                    
+        $sortie = join("\t",$header) . "\n";
+        foreach ( $publications as $publi)
+        {
+			$line   = [];
+			$line[] = '"'.str_replace(["\n","\r\n","\t",'"'],[' ',' ',' ',' '],$publi->getRefbib()).'"';
+			//$line[] = 'ref';
+			$line[] = $publi->getAnnee();
+			$line[] = $publi->getDoi();
+			$line[] = $publi->getOpenUrl();
+			$line[] = join(" ",$publi->getProjet()->toArray());
+			$sortie.= join("\t",$line) . "\n";
+		}
+		return Functions::csv($sortie,'publis_'.$annee.'.csv');
+    }
+
+    /**
      * Creates a new publication entity.
      *
      * @Route("/new", name="publication_new")
