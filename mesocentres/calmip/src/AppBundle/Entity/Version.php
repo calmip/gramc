@@ -3103,15 +3103,17 @@ class Version
     public function modifierLogin(Individu $individu, $login)
     {
         foreach( $this->getCollaborateurVersion() as $item )
+        {
             if($item->getCollaborateur() == null )
                 Functions::errorMessage('Version:modifierLogin collaborateur null pour CollaborateurVersion ' . $item);
             elseif( $item->getCollaborateur()->isEqualTo($individu ) )
-                {
+			{
                 $item->setLogin( $login );
                 $em = AppBundle::getManager();
                 $em->persist( $item );
                 $em->flush();
-                }
+			}
+		}
     }
 
     public function isCollaborateur(Individu $individu = null)

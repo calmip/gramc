@@ -104,77 +104,92 @@ class IndividuForm
 
     //////////////////////////////////////////////////////////////
 
+	/************************************************************
+	 * Crée un nouvel individu à partir des informations du formulaire
+	 * Si les données ne sont pas validées, on ne crée pas l'individu et on renvoie null
+	 * Si les données sont valides, l'individu est créé et renvoyé
+	 *****************************************************************/
     public function nouvelIndividu()
     {
-    $individu = new Individu();
-    
-    $individu->setMail( $this->getMail() );
-    $individu->setNom( $this->getNom() );
-    $individu->setPrenom( $this->getPrenom() );
-    $individu->setLabo( $this->getLaboratoire() );
-    $individu->setLabo( $this->getLaboratoire() );
-    $individu->setEtab( $this->getEtablissement() );
-    $individu->setStatut( $this->getStatut() );
-    $em =   AppBundle::getManager();
-    $em->persist( $individu );
-    $em->flush( $individu );
-    Functions::warningMessage('Utilisateur ' . $individu . '(' . $individu->getMail() . ') id(' . $individu->getIdIndividu() . ') a été créé');
-    return $individu;
+	    $individu = new Individu();
+	    $individu->setMail( $this->getMail() );
+	    $individu->setNom( $this->getNom() );
+	    $individu->setPrenom( $this->getPrenom() );
+	    $individu->setLabo( $this->getLaboratoire() );
+	    $individu->setLabo( $this->getLaboratoire() );
+	    $individu->setEtab( $this->getEtablissement() );
+	    $individu->setStatut( $this->getStatut() );
+
+		// Validation
+		$erreurs = Functions::dataError( $individu );
+		if (count($erreurs) > 0)
+		{
+			Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' ERREURS = '. print_r($erreurs,true));
+			return null;
+		}
+
+	    $em =   AppBundle::getManager();
+	    $em->persist( $individu );
+	    $em->flush( $individu );
+	    Functions::warningMessage('Utilisateur ' . $individu . '(' . $individu->getMail() . ') id(' . $individu->getIdIndividu() . ') a été créé');
+	    return $individu;
     }
 
-    public function modifyIndividu( $individu )
+    public function modifyIndividu( Individu $individu )
     {
-    if( $individu != null )
-        {
-        $em =   AppBundle::getManager();
-        
-        //$individu->setMail( $this->getMail() );  // mail n'est pas transmis
-        
-        if( $individu->getNom() != $this->getNom() )
+	    if( $individu != null )
+		{
+			$em =   AppBundle::getManager();
+	        
+	        //$individu->setMail( $this->getMail() );  // mail n'est pas transmis
+	        //$this->setMail($individu->getMail());
+	        
+	        if( $individu->getNom() != $this->getNom() )
             {
-            Functions::warningMessage("Le nom de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
-            $individu->getNom() . " vers " . $this->getNom() );
-            $individu->setNom( $this->getNom() );
-            $em->persist( $individu );
+	            Functions::warningMessage("Le nom de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
+	            $individu->getNom() . " vers " . $this->getNom() );
+	            $individu->setNom( $this->getNom() );
+	            $em->persist( $individu );
             }
-
-        if( $individu->getPrenom() != $this->getPrenom() )
+	
+	        if( $individu->getPrenom() != $this->getPrenom() )
             {
-            Functions::warningMessage("Le prénom de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
-            $individu->getPrenom() . " vers " . $this->getPrenom() );
-            $individu->setPrenom( $this->getPrenom() );
-            $em->persist( $individu );
+	            Functions::warningMessage("Le prénom de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
+	            $individu->getPrenom() . " vers " . $this->getPrenom() );
+	            $individu->setPrenom( $this->getPrenom() );
+	            $em->persist( $individu );
             }
-
-        if( $individu->getLabo() != $this->getLaboratoire() )
+	
+	        if( $individu->getLabo() != $this->getLaboratoire() )
             {
-            Functions::warningMessage("Le laboratoire de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
-            $individu->getLabo() . " vers " . $this->getLaboratoire() );
-            $individu->setLabo( $this->getLaboratoire() );
-            $em->persist( $individu );
+	            Functions::warningMessage("Le laboratoire de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
+	            $individu->getLabo() . " vers " . $this->getLaboratoire() );
+	            $individu->setLabo( $this->getLaboratoire() );
+	            $em->persist( $individu );
             }
-
-        if( $individu->getEtab() != $this->getEtablissement() )
+	
+	        if( $individu->getEtab() != $this->getEtablissement() )
             {
-            Functions::warningMessage("L'établissement de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
-            $individu->getEtab() . " vers " . $this->getEtablissement() );
-            $individu->setEtab( $this->getEtablissement() );
-            $em->persist( $individu );
+	            Functions::warningMessage("L'établissement de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
+	            $individu->getEtab() . " vers " . $this->getEtablissement() );
+	            $individu->setEtab( $this->getEtablissement() );
+	            $em->persist( $individu );
             }
-
-        if( $individu->getStatut() != $this->getStatut() )
+	
+	        if( $individu->getStatut() != $this->getStatut() )
             {
-            Functions::warningMessage("Le statut de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
-            $individu->getStatut() . " vers " . $this->getStatut() );
-            $individu->setStatut( $this->getStatut() );
-            $em->persist( $individu );
+	            Functions::warningMessage("Le statut de l'individu " .$individu . " id(" . $individu->getIdIndividu() . ") a été modifié de " . 
+	            $individu->getStatut() . " vers " . $this->getStatut() );
+	            $individu->setStatut( $this->getStatut() );
+	            $em->persist( $individu );
             }
-        
-        $em->flush();
+	        $em->flush();
         }
-    else
-        Functions::errorMessage('IndividuForm:synchronizeIndividu: Individu null !');
+	    else
+	    {
+	        Functions::errorMessage('IndividuForm:synchronizeIndividu: Individu null !');
+		}
         
-    return $individu;
+	    return $individu;
     }
 }
