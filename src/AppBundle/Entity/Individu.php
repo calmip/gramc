@@ -30,6 +30,7 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
 
 use AppBundle\Utils\Functions;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Individu
@@ -88,6 +89,9 @@ const LIBELLE_STATUT =
      * @var string
      *
      * @ORM\Column(name="mail", type="string", length=200, nullable=false)
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email."
+     * )
      */
     private $mail;
 
