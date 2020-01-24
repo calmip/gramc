@@ -489,8 +489,12 @@ class Functions
     return array_unique( $mail );
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    // getSessionCourante
+    /***********
+    * Renvoie la session courante, c'est-à-dire la PLUS RECENTE session NON TERMINEE
+    * 
+    * NOTE -  A chaque instant il n'y a qu'UNE session active
+    * 
+    ************************************************************/
     static function getSessionCourante()
     {
         if( AppBundle::getSession()->has('SessionCourante') )

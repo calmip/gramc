@@ -73,6 +73,189 @@ use AppBundle\Workflow\Session\SessionWorkflow;
 
 class Menu
 {
+
+	/*******************
+	 * Gestion de la session 
+	 ***************************************************/
+
+	// Nouvelle session
+	public static function ajouterSession()
+	{
+        $session      = Functions::getSessionCourante();
+        $etat_session = $session->getEtatSession();
+        $workflow     = new SessionWorkflow();
+        $menu['name']            = 'ajouter_session';
+        $menu['lien']            = "Nouvelle session";
+        if ($etat_session === Etat::ACTIF)
+        {
+			$menu['ok']          = true;
+			$menu['commentaire'] = 'Nouvelle session';
+			return $menu;
+		}
+		else
+		{
+			$menu['commentaire'] = "Pas possible de créer une nouvelle session";
+			$menu['ok']          = false;
+			$menu['raison']      = "La session courante n'est pas encore activée";
+			return $menu;
+		}
+	}         
+
+	// Modifier la session
+	public static function modifierSession()
+	{
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+        $menu['name']            = 'modifier_session';
+        $menu['param']           = $session->getIdSession();
+        $menu['lien']            = "Modifier la session";
+        if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session)  )
+        {
+			$menu['ok']          = true;
+			$menu['commentaire'] = 'Modifier les paramètres de la session';
+			return $menu;
+		}
+		else
+		{
+			$menu['commentaire'] = 'Pas possible de modifier la session.';
+			$menu['ok']          = false;
+			$menu['raison']      = 'La session a déjà démarré !';
+			return $menu;
+		}
+	}         
+
+	// Début de la saisie
+	public static function demarrerSaisie()
+	{
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+        $menu['name']            = 'demarrer_saisie';
+        $menu['lien']            = "Début de la saisie";
+        if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session)  )
+        {
+			$menu['ok']          = true;
+			$menu['commentaire'] = 'Début de la saisie des demandeurs';
+			return $menu;
+		}
+		else
+		{
+			$menu['commentaire'] = 'Pas possible de débuter la saisie des projets';
+			$menu['ok']          = false;
+			$menu['raison']      = 'La période est déjà passée !';
+			return $menu;
+		}
+	}         
+ 		
+	// Fin de la saisie
+	public static function terminerSaisie()
+	{
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+        $menu['name']            = 'terminer_saisie';
+        $menu['lien']            = "Fin de la saisie";
+        if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session)  )
+        {
+			$menu['ok']          = true;
+			$menu['commentaire'] = 'Fin de la saisie des demandeurs';
+			return $menu;
+		}
+		else
+		{
+			$menu['commentaire'] = 'Pas possible de terminer la saisie des projets';
+			$menu['ok']          = false;
+			$menu['raison']      = 'La session n\'est pas en période de saisie des projets';
+			return $menu;
+		}
+	}
+
+	// Envoyer les expertises
+	public static function envoyerExpertises()
+	{
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+        $menu['name']            = 'envoyer_expertises';
+		if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session)  &&  $session_courante->getcommGlobal() != null )
+		{
+            $menu['ok']          = true;
+            $menu['commentaire'] = "Envoyer les expertises";
+            return $menu;
+		}
+		else
+		{
+			$menu['ok']          = false;
+			$menu['commentaire'] = "Impossible d'envoyer les expertises";
+			if( $session->getCommGlobal() == null )
+			{
+				$menu['raison']  = "Il n'y a pas de commentaire de session (menu Président)";
+			}
+            else
+            {
+				$menu['raison']  = "La session n'est pas en \"expertise\"";
+			}
+			return $menu;
+		}
+	}
+	
+	// Commentaire de session - accessible à partir de l'écran Président
+    public static function commSess()
+    {
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+
+        $menu['name']            = 'session_commentaires';
+        $menu['lien']            = "Commentaire de session ($session)";
+
+        if( !AppBundle::isGranted('ROLE_PRESIDENT') )
+        {
+	        $menu['ok']          = false;
+	        $menu['commentaire'] = "Vous ne pouvez pas ajouter le commentaire de session";
+            $menu['raison']      = "Vous n'êtes pas président";
+            return $menu;
+        }
+        if ( ! $workflow->canExecute( Signal::CLK_ATTR_PRS, $session) )
+        {
+	        $menu['ok']          = false;
+	        $menu['commentaire'] = "Vous ne pouvez pas ajouter le commentaire de session";
+            $menu['raison']      = "La session n'est pas en phase d'expertise";
+	        return $menu;
+        }
+        else
+        {
+            $menu['ok']          = true;
+            $menu['commentaire'] = "Commentaire de session et fin de la phase d'expertise";
+	        return $menu;
+        }
+    }
+
+	// Activer la session
+    public static function activerSession()
+    {
+        $session = Functions::getSessionCourante();
+        $workflow   = new SessionWorkflow();
+
+        $menu['name']           = 'activer_session';
+        $menu['lien']           = "Activer la session";
+
+        if ( ! $workflow->canExecute( Signal::CLK_SESS_DEB, $session))
+        {
+	        $menu['ok']          = false;
+			$menu['commentaire'] = "Vous ne pouvez pas activer la session";
+            $menu['raison']      = "Le commentaire de session n'a pas été envoyé, ou la session est déjà active";
+            return $menu;
+        }
+        else
+        {
+            $menu['ok']          = true;
+            $menu['commentaire'] = "Activer la session $session";
+            return $menu;
+        }
+    }
+
+
+	/*******************
+	 * Gestion des projets et des versions 
+	 ***************************************************/
+
 	public static Function nouveau_projet($type)
 	{
         $prj_prefix = AppBundle::getParameter('prj_prefix');
@@ -931,34 +1114,6 @@ class Menu
         return $menu;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-
-    public static function commentaires()
-    {
-        $session = Functions::getSessionCourante();
-        $workflow   = new SessionWorkflow();
-
-        $menu['name']           =   'session_commentaires';
-        $menu['lien']           =   "Commentaire de session ($session)";
-
-        $menu['commentaire']    =   "Vous ne pouvez pas ajouter le commentaire de session";
-        $menu['ok']             =   false;
-        if( !AppBundle::isGranted('ROLE_PRESIDENT') )
-        {
-            $menu['raison']     =   "Vous n'avez pas le rôprésident";
-        }
-        elseif ( ! $workflow->canExecute( Signal::CLK_ATTR_PRS, $session) && AppBundle::isGranted('ROLE_PRESIDENT') )
-        {
-            $menu['raison']     =   "La session n'est pas en phase d'expertise";
-        }
-        else
-        {
-            $menu['ok']             =   true;
-            $menu['commentaire']    =   "Commentaire de session et fin de la phase d'expertise";
-        }
-
-        return $menu;
-    }
 ////////////////////////////////////////////////////////////////////////////
 
     public static function avancer()

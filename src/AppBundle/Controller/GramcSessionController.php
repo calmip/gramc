@@ -154,7 +154,7 @@ class GramcSessionController extends Controller
     public function presidentAccueilAction()
         {
         $menu[] =  Menu::affectation();
-        $menu[] =  Menu::commentaires();
+        $menu[] =  Menu::commSess();
 	    $menu[] =  Menu::affectation_rallonges();
         $menu[] =  Menu::affectation_test();
         return $this->render('default/president.html.twig', ['menu' => $menu]);
