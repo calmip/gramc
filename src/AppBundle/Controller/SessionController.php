@@ -105,7 +105,7 @@ class SessionController extends Controller
 			$menu[] = Menu::demarrerSaisie();
             $menu[] = Menu::terminerSaisie();
 			$menu[] = Menu::envoyerExpertises();
-	        $menu[] =  Menu::activerSession();
+	        $menu[] = Menu::activerSession();
 
         }
 
@@ -206,6 +206,26 @@ class SessionController extends Controller
                 'message'   => 'Impossible terminer la saisie',
                 'titre'     =>  'Erreur',
                 ]);
+    }
+   /**
+     * Avant changement d'état de la version
+     *
+     * @Route("/avant_changer_etat/{rtn}/{ctrl}", name="session_avant_changer_etat", defaults= {"rtn" = "X" })
+     * @Method("GET")
+     *
+     */
+    public function avantActiverAction($rtn,$ctrl)
+    {
+		$session       =   Functions::getSessionCourante();
+		$connexions = Functions::getConnexions();
+	    return $this->render('session/avant_changer_etat.html.twig',
+            [
+            'session'    => $session,
+            'ctrl'       => $ctrl,
+            'connexions' => $connexions,
+            'rtn'        => $rtn,
+            ]
+		);
     }
 
     /**
@@ -426,35 +446,11 @@ class SessionController extends Controller
         $editForm = $this->createForm('AppBundle\Form\SessionType', $session_courante, [ 'commentaire' => true ] );
         $editForm->handleRequest($request);
 
-        if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-        {
-            $menu[] =  [
-                        'ok' => true,
-                        'name' => 'envoyer_expertises',
-                        'lien' => 'Envoyer les expertises',
-                        'commentaire'=> 'Envoyer les expertises',
-                        ];
-        }
-        else
-        {
-            $item   = [
-                    'ok' => false,
-                    'name' => 'envoyer_expertises',
-                    'lien' => 'Envoyer les expertises',
-                    'commentaire'=> "Impossible d'envoyer les expertises",
-                    ];
-            if( $session_courante->getCommGlobal() == null )
-                $item['raison'] = "Il n'y a pas de commentaire de session";
-            else
-                $item['raison'] = "La session n'est pas en édition d'expertises";
-
-            $menu[]  =   $item;
-        }
+		$menu[] = Menu::envoyerExpertises();
 
         if ($editForm->isSubmitted() && $editForm->isValid())
         {
             $this->getDoctrine()->getManager()->flush();
-            //return $this->redirectToRoute('president_accueil');
         }
 
         return $this->render('session/commentaires.html.twig',

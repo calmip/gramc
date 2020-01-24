@@ -107,7 +107,7 @@ class Menu
         $session = Functions::getSessionCourante();
         $workflow   = new SessionWorkflow();
         $menu['name']            = 'modifier_session';
-        $menu['param']           = $session->getIdSession();
+        $menu['params']          = [ 'id' => $session->getIdSession() ];
         $menu['lien']            = "Modifier la session";
         if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session)  )
         {
@@ -128,9 +128,11 @@ class Menu
 	public static function demarrerSaisie()
 	{
         $session = Functions::getSessionCourante();
-        $workflow   = new SessionWorkflow();
-        $menu['name']            = 'demarrer_saisie';
-        $menu['lien']            = "Début de la saisie";
+        $workflow       = new SessionWorkflow();
+        $menu['name']   = 'session_avant_changer_etat';
+        $menu['lien']   = "Début de la saisie";
+		$menu['params'] = [ 'ctrl' => 'demarrer_saisie'];
+
         if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session)  )
         {
 			$menu['ok']          = true;
@@ -151,8 +153,10 @@ class Menu
 	{
         $session = Functions::getSessionCourante();
         $workflow   = new SessionWorkflow();
-        $menu['name']            = 'terminer_saisie';
-        $menu['lien']            = "Fin de la saisie";
+        $menu['name']   = 'session_avant_changer_etat';
+        $menu['lien']   = "Fin de la saisie";
+		$menu['params'] = [ 'ctrl' => 'terminer_saisie'];
+
         if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session)  )
         {
 			$menu['ok']          = true;
@@ -173,8 +177,11 @@ class Menu
 	{
         $session = Functions::getSessionCourante();
         $workflow   = new SessionWorkflow();
-        $menu['name']            = 'envoyer_expertises';
-		if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session)  &&  $session_courante->getcommGlobal() != null )
+        $menu['name']            = 'session_avant_changer_etat';
+        $menu['lien']            = 'Envoi des expertises';
+        $menu['params'] = [ 'ctrl' => 'envoyer_expertises'];
+
+		if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session)  &&  $session->getcommGlobal() != null )
 		{
             $menu['ok']          = true;
             $menu['commentaire'] = "Envoyer les expertises";
@@ -233,8 +240,9 @@ class Menu
         $session = Functions::getSessionCourante();
         $workflow   = new SessionWorkflow();
 
-        $menu['name']           = 'activer_session';
+        $menu['name']           = 'session_avant_changer_etat';
         $menu['lien']           = "Activer la session";
+        $menu['params']         = [ 'ctrl' => 'activer_session'];
 
         if ( ! $workflow->canExecute( Signal::CLK_SESS_DEB, $session))
         {

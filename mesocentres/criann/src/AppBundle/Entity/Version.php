@@ -2975,33 +2975,29 @@ class Version
     // Ne sert que pour l'affichage des états de version
     public function getMetaEtat()
     {
-        $projet =  $this->getProjet();
-        if( $projet != null )
-        {
-            $etat_projet = $projet->getEtatProjet();
+        //$projet =  $this->getProjet();
+        //if( $projet != null )
+        //{
+        //    $etat_projet = $projet->getEtatProjet();
 
-            if      (   $etat_projet    ==  Etat::EN_STANDBY    )   return 'STANDBY'; //En attente, renouvellement possible
-            elseif  (   $etat_projet    ==  Etat::TERMINE       )   return 'TERMINE';
-        }
+        //    if      (   $etat_projet    ==  Etat::EN_STANDBY    )   return 'STANDBY'; //En attente, renouvellement possible
+        //    elseif  (   $etat_projet    ==  Etat::TERMINE       )   return 'TERMINE';
+        //}
 
         $etat_version   =   $this->getEtatVersion();
 
-        if      (   $etat_version   ==  Etat::ANNULE                )   return 'ANNULE';
-        elseif  (   $etat_version   ==  Etat::EDITION_DEMANDE       )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EDITION_TEST          )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EDITION_EXPERTISE     )   return 'EXPERTISE';
-        elseif  (   $etat_version   ==  Etat::EXPERTISE_TEST        )   return 'EXPERTISE';
-        elseif  (   $etat_version   ==  Etat::EN_STANDBY            )   return 'STANDBY';
-        elseif  (   $etat_version   ==  Etat::TERMINE               )   return 'TERMINE';
-        elseif  (   $this->getAttrAccept()   ==  true            )
+        if     ( $etat_version == Etat::ACTIF )             return 'ACTIF';
+        elseif ( $etat_version == Etat::ANNULE            ) return 'ANNULE';
+        elseif ( $etat_version == Etat::EDITION_DEMANDE   ) return 'EDITION';
+        elseif ( $etat_version == Etat::EDITION_TEST      ) return 'EDITION';
+        elseif ( $etat_version == Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::TERMINE           ) 
         {
-            $session = Functions::getSessionCourante();
-            if( $session->getEtatSession() == Etat::EDITION_DEMANDE &&  $session->getLibelleTypeSession() === 'A' )
-                return 'NONRENOUVELE'; // Non renouvelé
-            else
-                return 'ACCEPTE'; // Projet ou rallonge accepté par le comité d'attribution
-        }
-        else    return 'REFUSE';
+			if ($this->getAttrAccept() == true) return 'TERMINE';
+			else                                return 'REFUSE';
+		}
+		return 'INCONNU';
     }
 
     //

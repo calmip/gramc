@@ -1,0 +1,27 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+    <section>
+        <h2>session {{ session }}: Confirmation de changement d'état</h2>
+        <div class="message warning">
+            <h2>Attention</h2>
+            <p>Vous êtes sur le point de changer l'état de la session.
+            <br />Cela provoquera la déconnexion de tous les utilisateurs (y compris vous)
+            <br />Actuellement <strong>{{connexions|length}}</strong> utilisateurs connectés ! - <a href="{{ path('connexions') }}">Cliquez ici</a> pour savoir qui</p>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a class="lien_actif" href="{{ path( 'gerer_sessions' ) }}" title="Annuler et retourner à l'écran de session">ANNULER</a>
+                </li>
+                <li>
+                    <a class="lien_actif" href="{{ path( ctrl, { 'rtn' : rtn } ) }}" title="Changer l'état de la session">OK</a>
+                </li>
+            </ul>
+        </nav>
+
+    </section>
+
+
+{% endblock %}

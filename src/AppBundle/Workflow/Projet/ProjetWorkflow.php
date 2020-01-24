@@ -41,7 +41,8 @@ class ProjetWorkflow extends Workflow
         $this
             ->addState( Etat::RENOUVELABLE,
                 [
-                Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_DEMANDE),
+                // Utile seulement pour propagation aux versions
+                Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_DEMANDE, [], true),
                 Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_VAL_DEM),
                 Signal::CLK_ARR             =>  new ProjetTransition(Etat::RENOUVELABLE, Signal::CLK_ARR),
                 
@@ -56,7 +57,7 @@ class ProjetWorkflow extends Workflow
                 ])
              ->addState( Etat::NON_RENOUVELABLE,
                 [
-                Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_DEMANDE),
+                Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_DEMANDE, [], true),
                 Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_DEM, [], true),
                 Signal::CLK_ARR             =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_ARR),
                 Signal::CLK_VAL_EXP_OK      =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_EXP_OK),

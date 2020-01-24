@@ -1484,4 +1484,50 @@ class Functions
 		}
 		return $result;
 	}
+	
+	/**********
+	 * Renvoie un tableau avec la liste des connexions actives
+	 **********************************************************/
+	 public static function getConnexions()
+	 {
+	    $connexions = [];
+ 	    $dir = session_save_path();
+	    $scan = scandir( $dir );
+	
+	    $save = $_SESSION;
+	    $time = time();
+	    foreach ( $scan as $filename )
+	    {
+	        if( $filename != '.' && $filename != '..' )
+            {
+	            $atime = fileatime( $dir . '/' . $filename );
+	            $mtime = filemtime( $dir . '/' . $filename );
+	            $ctime = filectime( $dir . '/' . $filename );
+	            //$atime = max ( [ $atime, $mtime, $ctime ] );
+	
+	            $diff  = intval( ($time - $mtime) / 60 );
+	            $min   = $diff % 60;
+	            $heures= intVal($diff/60);
+	            $contents = file_get_contents( $dir . '/' . $filename );
+	            session_decode($contents );
+	
+	            if(  ! array_key_exists('_sf2_attributes', $_SESSION ) )
+	                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Une session autre que symfony !" );
+	            elseif( array_key_exists('real_user', $_SESSION['_sf2_attributes'] ) )
+	                {
+	                $user = $_SESSION['_sf2_attributes']['real_user'];
+	                $individu = AppBundle::getRepository(Individu::class)->find( $user->getIdIndividu() );
+	                if( $individu == null )
+	                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème d'individu " . $user );
+	                else
+	                    $connexions[] = [ 'user' => $individu, 'minutes' => $min,'heures' => $heures ];
+	                }
+	            elseif( ! array_key_exists( '_security_consoupload', $_SESSION['_sf2_attributes'] ) )
+	                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème avec le fichier session " . $filename );
+	
+            }
+		}
+	    $_SESSION = $save;
+	    return $connexions;
+	}
 }
