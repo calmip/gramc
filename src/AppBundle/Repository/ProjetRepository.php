@@ -133,36 +133,35 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
     // la liste des projets ou un individu est soit juste collaborateur, soit responsable, soit les deux à la fois qui ne sont pas terminés
     public function get_projets_resp_ou_collab($id_individu, $responsable = true, $collaborateur = true)
     {
-    if( $responsable == false && $collaborateur == false ) return [];
+	    if( $responsable == false && $collaborateur == false ) return [];
+	
+	    $dql  = 'SELECT p FROM AppBundle:Projet p, AppBundle:CollaborateurVersion cv, AppBundle:Version v, AppBundle:Individu i ';
+	    $dql .= ' WHERE  ( p = v.projet AND i.idIndividu = :id_individu ';
+	    if( $responsable != $collaborateur ) $dql .= ' AND cv.responsable = :responsable '; //  soit le responsable, soit le collaborateur
+	    $dql .= ' AND cv.version =  v AND cv.collaborateur = i ';
+	    $dql .= '  AND NOT p.etatProjet = :termine ';
+	    $dql .= ' AND NOT  v.etatVersion = :annule AND NOT p.etatProjet = :annule ';
+	//    $dql .= ' AND NOT  v.etatVersion = :standby AND NOT p.etatProjet = :standby ';
+	    $dql .= ' AND NOT  v.etatVersion = :nouvelle_version_demandee ';
+	    $dql .= ' ) ORDER BY p.versionDerniere DESC';
 
-    $dql  = 'SELECT p FROM AppBundle:Projet p, AppBundle:CollaborateurVersion cv, AppBundle:Version v, AppBundle:Individu i ';
-    $dql .= ' WHERE  ( p = v.projet AND i.idIndividu = :id_individu ';
-    if( $responsable != $collaborateur ) $dql .= ' AND cv.responsable = :responsable '; //  soit le responsable, soit le collaborateur
-    $dql .= ' AND cv.version =  v AND cv.collaborateur = i ';
-    $dql .= ' AND NOT  v.etatVersion = :termine AND NOT p.etatProjet = :termine ';
-    $dql .= ' AND NOT  v.etatVersion = :annule AND NOT p.etatProjet = :annule ';
-//    $dql .= ' AND NOT  v.etatVersion = :standby AND NOT p.etatProjet = :standby ';
-    $dql .= ' AND NOT  v.etatVersion = :nouvelle_version_demandee ';
-    $dql .= ' ) ORDER BY p.versionDerniere DESC';
+	    $query = $this->getEntityManager()
+	         ->createQuery( $dql )
+	         ->setParameter('id_individu', $id_individu )
+	         ->setParameter('termine', Etat::getEtat('TERMINE'))
+	          ->setParameter('annule', Etat::getEtat('ANNULE'))
+	//         ->setParameter('standby', Etat::getEtat('EN_STANDBY'))
+	         ->setParameter('nouvelle_version_demandee', Etat::getEtat('NOUVELLE_VERSION_DEMANDEE'));
 
-    $query = $this->getEntityManager()
-         ->createQuery( $dql )
-         ->setParameter('id_individu', $id_individu )
-         ->setParameter('termine', Etat::getEtat('TERMINE'))
-          ->setParameter('annule', Etat::getEtat('ANNULE'))
-//         ->setParameter('standby', Etat::getEtat('EN_STANDBY'))
-         ->setParameter('nouvelle_version_demandee', Etat::getEtat('NOUVELLE_VERSION_DEMANDEE'));
-
-    if( $responsable == true && $collaborateur == false )
-            $query->setParameter('responsable', 1 );
-    elseif( $responsable == false && $collaborateur ==  true )
+		if( $responsable == true && $collaborateur == false )
+			$query->setParameter('responsable', 1 );
+	    elseif( $responsable == false && $collaborateur ==  true )
             $query->setParameter('responsable', 0 );
 
-    return $query->getResult();
+	    return $query->getResult();
     }
 
     // la liste des projets avec un état $libelle_etat où un individu est collaborateur ou responsable
-
     public function get_projets_etat($id_individu, $libelle_etat)
     {
         $dql  = 'SELECT p FROM AppBundle:Projet p, AppBundle:CollaborateurVersion cv, AppBundle:Version v, AppBundle:Individu i ';
