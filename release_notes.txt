@@ -1,3 +1,7 @@
+v 3.4.9 - 27 jan 2020
+---------------------
+	- Bug sur la page demandeurs
+
 v 3.4.8 - 21 Jan 2020
 ---------------------
 	- Publications et Données téléchargeables en CSV
