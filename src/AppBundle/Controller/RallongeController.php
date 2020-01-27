@@ -687,6 +687,7 @@ class RallongeController extends Controller
 	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
 
 	    $idProjets = [];
+	    $projets = [];
 	    foreach( $all_rallonges as $rallonge )
         {
 	        $version = $rallonge->getVersion();
