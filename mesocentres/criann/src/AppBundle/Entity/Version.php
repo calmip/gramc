@@ -580,10 +580,15 @@ class Version
     */
     public function setUpdateMajStamp()
     {
+		// On renseigne le stamp de mise à jour SSI la personne connectée est un collaborateur
+		// Sinon (admin, expert, ... rien ne se passe !
+		if ($this->isCollaborateur())
+		{
             $this->majStamp = new \DateTime();
             $this->majInd   = AppBundle::getUser();
-    }
-
+		}
+	}
+	
     /**
     * @ORM\PostUpdate
     */

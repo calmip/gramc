@@ -36,7 +36,7 @@ class RallongeType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('etatRallonge')->add('demHeures')->add('attrHeures')->add('prjJustifRallonge')
-            ->add('majInd')->add('majStamp')->add('attrAccept')->add('idRallonge')->add('version')
+            ->add('attrAccept')->add('idRallonge')->add('version')
             ->add('nbHeuresAtt')->add('commentaireInterne')->add('commentaireExterne')->add('validation')->add('expert')
             ;
     }

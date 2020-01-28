@@ -10,8 +10,6 @@
                 <th>Demheures</th>
                 <th>Attrheures</th>
                 <th>Prjjustifrallonge</th>
-                <th>Majind</th>
-                <th>Majstamp</th>
                 <th>Attraccept</th>
                 <th>Idrallonge</th>
                 <th>Actions</th>
@@ -24,8 +22,6 @@
                 <td>{{ rallonge.demHeures }}</td>
                 <td>{{ rallonge.attrHeures }}</td>
                 <td>{{ rallonge.prjJustifRallonge }}</td>
-                <td>{{ rallonge.majInd }}</td>
-                <td>{% if rallonge.majStamp %}{{ rallonge.majStamp|date('Y-m-d H:i:s') }}{% endif %}</td>
                 <td>{% if rallonge.attrAccept %}Yes{% else %}No{% endif %}</td>
                 <td>{{ rallonge.idRallonge }}</td>
                 <td>

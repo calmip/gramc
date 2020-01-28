@@ -80,20 +80,6 @@ class Rallonge
     private $prjJustifRallonge;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="maj_ind", type="integer", nullable=false)
-     */
-    private $majInd = '0';
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="maj_stamp", type="datetime", nullable=false)
-     */
-    private $majStamp;
-
-    /**
      * @var boolean
      *
      * @ORM\Column(name="attr_accept", type="boolean", nullable=false)
@@ -165,22 +151,6 @@ class Rallonge
 
 
     /////////
-
-    /**
-    * @ORM\PrePersist
-    */
-    public function setInitialMajStamp()
-    {
-    $this->majStamp = new \DateTime();
-    }
-
-    /**
-    * @ORM\PreUpdate
-    */
-    public function setUpdateMajStamp()
-    {
-    $this->majStamp = new \DateTime();
-    }
 
     /**
     * @ORM\PostLoad
@@ -310,54 +280,6 @@ class Rallonge
     public function getPrjJustifRallonge()
     {
         return $this->prjJustifRallonge;
-    }
-
-    /**
-     * Set majInd
-     *
-     * @param integer $majInd
-     *
-     * @return Rallonge
-     */
-    public function setMajInd($majInd)
-    {
-        $this->majInd = $majInd;
-
-        return $this;
-    }
-
-    /**
-     * Get majInd
-     *
-     * @return integer
-     */
-    public function getMajInd()
-    {
-        return $this->majInd;
-    }
-
-    /**
-     * Set majStamp
-     *
-     * @param \DateTime $majStamp
-     *
-     * @return Rallonge
-     */
-    public function setMajStamp($majStamp)
-    {
-        $this->majStamp = $majStamp;
-
-        return $this;
-    }
-
-    /**
-     * Get majStamp
-     *
-     * @return \DateTime
-     */
-    public function getMajStamp()
-    {
-        return $this->majStamp;
     }
 
     /**

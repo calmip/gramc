@@ -110,7 +110,6 @@ class IndividuController extends Controller
         $Rallonge                   =   AppBundle::getRepository(Rallonge::class)->findBy(['expert' => $individu]);
         $Session                    =   AppBundle::getRepository(Session::class)->findBy(['president' => $individu]);
         $Sso                        =   AppBundle::getRepository(Sso::class)->findBy(['individu' => $individu]);
-        //$Version                    =   AppBundle::getRepository(Version::class)->findBy(['majInd' => $individu]);
         $Thematique                 =   $individu->getThematique();
 
         $erreurs  =   [];
@@ -182,11 +181,6 @@ class IndividuController extends Controller
 
                 foreach ( $Session  as $item )
                     $item->setPresident( $new_individu );
-
-                /*
-                foreach ( $Version  as $item )
-                    $item->setMajInd( $new_individu );
-                */
 
                 foreach ( $CompteActivation  as $item )
                     $em->remove($item);
