@@ -17,6 +17,7 @@
     <table><tbody>
     {% for responsable in responsables %}
 	<tr>
+		<td>{{ form_widget(responsable.selform ) }}</td>
 	    <td>{{ responsable.responsable.prenom }}</td>
 	    <td>{{ responsable.responsable.nom }}</td>
 	    <td>{{ responsable.responsable.mail }}</td>
@@ -38,7 +39,7 @@
 	
 {% else %}
 
-    <div class="message info">Le message a bien été envoyé</div>
+    <div class="message info">{{ nb_msg }} messages envoyés</div>
 
 {% endif %}
 </section>

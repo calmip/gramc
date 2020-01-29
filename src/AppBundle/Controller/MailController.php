@@ -38,6 +38,8 @@ use AppBundle\Utils\Menu;
 use AppBundle\Utils\Etat;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -71,10 +73,11 @@ class MailController extends Controller
         $em = $this->getDoctrine()->getManager();
         //$message = $em->getRepository('AppBundle:')->findAll();
 
+		$nb_msg = 0;
         $sujet   = \file_get_contents(__DIR__."/../../../app/Resources/views/notification/mail_to_responsables_fiche-sujet.html.twig");
         $body    = \file_get_contents(__DIR__."/../../../app/Resources/views/notification/mail_to_responsables_fiche-contenu.html.twig");
         $sent    =   false;
-        $responsables   =   static::getResponsablesFiche($session);
+        $responsables   =   $this->getResponsablesFiche($session);
 
         $form   =  AppBundle::createFormBuilder()
                     ->add('texte', TextareaType::class, [
@@ -88,17 +91,25 @@ class MailController extends Controller
 
         if ($form->isSubmitted() && $form->isValid())
         {
-            $sent   =   true;
+            $sent   = true;
             $body   = $form->getData()['texte'];
 
             foreach( $responsables as $item ) {
                 $individus[ $item['responsable']->getIdIndividu() ] = $item['responsable'];
+                $selform = $this->getSelForm($item['responsable']);
+				$selform->handleRequest($request);
+				if ($selform->getData()['sel']==false)
+				{
+		            //Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection NON');
+		            continue;
+				}
                 Functions::sendMessageFromString(
 					$sujet,
 					$body,
                     [ 'session' => $session, 'projets' => $item['projets'], 'responsable' => $item['responsable'] ],
                      [$item['responsable']]
                      );
+                 $nb_msg++;
                  // DEBUG = Envoi d'un seul message
 				 // break;
             }
@@ -106,10 +117,11 @@ class MailController extends Controller
 
         return $this->render('mail/mail_to_responsables_fiche.html.twig',
             [
-            'sent'          =>  $sent,
-            'responsables'  =>  $responsables,
-            'session'       =>  $session,
-            'form'          =>  $form->createView(),
+            'sent'         => $sent,
+            'nb_msg'       => $nb_msg,
+            'responsables' => $responsables,
+            'session'      => $session,
+            'form'         => $form->createView(),
             ]
 		);
     }
@@ -121,7 +133,7 @@ class MailController extends Controller
      * téléversé leur fiche projet signée pour la session $session
      *
      ************************************************************/
-    private static function getResponsablesFiche(Session $session)
+    private function getResponsablesFiche(Session $session)
     {
         $responsables = [];
         $all_versions = AppBundle::getRepository(Version::class)->findBy(['session' => $session, 'prjFicheVal' => false] );
@@ -141,8 +153,9 @@ class MailController extends Controller
 
             if( $responsable != null )
             {
-                $responsables[$responsable->getIdIndividu()]['responsable']                         =   $responsable;
-                $responsables[$responsable->getIdIndividu()]['projets'][$projet->getIdProjet()]     =   $projet;
+				$responsables[$responsable->getIdIndividu()]['selform']                         = $this->getSelForm($responsable)->createView();
+                $responsables[$responsable->getIdIndividu()]['responsable']                     = $responsable;
+                $responsables[$responsable->getIdIndividu()]['projets'][$projet->getIdProjet()] = $projet;
             }
             else
                 Functions::errorMessage( __METHOD__ . ':'. __LINE__ . " version " . $version . " n'a pas de responsable !");
@@ -277,5 +290,18 @@ class MailController extends Controller
     return $responsables;
     }
 
-
+	/***
+	 * Renvoie un formulaire avec une case à cocher, rien d'autre
+	 *
+	 *   params  $individu
+	 *   return  une form
+	 *
+	 */
+	private function getSelForm(Individu $individu)
+	{
+		$nom = 'selection_'.$individu->getId();
+		return $this->get( 'form.factory')  -> createNamedBuilder($nom, FormType::class, null, ['csrf_protection' => false ])
+										    -> add('sel',CheckboxType::class, [ 'required' =>  false, 'label' => " " ])
+										    ->getForm();
+	}
 }
