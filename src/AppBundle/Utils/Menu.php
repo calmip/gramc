@@ -75,6 +75,90 @@ class Menu
 {
 
 	/*******************
+	 * Page d'accueil principale
+	 ***************************************************/
+	 public static function demandeur()
+	 {
+		 $menu['name']      = 'projet_accueil';
+		 $menu['lien']      = 'Demandeur';
+         if(AppBundle::isGranted('ROLE_EXPERT') )
+		 {		 
+			 $menu['ok']        = true;
+			 $menu['commentaire'] = 'Espace demandeurs';
+		 }
+		 else
+		 {
+			 $menu['ok']          = false;
+			 $menu['commentaire'] = "Vous ne pouvez pas rejoindre l'espace demandeur ";
+			 $menu['raison']      = "vous n'êtes pas connecté";
+		 }
+		 return $menu;
+	 }
+
+	 public static function expert()
+	 {
+		 $menu['name']      = 'expertise_liste';
+		 $menu['lien']      = 'Expert';
+         if(AppBundle::isGranted('ROLE_EXPERT') )
+         {
+			 $menu['ok']          = true;
+			 $menu['commentaire'] = 'Espace expertise';
+		 }
+		 else
+		 {
+			 $menu['ok']          = false;
+			 $menu['commentaire'] = "Vous ne pouvez pas rejoindre l'espace expertise";
+			 $menu['raison']      = "vous n'êtes pas connecté, ou vous n'avez pas les droits expert";
+		 }
+		 return $menu;
+	 }
+
+	 public static function administrateur()
+	 {
+		 $menu['name']      = 'admin_accueil';
+		 $menu['lien']      = 'Administrateur';
+         if(AppBundle::isGranted('ROLE_OBS') )
+         {
+			 $menu['ok']          = true;
+			 $menu['commentaire'] = 'Espace administrateur';
+		 }
+		 else
+		 {
+			 $menu['ok']          = false;
+			 $menu['commentaire'] = "Vous ne pouvez pas rejoindre l'espace administrateur";
+			 $menu['raison']      = "vous n'êtes pas connecté, ou vous n'avez pas les droits administrateur";
+		 }
+		 return $menu;
+	 }
+
+	 public static function president()
+	 {
+		 $menu['name']      = 'president_accueil';
+		 $menu['lien']      = 'Président';
+         if(AppBundle::isGranted('ROLE_PRESIDENT') )
+         {
+			 $menu['ok']          = true;
+			 $menu['commentaire'] = "Espace Président du Comité d'Attribution";
+		 }
+		 else
+		 {
+			 $menu['ok']          = false;
+			 $menu['commentaire'] = "Vous ne pouvez pas rejoindre l'espace président";
+			 $menu['raison']      = "vous n'êtes pas connecté, ou vous n'avez pas les droits du président";
+		 }
+		 return $menu;
+	 }
+
+	 public static function aide()
+	 {
+		 $menu['name']      = 'aide';
+		 $menu['lien']      = 'Aide';
+		 $menu['ok']          = true;
+		 $menu['commentaire'] = "Aide et documentation";
+		 return $menu;
+	 }
+
+	/*******************
 	 * Gestion de la session 
 	 ***************************************************/
 

@@ -143,9 +143,15 @@ class GramcSessionController extends Controller
      *
      */
     public function accueilAction()
-        {
-        return $this->render('default/accueil.html.twig', ['projet_test' => Menu::nouveau_projet_test()['ok'] ]);
-        }
+	{
+		$menu = [];
+		$menu[] = Menu::demandeur();
+		$menu[] = Menu::expert();
+		$menu[] = Menu::administrateur();
+		$menu[] = Menu::president();
+		$menu[] = Menu::aide();
+        return $this->render('default/accueil.html.twig', ['menu' => $menu, 'projet_test' => Menu::nouveau_projet_test()['ok'] ]);
+	}
 
     /**
      * @Route("/president", name="president_accueil" )
