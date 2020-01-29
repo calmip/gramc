@@ -454,22 +454,22 @@ class Menu
 
     public static function gerer_sessions()
     {
-    $menu['name']   =   'gerer_sessions';
-    $menu['commentaire']    =   "Gérer les sessions d'attribution";
-    $menu['lien']           =   "Sessions";
-
-
-    if( AppBundle::isGranted('ROLE_ADMIN') || AppBundle::isGranted('ROLE_PRESIDENT') )
+	    $menu['name']   =   'gerer_sessions';
+	    $menu['commentaire']    =   "Gérer les sessions d'attribution";
+	    $menu['lien']           =   "Sessions";
+	
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-        $menu['ok'] = true;
+	        $menu['ok'] = true;
         }
-    else
+	    else
         {
-        $menu['ok'] = false;
-        $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être un administrateur ou président pour accéder à cette page";
         }
 
-    return $menu;
+	    return $menu;
     }
 
     //////////////////////////////////////

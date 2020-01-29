@@ -84,6 +84,10 @@ class SessionController extends Controller
      */
     public function gererAction()
     {
+	    if( Menu::gerer_sessions()['ok'] == false )
+	        Functions::createException(__METHOD__ . ':' . __LINE__ . " Ecran interdit " . 
+	            " parce que : " . Menu::gerer_sessions()['raison'] );
+
         $em = $this->getDoctrine()->getManager();
 
         $sessions = $em->getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
