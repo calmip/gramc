@@ -264,12 +264,10 @@ class Functions
 
 /*********************************************************************************************/
 
-
-
     /*****
      * Envoi d'une notification
      *
-     * param $twig_sujet, $twig_contenu Templates Twig des messages
+     * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des fichiers)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
      * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
      *
@@ -294,8 +292,35 @@ class Functions
         static::sendRawMessage( $subject, $body, $users );
     }
 
-    // Envoie du messages sans templates
+    /*****
+     * Envoi d'une notification
+     *
+     * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des strings)
+     * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
+     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     *
+     *********/
+    static public function sendMessageFromString( $twig_sujet, $twig_contenu, $params, $users = null )
+    {
+        // Twig avec des extensions
+        $twig = clone AppBundle::getTwig();
+        $twig->setLoader(new \Twig_Loader_String());
 
+        // Twig sans extensions - meilleure sécurité
+        /* $twig = new \Twig_Environment( new \Twig_Loader_String(),
+                 [
+                 'strict_variables' => false,
+                 'autoescape' => false,
+                 ]);
+        */
+
+        $body       =   $twig->render( $twig_contenu, $params );
+        $subject    =   $twig->render( $twig_sujet,   $params);
+        static::sendRawMessage( $subject, $body, $users );
+    }
+
+
+    // Envoi du messages sans templates
     static public function sendRawMessage( $subject, $body, $users = null )
     {
         $message = \Swift_Message::newInstance()

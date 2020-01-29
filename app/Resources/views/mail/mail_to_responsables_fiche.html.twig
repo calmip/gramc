@@ -12,11 +12,7 @@
 {% if sent == false %}
     <div class="message info">Le message sera envoyé aux responsables des projets indiqués ci-dessous </div>
 
-    <p>
-    {{ form_start(form) }}
-    {{ form_widget( form)}}
-    {{ form_end(form) }}
-    </p>
+    <p>{{ form_start(form) }}</p>
 
     <table><tbody>
     {% for responsable in responsables %}
@@ -33,6 +29,13 @@
     {% endfor %}
     </tbody></table>
 
+	<div class="center">
+	<p>
+    {{ form_widget( form)}}
+    {{ form_end(form) }}
+    </p>
+	</div>
+	
 {% else %}
 
     <div class="message info">Le message a bien été envoyé</div>

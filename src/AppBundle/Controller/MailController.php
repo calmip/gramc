@@ -41,6 +41,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ResetType;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -67,11 +68,20 @@ class MailController extends Controller
     public function mailToResponsablesFicheAction(Request $request, Session $session)
     {
 
-        $sent   =   false;
+        $em = $this->getDoctrine()->getManager();
+        //$message = $em->getRepository('AppBundle:')->findAll();
+
+        $sujet   = \file_get_contents(__DIR__."/../../../app/Resources/views/notification/mail_to_responsables_fiche-sujet.html.twig");
+        $body    = \file_get_contents(__DIR__."/../../../app/Resources/views/notification/mail_to_responsables_fiche-contenu.html.twig");
+        $sent    =   false;
         $responsables   =   static::getResponsablesFiche($session);
 
         $form   =  AppBundle::createFormBuilder()
-                    ->add('submit', SubmitType::class, ['label' => "Envoyer le message aux responsables"])
+                    ->add('texte', TextareaType::class, [
+						'label' => " ",
+						'data' => $body,
+						'attr' => ['rows'=>10,'cols'=>150]])
+                    ->add('submit', SubmitType::class, ['label' => "Envoyer le message"])
                     ->getForm();
 
         $form->handleRequest($request);
@@ -79,15 +89,18 @@ class MailController extends Controller
         if ($form->isSubmitted() && $form->isValid())
         {
             $sent   =   true;
+            $body   = $form->getData()['texte'];
+
             foreach( $responsables as $item ) {
                 $individus[ $item['responsable']->getIdIndividu() ] = $item['responsable'];
-
-                Functions::sendMessage(
-                    'notification/mail_to_responsables_fiche-sujet.html.twig',
-                    'notification/mail_to_responsables_fiche-contenu.html.twig',
+                Functions::sendMessageFromString(
+					$sujet,
+					$body,
                     [ 'session' => $session, 'projets' => $item['projets'], 'responsable' => $item['responsable'] ],
                      [$item['responsable']]
                      );
+                 // DEBUG = Envoi d'un seul message
+				 // break;
             }
         }
 
@@ -98,7 +111,7 @@ class MailController extends Controller
             'session'       =>  $session,
             'form'          =>  $form->createView(),
             ]
-            );
+		);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -195,7 +208,6 @@ class MailController extends Controller
      * Renvoie la liste des responsables de projet (et des projets) qui n'ont pas (encore)
      * renouvelé leur projet pour la session $session
      *
-     * TODO -> A TESTER !!!!
      ************************************************************/
     private static function getResponsables(Session $session)
     {
