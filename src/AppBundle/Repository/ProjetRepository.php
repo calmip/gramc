@@ -130,33 +130,49 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
 	}
     public function countAllTest(){ return $this->countAll('2'); }
 
-    // la liste des projets ou un individu est soit juste collaborateur, soit responsable, soit les deux à la fois qui ne sont pas terminés
-    public function get_projets_resp_ou_collab($id_individu, $responsable = true, $collaborateur = true)
+	/*****************************************
+	 * Renvoie la liste des projets non terminés dans lesquels un individu est collaborateur.
+	 * Ne s'intéresse que à la dernière version du projet: si je ne suis plus collaborateur d'un projet les anciennes versions
+	 * sont supprimées !
+	 * 
+	 * $params = $id_individu: L'individu
+	 * 
+	 * $responsable, $collaborateur : deux flags
+	 * 		true		true		=> Renvoie tous les projets dans lesquels $id_individu est collaborateur OU responsable
+	 * 		false		true		=> Renvoie tous les projets dans lesquels $id_individu est collaborateur mais PAS RESPONSABLE
+	 * 		true		false		=> Renvoie tous les projets dans lesquels $id_individu est responsable
+	 * 		false		false		=> Renvoie un tableau vide
+	 * 
+	 * return = Une collection de projets
+	 * 
+	 ***********************************************************************************************************/
+    public function getProjetsCollab($id_individu, $responsable = true, $collaborateur= true)
     {
-	    if( $responsable == false && $collaborateur == false ) return [];
-	
 	    $dql  = 'SELECT p FROM AppBundle:Projet p, AppBundle:CollaborateurVersion cv, AppBundle:Version v, AppBundle:Individu i ';
-	    $dql .= ' WHERE  ( p = v.projet AND i.idIndividu = :id_individu ';
-	    if( $responsable != $collaborateur ) $dql .= ' AND cv.responsable = :responsable '; //  soit le responsable, soit le collaborateur
+	    $dql .= ' WHERE  ( v = p.versionDerniere AND i.idIndividu = :id_individu ';
+	    
+		// false/false = renvoie une collection vide
+	    if( $responsable === false && $collaborateur === false ) return [];
+
+		// true/true = On ne s'occupe pas de la colonne cv.responsable
+	    if( ! ($responsable===true && $collaborateur===true))
+	    {
+			$dql .= ' AND cv.responsable = :responsable ';
+		}
 	    $dql .= ' AND cv.version =  v AND cv.collaborateur = i ';
-	    $dql .= '  AND NOT p.etatProjet = :termine ';
+	    $dql .= ' AND NOT p.etatProjet = :termine ';
 	    $dql .= ' AND NOT  v.etatVersion = :annule AND NOT p.etatProjet = :annule ';
-	//    $dql .= ' AND NOT  v.etatVersion = :standby AND NOT p.etatProjet = :standby ';
-	    $dql .= ' AND NOT  v.etatVersion = :nouvelle_version_demandee ';
 	    $dql .= ' ) ORDER BY p.versionDerniere DESC';
 
 	    $query = $this->getEntityManager()
-	         ->createQuery( $dql )
-	         ->setParameter('id_individu', $id_individu )
-	         ->setParameter('termine', Etat::getEtat('TERMINE'))
-	          ->setParameter('annule', Etat::getEtat('ANNULE'))
-	//         ->setParameter('standby', Etat::getEtat('EN_STANDBY'))
-	         ->setParameter('nouvelle_version_demandee', Etat::getEtat('NOUVELLE_VERSION_DEMANDEE'));
-
-		if( $responsable == true && $collaborateur == false )
-			$query->setParameter('responsable', 1 );
-	    elseif( $responsable == false && $collaborateur ==  true )
-            $query->setParameter('responsable', 0 );
+			->createQuery( $dql )
+			->setParameter('id_individu', $id_individu )
+			->setParameter('termine', Etat::getEtat('TERMINE'))
+			->setParameter('annule', Etat::getEtat('ANNULE'));
+		 if( ! ($responsable===true && $collaborateur===true))
+		 {
+			 $query->setParameter('responsable', $responsable===true?1:0);
+		 }
 
 	    return $query->getResult();
     }
@@ -172,10 +188,10 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
 
         $code_etat  =   Etat::getEtat($libelle_etat);
         if( $code_etat == null )
-            {
+		{
             Functions::errorMessage('ProjetRepository :  get_projets_etat : état :' . $libelle_etat . ' inconnu');
             return [];
-            }
+		}
 
         return $this->getEntityManager()
              ->createQuery( $dql )
@@ -188,7 +204,7 @@ class ProjetRepository extends \Doctrine\ORM\EntityRepository
 
     // la liste des projets qu'un individu peut renouveller :  il est collaborateur ou responsable et le projet n'est ni annulé, ni terminé
 
-    public function get_projets_renouvelables()
+    public function get_projets_renouvelables_AJETER()
     {
         $moi = AppBundle::getUser();
         if( ! $moi instanceof \AppBundle\Entity\Individu ) return [];

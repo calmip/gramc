@@ -1182,14 +1182,9 @@ class ProjetController extends Controller
         if( Menu::nouveau_projet($type)['ok'] == false )
             Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que " . Menu::nouveau_projet($type)['raison'] );
 
-	    $projetRepository    = $this->getDoctrine()->getManager()->getRepository(Projet::class);
-	    $id_individu         = AppBundle::getUser()->getIdIndividu();
-	    $list_projets_collab = $projetRepository-> get_projets_resp_ou_collab( $id_individu, false, true );
-	    $list_projets_resp   = $projetRepository-> get_projets_resp_ou_collab( $id_individu, true, false );
-
-        //$renouvelables = AppBundle::getRepository(Projet::class)->get_projets_renouvelables();
-        $renouvelables = array_merge($list_projets_collab,$list_projets_resp);
-
+	    $projetRepository = $this->getDoctrine()->getManager()->getRepository(Projet::class);
+	    $id_individu      = AppBundle::getUser()->getIdIndividu();
+	    $renouvelables    = $projetRepository-> getProjetsCollab($id_individu);
         if( $renouvelables == null )   return  $this->redirectToRoute('nouveau_projet', ['type' => $type]);
 
         return $this->render('projet/avant_nouveau_projet.html.twig',
@@ -1421,8 +1416,8 @@ class ProjetController extends Controller
 
 	    $projetRepository       =   AppBundle::getRepository(Projet::class);
 
-	    $list_projets_collab =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, false, true );
-	    $list_projets_resp   =   $projetRepository-> get_projets_resp_ou_collab( $id_individu, true, false );
+	    $list_projets_collab =   $projetRepository-> getProjetsCollab($id_individu, false, true);
+	    $list_projets_resp   =   $projetRepository-> getProjetsCollab($id_individu, true, false);
 
 	    $projets_term       =   $projetRepository-> get_projets_etat( $id_individu, 'TERMINE' );
 	    $projets_standby = []; // todo -> Virer définitivement ce code, les projets en standby sont maintenant affichés avec les projets actifs, pas avec les projets terminés

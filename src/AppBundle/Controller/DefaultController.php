@@ -170,11 +170,11 @@ class DefaultController extends Controller
      * @Route("/test_projet", name="test_projet")
      * @Security("has_role('ROLE_ADMIN')")
      */
-    public function test_projetAction(Request $request)
-    {
-       $projets = AppBundle::getRepository(Projet::class)->get_projets_resp_ou_collab('31', false, true);
-       return new Response( $projets[0]->getIdProjet() );
-    }
+    //public function test_projetAction(Request $request)
+    //{
+    //   $projets = AppBundle::getRepository(Projet::class)->get_projets_resp_ou_collab('31', false, true);
+    //   return new Response( $projets[0]->getIdProjet() );
+    //}
 
     /**
      * @Route("/count", name="count")
