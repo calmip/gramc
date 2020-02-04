@@ -24,31 +24,28 @@
 
 namespace AppBundle\Workflow;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 
 
-class NoTransition implements TransitionInterface
+class NoTransition extends Transition
 {
 
     public function __toString()
     {
-	return "NoTransition";
+		return "NoTransition";
     }
 
-
     ////////////////////////////////////////////////////
-    
     public function canExecute($object)
     {
-	return true;
+		return true;
     }
 
     ///////////////////////////////////////////////////////
-    
     public function execute($object)
     {
-	return true;
+		return true;
     }
 
 }

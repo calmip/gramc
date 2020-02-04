@@ -84,6 +84,10 @@ class SessionController extends Controller
      */
     public function gererAction()
     {
+	    if( Menu::gerer_sessions()['ok'] == false )
+	        Functions::createException(__METHOD__ . ':' . __LINE__ . " Ecran interdit " . 
+	            " parce que : " . Menu::gerer_sessions()['raison'] );
+
         $em = $this->getDoctrine()->getManager();
 
         $sessions = $em->getRepository(Session::class)->findBy([],['idSession' => 'DESC']);
@@ -97,166 +101,22 @@ class SessionController extends Controller
         }
         else
         {
+			// Refait le calcul de la session courante sans se fier au cache
             AppBundle::getSession()->remove('SessionCourante');
 
-            $session_courante       =   Functions::getSessionCourante();
-            $etat_session_courante  =   $session_courante->getEtatSession();
-            $workflow   = new SessionWorkflow();
+            $menu[] = Menu::ajouterSession();
+			$menu[] = Menu::modifierSession();
+			$menu[] = Menu::demarrerSaisie();
+            $menu[] = Menu::terminerSaisie();
+			$menu[] = Menu::envoyerExpertises();
+	        $menu[] = Menu::activerSession();
 
-            //
-
-            if(  $etat_session_courante == Etat::ACTIF )
-                $menu[] =   [
-                            'ok' => true,
-                            'name' => 'ajouter_session' ,
-                            'lien' => 'Créer nouvelle session',
-                            'commentaire'=> 'Créer nouvelle session'
-                            ];
-            else
-                $menu[] =   [
-                            'ok' => false,
-                            'name' => 'ajouter_session',
-                            'lien' => 'Créer nouvelle session',
-                            'commentaire'=> 'Pas possible de créer une nouvelle session',
-                            'raison'    => "La session courante n'est pas encore active",
-                            ];
-
-            //
-
-            if( $workflow->canExecute( Signal::DAT_DEB_DEM, $session_courante) )
-                {
-                $menu[] =
-                            [
-                            'ok' => true,
-                            'name' => 'modifier_session',
-                            'param' => $session_courante->getIdSession(),
-                            'lien' => 'Modifier la session courante',
-                            'commentaire'=> 'Modifier la session courante'
-                            ];
-                $menu[] =   [
-                            'ok' => true,
-                            'name' => 'demarrer_saisie',
-                            'lien' => 'Démarrer la saisie',
-                            'commentaire'=> "Démarrer la saisie",
-                            ];
-                }
-            else
-                {
-                $menu[] =   [
-                            'ok' => false,
-                            'name' => 'modifier_session',
-                            'param' => $session_courante->getIdSession(),
-                            'lien' => 'Modifier la session courante',
-                            'commentaire'=> 'Pas possible de modifier la session courante',
-                            'raison'    => "La session courante a déjà commencé",
-                             ];
-                 $menu[] =  [
-                             'ok' => false,
-                             'name' => 'demarrer_saisie',
-                             'lien' => 'Démarrer la saisie',
-                             'commentaire'=> "Pas possible de démarrer la saisie des projets",
-                             'raison' => "La saisie a déjà démarré pour cette session",
-                             ];
-                }
-
-            //
-
-            if( $workflow->canExecute( Signal::DAT_FIN_DEM, $session_courante)  )
-                 $menu[] =  [
-                            'ok' => true,
-                            'name' => 'terminer_saisie',
-                            'lien' => 'Terminer la saisie',
-                            'commentaire'=> 'Terminer la saisie'
-                            ];
-            elseif( $workflow->canExecute( Signal::DAT_DEB_DEM, $session_courante) )
-                $menu[] =  [
-                            'ok' => false,
-                            'name' => 'terminer_saisie',
-                            'lien' => 'Terminer la saisie',
-                            'commentaire'=> 'Pas possible de terminer la saisie des projets',
-                            'raison' => "La saisie n'a pas encore démarré pour cette session",
-                            ];
-            else
-                $menu[] =  [
-                            'ok' => false,
-                            'name' => 'terminer_saisie',
-                            'lien' => 'Terminer la saisie',
-                            'commentaire'=> 'Pas possible de terminer la saisie des projets',
-                            'raison' => "La saisie est déjà terminée pour cette session",
-                            ];
-            //
-
-             if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-
-                $menu[] =  [
-                            'ok' => true,
-                            'name' => 'envoyer_expertises',
-                            'lien' => 'Envoyer les expertises',
-                            'commentaire'=> 'Envoyer les expertises',
-                            ];
-            else
-                {
-                    $item   = [
-                            'ok' => false,
-                            'name' => 'envoyer_expertises',
-                            'lien' => 'Envoyer les expertises',
-                            'commentaire'=> "Impossible d'envoyer les expertises",
-                            ];
-                    if( $session_courante->getCommGlobal() == null )
-                        $item['raison'] = "Il n'y a pas de commentaire du président";
-                    else
-                        $item['raison'] = "La session n'est pas dans un état qui permet les envois";
-                   $menu[]  =   $item;
-                }
-
-            //
-
-            $mois = GramcDate::get()->format('m');
-
-            if( $mois != 1 && $mois != 6 && $mois != 7 && $mois != 12 )
-                $menu[] =   [
-                            'ok' => false,
-                            'name' => 'activer_session',
-                            'lien' => 'Activer la session',
-                            'commentaire'=> "Pas possible d'activer la session",
-                            'raison' => "Seulement en Décembre, Janvier, Juin ou Juillet !",
-                            ];
-            else
-                {
-                if( $etat_session_courante == Etat::EN_ATTENTE &&
-                    ($workflow->canExecute( Signal::CLK_SESS_DEB, $session_courante) || $workflow->canExecute( Signal::DAT_JUI, $session_courante) )
-                  )
-                  $menu[] =     [
-                                'ok' => true,
-                                'name' => 'activer_session',
-                                'lien' => 'Activer la session',
-                                'commentaire'=> 'Activer la session',
-                                ];
-                else
-                    $menu[] =   [
-                                'ok' => false,
-                                'name' => 'activer_session',
-                                'lien' => 'Activer la session',
-                                'commentaire'=> "Pas possible d'activer la session",
-                                'raison' => "Le commentaire de session n'a pas été envoyé, ou la session est déjà active",
-                                ];
-                }
         }
-
-        // un bogue complètement obscur, out of memory
-        //for( $i = 0; $i < 15; $i++ )
-        //    $new_sessions[] = $sessions[$i];
-
-        //for( $i = 1; $i < count($sessions); $i++ )
-        //    $new_sessions[] = $sessions[$i];
-        //$new_sessions[] = $sessions[0];
-
 
         return $this->render('session/gerer.html.twig',
 		[
             'menu'     => $menu,
             'sessions' => $sessions,
-            //'sessions' => $new_sessions,
 		]);
     }
 
@@ -351,6 +211,26 @@ class SessionController extends Controller
                 'titre'     =>  'Erreur',
                 ]);
     }
+   /**
+     * Avant changement d'état de la version
+     *
+     * @Route("/avant_changer_etat/{rtn}/{ctrl}", name="session_avant_changer_etat", defaults= {"rtn" = "X" })
+     * @Method("GET")
+     *
+     */
+    public function avantActiverAction($rtn,$ctrl)
+    {
+		$session       =   Functions::getSessionCourante();
+		$connexions = Functions::getConnexions();
+	    return $this->render('session/avant_changer_etat.html.twig',
+            [
+            'session'    => $session,
+            'ctrl'       => $ctrl,
+            'connexions' => $connexions,
+            'rtn'        => $rtn,
+            ]
+		);
+    }
 
     /**
      *
@@ -384,7 +264,7 @@ class SessionController extends Controller
 					// On ne termine pas la session qui va démarrer !
                     if( $session->getIdSession() == $session_courante->getIdSession() ) continue;
 
-                    $workflow   = new SessionWorkflow($session);
+                    $workflow   = new SessionWorkflow();
                     if( $workflow->canExecute( Signal::CLK_SESS_FIN, $session) )
                         $err = $workflow->execute( Signal::CLK_SESS_FIN, $session);
 				}
@@ -570,35 +450,11 @@ class SessionController extends Controller
         $editForm = $this->createForm('AppBundle\Form\SessionType', $session_courante, [ 'commentaire' => true ] );
         $editForm->handleRequest($request);
 
-        if( $workflow->canExecute( Signal::CLK_ATTR_PRS, $session_courante)  &&  $session_courante->getcommGlobal() != null )
-        {
-            $menu[] =  [
-                        'ok' => true,
-                        'name' => 'envoyer_expertises',
-                        'lien' => 'Envoyer les expertises',
-                        'commentaire'=> 'Envoyer les expertises',
-                        ];
-        }
-        else
-        {
-            $item   = [
-                    'ok' => false,
-                    'name' => 'envoyer_expertises',
-                    'lien' => 'Envoyer les expertises',
-                    'commentaire'=> "Impossible d'envoyer les expertises",
-                    ];
-            if( $session_courante->getCommGlobal() == null )
-                $item['raison'] = "Il n'y a pas de commentaire de session";
-            else
-                $item['raison'] = "La session n'est pas en édition d'expertises";
-
-            $menu[]  =   $item;
-        }
+		$menu[] = Menu::envoyerExpertises();
 
         if ($editForm->isSubmitted() && $editForm->isValid())
         {
             $this->getDoctrine()->getManager()->flush();
-            //return $this->redirectToRoute('president_accueil');
         }
 
         return $this->render('session/commentaires.html.twig',

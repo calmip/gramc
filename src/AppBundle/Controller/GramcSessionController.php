@@ -144,9 +144,15 @@ class GramcSessionController extends Controller
      *
      */
     public function accueilAction()
-        {
-        return $this->render('default/accueil.html.twig', ['projet_test' => Menu::nouveau_projet_test()['ok'] ]);
-        }
+	{
+		$menu = [];
+		$menu[] = Menu::demandeur();
+		$menu[] = Menu::expert();
+		$menu[] = Menu::administrateur();
+		$menu[] = Menu::president();
+		$menu[] = Menu::aide();
+        return $this->render('default/accueil.html.twig', ['menu' => $menu, 'projet_test' => Menu::nouveau_projet_test()['ok'] ]);
+	}
 
     /**
      * @Route("/president", name="president_accueil" )
@@ -155,7 +161,7 @@ class GramcSessionController extends Controller
     public function presidentAccueilAction()
         {
         $menu[] =  Menu::affectation();
-        $menu[] =  Menu::commentaires();
+        $menu[] =  Menu::commSess();
 	    $menu[] =  Menu::affectation_rallonges();
         $menu[] =  Menu::affectation_test();
         return $this->render('default/president.html.twig', ['menu' => $menu]);
@@ -706,45 +712,10 @@ class GramcSessionController extends Controller
      */
     public function connexionsAction(Request $request)
     {
-    $dir = session_save_path();
-    $scan = scandir( $dir );
-
-    $save = $_SESSION;
-    $time = time();
-    $connexions = [];
-    foreach ( $scan as $filename )
-        if( $filename != '.' && $filename != '..' )
-            {
-            $atime = fileatime( $dir . '/' . $filename );
-            $mtime = filemtime( $dir . '/' . $filename );
-            $ctime = filectime( $dir . '/' . $filename );
-            //$atime = max ( [ $atime, $mtime, $ctime ] );
-
-            $diff  = intval( ($time - $mtime) / 60 );
-            $min   = $diff % 60;
-            $heures= intVal($diff/60);
-            $contents = file_get_contents( $dir . '/' . $filename );
-            session_decode($contents );
-
-            if(  ! array_key_exists('_sf2_attributes', $_SESSION ) )
-                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Une session autre que symfony !" );
-            elseif( array_key_exists('real_user', $_SESSION['_sf2_attributes'] ) )
-                {
-                $user = $_SESSION['_sf2_attributes']['real_user'];
-                $individu = AppBundle::getRepository(Individu::class)->find( $user->getIdIndividu() );
-                if( $individu == null )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème d'individu " . $user );
-                else
-                    $connexions[] = [ 'user' => $individu, 'minutes' => $min,'heures' => $heures ];
-                }
-            elseif( ! array_key_exists( '_security_consoupload', $_SESSION['_sf2_attributes'] ) )
-                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème avec le fichier session " . $filename );
-
-            }
-
-    $_SESSION = $save;
-    return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
+		$connexions = Functions::getConnexions();
+	    return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
     }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 

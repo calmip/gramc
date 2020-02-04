@@ -374,15 +374,14 @@ class Projet
         return $this->rapportActivite;
     }
 
-    /////////////////////////////////
-
-    // pour workflow
-
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatProjet/setEtatProjet !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatProjet();
     }
-
     public function setObjectState($state)
     {
         $this->setEtatProjet($state);
@@ -390,21 +389,21 @@ class Projet
         return $this;
     }
 
-    public function getSubWorkflow()    { return new \AppBundle\Workflow\VersionWorkflow(); }
+    //public function getSubWorkflow()    { return new \AppBundle\Workflow\VersionWorkflow(); }
 
-    public function getSubObjects()
-        {
-            $versions = $this->getVersion();
-            $my_versions = new \Doctrine\Common\Collections\ArrayCollection();
+    //public function getSubObjects()
+        //{
+            //$versions = $this->getVersion();
+            //$my_versions = new \Doctrine\Common\Collections\ArrayCollection();
 
-            foreach( $versions as $version )
-                {
-                    $etat   =   $version->getEtatVersion();
-                    if( $etat != Etat::TERMINE && $etat != Etat::ANNULE )
-                        $my_versions[]  = $version;
-                }
-            return $my_versions;
-        }
+            //foreach( $versions as $version )
+                //{
+                    //$etat   =   $version->getEtatVersion();
+                    //if( $etat != Etat::TERMINE && $etat != Etat::ANNULE )
+                        //$my_versions[]  = $version;
+                //}
+            //return $my_versions;
+        //}
 
     ////////////////////////////////////////
 

@@ -502,14 +502,14 @@ class Rallonge
         return $this->expert;
     }
 
-    /////////////////////////////////////////////////////////////////////////////
-
-    // pour workflow
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatRallonge/setEtatRallonge !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatRallonge();
     }
-
     public function setObjectState($state)
     {
         $this->setEtatRallonge($state);
