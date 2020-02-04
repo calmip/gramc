@@ -79,14 +79,6 @@ class Version
     /**
      * @var integer
      *
-     * @ORM\Column(name="cons_heures", type="integer", nullable=false)
-     */
-    private $consHeures = '0';
-
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="politique", type="integer", nullable=false)
      */
     private $politique = Politique::DEFAULT_POLITIQUE;
@@ -855,30 +847,6 @@ class Version
     public function getAttrHeures()
     {
         return $this->attrHeures;
-    }
-
-    /**
-     * Set consHeures
-     *
-     * @param integer $consHeures
-     *
-     * @return Version
-     */
-    public function setConsHeures($consHeures)
-    {
-        $this->consHeures = $consHeures;
-
-        return $this;
-    }
-
-    /**
-     * Get consHeures
-     *
-     * @return integer
-     */
-    public function getConsHeures()
-    {
-        return $this->consHeures;
     }
 
     /**
