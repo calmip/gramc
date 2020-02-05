@@ -855,284 +855,12 @@ class SessionController extends Controller
         {
 			return $this->bilanCsvAction_A($request,$session, $id_session, $annee_cour, $session_courante_A);
 		}
-		//else
-		//{
-		//	return $this->bilanCsvAction_B(Request $request,Session $session, $id_session, $annee_cour, $session_courante_A);
-		//}
-
-		// On laisse ce code jusqu'au printemps 2020 !
-		// Au printemps 2020 on écrira la fonction bilanCsvAction_B
-		//
-
-        $annee_prec     =   $annee_cour - 1;
-        $full_annee_prec= 2000 + $annee_prec;
-        $full_annee_cour= 2000 + $annee_cour;
-
-        $session_precedente_A   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
-        $session_precedente_B   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
-
-
-        if( $session_courante_A == null ) return new Response('Session courante nulle !');
-
-        // Si type A on regarde la conso annee precedente, sinon annee courante !
-        $annee_conso=($type_session=='A') ? $annee_prec : $annee_cour;
-
-        $entetes = ['Projet',
-                    'Thématique',
-                    'Responsable scientifique',
-                    'Laboratoire',
-                    'Rapport',
-                    'Expert',
-                    'Demandes '     .$full_annee_prec,
-                    'Dem rall '     .$full_annee_prec,
-                    'Attr rall '    .$full_annee_prec,
-                    'Pénalités '    .$full_annee_prec,
-                    'Attributions ' .$full_annee_prec,
-                    ];
-
-        if ($type_session=='B')
-            array_push($entetes,'Demandes '.$annee_cour.'A','Attributions '.$annee_cour.'A');
-
-        array_push($entetes,'Demandes '.$id_session,'Attributions '.$id_session,"Quota $annee_prec",
-                                "Consommation $annee_conso","Conso gpu normalisée","Consommation $annee_conso (%)");
-
-         // Si type B on ajoute la colonne Recupérable
-        if ($type_session=='B') array_push($entetes,'Récupérables');
-
-        // Les mois pour les consos
-        array_push($entetes,'Janvier','Février','Mars','Avril',
-            'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
-
-        $sortie     =   join("\t",$entetes) . "\n";
-
-        //////////////////////////////
-
-        $totaux=
-		[
-            "dem_heures_prec"       =>  0,
-            "attr_heures_prec"      =>  0,
-            "dem_rall_heures_prec"  =>  0,
-            "attr_rall_heures_prec" =>  0,
-            "penal_heures_prec"     =>  0,
-            "dem_heures_A"          =>  0, // session B
-            "attr_heures_A"         =>  0, // session B
-            "dem_heures_cour"       =>  0,
-            "attr_heures_cour"      =>  0,
-            "quota"                 =>  0,
-            "conso_an"              =>  0,
-            "conso_gpu"             =>  0,
-            "recuperable"           =>  0,
-		];
-        $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
-        foreach  ($conso_flds as $m)    $totaux[$m] =   0;
-
-        //////////////////////////////
-        //
-        // boucle principale
-        //
-        //////////////////////////////
-
-        $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
-
-        /*
-         * Calcul de la date pour savoir s'il y a des heures à récupérer
-         * Seulement utile pour la session B s'il y a une version du projet en session A
-         */
-        $date_recup = GramcDate::Get();
-        $d30j       = new \DateTime($annee_cour.'-06-30'); // Le 30 Juin
-      	// Si on est après le 30 juin on considère le 30 juin comme date de conso de référence
-      	// Si on est avant, on considère la date du jour
-      	// Evidemment elle ne devrait pas être trop éloignée du 30 juin sinon cela n'a pas trop de sens !
-        if ($date_recup > $d30j)
-        {
-			$date_recup = $d30j;
-		}
-
-        foreach( $versions as $version )
+		else
 		{
-            if( $session_precedente_A != null )
-                $version_precedente_A = AppBundle::getRepository(Version::class)
-                            ->findOneVersion($session_precedente_A, $version->getProjet() );
-            else $version_precedente_A = null;
-
-            if( $session_precedente_B != null )
-                $version_precedente_B = AppBundle::getRepository(Version::class)
-                            ->findOneVersion($session_precedente_B, $version->getProjet() );
-            else $version_precedente_B = null;
-
-            if( $session_courante_A != null )
-                $version_courante_A = AppBundle::getRepository(Version::class)
-                            ->findOneVersion($session_courante_A, $version->getProjet() );
-            else $version_courante_A = null;
-
-            $dem_heures_prec    = 0;
-            if( $version_precedente_A != null ) $dem_heures_prec += $version_precedente_A->getDemHeures();
-            if( $version_precedente_B != null ) $dem_heures_prec += $version_precedente_B->getDemHeures();
-
-            $attr_heures_prec   = 0;
-            if( $version_precedente_A != null ) $attr_heures_prec += $version_precedente_A->getAttrHeures();
-            if( $version_precedente_B != null ) $attr_heures_prec += $version_precedente_B->getAttrHeures();
-
-            $penal_heures       = 0;
-            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
-            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
-
-            $dem_heures_rallonge    =   0;
-            if( $version_precedente_A != null ) $dem_heures_rallonge    += $version_precedente_A->getDemHeuresRallonge();
-            if( $version_precedente_B != null ) $dem_heures_rallonge    += $version_precedente_B->getDemHeuresRallonge();
-
-            $attr_heures_rallonge   =   0;
-            if( $version_precedente_A != null ) $attr_heures_rallonge   += $version_precedente_A->getAttrHeuresRallonge();
-            if( $version_precedente_B != null ) $attr_heures_rallonge   += $version_precedente_B->getAttrHeuresRallonge();
-
-            $penal_heures   =   0;
-            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
-            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
-
-            $dem_heures_A    = 0;
-            if( $version_courante_A != null ) $dem_heures_A += $version_courante_A->getDemHeures();
-
-            $attr_heures_A   = 0;
-            if( $version_courante_A != null ) $attr_heures_A +=
-                $version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
-
-			$conso     = 0;
-			$conso_gpu = 0;
-			$quota     = 0;
-			if ($type_session=='A')
-			{
-				if ($version_precedente_A != null) {
-					$conso = $version_precedente_A->getConsoCalcul();
-					//$quota = $version_precedente_A->getQuota();
-					$quota = 1;
-					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
-				}
-				elseif ( $version_precedente_B != null ) {
-					$conso = $version_precedente_B->getConsoCalcul();
-					//$quota = $version_precedente_A->getQuota();
-					$quota = 1;
-					$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
-				}
-			}
-			// type B
-			else
-			{
-				$conso = $version->getConsoCalcul();
-				$quota = $version->getQuota();
-				$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
-			}
-
-            $dem_heure_cour     =   $version->getDemHeures();
-            $attr_heure_cour    =   $version->getAttrHeures();
-
-			// Calcul des heures récupérables au printemps
-            if( $version_courante_A != null )
-            {
-				// TODO - VERIFIER EN 2020 QUE CA MARCHE !
-				$conso_juin = $version->getConsoCalcul($date_recup->format('Y-m-d'));
-                $recuperable        =   static::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
-			}
-            else
-            {
-                $recuperable        =   0;
-			}
-
-            $ligne =
-                    [
-                    $version->getProjet(),
-                    '"'. $version->getPrjThematique() .'"',
-                    '"'.$version->getResponsable() .'"',
-                    '"'.$version->getLabo().'"',
-                    ( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
-                    ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
-                    $dem_heures_prec,
-                    $dem_heures_rallonge,
-                    $attr_heures_rallonge,
-                    $penal_heures,
-                    $attr_heures_prec+$attr_heures_rallonge-$penal_heures,
-                    ];
-
-            if ($type_session=='B')
-                    $ligne = array_merge( $ligne, [ $dem_heures_A, $attr_heures_A ] );
-
-             $ligne = array_merge( $ligne,
-                    [
-                    $dem_heure_cour,
-                    $attr_heure_cour,
-                    $quota,
-                    //( $consommation != null ) ? $consommation->conso(): 0,
-                    $conso,
-                    $conso_gpu,
-                    //( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
-                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
-                    ]);
-
-	        if ($type_session=='B') $ligne[] =  $recuperable;
-
-			for ($m=0;$m<12;$m++)
-			{
-				$consmois= $version->getProjet()->getConsoMois($annee_cour,$m);
-				$index   = 'm' . ($m<10?'0':'') . $m;
-
-				$ligne[] = $consmois;
-				$totaux[$index] += $consmois;
-			};
-
-            $sortie     .=   join("\t",$ligne) . "\n";
-
-            $totaux["dem_heures_prec"]          +=  $dem_heures_prec;
-            $totaux["attr_heures_prec"]         +=  $attr_heures_prec;
-            $totaux["dem_rall_heures_prec"]     +=  $dem_heures_rallonge;
-            $totaux["attr_rall_heures_prec"]    +=  $attr_heures_rallonge;
-            $totaux["penal_heures_prec"]        +=  $penal_heures;
-            $totaux["dem_heures_cour"]          +=  $dem_heure_cour;
-            $totaux["attr_heures_cour"]         +=  $attr_heure_cour;
-            $totaux["dem_heures_A"]             +=  $dem_heures_A;
-            $totaux["attr_heures_A"]            +=  $attr_heures_A;
-            $totaux["quota"]                    +=  $quota;
-            $totaux["conso_an"]                 +=  $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
-            $totaux["conso_gpu"]                +=  $conso_gpu;
-            $totaux["recuperable"]              +=  $recuperable;
-
-            } // fin de la boucle principale
-
-        $ligne  =
-                [
-                'TOTAL','','','','','',
-                $totaux["dem_heures_prec"],
-                $totaux["dem_rall_heures_prec"],
-                $totaux["attr_rall_heures_prec"],
-                $totaux["penal_heures_prec"],
-                $totaux["attr_heures_prec"]+$totaux["attr_rall_heures_prec"]-$totaux["penal_heures_prec"],
-                ];
-
-         if ($type_session=='B')
-                $ligne  = array_merge( $ligne, [ $totaux["dem_heures_A"], $totaux["attr_heures_A"] ]);
-
-          $ligne  =  array_merge( $ligne,
-                [
-                $totaux["dem_heures_cour"],
-                $totaux["attr_heures_cour"],
-                $totaux["quota"],
-                $totaux["conso_an"],
-                $totaux["conso_gpu"],
-                '', // %
-                ]);
-
-
-          if ($type_session=='B') $ligne[] = $totaux["recuperable"]; // recupérable en session B
-
-          $ligne  = array_merge( $ligne,
-                [
-                $totaux["m00"],$totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],
-                $totaux["m06"],$totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],
-                ]);
-
-        $sortie     .=   join("\t",$ligne) . "\n";
-
-        return Functions::csv($sortie,'bilan_session_'.$session->getIdSession().'.csv');
-    }
-
+			return $this->bilanCsvAction_B($request,$session, $id_session, $annee_cour, $session_courante_A);
+		}
+	}
+	
 	/*******
 	 * Appelée par bilanAction dans le cas d'une session A
 	 *
@@ -1370,6 +1098,259 @@ class SessionController extends Controller
 			$totaux["m00"],$totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],
 			$totaux["m06"],$totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],
 			]);
+
+        $sortie .= join("\t",$ligne) . "\n";
+
+        return Functions::csv($sortie,'bilan_session_'.$session->getIdSession().'.csv');
+    }
+
+	/*******
+	 * Appelée par bilanAction dans le cas d'une session B
+	 *
+	 *********/
+	private function bilanCsvAction_B(Request $request,Session $session, $id_session, $annee_cour, $session_courante_A)
+	{
+        $annee_prec     =   $annee_cour - 1;
+        $full_annee_prec= 2000 + $annee_prec;
+        $full_annee_cour= 2000 + $annee_cour;
+
+        $session_precedente_A   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'A']);
+        $session_precedente_B   = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $annee_prec .'B']);
+
+
+        if( $session_courante_A == null ) return new Response('Session courante nulle !');
+
+        // Si type A on regarde la conso annee precedente, sinon annee courante !
+        $annee_conso=$annee_cour;
+
+        $entetes = ['Projet',
+                    'Thématique',
+                    'Responsable scientifique',
+                    'Laboratoire',
+                    'Rapport',
+                    'Expert',
+                    'Demandes '     .$full_annee_prec,
+                    'Dem rall '     .$full_annee_prec,
+                    'Attr rall '    .$full_annee_prec,
+                    'Pénalités '    .$full_annee_prec,
+                    'Attributions ' .$full_annee_prec,
+                    'Demandes '     .$annee_cour.'A',
+                    'Attributions ' .$annee_cour.'A',
+                    'Demandes '     .$id_session,
+                    'Attributions ' .$id_session,
+                    'Quota '        .$annee_prec,
+                    'Consommation ' .$annee_conso,
+                    "Conso gpu normalisée",
+                    "Consommation $annee_conso (%)",
+                    "Récupérables"
+                    ];
+
+        // Les mois pour les consos
+        array_push($entetes,'Janvier','Février','Mars','Avril',
+            'Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
+
+        $sortie     =   join("\t",$entetes) . "\n";
+
+        //////////////////////////////
+
+        $totaux=
+		[
+            "dem_heures_prec"       =>  0,
+            "attr_heures_prec"      =>  0,
+            "dem_rall_heures_prec"  =>  0,
+            "attr_rall_heures_prec" =>  0,
+            "penal_heures_prec"     =>  0,
+            "dem_heures_A"          =>  0, // session B
+            "attr_heures_A"         =>  0, // session B
+            "dem_heures_cour"       =>  0,
+            "attr_heures_cour"      =>  0,
+            "quota"                 =>  0,
+            "conso_an"              =>  0,
+            "conso_gpu"             =>  0,
+            "recuperable"           =>  0,
+		];
+        $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
+        foreach  ($conso_flds as $m)    $totaux[$m] =   0;
+
+        //////////////////////////////
+        //
+        // boucle principale
+        //
+        //////////////////////////////
+
+        $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session ] );
+
+        /*
+         * Calcul de la date pour savoir s'il y a des heures à récupérer
+         * Seulement utile s'il y a une version du projet en session A
+         */
+        $date_recup = GramcDate::Get();
+        $d30j       = new \DateTime($annee_cour.'-06-30'); // Le 30 Juin
+      	// Si on est après le 30 juin on considère le 30 juin comme date de conso de référence
+      	// Si on est avant, on considère la date du jour
+      	// Evidemment elle ne devrait pas être trop éloignée du 30 juin sinon cela n'a pas trop de sens !
+        if ($date_recup > $d30j)
+        {
+			$date_recup = $d30j;
+		}
+
+        foreach( $versions as $version )
+		{
+            if( $session_precedente_A != null )
+                $version_precedente_A = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_precedente_A, $version->getProjet() );
+            else $version_precedente_A = null;
+
+            if( $session_precedente_B != null )
+                $version_precedente_B = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_precedente_B, $version->getProjet() );
+            else $version_precedente_B = null;
+
+            if( $session_courante_A != null )
+                $version_courante_A = AppBundle::getRepository(Version::class)
+                            ->findOneVersion($session_courante_A, $version->getProjet() );
+            else $version_courante_A = null;
+
+            $dem_heures_prec    = 0;
+            if( $version_precedente_A != null ) $dem_heures_prec += $version_precedente_A->getDemHeures();
+            if( $version_precedente_B != null ) $dem_heures_prec += $version_precedente_B->getDemHeures();
+
+            $attr_heures_prec   = 0;
+            if( $version_precedente_A != null ) $attr_heures_prec += $version_precedente_A->getAttrHeures();
+            if( $version_precedente_B != null ) $attr_heures_prec += $version_precedente_B->getAttrHeures();
+
+            $penal_heures       = 0;
+            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
+            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
+
+            $dem_heures_rallonge    =   0;
+            if( $version_precedente_A != null ) $dem_heures_rallonge    += $version_precedente_A->getDemHeuresRallonge();
+            if( $version_precedente_B != null ) $dem_heures_rallonge    += $version_precedente_B->getDemHeuresRallonge();
+
+            $attr_heures_rallonge   =   0;
+            if( $version_precedente_A != null ) $attr_heures_rallonge   += $version_precedente_A->getAttrHeuresRallonge();
+            if( $version_precedente_B != null ) $attr_heures_rallonge   += $version_precedente_B->getAttrHeuresRallonge();
+
+            $penal_heures   =   0;
+            if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
+            if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
+
+            $dem_heures_A    = 0;
+            if( $version_courante_A != null ) $dem_heures_A += $version_courante_A->getDemHeures();
+
+            $attr_heures_A   = 0;
+            if( $version_courante_A != null ) $attr_heures_A +=
+                $version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
+
+			$conso     = 0;
+			$conso_gpu = 0;
+			$quota     = 0;
+			$conso = $version->getConsoCalcul();
+			$quota = $version->getQuota();
+			$conso_gpu = $version->getProjet()->getConsoRessource('gpu',$full_annee_cour)[0];
+
+            $dem_heure_cour     =   $version->getDemHeures();
+            $attr_heure_cour    =   $version->getAttrHeures();
+
+			// Calcul des heures récupérables au printemps
+            if( $version_courante_A != null )
+            {
+				// TODO - VERIFIER EN 2020 QUE CA MARCHE !
+				$conso_juin = $version->getConsoCalcul($date_recup->format('Y-m-d'));
+                $recuperable        =   static::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
+			}
+            else
+            {
+                $recuperable        =   0;
+			}
+
+            $ligne =
+                    [
+                    $version->getProjet(),
+                    '"'. $version->getPrjThematique() .'"',
+                    '"'.$version->getResponsable() .'"',
+                    '"'.$version->getLabo().'"',
+                    ( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
+                    ( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
+                    $dem_heures_prec,
+                    $dem_heures_rallonge,
+                    $attr_heures_rallonge,
+                    $penal_heures,
+                    $attr_heures_prec+$attr_heures_rallonge-$penal_heures,
+                    ];
+
+			 $ligne = array_merge( $ligne, [ $dem_heures_A, $attr_heures_A ] );
+
+             $ligne = array_merge( $ligne,
+                    [
+                    $dem_heure_cour,
+                    $attr_heure_cour,
+                    $quota,
+                    //( $consommation != null ) ? $consommation->conso(): 0,
+                    $conso,
+                    $conso_gpu,
+                    //( $quota != 0 ) ? intval(round( $consommation->conso() * 100 /$quota ) ): null,
+                    $quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0
+                    ]);
+
+	        $ligne[] =  $recuperable;
+
+			for ($m=0;$m<12;$m++)
+			{
+				$consmois= $version->getProjet()->getConsoMois($annee_cour,$m);
+				$index   = 'm' . ($m<10?'0':'') . $m;
+
+				$ligne[] = $consmois;
+				$totaux[$index] += $consmois;
+			};
+
+            $sortie     .=   join("\t",$ligne) . "\n";
+
+            $totaux["dem_heures_prec"]          +=  $dem_heures_prec;
+            $totaux["attr_heures_prec"]         +=  $attr_heures_prec;
+            $totaux["dem_rall_heures_prec"]     +=  $dem_heures_rallonge;
+            $totaux["attr_rall_heures_prec"]    +=  $attr_heures_rallonge;
+            $totaux["penal_heures_prec"]        +=  $penal_heures;
+            $totaux["dem_heures_cour"]          +=  $dem_heure_cour;
+            $totaux["attr_heures_cour"]         +=  $attr_heure_cour;
+            $totaux["dem_heures_A"]             +=  $dem_heures_A;
+            $totaux["attr_heures_A"]            +=  $attr_heures_A;
+            $totaux["quota"]                    +=  $quota;
+            $totaux["conso_an"]                 +=  $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
+            $totaux["conso_gpu"]                +=  $conso_gpu;
+            $totaux["recuperable"]              +=  $recuperable;
+
+            } // fin de la boucle principale
+
+        $ligne  =
+                [
+                'TOTAL','','','','','',
+                $totaux["dem_heures_prec"],
+                $totaux["dem_rall_heures_prec"],
+                $totaux["attr_rall_heures_prec"],
+                $totaux["penal_heures_prec"],
+                $totaux["attr_heures_prec"]+$totaux["attr_rall_heures_prec"]-$totaux["penal_heures_prec"],
+                ];
+
+		$ligne  = array_merge( $ligne, [ $totaux["dem_heures_A"], $totaux["attr_heures_A"] ]);
+
+        $ligne  = array_merge( $ligne,
+                [
+                $totaux["dem_heures_cour"],
+                $totaux["attr_heures_cour"],
+                $totaux["quota"],
+                $totaux["conso_an"],
+                $totaux["conso_gpu"],
+                '', // %
+                ]);
+
+        $ligne[] = $totaux["recuperable"]; // recupérable en session B
+
+        $ligne  = array_merge( $ligne,
+                [
+                $totaux["m00"],$totaux["m01"],$totaux["m02"],$totaux["m03"],$totaux["m04"],$totaux["m05"],
+                $totaux["m06"],$totaux["m07"],$totaux["m08"],$totaux["m09"],$totaux["m10"],$totaux["m11"],
+                ]);
 
         $sortie .= join("\t",$ligne) . "\n";
 
