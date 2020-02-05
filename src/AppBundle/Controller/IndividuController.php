@@ -853,19 +853,19 @@ class IndividuController extends Controller
         $form->handleRequest($request);
 
         if ( $form->isSubmitted() && $form->isValid() )
-            {
+		{
             if( $form->getData()['all'] == true )
                $users = $em->getRepository(Individu::class)->findAll();
             else
                $users = $em->getRepository(Individu::class)->getActiveUsers();
 
-            $pattern = '/' . $form->getData()['filtre'] . '/';
+            $pattern = '/' . $form->getData()['filtre'] . '/i';
 
             $individus = [];
             foreach( $users as $individu )
                 if( preg_match ( $pattern, $individu->getMail() ) )
                     $individus[] = $individu;
-            }
+		}
         else
             $individus = $em->getRepository(Individu::class)->getActiveUsers();
 
