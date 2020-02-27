@@ -81,10 +81,10 @@ $( document ).ready(function() {
     function submit_ferme( event )
     {
         event.preventDefault();
-	form = $( "#formulaire_confirmation form" );
+		form = $( "#formulaire_confirmation form" );
         h =  form.attr('action');
-	h += "&ajax=1";
-	$.ajax({url: h,
+		h += "&ajax=1";
+		$.ajax({url: h,
 	    type: "POST",
 	// context: gramc_ligne,
 	    context: gramc_cell,

@@ -231,20 +231,22 @@ class ExpertiseController extends Controller
 	    $experts = [];
 	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
 	    {
-	        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
-		}
+			
+			$experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
+	    }
 
 	    ////////////////////////
 
-        $nbProjets      =   0;
-        $nouveau        =   0;
-        $renouvellement =   0;
-        $nbDemHeures    =   0;
-        $nbAttHeures    =   0;
+        $nbProjets      = 0;
+        $nouveau        = 0;
+        $renouvellement = 0;
+        $sansexperts    = 0;
+        $nbDemHeures    = 0;
+        $nbAttHeures    = 0;
 
-        $forms      =   [];
-        $expertId   =   [];
-        $attHeures  =   [];
+        $forms     = [];
+        $expertId  = [];
+        $attHeures = [];
 
 		$form_buttons = $this->get('form.factory')->createNamedBuilder('BOUTONS', FormType::class, null, ['csrf_protection' => false ])
 		                     ->add( "sub1",SubmitType::Class, ['label' => 'Affecter les experts', 'attr' => ['title' => 'Les experts seront affectés incognito'] ] )
@@ -280,28 +282,25 @@ class ExpertiseController extends Controller
 				//	Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection OUI');
 				//}
 
-	            //$expert = $version->getExpert();
-	            //$projet = $version->getProjet();
-
 				// traitement du formulaire d'affectation - On ignore les projets non sélectionnés
 				$forms   = $this->getExpertForms($version);
 
-				$experts = [];
+				$experts_affectes = [];
 				foreach ($forms as $f)
 				{
 					$f->handleRequest($request);
-					$experts[] = $f->getData()['expert'];
+					$experts_affectes[] = $f->getData()['expert'];
 				}
 
 				// Traitements différentiés suivant le bouton sur lequel on a cliqué
 				if ($form_buttons->get('sub1')->isClicked())
 				{
-					$this->affecterExpertsToVersion($experts,$version);
+					$this->affecterExpertsToVersion($experts_affectes,$version);
 				}
 				elseif ($form_buttons->get('sub2')->isClicked())
 				{
-					$this->affecterExpertsToVersion($experts,$version);
-					$this->notifierExperts($experts,$version);
+					$this->affecterExpertsToVersion($experts_affectes,$version);
+					$this->notifierExperts($experts_affectes,$version);
 				}
 				elseif ($form_buttons->get('sub3')->isClicked())
 				{
@@ -309,7 +308,7 @@ class ExpertiseController extends Controller
 				}
 				elseif ($form_buttons->get('sub4')->isClicked())
 				{
-					$this->affecterExpertsToVersion($experts,$version);
+					$this->affecterExpertsToVersion($experts_affectes,$version);
 					$this->remExpertiseFromVersion($version);
 				}
 				else
@@ -329,8 +328,30 @@ class ExpertiseController extends Controller
             $etatVersion    =   $version->getEtatVersion();
             if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
 
-            $experts = $version->getExperts();
-            //$projet = $version->getProjet();
+            $exp = $version->getExperts();
+            if (count($exp)==0)
+            {
+				$sansexperts++;
+			} 
+			else 
+			{
+				foreach ($exp as $e)
+				{
+					if ($e==null) continue;
+					//$experts[$e->getIdIndividu()]++;
+					$experts[$e->getIdIndividu()]['projets']++;
+				}
+	            if( $version->getProjet()->countVersions() > 1 )
+	            {
+	                $renouvellement++;
+				}
+	            else
+	            {
+	                $nouveau++;
+				}
+			}
+			
+            $nbProjets++;
 
 			// Formulaire pour la sélection
 			$sform = $this->getSelForm($version)->createView();
@@ -341,27 +362,10 @@ class ExpertiseController extends Controller
 			foreach ($eforms as &$f) $f=$f->createView();
 			$forms[$version->getIdVersion()] = $eforms;
 
-            //if( count($experts  === 0)
-			//{
-            //    $expertId[$version->getIdVersion()]    =   '';
-			//}
-            //else
-			//{
-            //    $expertId[$version->getIdVersion()]    =  $expert->getIdIndividu();
-            //    if( isset( $experts[ $expert->getIdIndividu()] ) ) // on peut avoir des anciens experts
-            //        $experts[ $expert->getIdIndividu()]['projets']++;
-            //    else
-            //        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 1 ];
-			//}
-
             if( $version->getPrjThematique() != null )
+            {
                  $thematiques[ $version->getPrjThematique()->getIdThematique() ]['projets']++;
-
-            $nbProjets++;
-            if( $version->getProjet()->countVersions() > 1 )
-                $renouvellement++;
-            else
-                $nouveau++;
+			}
 
             $nbDemHeures    +=  $version->getDemHeures();
             if( $version->getExpertise() != null && $version->getExpertise()[0] != null )
@@ -396,23 +400,22 @@ class ExpertiseController extends Controller
 
         return $this->render('expertise/affectation.html.twig',
             [
-            'versions'   =>  $versions,
-            'forms'     =>  $forms,
-            'sessionForm'   =>  $sessionForm,
-            //'expertId'  =>  $expertId,
-            'session'   => $session,
-            'thematiques'   =>  $thematiques,
-            //'experts'   =>  $experts,
-            'experts' => [],
-            'nbProjets' => $nbProjets,
-            'renouvellement'    => $renouvellement,
-            'nouveau'   => $nouveau,
+            'versions'      => $versions,
+            'forms'         => $forms,
+            'sessionForm'   => $sessionForm,
+            'session'       => $session,
+            'thematiques'   => $thematiques,
+            'experts'       => $experts,
+            'nbProjets'     => $nbProjets,
+            'renouvellement'=> $renouvellement,
+            'nouveau'       => $nouveau,
+            'sansexperts'   => $sansexperts,
             'nbDemHeures'   => $nbDemHeures,
             'nbAttHeures'   => $nbAttHeures,
             'attHeures'     => $attHeures,
-            'libelleEtatSession'    => Etat::getLibelle( $etatSession ),
-            'projets_test'      => $projets_test,
-            'annee'         =>  Functions::getSessionCourante()->getAnneeSession() + 2000,
+            'libelleEtatSession' => Etat::getLibelle( $etatSession ),
+            'projets_test'       => $projets_test,
+            'annee'              => Functions::getSessionCourante()->getAnneeSession() + 2000,
             ]);
     }
 
