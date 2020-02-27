@@ -196,6 +196,10 @@ class ExpertiseController extends Controller
     }
 
     ///////////////////////
+	private function cmpExperts($a,$b) 
+	{
+		return ($a["expert"]->getNom()<=$b["expert"]->getNom()) ? -1 : 1;
+	}	
 
     private function affectationGenerique(Request $request, $versions, $projets_test = false)
     {
@@ -228,11 +232,10 @@ class ExpertiseController extends Controller
 
 	    ///////////////////////
 
-	    $experts = [];
+	    $experts_assoc = [];
 	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
 	    {
-			
-			$experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
+			$experts_assoc[$expert->getIdIndividu()] = ['expert' => $expert, 'projets' => 0 ];
 	    }
 
 	    ////////////////////////
@@ -338,8 +341,7 @@ class ExpertiseController extends Controller
 				foreach ($exp as $e)
 				{
 					if ($e==null) continue;
-					//$experts[$e->getIdIndividu()]++;
-					$experts[$e->getIdIndividu()]['projets']++;
+					$experts_assoc[$e->getIdIndividu()]['projets']++;
 				}
 	            if( $version->getProjet()->countVersions() > 1 )
 	            {
@@ -396,7 +398,20 @@ class ExpertiseController extends Controller
             $etatSession    =   null;
 		}
         else
+        {
             $sessionForm    =   $sessionData['form']->createView();
+		}
+
+		// Mise en forme du tableau experts, pour avoir l'ordre alphabétique !
+		$experts = [];
+		foreach ($experts_assoc as $k => $e) 
+		{ 
+			if ( $e['projets'] > 0 )
+			{
+				$experts[] = $e;
+			}
+		}
+	    usort($experts,"self::cmpExperts");
 
         return $this->render('expertise/affectation.html.twig',
             [
