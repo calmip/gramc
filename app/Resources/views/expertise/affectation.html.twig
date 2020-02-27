@@ -195,6 +195,7 @@
                 <td >
                 {% endif %}
                 {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+                <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
                     {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
