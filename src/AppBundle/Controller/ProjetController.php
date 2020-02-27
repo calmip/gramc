@@ -513,7 +513,8 @@ class ProjetController extends Controller
     }
 
     /**
-     * fwd une version
+     * L'admin a cliqué sur le bouton Forward pour envoyer une version à l'expert
+     * à la place du responsable
      *
      * @Security("has_role('ROLE_ADMIN')")
      * @Route("/{id}/fwd", name="fwd_version")
@@ -526,31 +527,27 @@ class ProjetController extends Controller
             $confirmation = $request->request->get('confirmation');
 
             if( $confirmation == 'OUI' )
-	    {
-                //$versionWorkflow = new VersionWorkflow();
-                //if( $versionWorkflow->canExecute( Signal::CLK_VAL_DEM, $version) )
-                //     $versionWorkflow->execute( Signal::CLK_VAL_DEM, $version);
+		    {
                 $projetWorkflow = new ProjetWorkflow();
                 if( $projetWorkflow->canExecute( Signal::CLK_VAL_DEM, $version->getProjet() ) )
                 {
-		    $projetWorkflow->execute( Signal::CLK_VAL_DEM, $version->getProjet());
-
-		    // On crée une expertise pour ce projet, mais on n'affecte pas d'experts
-		    $expertise  =   new Expertise();
-		    $expertise->setVersion( $version );
+				    $projetWorkflow->execute( Signal::CLK_VAL_DEM, $version->getProjet());
+		
+				    // On crée une expertise pour ce projet, mais on n'affecte pas d'experts
+				    $expertise  =   new Expertise();
+				    $expertise->setVersion( $version );
+	    		    Functions::sauvegarder( $expertise );
+				}
+		    }
+            return $this->redirectToRoute('projet_session');
 		}
-
-                // TODO il faut ajouter des notifications !!!!
-	    }
-            return $this->redirectToRoute('projet_session'); // NON - on ne devrait jamais y arriver !
-	}
         else
         {
            return $this->render('projet/dialog_fwd.html.twig',
             [
             'version' => $version,
             ]);
-	}
+		}
     }
 
     /**
@@ -1542,53 +1539,53 @@ class ProjetController extends Controller
      */
     public function envoyerAction(Projet $projet,  Request $request)
     {
-	//if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-	//   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
-
-	Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
-
-	$version    =    $projet->derniereVersion();
-	if( $version == null )
-	    Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
-
-	if( Menu::envoyer_expert($projet)['incomplet'] == true )
-	    Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
-
-	if( $version->getCGU() == false )
-	    Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
-
+		//if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
+		//   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
+	
+		Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
+	
+		$version    =    $projet->derniereVersion();
+		if( $version == null )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
+	
+		if( Menu::envoyer_expert($projet)['incomplet'] == true )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
+	
+		if( $version->getCGU() == false )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
+	
 	    // S'il y a déjà une expertise on ne fait rien
 	    // Sinon on la crée et on appelle le programme d'affectation automatique des experts
-	if( count( $version->getExpertise() ) > 0 )
+		if( count( $version->getExpertise() ) > 0 )
         {
-	    Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
+		    Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
         }
-	else
+		else
         {
-	    $expertise  =   new Expertise();
-	    $expertise->setVersion( $version );
-
-	    // Attention, l'algorithme de proposition des experts dépend du type de projet
+		    $expertise = new Expertise();
+		    $expertise->setVersion( $version );
+	
+		    // Attention, l'algorithme de proposition des experts dépend du type de projet
             $expert = $projet->proposeExpert();
             if ($expert != null)
             {
-		$expertise->setExpert( $expert );
-	    }
-	    Functions::sauvegarder( $expertise );
+				$expertise->setExpert( $expert );
+		    }
+		    Functions::sauvegarder( $expertise );
         }
 
-	$projetWorkflow = new ProjetWorkflow();
-	$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+		$projetWorkflow = new ProjetWorkflow();
+		$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+	
+		//Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
+		//    . "(" . $projet->getObjectState() . ")" );
 
-	//Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
-	//    . "(" . $projet->getObjectState() . ")" );
-
-	if( $rtn == true )
-	    return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
-	else
+		if( $rtn == true )
+		    return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
+		else
         {
-	    Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
-	    return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+		    Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+		    return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
         }
     }
 
