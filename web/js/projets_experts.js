@@ -155,6 +155,7 @@ $( document ).ready(function() {
 	}
 
 	// Appelé lorsque le select change de valeur
+	// TODO - Je ne crois pas que ça fonctionne !
 	function change_select(event) {
 		// changer la classe du parent du select
 		$(this).parent().removeClass();
@@ -194,4 +195,17 @@ $( document ).ready(function() {
 			 };
 		 });
 	};
+	
+	// Connecté aux cb de sélection
+	$( "input.expsel").change(change_couleur);
+	function change_couleur() {
+		cell = $(this).parent();
+		// Si la cb est cochée la cellule se teinte en bleu
+		if ( $(this).is(":checked")) {
+			cell.css("background-color","blue");
+		// Sinon elle prend la couleur de la cellule d'à côté
+		} else {
+			cell.css("background-color",cell.next().css("background-color"));
+		}
+	}
 });

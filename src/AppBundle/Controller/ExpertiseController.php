@@ -152,8 +152,8 @@ class ExpertiseController extends Controller
 	private function getSelForm(Version $version)
 	{
 		$nom = 'selection_'.$version->getIdVersion();
-		return $this->get( 'form.factory')  -> createNamedBuilder($nom, FormType::class, null, ['csrf_protection' => false ])
-										    -> add('sel',CheckboxType::class, [ 'required' =>  false ])
+		return $this->get( 'form.factory')  -> createNamedBuilder($nom, FormType::class, null, ['csrf_protection' => false])
+										    -> add('sel',CheckboxType::class, [ 'required' =>  false, 'attr' => ['class' => "expsel"]  ])
 										    ->getForm();
 	}
 
