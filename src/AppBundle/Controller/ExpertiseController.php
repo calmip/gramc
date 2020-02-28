@@ -195,26 +195,16 @@ class ExpertiseController extends Controller
 	    return $this->affectationGenerique($request, $versions, false );
     }
 
-    ///////////////////////
-	private function cmpExperts($a,$b) 
+	/*********************************************
+	 * affectationTAbleauThematiques = Appelé par affectationGenerique
+	 * Renvoie le tableau des thématiques, avec pour chacune la liste des experts
+	 * associés et le nombre de projets affectés à la thématique
+	 * 
+	 * return: Le tableau des thématiques
+	 * 
+	 ********/
+	private function affectationTableauThematiques()
 	{
-		return ($a["expert"]->getNom()<=$b["expert"]->getNom()) ? -1 : 1;
-	}	
-
-    private function affectationGenerique(Request $request, $versions, $projets_test = false)
-    {
-	    //Functions::debugMessage(__METHOD__   . " " .  print_r($_POST, true) );
-	    // Formulaire de sélection des sessions
-	    if( $projets_test == false )
-        {
-	        $sessionData       =   Functions::selectSession($request); // formulaire
-	        $session = $sessionData['session'];
-	        $etatSession    =   $session->getEtatSession();
-        }
-	    else
-	        $session = Functions::getSessionCourante();
-
-
 	    $thematiques = [];
 	    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
         {
@@ -229,107 +219,134 @@ class ExpertiseController extends Controller
 	        $thematiques[ $thematique->getIdThematique() ] =
 	            ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
         }
+        return $thematiques;
+	}
 
-	    ///////////////////////
+	/*********************************************
+	 * affectationTraitementFormulaires = Appelé par affectationGenerique
+	 * Modifie les données pour les lignes d'experts sélectionnées
+	 * 
+	 * Args:
+	 * 		$form_buttons = Les boutons d'affectation
+	 *      $versions     = Tableau de versions
+	 *    
+	 ********/
+	private function affectationTraitementFormulaires(Request $request, $form_buttons, $versions)
+	{
+        foreach( $versions as $version )
+		{
+            $etatVersion    =   $version->getEtatVersion();
+            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
 
-	    $experts_assoc = [];
-	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
-	    {
-			$experts_assoc[$expert->getIdIndividu()] = ['expert' => $expert, 'projets' => 0 ];
-	    }
+			// La version est-elle sélectionnée ? - Si non on ignore
+			$selform = $this->getSelForm($version);
+			$selform->handleRequest($request);
+			if ($selform->getData()['sel']==false)
+			{
+	            //Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection NON');
+	            continue;
+			}
+			//else
+			//{
+			//	Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection OUI');
+			//}
 
-	    ////////////////////////
+			// traitement du formulaire d'affectation - On ignore les projets non sélectionnés
+			$forms   = $this->getExpertForms($version);
 
-        $nbProjets      = 0;
+			$experts_affectes = [];
+			foreach ($forms as $f)
+			{
+				$f->handleRequest($request);
+				$experts_affectes[] = $f->getData()['expert'];
+			}
+
+			// Traitements différentiés suivant le bouton sur lequel on a cliqué
+			if ($form_buttons->get('sub1')->isClicked())
+			{
+				$this->affecterExpertsToVersion($experts_affectes,$version);
+			}
+			elseif ($form_buttons->get('sub2')->isClicked())
+			{
+				$this->affecterExpertsToVersion($experts_affectes,$version);
+				$this->notifierExperts($experts_affectes,$version);
+			}
+			elseif ($form_buttons->get('sub3')->isClicked())
+			{
+				$this->addExpertiseToVersion($version);
+			}
+			elseif ($form_buttons->get('sub4')->isClicked())
+			{
+				$this->affecterExpertsToVersion($experts_affectes,$version);
+				$this->remExpertiseFromVersion($version);
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+
+	/*************************************************************************
+	 * affectationCreationForms
+	 * Génère les formulaires d'affectation des experts pour chaque version
+	 * 
+	 * input:   $versions    Tableau de versions
+	 * 
+	 * return:  Un tableau de formulaire, indexé par l'id de la version
+	 * 
+	 ****************************************************************************/
+	private function affectationCreationForms($versions)
+	{
+        $forms     = [];
+        foreach( $versions as $version )
+		{
+            $etatVersion    =   $version->getEtatVersion();
+            
+            // Pas de formulaire pour ces états
+            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
+
+            $exp = $version->getExperts();
+
+			// Formulaire pour la sélection (case à cocher)
+			$sform = $this->getSelForm($version)->createView();
+			$forms['selection_'.$version->getIdVersion()] = $sform;
+
+			// Génération des formulaires de choix de l'expert
+			$eforms  = $this->getExpertForms($version);
+			foreach ($eforms as &$f) $f=$f->createView();
+			$forms[$version->getIdVersion()] = $eforms;
+		}
+		return $forms;
+	}
+
+	/*************************************************************************
+	 * affectationCalcStats
+	 * Génère différentes statistiques sur les attributions
+	 * 
+	 * input:   $versions    Tableau de versions
+	 *          $thematiques Tableau de thématiques
+	 * 
+	 * return:  les stats
+	 * 
+	 ****************************************************************************/
+	private function affectationCalcStats($versions,&$thematiques)
+	{
+		$nbProjets      = 0;
         $nouveau        = 0;
         $renouvellement = 0;
         $sansexperts    = 0;
         $nbDemHeures    = 0;
         $nbAttHeures    = 0;
 
-        $forms     = [];
-        $expertId  = [];
-        $attHeures = [];
+		$experts_assoc = [];
 
-		$form_buttons = $this->get('form.factory')->createNamedBuilder('BOUTONS', FormType::class, null, ['csrf_protection' => false ])
-		                     ->add( "sub1",SubmitType::Class, ['label' => 'Affecter les experts', 'attr' => ['title' => 'Les experts seront affectés incognito'] ] )
-		                     ->add( "sub2",SubmitType::Class, ['label' => 'Affecter et notifier les experts', 'attr' => ['title' => 'Les experts affectés recevront une notification par courriel'] ] )
-		                     ->add( "sub3",SubmitType::Class, ['label' => 'Ajouter une expertise', 'attr' => ['title' => 'Ajouter un expert si possible'] ] )
-		                     ->add( "sub4",SubmitType::Class, ['label' => 'Supp expertise sans expert', 'attr' => ['title' => 'ATTENTION - Risque de perte de données'] ] )
-		                     ->getForm();
-
-		$form_buttons->handleRequest($request);
-
-		// 1ere etape = Traitement du formulaire qui vient d'être soumis
-		//              On boucle sur les versions:
-		//                  - Une version non sélectionnée est ignorée
-		//                  - Pour chaque version sélectionnée on fait une action qui dépend du bouton qui a été cliqué
-		//
-		if ($form_buttons->isSubmitted())
-		{
-	        foreach( $versions as $version )
-			{
-	            $etatVersion    =   $version->getEtatVersion();
-	            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
-
-				// La version est-elle sélectionnée ? - Si non on ignore
-				$selform = $this->getSelForm($version);
-				$selform->handleRequest($request);
-				if ($selform->getData()['sel']==false)
-				{
-		            //Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection NON');
-		            continue;
-				}
-				//else
-				//{
-				//	Functions::debugMessage( __METHOD__ . $version->getIdVersion().' selection OUI');
-				//}
-
-				// traitement du formulaire d'affectation - On ignore les projets non sélectionnés
-				$forms   = $this->getExpertForms($version);
-
-				$experts_affectes = [];
-				foreach ($forms as $f)
-				{
-					$f->handleRequest($request);
-					$experts_affectes[] = $f->getData()['expert'];
-				}
-
-				// Traitements différentiés suivant le bouton sur lequel on a cliqué
-				if ($form_buttons->get('sub1')->isClicked())
-				{
-					$this->affecterExpertsToVersion($experts_affectes,$version);
-				}
-				elseif ($form_buttons->get('sub2')->isClicked())
-				{
-					$this->affecterExpertsToVersion($experts_affectes,$version);
-					$this->notifierExperts($experts_affectes,$version);
-				}
-				elseif ($form_buttons->get('sub3')->isClicked())
-				{
-					$this->addExpertiseToVersion($version);
-				}
-				elseif ($form_buttons->get('sub4')->isClicked())
-				{
-					$this->affecterExpertsToVersion($experts_affectes,$version);
-					$this->remExpertiseFromVersion($version);
-				}
-				else
-				{
-					continue;
-				}
-			}
-			// doctrine cache les expertises précédentes du coup si on ne redirige pas
-			// l'affichage ne sera pas correctement actualisé !
-			// Essentiellement avec sub3 (ajout d'expertise)
-			return $this->redirectToRoute('affectation');
-		}
-
-		// 2nde etape = Envoi des formulaires pour affichage
         foreach( $versions as $version )
 		{
             $etatVersion    =   $version->getEtatVersion();
-            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
+            
+            // Pas de choix d'expert pour ces états de versions
+            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
 
             $exp = $version->getExperts();
             if (count($exp)==0)
@@ -341,9 +358,13 @@ class ExpertiseController extends Controller
 				foreach ($exp as $e)
 				{
 					if ($e==null) continue;
+					if ( ! isset($experts_assoc[$e->getIdIndividu()]) )
+					{
+						$experts_assoc[$e->getIdIndividu()] = ['expert' => $e, 'projets' => 0 ];
+					}
 					$experts_assoc[$e->getIdIndividu()]['projets']++;
 				}
-	            if( $version->getProjet()->countVersions() > 1 )
+	            if( !$version->isNouvelle() )
 	            {
 	                $renouvellement++;
 				}
@@ -354,16 +375,6 @@ class ExpertiseController extends Controller
 			}
 			
             $nbProjets++;
-
-			// Formulaire pour la sélection
-			$sform = $this->getSelForm($version)->createView();
-			$forms['selection_'.$version->getIdVersion()] = $sform;
-
-			// Génération du formulaire de choix de l'expert
-			$eforms  = $this->getExpertForms($version);
-			foreach ($eforms as &$f) $f=$f->createView();
-			$forms[$version->getIdVersion()] = $eforms;
-
             if( $version->getPrjThematique() != null )
             {
                  $thematiques[ $version->getPrjThematique()->getIdThematique() ]['projets']++;
@@ -381,7 +392,147 @@ class ExpertiseController extends Controller
                 $attHeures[$version->getIdVersion()]    = 0;
 			}
 		}
+		$stats = ["nbProjets"      => $nbProjets,
+				  "nouveau"        => $nouveau,
+				  "renouvellement" => $renouvellement,
+				  "sansexperts"    => $sansexperts,
+				  "nbDemHeures"    => $nbDemHeures,
+				  "nbAttHeures"    => $nbAttHeures];
+		return $stats;
+	}
 
+	/*************************************************************************
+	 * affectationGetAttHeures
+	 * Renvoie un tableau avec le nombre d'heures attribuées, pour affichage
+	 * 
+	 * input:   $versions    Tableau de versions
+	 * 
+	 * return:  Un tableau indexé par l'id de la version
+	 * 
+	 ****************************************************************************/
+	private function affectationGetAttHeures($versions)
+	{
+        $attHeures = [];
+        foreach( $versions as $version )
+		{
+            $etatVersion    =   $version->getEtatVersion();
+            
+            // Pas encore d'attributions
+            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
+
+            if( $version->getExpertise() != null && $version->getExpertise()[0] != null )
+			{
+                $attHeures[$version->getIdVersion()] = $version->getExpertise()[0]->getNbHeuresAtt();
+			}
+            else
+            {
+                $attHeures[$version->getIdVersion()]    = 0;
+			}
+		}
+		return [$attHeures];
+	}
+
+    ///////////////////////
+	private function cmpExperts($a,$b) 
+	{
+		return ($a["expert"]->getNom()<=$b["expert"]->getNom()) ? -1 : 1;
+	}	
+	private function affectationTableauExperts($versions)
+	{
+		$experts_assoc = [];
+        foreach( $versions as $version )
+		{
+            // Pas de choix d'expert pour ces états de versions
+            $etat_version = $version->getEtatVersion();
+            if( $etat_version == Etat::EDITION_DEMANDE || $etat_version == Etat::ANNULE ) continue; 
+            
+			$exp = $version->getExperts();
+			foreach ($exp as $e)
+			{
+				if ($e==null) continue;
+				if ( ! isset($experts_assoc[$e->getIdIndividu()]) )
+				{
+					$experts_assoc[$e->getIdIndividu()] = ['expert' => $e, 'projets' => 0 ];
+				}
+				$experts_assoc[$e->getIdIndividu()]['projets']++;
+			}
+		}
+
+		// Mise en forme du tableau experts, pour avoir l'ordre alphabétique !
+		$experts = [];
+		foreach ($experts_assoc as $k => $e) 
+		{ 
+			if ( $e['projets'] > 0 )
+			{
+				$experts[] = $e;
+			}
+		}
+	    usort($experts,"self::cmpExperts");
+
+		return $experts;
+	}
+		
+	/*********************************************
+	 * 
+	 * affectationGenerique = Appelé par affectationAction ET affectationTestAction
+	 * 
+	 * Args:
+	 *           $versions     = Tableau de versions
+	 *           $projets_test = Booléen
+	 ********/
+    private function affectationGenerique(Request $request, $versions, $projets_test = false)
+    {
+		// Pourquoi on ne peut pas remonter dans le temps aussi ?
+	    if( $projets_test == false )
+        {
+	        $sessionData =   Functions::selectSession($request); // formulaire
+	        $session     = $sessionData['session'];
+	        $etatSession =   $session->getEtatSession();
+        }
+	    else
+	    {
+	        $session = Functions::getSessionCourante();
+		}
+
+		// Plusieurs boutons d'affectation
+		$form_buttons = $this->get('form.factory')->createNamedBuilder('BOUTONS', FormType::class, null, ['csrf_protection' => false ])
+		                     ->add( "sub1",SubmitType::Class, ['label' => 'Affecter les experts', 'attr' => ['title' => 'Les experts seront affectés incognito'] ] )
+		                     ->add( "sub2",SubmitType::Class, ['label' => 'Affecter et notifier les experts', 'attr' => ['title' => 'Les experts affectés recevront une notification par courriel'] ] )
+		                     ->add( "sub3",SubmitType::Class, ['label' => 'Ajouter une expertise', 'attr' => ['title' => 'Ajouter un expert si possible'] ] )
+		                     ->add( "sub4",SubmitType::Class, ['label' => 'Supp expertise sans expert', 'attr' => ['title' => 'ATTENTION - Risque de perte de données'] ] )
+		                     ->getForm();
+
+		//
+		// 1ere etape = Traitement des formulaires qui viennent d'être soumis
+		//              On boucle sur les versions:
+		//                  - Une version non sélectionnée est ignorée
+		//                  - Pour chaque version sélectionnée on fait une action qui dépend du bouton qui a été cliqué
+		//              Puis on redirige sur la page
+		//
+		$form_buttons->handleRequest($request);
+		if ($form_buttons->isSubmitted())
+		{
+			$this->affectationTraitementFormulaires($request, $form_buttons, $versions);
+			// doctrine cache les expertises précédentes du coup si on ne redirige pas
+			// l'affichage ne sera pas correctement actualisé !
+			// Essentiellement avec sub3 (ajout d'expertise)
+			if ($projets_test) 
+			{
+				return $this->redirectToRoute('affectation_test');
+			}
+			else
+			{
+				return $this->redirectToRoute('affectation');
+			}
+		}
+
+		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
+	    $thematiques = $this->affectationTableauThematiques();
+	    $experts     = $this->affectationTableauExperts($versions);
+		$forms       = $this->affectationCreationForms($versions);
+		$stats       = $this->affectationCalcStats($versions, $thematiques);
+		$attHeures   = $this->affectationGetAttHeures($versions);
+		
 		$forms['BOUTONS'] = $form_buttons->createView();
 
         /* if( $forms['17BP17003'] == $forms['17BP17002'] )
@@ -402,16 +553,6 @@ class ExpertiseController extends Controller
             $sessionForm    =   $sessionData['form']->createView();
 		}
 
-		// Mise en forme du tableau experts, pour avoir l'ordre alphabétique !
-		$experts = [];
-		foreach ($experts_assoc as $k => $e) 
-		{ 
-			if ( $e['projets'] > 0 )
-			{
-				$experts[] = $e;
-			}
-		}
-	    usort($experts,"self::cmpExperts");
 
         return $this->render('expertise/affectation.html.twig',
             [
@@ -421,12 +562,7 @@ class ExpertiseController extends Controller
             'session'       => $session,
             'thematiques'   => $thematiques,
             'experts'       => $experts,
-            'nbProjets'     => $nbProjets,
-            'renouvellement'=> $renouvellement,
-            'nouveau'       => $nouveau,
-            'sansexperts'   => $sansexperts,
-            'nbDemHeures'   => $nbDemHeures,
-            'nbAttHeures'   => $nbAttHeures,
+            'stats'         => $stats,
             'attHeures'     => $attHeures,
             'libelleEtatSession' => Etat::getLibelle( $etatSession ),
             'projets_test'       => $projets_test,
