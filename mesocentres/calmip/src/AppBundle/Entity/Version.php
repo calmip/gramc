@@ -3346,4 +3346,14 @@ class Version
     else
         Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le nouveau responsable " . $moi . " ne fait partie d'aucun laboratoire");
     }
+    
+    /////////////////////////////////////////////////////
+    public function getEtat()
+    {
+		return $this->getEtatVersion();
+	}
+	public function getId()
+	{
+		return $this->getIdVersion();
+	}
 }

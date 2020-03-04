@@ -9,18 +9,14 @@
 
 <section>
 
-{% if( projets_test == false ) %}
-   <h1>Affectation des experts aux projets de la session {{ session }}</h1>
-
-{{ form_start( sessionForm ) }}
-{{ form_widget( sessionForm.session ) }}
-{{ form_widget( sessionForm.submit ) }}
-{{ form_end( sessionForm ) }}
-<hr />
-
-{% else %}
-   <h1>Affectation des experts aux projets test de l'année {{ annee }}</h1>
-   <p>&nbsp;</p>
+<h1>{{ titre }}</h1>
+<p>&nbsp;</p>
+{% if sessionForm != null %}
+	{{ form_start( sessionForm ) }}
+	{{ form_widget( sessionForm.session ) }}
+	{{ form_widget( sessionForm.submit ) }}
+	{{ form_end( sessionForm ) }}
+	<hr />
 {% endif %}
 
 {% include('expertise/affectation_bilans.html.twig') %}
@@ -33,7 +29,7 @@
         <table id="affecte_experts">
             <thead>
                 <tr>
-		    <th title="Cocher la case pour sélectionner ce projet">S</th>
+				    <th title="Cocher la case pour sélectionner ce projet">S</th>
                     <th >N</th>
                     <th >N°</th>
                     <th >&nbsp;</th>

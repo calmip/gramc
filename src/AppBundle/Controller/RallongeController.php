@@ -43,6 +43,8 @@ use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 use AppBundle\Utils\Functions;
 use AppBundle\Workflow\Rallonge\RallongeWorkflow;
+use AppBundle\Utils\AffectationExperts;
+use AppBundle\Utils\AffectationExpertsRallonge;
 
 use AppBundle\Utils\Menu;
 
@@ -667,6 +669,101 @@ class RallongeController extends Controller
      * @Security("has_role('ROLE_PRESIDENT')")
      */
     public function affectationAction(Request $request)
+    {
+	    $sessions   =  AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
+	    if ( isset( $sessions[0] ) )
+	        $session1   =  $sessions[0];
+	    else
+	        $session1   =  null;
+	    $session = $session1;
+
+	    if ( isset( $sessions[1] ) )
+        {
+	        $session2   =  $sessions[1];
+	        $session    =   $session2;
+        }
+	    else
+	        $session2   =  null;
+        $annee    = $session->getAnneeSession();
+
+	    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
+	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
+	    
+		$affectationExperts = new AffectationExpertsRallonge($request, $all_rallonges, $this->get('form.factory'), $this->getDoctrine());
+		
+		//
+		// 1ere etape = Traitement des formulaires qui viennent d'être soumis
+		//              Puis on redirige sur la page
+		//
+		$form_buttons = $affectationExperts->getFormButtons();
+		$form_buttons->handleRequest($request);
+		if ($form_buttons->isSubmitted())
+		{
+			$affectationExperts->traitementFormulaires();
+			return $this->redirectToRoute('rallonge_affectation');
+		}
+
+		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
+	    $projets       = [];
+		foreach ($all_rallonges as $rallonge)
+		{
+			$version = $rallonge->getVersion();
+			$projet  = $version->getProjet();
+			$id_projet = $projet->getIdProjet();
+			if ( ! isset($projets[$id_projet] ))
+			{
+				$p = [];
+				$projets[$id_projet] = $p;
+	            $projets[$id_projet ]['projet']     = $projet;
+	            $projets[$id_projet ]['version']    = $version;
+	            $projets[ $id_projet ]['rallonges']  = [];
+	            $projets[ $id_projet ]['etat']       = $projet->getMetaEtat();
+	            $projets[ $id_projet ]['etatProjet']         = $projet->getEtatProjet();
+	            $projets[ $id_projet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
+	            $projets[ $id_projet ]['etatVersion']        = $version->getEtatVersion();
+	            $projets[ $id_projet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
+	            $projets[ $id_projet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
+	                           $expert = $rallonge->getExpert();
+                if( $rallonge->getExpert() != null )
+                {
+					$projets[$id_projet]['affecte'] = true;
+				}
+                else
+                {
+					$projets[$id_projet]['affecte'] = false;
+				}
+
+	            if( $version->isNouvelle() )
+	                $projets[ $id_projet ]['NR']   =   'N';
+	            else
+	                $projets[ $id_projet ]['NR']   =   '';
+			}
+			$projets[ $id_projet ]['rallonges'][] = $rallonge;
+		}
+
+	    foreach( $projets as $key => $projet )
+        {
+	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
+        }
+  
+		
+		$forms       = $affectationExperts->getExpertsForms();
+		$stats       = $affectationExperts->getStats();
+		
+		$forms['BOUTONS'] = $form_buttons->createView();
+		$titre = "Affectation des experts aux rallonges de l'année 20$annee"; 
+
+        return $this->render('rallonge/affectation.html.twig',
+		[
+            'projets'       => $projets,
+            'forms'         => $forms,
+            'session1'      => $session1,
+            'session2'      => $session2,
+            'stats'         => $stats,
+		]);
+    }
+
+    public function affectationAction_AJETER(Request $request)
     {
 	    $sessions   =  AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
 	    if ( isset( $sessions[0] ) )

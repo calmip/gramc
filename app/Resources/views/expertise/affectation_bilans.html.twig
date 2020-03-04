@@ -4,11 +4,7 @@
         <table>
             <tbody>
                 <tr>
-					{% if (projets_test == false) %}
-						<th colspan="3">Projets</th>
-                    {% else %}
-                        <th colspan="3">Projets tests</th>
-					{% endif %}
+					<th colspan="3">Projets</th>
                 </tr>
                 <tr>
                     <th>Nombre de projets</th>
@@ -25,7 +21,7 @@
                     <td>{{ stats.nbAttHeures}}</td>
                     <td>&nbsp;</td>
                </tr>
-               {% if (projets_test == false) %}
+				{% if (stats.nouveau!=null and stats.renouvellement!=null) %}
                 <tr>
                     <th colspan="3">Projets avec experts affectés</th>
                 </tr>
@@ -39,6 +35,8 @@
                     <td>{{ stats.renouvellement }}</td>
                     <td><input type="checkbox" class="cb" id="renouv" checked="checked"></td>
                 </tr>
+				{% endif %}
+				{% if (stats.sansexperts != null) %}
                <tr>
                     <th colspan="3">Projets sans experts</th>
                </tr>
@@ -52,7 +50,7 @@
         </table>
 
 {# #################################################################### #}
-{% if( projets_test == false ) %}
+{% if( experts != null ) %}
 
         <table id="experts">
             <tbody>
@@ -77,9 +75,10 @@
                 </tr>
             </tbody>
         </table>
+{% endif %}
 
 {# #################################################################### #}
-
+{% if (thematiques != null) %}
         <table id="themas">
             <tbody>
                 <tr>

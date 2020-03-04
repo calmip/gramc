@@ -1052,16 +1052,24 @@ class Projet
 
     public function getVersionsAnnee($annee)
     {
-    $subAnnee   = substr( strval($annee), -2 );
-    $repository = AppBundle::getRepository(Version::class);
-    $versionA   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
-    $versionB   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
-
-    $versions = [];
-    if( $versionA != null ) $versions['A'] = $versionA;
-    if( $versionB != null ) $versions['B'] = $versionB;
-    return $versions;
+	    $subAnnee   = substr( strval($annee), -2 );
+	    $repository = AppBundle::getRepository(Version::class);
+	    $versionA   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
+	    $versionB   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
+	
+	    $versions = [];
+	    if( $versionA != null ) $versions['A'] = $versionA;
+	    if( $versionB != null ) $versions['B'] = $versionB;
+	    return $versions;
     }
+    
+    ///////////////////////////////////////////////////
+    
+	public function getEtat()
+    {
+		return $this->getEtatProjet();
+	}
+
 
 }
 

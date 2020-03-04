@@ -448,4 +448,11 @@ class Session
     {
         return ($this->getAnneeSession() + 1) . 'A';
     }
+    
+    ////////////////////////////////////////////
+	public function getEtat()
+    {
+		return $this->getEtatProjet();
+	}
+
 }

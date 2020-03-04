@@ -50,18 +50,10 @@ class RallongeWorkflow extends Workflow
                 ])
             ->addState( Etat::EDITION_DEMANDE,
                 [
-                Signal::CLK_VAL_DEM      => new RallongeTransition(Etat::DESAFFECTE, Signal::CLK_VAL_DEM,
+                Signal::CLK_VAL_DEM      => new RallongeTransition(Etat::EDITION_EXPERTISE, Signal::CLK_VAL_DEM,
 							                [ 'R' => 'depot_rallonge_pour_demandeur',
 							                  'A' => 'depot_rallonge_pour_admin',
 							                  'P' => 'depot_rallonge_pour_president']),
-                Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
-                Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
-                ])
-            ->addState( Etat::DESAFFECTE,
-                [
-                Signal::CLK_AFFECTER     => new RallongeTransition(Etat::EDITION_EXPERTISE, Signal::CLK_AFFECTER,
-							                [ 'E' => 'affectation_expert_rallonge']),
-                Signal::CLK_DESAFFECTER  => new NoTransition(0,0),
                 Signal::CLK_SESS_FIN     => new RallongeTransition(Etat::ANNULE, Signal::CLK_SESS_FIN),
                 Signal::CLK_FERM         => new RallongeTransition(Etat::ANNULE, Signal::CLK_FERM),
                 ])
