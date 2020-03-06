@@ -562,7 +562,7 @@ class AffectationExperts
 	*        $version = la version à expertiser
 	*
 	*****/
-	private function notifierExperts($experts, $version)
+	protected function notifierExperts($experts, $version)
 	{
 		$expertises = $version->getExpertise();
 		foreach ($expertises as $e)
