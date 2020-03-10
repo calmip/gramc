@@ -47,7 +47,7 @@ use AppBundle\Utils\Functions;
 use AppBundle\Utils\Menu;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
-use AppBundle\Utils\AffectationExperts;
+use AppBundle\AffectationExperts\AffectationExperts;
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
 use AppBundle\Utils\GramcDate;
@@ -79,6 +79,7 @@ class ExpertiseController extends Controller
      * @Method({"GET", "POST"})
      * @Security("has_role('ROLE_PRESIDENT')")
      */
+    
     public function affectationTestAction(Request $request)
     {
 	    $session  = Functions::getSessionCourante();
@@ -112,7 +113,6 @@ class ExpertiseController extends Controller
 		$stats['nouveau'] = null;
 		$attHeures   = $affectationExperts->getAttHeures();
 		
-		$forms['BOUTONS'] = $form_buttons->createView();
 		$titre = "Affectation des experts aux projets tests de l'année 20$annee"; 
         return $this->render('expertise/affectation.html.twig', 
             [
@@ -171,7 +171,6 @@ class ExpertiseController extends Controller
 		$stats       = $affectationExperts->getStats();
 		$attHeures   = $affectationExperts->getAttHeures($versions);
 		
-		$forms['BOUTONS'] = $form_buttons->createView();
 		$sessionForm      = $sessionData['form']->createView();
 		$titre            = "Affectation des experts aux projets de la session " . $session;
         return $this->render('expertise/affectation.html.twig',

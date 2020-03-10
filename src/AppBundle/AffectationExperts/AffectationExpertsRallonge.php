@@ -22,13 +22,13 @@
  *            Nicolas Renon - Université Paul Sabatier - CALMIP
  **/
 
-namespace AppBundle\Utils;;
+namespace AppBundle\AffectationExperts;
 
 
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
 use AppBundle\Entity\CollaborateurVersion;
-use AppBundle\Utils\AffectationExperts;
+use AppBundle\AffectationExperts\AffectationExperts;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -48,6 +48,7 @@ use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 
 use AppBundle\Entity\Thematique;
 use AppBundle\AppBundle;
+use AppBundle\Utils\Functions;
 
 
 

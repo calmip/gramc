@@ -22,7 +22,7 @@
  *            Nicolas Renon - Université Paul Sabatier - CALMIP
  **/
 
-namespace AppBundle\Utils;
+namespace AppBundle\AffectationExperts;
 
 
 use AppBundle\Entity\Projet;
@@ -46,6 +46,9 @@ use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 
 use AppBundle\Entity\Thematique;
 use AppBundle\AppBundle;
+use AppBundle\Utils\Etat;
+use AppBundle\Utils\Functions;
+
 /****************************************
  * AffectationExperts: cette classe encapsule les algorithmes utilisés par les pages d'affectation
  * des experts (versions, projets tests, rallonges)
@@ -310,8 +313,8 @@ class AffectationExperts
 		{
             $etatVersion    =   $version->getEtat();
             
-            // Pas de formulaire pour ces états
-            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
+            // Pas de formulaire sauf pour ces états
+            if( $etatVersion != Etat::EDITION_EXPERTISE && $etatVersion != Etat::EXPERTISE_TEST ) continue; 
 
             $exp = $version->getExperts();
 
@@ -324,6 +327,11 @@ class AffectationExperts
 			foreach ($eforms as &$f) $f=$f->createView();
 			$forms[$version->getId()] = $eforms;
 		}
+		if (count($forms) > 0)
+		{
+			$forms['BOUTONS'] = $this->getFormButtons()->createView();
+		}
+
 		return $forms;
 	}
 

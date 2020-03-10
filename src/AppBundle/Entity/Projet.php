@@ -513,7 +513,7 @@ class Projet
         elseif ( $etat_version ==  Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
         elseif ( $etat_version ==  Etat::EDITION_TEST      ) return 'EDITION';
         elseif ( $etat_version ==  Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
-        elseif ( $etat_version ==  Etat::ACTIF             )
+        elseif ( $etat_version ==  Etat::ACTIF || $etat_version == Etat::ACTIF_TEST )
         {
 			// Permet d'afficher un signe particulier pour les projets non renouvelés en période de demande pour une session A
             $session = Functions::getSessionCourante();

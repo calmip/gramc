@@ -155,9 +155,8 @@
                     {{ rallonge.expert.prenom }} {{ rallonge.expert.nom }}
                     {% endif %}
 
-                    {% if( rallonge.libelleEtatRallonge == 'EDITION_EXPERTISE' or rallonge.libelleEtatRallonge == 'DESAFFECTE' ) %}
-                    {# form_widget( projet.form[rallonge.idRallonge].expert ) #}
-                    {% for f in forms[rallonge.id] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
+					{% if forms[rallonge.id] is defined %}
+					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
                     {% endif %}
 
                 </td>
@@ -173,17 +172,19 @@
 		{% endfor %}
         </tbody>
     </table>
-	<div id="bouton_affecter">
-		<h2>Pour la sélection</h2>
-		{#{{ form_start( forms['BOUTONS'] ) }}#}
-		{{ form_widget( forms['BOUTONS'].sub1 ) }}
-		{{ form_widget( forms['BOUTONS'].sub2 ) }}
-		{% if max_expertises_nb > 1 %}
-			{{ form_widget( forms['BOUTONS'].sub3 ) }}
-			{{ form_widget( forms['BOUTONS'].sub4 ) }}
-		{% endif %}
-		{#{{ form_end( forms['BOUTONS'] ) }}#}
-	</div>
+    {% if forms['BOUTONS'] is defined %}
+		<div id="bouton_affecter">
+			<h2>Pour la sélection</h2>
+			{#{{ form_start( forms['BOUTONS'] ) }}#}
+			{{ form_widget( forms['BOUTONS'].sub1 ) }}
+			{{ form_widget( forms['BOUTONS'].sub2 ) }}
+			{% if max_expertises_nb > 1 %}
+				{{ form_widget( forms['BOUTONS'].sub3 ) }}
+				{{ form_widget( forms['BOUTONS'].sub4 ) }}
+			{% endif %}
+			{#{{ form_end( forms['BOUTONS'] ) }}#}
+		</div>
+	{% endif %}
 </div>
 
 </form>

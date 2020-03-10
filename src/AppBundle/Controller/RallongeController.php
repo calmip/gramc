@@ -43,8 +43,8 @@ use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 use AppBundle\Utils\Functions;
 use AppBundle\Workflow\Rallonge\RallongeWorkflow;
-use AppBundle\Utils\AffectationExperts;
-use AppBundle\Utils\AffectationExpertsRallonge;
+use AppBundle\AffectationExperts\AffectationExperts;
+use AppBundle\AffectationExperts\AffectationExpertsRallonge;
 
 use AppBundle\Utils\Menu;
 
@@ -749,8 +749,6 @@ class RallongeController extends Controller
 		
 		$forms       = $affectationExperts->getExpertsForms();
 		$stats       = $affectationExperts->getStats();
-		
-		$forms['BOUTONS'] = $form_buttons->createView();
 		$titre = "Affectation des experts aux rallonges de l'année 20$annee"; 
 
         return $this->render('rallonge/affectation.html.twig',

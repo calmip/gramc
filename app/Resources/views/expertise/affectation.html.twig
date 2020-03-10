@@ -49,11 +49,9 @@
             {% for version in versions %}
             <tr>
 				<td >
-	                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+					{% if forms['selection_' ~ version.getIdVersion()] is defined %}
 	                {{ form_widget( forms['selection_' ~ version.getIdVersion()].sel ) }}
-					{% else %}
-					&nbsp;
-					{% endif %}
+	                {% endif %}
 				</td>
 					{% set cls="w15 " %}
 	                {% if ( version.getExpert() == null ) %} 
@@ -106,7 +104,7 @@
                 {% else %}
                 <td >
                 {% endif %}
-                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+				{% if forms[version.getIdVersion()] is defined %}
                 <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
                     {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
@@ -128,6 +126,7 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if forms['BOUTONS'] is defined %}
         <div id="bouton_affecter">
 			<h2>Pour la sélection</h2>
 			{#{{ form_start( forms['BOUTONS'] ) }}#}
@@ -139,8 +138,8 @@
 			{% endif %}
 			{#{{ form_end( forms['BOUTONS'] ) }}#}
 		</div>
+		{% endif %}
     </div>
 </form>
 </section>
-
 {% endblock %}
