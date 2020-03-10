@@ -103,7 +103,7 @@
 
 
                 <td rowspan="{{ projet.rowspan }}">{{ projet.version.labo }}</td>
-                <td rowspan="{{ projet.rowspan }}">
+                <td>
                     {% if( projet.affecte is defined and projet.affecte == true ) %}
                         <img src="{{ asset('icones/actif.png') }}" alt="Choix du président" titre="Affecté par le président">
                     {% endif %}
@@ -146,6 +146,7 @@
                     {% endif %}
                 </td>
                 <td>{{ macros_graphiques.meta_etat_graphique( rallonge.metaetat ) }}</td>
+                <td>{% if (rallonge.expert!=null)%}<img src="{{ asset('icones/actif.png') }}" alt="Choix du président" titre="Affecté par le président">{% endif %}</td>
                 <td>
                     {% if( rallonge.expert!= null ) %}
                     <a class="sudo" href="{{ path('sudo',  { 'id': rallonge.expert.id }) }}?" title="Changer d'identité">

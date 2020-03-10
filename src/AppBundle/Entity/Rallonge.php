@@ -29,6 +29,8 @@ use Doctrine\ORM\Mapping as ORM;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
+use AppBundle\Interfaces\Demande;
+
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -42,7 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *  message="Si vous voulez attribuer des heures pour cette demande, choisissez ""Accepter""",groups={"expertise"})
  * @ORM\HasLifecycleCallbacks()
  */
-class Rallonge
+class Rallonge implements Demande
 {
     /**
      * @var integer
@@ -195,6 +197,7 @@ class Rallonge
 
         return $this;
     }
+	public function setEtat($etatVersion) { return $this->setEtatVersion(); }
 
     /**
      * Get etatRallonge

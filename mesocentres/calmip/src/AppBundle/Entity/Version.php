@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
+use AppBundle\Interfaces\Demande;
 
 use AppBundle\Politique\Politique;
 
@@ -38,7 +39,7 @@ use AppBundle\Politique\Politique;
  * @ORM\Entity(repositoryClass="AppBundle\Repository\VersionRepository")
  * @ORM\HasLifecycleCallbacks()
  */
-class Version
+class Version implements Demande
 {
     /**
      * @var integer
@@ -741,7 +742,8 @@ class Version
 
         return $this;
     }
-
+	public function setEtat($etatVersion) { return $this->setEtatVersion(); }
+	
     /**
      * Get etatVersion
      *

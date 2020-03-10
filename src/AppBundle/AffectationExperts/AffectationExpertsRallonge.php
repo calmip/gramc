@@ -29,6 +29,7 @@ use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\AffectationExperts\AffectationExperts;
+use AppBundle\Interfaces\Demande;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -54,7 +55,7 @@ use AppBundle\Utils\Functions;
 
 class AffectationExpertsRallonge extends AffectationExperts
 {
-	protected function getExpertForms($rallonge)
+	protected function getExpertForms(Demande $rallonge)
 	{
 
 		// Liste d'exclusion = Les collaborateurs + de la version
@@ -94,7 +95,7 @@ class AffectationExpertsRallonge extends AffectationExperts
 	 * Sauvegarde les experts associés à une rallonge
 	 *
 	 ***/
-	protected function affecterExpertsToVersion($experts, $rallonge)
+	protected function affecterExpertsToDemande($experts, Demande $rallonge)
 	{
 		$em = $this->doctrine->getManager();
 		$rallonge->setExpert($experts[0]);
@@ -106,8 +107,8 @@ class AffectationExpertsRallonge extends AffectationExperts
 	* Appelée quand on clique sur Notifier les experts
 	* Envoie une notification aux experts passés en paramètre
 	*
-	* params $experts = liste d'experts (pas utilisé)
-	*        $version = la version à expertiser
+	* params $experts  = liste d'experts (pas utilisé)
+	*        $rallonge = la version à expertiser
 	*
 	*****/
 	protected function notifierExperts($experts, $rallonge)

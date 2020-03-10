@@ -28,6 +28,7 @@ namespace AppBundle\AffectationExperts;
 use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
 use AppBundle\Entity\CollaborateurVersion;
+use AppBundle\Interfaces\Demande;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -59,16 +60,16 @@ class AffectationExperts
 	// Constructeur: Certains objets sont protégés dans les controleurs, 
 	// donc on les passe séparément à affectationExperts
 	// Arguments: $request   
-	//			  $versions	 La liste des versions
+	//			  $demandes	 La liste des demandes (array)
 	//            $ff        Form factory
 	//            $dct       getDoctrine()
 
-	function __construct (Request $request, $versions, $ff, $dct)
+	function __construct (Request $request, $demandes, $ff, $dct)
 	{
 		$this->formFactory = $ff;
 		$this->doctrine    = $dct;
 		$this->request     = $request;
-		$this->versions    = $versions;
+		$this->demandes    = $demandes;
 		$this->form_buttons= null;
 		$this->thematiques = null;
 	}
@@ -117,16 +118,16 @@ class AffectationExperts
 		            ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
 	        }
 	        
-	        // Remplissage avec le nb de versions par thématiques
-	        $versions = $this->versions;
-	        foreach( $versions as $version )
+	        // Remplissage avec le nb de demandes par thématiques
+	        $demandes = $this->demandes;
+	        foreach( $demandes as $demande )
 			{
-	            $etatVersion    =   $version->getEtat();
-	            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
+	            $etatDemande    =   $demande->getEtat();
+	            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue; 
 	        
-				if( $version->getPrjThematique() != null )
+				if( $demande->getPrjThematique() != null )
 	            {
-	                $thematiques[ $version->getPrjThematique()->getIdThematique() ]['projets']++;
+	                $thematiques[ $demande->getPrjThematique()->getIdThematique() ]['projets']++;
 				}
 			}
 			$this->thematiques = $thematiques;
@@ -136,20 +137,20 @@ class AffectationExperts
 
 	/*********************************************
 	 * traitementFormulaires
-	 * Traite les formulaires d'affectation des experts pour les versions sélectionnées
+	 * Traite les formulaires d'affectation des experts pour les demandes sélectionnées
 	 *    
 	 ********/
 	public function traitementFormulaires()
 	{
 		$request  = $this->request;
-		$versions = $this->versions;
-        foreach( $versions as $version )
+		$demandes = $this->demandes;
+        foreach( $demandes as $demande )
 		{
-            $etatVersion    =   $version->getEtat();
-            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; // on n'affiche pas de version en cet état
+            $etatDemande    =   $demande->getEtat();
+            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue;
 
-			// La version est-elle sélectionnée ? - Si non on ignore
-			$selform = $this->getSelForm($version);
+			// La demande est-elle sélectionnée ? - Si non on ignore
+			$selform = $this->getSelForm($demande);
 			$selform->handleRequest($request);
 			if ($selform->getData()['sel']==false)
 			{
@@ -157,7 +158,7 @@ class AffectationExperts
 			}
 
 			// traitement du formulaire d'affectation
-			$forms   = $this->getExpertForms($version);
+			$forms   = $this->getExpertForms($demande);
 
 			$experts_affectes = [];
 			foreach ($forms as $f)
@@ -170,21 +171,21 @@ class AffectationExperts
 			$form_buttons = $this->getFormButtons();
 			if ($form_buttons->get('sub1')->isClicked())
 			{
-				$this->affecterExpertsToVersion($experts_affectes,$version);
+				$this->affecterExpertsToDemande($experts_affectes,$demande);
 			}
 			elseif ($form_buttons->get('sub2')->isClicked())
 			{
-				$this->affecterExpertsToVersion($experts_affectes,$version);
-				$this->notifierExperts($experts_affectes,$version);
+				$this->affecterExpertsToDemande($experts_affectes,$demande);
+				$this->notifierExperts($experts_affectes,$demande);
 			}
 			elseif ($form_buttons->get('sub3')->isClicked())
 			{
-				$this->addExpertiseToVersion($version);
+				$this->addExpertiseToDemande($demande);
 			}
 			elseif ($form_buttons->get('sub4')->isClicked())
 			{
-				$this->affecterExpertsToVersion($experts_affectes,$version);
-				$this->remExpertiseFromVersion($version);
+				$this->affecterExpertsToDemande($experts_affectes,$demande);
+				$this->remExpertiseFromDemande($demande);
 			}
 			else
 			{
@@ -194,26 +195,26 @@ class AffectationExperts
 	}
 
 	/**
-	* Ajoute une expertise à la version
+	* Ajoute une expertise à la demande
 	* Si on atteint le paramètre max_expertises_nb, ne fait rien
 	* TODO - Si on atteint le paramètre max_expertises_nb, envoyer un message d'erreur !
 	*
-	* param = $version
+	* param = $demande
 	* Return= rien
 	*
 	****/
-	private function addExpertiseToVersion($version)
+	private function addExpertiseToDemande($demande)
 	{
-		$expertises = $version->getExpertise()->toArray();
+		$expertises = $demande->getExpertise()->toArray();
 		if (count($expertises)<AppBundle::getParameter('max_expertises_nb'))
 		{
 			$expertise  =   new Expertise();
-			$expertise->setVersion( $version );
+			$expertise->setVersion( $demande );
 
 			// Attention, l'algorithme de proposition des experts dépend du type de projet
 			// TODO Actuellement on ne propose pas d'expertise à ce moment
 			//      Il faudra améliorer l'algorithme de proposition
-			//$expert = $version->getProjet()->proposeExpert();
+			//$expert = $demande->getProjet()->proposeExpert();
 			//if ($expert != null)
 			//{
 			//	$expertise->setExpert( $expert );
@@ -223,18 +224,18 @@ class AffectationExperts
 	}
 
 	/**
-	* Retire les expertises sans experts de la version, sauf la première
+	* Retire les expertises sans experts de la demande, sauf la première
 	* car il doit rester au moins une expertise
 	*
 	* TODO - Plutôt que de ne rien faire, envoyer un message d'erreur !
 	*
-	* param = $version
+	* param = $demande
 	* Return= rien
 	*
 	****/
-	private function remExpertiseFromVersion($version)
+	private function remExpertiseFromDemande(Demande $demande)
 	{
-		$expertises = $version->getExpertise()->toArray();
+		$expertises = $demande->getExpertise()->toArray();
 		$em = $this->getDoctrine()->getManager();
 
 		// On travaille en deux temps pour ne pas supprimer un tableau tout en itérant
@@ -265,13 +266,13 @@ class AffectationExperts
 	}
 
 	/**
-	 * Sauvegarde les experts associés à une version
+	 * Sauvegarde les experts associés à une demande
 	 *
 	 ***/
-	protected function affecterExpertsToVersion($experts, $version)
+	protected function affecterExpertsToDemande($experts, Demande $demande)
 	{
 		$em = $this->doctrine->getManager();
-		$expertises = $version->getExpertise()->toArray();
+		$expertises = $demande->getExpertise()->toArray();
 		usort($expertises,['self','cmpExpertises']);
 
 		if (count($experts)>1)
@@ -300,32 +301,32 @@ class AffectationExperts
 
 	/*************************************************************************
 	 * getExpertsForms
-	 * Génère les formulaires d'affectation des experts pour chaque version
+	 * Génère les formulaires d'affectation des experts pour chaque demande
 	 * 
-	 * return:  Un tableau de formulaire, indexé par l'id de la version
+	 * return:  Un tableau de formulaire, indexé par l'id de la demande
 	 * 
 	 ****************************************************************************/
 	public function getExpertsForms()
 	{
-		$versions = $this -> versions;
+		$demandes = $this -> demandes;
         $forms    = [];
-        foreach( $versions as $version )
+        foreach( $demandes as $demande )
 		{
-            $etatVersion    =   $version->getEtat();
+            $etatDemande    =   $demande->getEtat();
             
             // Pas de formulaire sauf pour ces états
-            if( $etatVersion != Etat::EDITION_EXPERTISE && $etatVersion != Etat::EXPERTISE_TEST ) continue; 
+            if( $etatDemande != Etat::EDITION_EXPERTISE && $etatDemande != Etat::EXPERTISE_TEST ) continue; 
 
-            $exp = $version->getExperts();
+            $exp = $demande->getExperts();
 
 			// Formulaire pour la sélection (case à cocher)
-			$sform = $this->getSelForm($version)->createView();
-			$forms['selection_'.$version->getId()] = $sform;
+			$sform = $this->getSelForm($demande)->createView();
+			$forms['selection_'.$demande->getId()] = $sform;
 
 			// Génération des formulaires de choix de l'expert
-			$eforms  = $this->getExpertForms($version);
+			$eforms  = $this->getExpertForms($demande);
 			foreach ($eforms as &$f) $f=$f->createView();
-			$forms[$version->getId()] = $eforms;
+			$forms[$demande->getId()] = $eforms;
 		}
 		if (count($forms) > 0)
 		{
@@ -338,9 +339,6 @@ class AffectationExperts
 	/*************************************************************************
 	 * getStats
 	 * Génère différentes statistiques sur les attributions
-	 * 
-	 * input:   $versions    Tableau de versions
-	 *          $thematiques Tableau de thématiques
 	 * 
 	 * return:  les stats
 	 * 
@@ -355,15 +353,15 @@ class AffectationExperts
         $nbAttHeures    = 0;
 
 		$experts_assoc  = [];
-		$versions       = $this->versions;
-        foreach( $versions as $version )
+		$demandes       = $this->demandes;
+        foreach( $demandes as $demande )
 		{
-            $etatVersion = $version->getEtat();
+            $etatDemande = $demande->getEtat();
             
-            // Pas de choix d'expert pour ces états de versions
-            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
+            // Pas de choix d'expert pour ces états de demandes
+            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue; 
 
-            $exp = $version->getExperts();
+            $exp = $demande->getExperts();
             if (count($exp)==0)
             {
 				$sansexperts++;
@@ -379,29 +377,11 @@ class AffectationExperts
 					}
 					$experts_assoc[$e->getIdIndividu()]['projets']++;
 				}
-	            /*if( !$version->isNouvelle() )
-	            {
-	                $renouvellement++;
-				}
-	            else
-	            {
-	                $nouveau++;
-				}*/
 			}
 			
             $nbProjets++;
 
-            $nbDemHeures    +=  $version->getDemHeures();
-            /*if( $version->getExpertise() != null && $version->getExpertise()[0] != null )
-			{
-                $heures         =   $version->getExpertise()[0]->getNbHeuresAtt();
-                $nbAttHeures    +=  $heures;
-                $attHeures[$version->getId()]    =  $heures;
-			}
-            else
-            {
-                $attHeures[$version->getId()]    = 0;
-			}*/
+            $nbDemHeures    +=  $demande->getDemHeures();
 		}
 		$stats = ["nbProjets"      => $nbProjets,
 				  "nouveau"        => $nouveau,
@@ -416,26 +396,17 @@ class AffectationExperts
 	 * getAttHeures
 	 * Renvoie un tableau avec le nombre d'heures attribuées, pour affichage
 	 * 
-	 * return:  Un tableau indexé par l'id de la version
+	 * return:  Un tableau indexé par l'id de la demande
 	 * 
 	 ****************************************************************************/
 	public function getAttHeures()
 	{
-		$versions = $this->versions;
+		$demandes = $this->demandes;
         $attHeures = [];
-        foreach( $versions as $version )
+        foreach( $demandes as $demande )
 		{
-            $etatVersion    =   $version->getEtat();
-            if( $etatVersion == Etat::EDITION_DEMANDE || $etatVersion == Etat::ANNULE ) continue; 
-
-            /*if( $version->getExpertise() != null && $version->getExpertise()[0] != null )
-			{
-                $attHeures[$version->getId()] = $version->getExpertise()[0]->getNbHeuresAtt();
-			}
-            else
-            {
-                $attHeures[$version->getId()]    = 0;
-			}*/
+            $etatDemande    =   $demande->getEtat();
+            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue; 
 		}
 		return $attHeures;
 	}
@@ -450,15 +421,15 @@ class AffectationExperts
 
 	public function getTableauExperts()
 	{
-		$versions      = $this->versions;
+		$demandes      = $this->demandes;
 		$experts_assoc = [];
-        foreach( $versions as $version )
+        foreach( $demandes as $demande )
 		{
-            // Pas de choix d'expert pour ces états de versions
-            $etat_version = $version->getEtat();
-            if( $etat_version == Etat::EDITION_DEMANDE || $etat_version == Etat::ANNULE ) continue; 
+            // Pas de choix d'expert pour ces états de demandes
+            $etat_demande = $demande->getEtat();
+            if( $etat_demande == Etat::EDITION_DEMANDE || $etat_demande == Etat::ANNULE ) continue; 
             
-			$exp = $version->getExperts();
+			$exp = $demande->getExperts();
 			foreach ($exp as $e)
 			{
 				if ($e==null) continue;
@@ -487,26 +458,34 @@ class AffectationExperts
 	/***
 	 * Renvoie un formulaire avec une case à cocher, rien d'autre
 	 *
-	 *   params  $version (pour calculer le nom du formulaire)
+	 *   params  $demande (pour calculer le nom du formulaire)
 	 *   return  une form
 	 *
 	 */
-	private  function getSelForm($version)
+	private  function getSelForm(Demande $demande)
 	{
-		$nom = 'selection_'.$version->getId();
+		$nom = 'selection_'.$demande->getId();
 		$formBuilder = $this->formFactory->createNamedBuilder($nom, FormType::class, null, ['csrf_protection' => false]);
 		$formBuilder->add('sel',CheckboxType::class, [ 'required' =>  false, 'attr' => ['class' => "expsel"]  ]);
 		return $formBuilder->getForm();
 	}
 
-	protected function getExpertForms($version)
+	/***
+	 * Renvoie un tableau de formulaires de choix d'experts
+	 *
+	 *   params  $demande (pour calculer le nom des formulaires)
+	 *   return  un tableau de forms
+	 *
+	 */
+
+	protected function getExpertForms(Demande $demande)
 	{
 		$forms = [];
-		$expertises = $version->getExpertise()->toArray();
+		$expertises = $demande->getExpertise()->toArray();
 		usort($expertises,['self','cmpExpertises']);
 
 		// Liste d'exclusion = Les collaborateurs + les experts choisis par ailleurs
-	    $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($version->getProjet());
+	    $exclus = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($demande->getProjet());
 	    $experts= [];
 	    foreach ($expertises as $expertise)
 		{
@@ -527,13 +506,13 @@ class AffectationExperts
 			if ($expert != null) unset($exclus_exp[$expert->getId()]);
 
 			// Nom du formulaire
-			$nom = 'expert'.$version->getProjet()->getIdProjet().'-'.$expertise->getId();
+			$nom = 'expert'.$demande->getProjet()->getIdProjet().'-'.$expertise->getId();
 
-			//if ($version->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
-		    //Functions::debugMessage(__METHOD__ . "Experts exclus pour $version ".Functions::show( $exclus));
+			//if ($demande->getIdVersion()=="20A200044")	Functions::debugMessage("koukou $nom ".$expert->getId());
+		    //Functions::debugMessage(__METHOD__ . "Experts exclus pour $demande ".Functions::show( $exclus));
 
 		    // Projets de type Projet::PROJET_FIL -> La première expertise est obligatoirement faite par un président !
-		    if ($first && $version->getProjet()->getTypeProjet() == Projet::PROJET_FIL)
+		    if ($first && $demande->getProjet()->getTypeProjet() == Projet::PROJET_FIL)
 		    {
 			    $choice = new ExpertChoiceLoader($exclus_exp,true);
 			}
@@ -567,12 +546,12 @@ class AffectationExperts
 	* Envoie une notification aux experts passés en paramètre
 	*
 	* params $experts = liste d'experts (pas utilisé)
-	*        $version = la version à expertiser
+	*        $demande = la demande à expertiser
 	*
 	*****/
-	protected function notifierExperts($experts, $version)
+	protected function notifierExperts($experts, $demande)
 	{
-		$expertises = $version->getExpertise();
+		$expertises = $demande->getExpertise();
 		foreach ($expertises as $e)
 		{
 			$exp = $e->getExpert();
