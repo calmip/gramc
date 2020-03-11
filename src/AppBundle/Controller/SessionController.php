@@ -754,8 +754,8 @@ class SessionController extends Controller
 	        $langage .=  Functions::string_conversion($version->getCodeLangage());
 	        $ligne = [
 				($version->getIdVersion() != null) ? $version->getIdVersion() : 'null',
-				$version->getDemHeures(),
-				$version->getAttrHeures(),
+				$version->getDemHeuresTotal(),
+				$version->getAttrHeuresTotal(),
 				$version->getConsoCalcul(),
 				Functions::string_conversion($version->getPrjTitre()),
 				Functions::string_conversion($version->getPrjThematique()),
