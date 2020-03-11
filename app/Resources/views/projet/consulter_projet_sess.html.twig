@@ -132,7 +132,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ (versionPrec.data.getDemHeuresRallonge + versionPrec.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
+            <td>{{ (versionPrec.getDemHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -140,7 +140,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ (version.data.getDemHeuresRallonge + version.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
+            <td>{{ (version.getDemHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
             {% if toomuch %} <img src="{{ asset('icones/attention16.png') }}" alt="Demande trop forte, cf. règles d'attribution" title="Demande trop forte, cf. règles d'attribution" /> {% endif %}
             </td>
         </tr>
@@ -156,7 +156,7 @@
             <th class="horiz">Nombre d'heures attribuées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ (versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getAttrHeures - versionPrec.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
+            <td>{{ (versionPrec.getAttrHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -164,8 +164,8 @@
             <th class="horiz">Nombre d'heures attribuées session {{ session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ (version.data.attrHeuresRallonge + version.data.attrHeures - version.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
-            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte |number_format(0, ',', ' ')|replace({' ':'&nbsp;'}) |raw }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
+            <td>{{ (version.attrHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
+            {% if version.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.attrHeuresEte |number_format(0, ',', ' ')|replace({' ':'&nbsp;'}) |raw }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
             </td>
         </tr>
     </tbody>
@@ -183,9 +183,9 @@
                 <span class="petit">depuis le début de {{ session.getAnneeSession() + 2000 }}</span>
             </th>
             {# TODOPOLITIQUE #}
-            <td>{# {{ version.data.conso }}
+            <td>{# {{ version.conso }}
                 {% if(version.getQuota > 0) %}
-                    ({{ (version.data.conso * 100 / version.data.quota) |number_format(1)}} %)
+                    ({{ (version.consocalcul * 100 / version.quota) |number_format(1)}} %)
                 {% endif %}
                 <br /> #}
                 {{ conso|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
