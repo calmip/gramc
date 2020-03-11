@@ -81,10 +81,10 @@ $( document ).ready(function() {
     function submit_ferme( event )
     {
         event.preventDefault();
-	form = $( "#formulaire_confirmation form" );
+		form = $( "#formulaire_confirmation form" );
         h =  form.attr('action');
-	h += "&ajax=1";
-	$.ajax({url: h,
+		h += "&ajax=1";
+		$.ajax({url: h,
 	    type: "POST",
 	// context: gramc_ligne,
 	    context: gramc_cell,
@@ -155,6 +155,7 @@ $( document ).ready(function() {
 	}
 
 	// Appelé lorsque le select change de valeur
+	// TODO - Je ne crois pas que ça fonctionne !
 	function change_select(event) {
 		// changer la classe du parent du select
 		$(this).parent().removeClass();
@@ -194,4 +195,17 @@ $( document ).ready(function() {
 			 };
 		 });
 	};
+	
+	// Connecté aux cb de sélection
+	$( "input.expsel").change(change_couleur);
+	function change_couleur() {
+		cell = $(this).parent();
+		// Si la cb est cochée la cellule se teinte en bleu
+		if ( $(this).is(":checked")) {
+			cell.css("background-color","blue");
+		// Sinon elle prend la couleur de la cellule d'à côté
+		} else {
+			cell.css("background-color",cell.next().css("background-color"));
+		}
+	}
 });

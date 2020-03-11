@@ -513,7 +513,7 @@ class Projet
         elseif ( $etat_version ==  Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
         elseif ( $etat_version ==  Etat::EDITION_TEST      ) return 'EDITION';
         elseif ( $etat_version ==  Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
-        elseif ( $etat_version ==  Etat::ACTIF             )
+        elseif ( $etat_version ==  Etat::ACTIF || $etat_version == Etat::ACTIF_TEST )
         {
 			// Permet d'afficher un signe particulier pour les projets non renouvelés en période de demande pour une session A
             $session = Functions::getSessionCourante();
@@ -1052,16 +1052,24 @@ class Projet
 
     public function getVersionsAnnee($annee)
     {
-    $subAnnee   = substr( strval($annee), -2 );
-    $repository = AppBundle::getRepository(Version::class);
-    $versionA   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
-    $versionB   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
-
-    $versions = [];
-    if( $versionA != null ) $versions['A'] = $versionA;
-    if( $versionB != null ) $versions['B'] = $versionB;
-    return $versions;
+	    $subAnnee   = substr( strval($annee), -2 );
+	    $repository = AppBundle::getRepository(Version::class);
+	    $versionA   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
+	    $versionB   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
+	
+	    $versions = [];
+	    if( $versionA != null ) $versions['A'] = $versionA;
+	    if( $versionB != null ) $versions['B'] = $versionB;
+	    return $versions;
     }
+    
+    ///////////////////////////////////////////////////
+    
+	public function getEtat()
+    {
+		return $this->getEtatProjet();
+	}
+
 
 }
 

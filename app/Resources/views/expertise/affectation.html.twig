@@ -9,122 +9,27 @@
 
 <section>
 
-{% if( projets_test == false ) %}
-<h1>Affectation des experts aux projets de la session {{ session }}</h1>
-
-{{ form_start( sessionForm ) }}
-{{ form_widget( sessionForm.session ) }}
-{{ form_widget( sessionForm.submit ) }}
-{{ form_end( sessionForm ) }}
-
-{% else %}
-<h1>Affectation des experts aux projets test de l'année {{ annee }}</h1>
+<h1>{{ titre }}</h1>
+<p>&nbsp;</p>
+{% if sessionForm != null %}
+	{{ form_start( sessionForm ) }}
+	{{ form_widget( sessionForm.session ) }}
+	{{ form_widget( sessionForm.submit ) }}
+	{{ form_end( sessionForm ) }}
+	<hr />
 {% endif %}
 
-<br>
+{% include('expertise/affectation_bilans.html.twig') %}
 
-<div id="bilan_legende">
-    <div id="bilan">
-        <table>
-            <tbody>
-                <tr>
-                    <th colspan="3">Projets</th>
-                </tr>
-                <tr>
-                    <th>Nombre de projets</th>
-                    <td>{{ nbProjets }}</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <th>Nouveaux projets</th>
-                    <td>{{  nouveau }}</td>
-                    <td><input type="checkbox" class="cb" id="nouveau" checked="checked"></td>
-                </tr>
-                <tr>
-                    <th>Renouvellements</th>
-                    <td>{{  renouvellement }}</td>
-                    <td><input type="checkbox" class="cb" id="renouv" checked="checked"></td>
-                </tr>
-                <tr>
-                    <th>Heures demandées</th>
-                    <td>{{ nbDemHeures}}</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <th>Heures attribuées</th>
-                    <td>{{ nbAttHeures}}</td>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
 
 {# #################################################################### #}
 
-        <table id="themas">
-            <tbody>
-                <tr>
-                    <th colspan="3">Thématiques</th>
-                </tr>
-                {% for key, thema in thematiques %}
-                    {% if( thema.projets > 0 ) %}
-                    <tr>
-                        <th>{{ thema.thematique}}
-                            {% if(  thema.experts| length > 0 )%}<br>
-                                <small class="light"><em> - {% for expert in thema.experts %}{{expert}} - {% endfor %}</em></small>
-                            {% endif %}
-                        </th>
-                        <td>{{ thema.projets }}</td>
-                        <td><input type="checkbox" class="cb" id="t{{ key }}" checked="checked"></td>
-                    </tr>
-                    {% endif %}
-                {% endfor %}
-                <tr>
-                    <th>Tout décocher</th>
-                    <td>&nbsp;</td>
-                    <td><input type="checkbox" id="tX" checked="checked"></td>
-                </tr>
-           </tbody>
-        </table>
-
-{# #################################################################### #}
-{% if( projets_test == false ) %}
-
-        <table id="experts">
-            <tbody>
-                <tr>
-                    <th colspan="3">Experts</th>
-                </tr>
-                {% for key, exp in experts %}
-                <tr>
-                    <th>{{ exp.expert}}
-                        {% if( exp.expert.thematique | length > 0 )%}<br>
-                        <small class="light"><em> - {% for thematique in exp.expert.thematique %}{{thematique}} - {% endfor %}</em></small>
-                        {% endif %}
-                    </th>
-                    <td>{{ exp.projets }}</td>
-                    <td><input type="checkbox" class="cb" id="e{{ key }}" checked="checked"></td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <th>Tout décocher</th>
-                    <td>&nbsp;</td>
-                    <td><input type="checkbox" id="eX" checked="checked"></td>
-                </tr>
-            </tbody>
-        </table>
-{% endif %}
-<br /><br />
-</section>
-
-{# #################################################################### #}
-
-<section>
     <form name="affecter_les_experts" method="post">
     <div id="projets">
         <table id="affecte_experts">
             <thead>
                 <tr>
-		    <th title="Cocher la case pour sélectionner ce projet">S</th>
+				    <th title="Cocher la case pour sélectionner ce projet">S</th>
                     <th >N</th>
                     <th >N°</th>
                     <th >&nbsp;</th>
@@ -144,17 +49,22 @@
             {% for version in versions %}
             <tr>
 				<td >
-	                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+					{% if forms['selection_' ~ version.getIdVersion()] is defined %}
 	                {{ form_widget( forms['selection_' ~ version.getIdVersion()].sel ) }}
-					{% else %}
-					&nbsp;
-					{% endif %}
+	                {% endif %}
 				</td>
-                {% if( version.isNouvelle() ) %}
-                    <td class="nouveau w15"><strong>N</strong></td>
-                {% else %}
-                    <td class="renouv w15">&nbsp;</td>
-                {% endif %}
+					{% set cls="w15 " %}
+	                {% if ( version.getExpert() == null ) %} 
+						{% set cls=cls ~ "sansexperts " %}
+					{% else %}
+						{% if (version.isNouvelle()) %} {% set cls=cls ~ "nouveau " %} {% else %} {% set cls=cls ~ "renouv " %} {% endif %}
+						{% for e in version.expertise %} {% set cls=cls ~ e.expert.idIndividu %} {% endfor %}
+					{% endif %}
+	                {% if( version.isNouvelle() ) %}
+	                    <td class="{{cls}}"><strong>N</strong></td>
+	                {% else %}
+	                    <td class="{{cls}}">&nbsp;</td>
+	                {% endif %}
 
                 <td > {{  version.projet }}</td>
                 <td >
@@ -194,7 +104,7 @@
                 {% else %}
                 <td >
                 {% endif %}
-                {% if( version.libelleEtat=='EDITION_EXPERTISE' or version.libelleEtat== 'EXPERTISE_TEST') %}
+				{% if forms[version.getIdVersion()] is defined %}
                 <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
                     {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
@@ -216,6 +126,7 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if forms['BOUTONS'] is defined %}
         <div id="bouton_affecter">
 			<h2>Pour la sélection</h2>
 			{#{{ form_start( forms['BOUTONS'] ) }}#}
@@ -227,8 +138,8 @@
 			{% endif %}
 			{#{{ form_end( forms['BOUTONS'] ) }}#}
 		</div>
+		{% endif %}
     </div>
 </form>
 </section>
-
 {% endblock %}
