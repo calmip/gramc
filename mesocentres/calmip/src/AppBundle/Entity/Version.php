@@ -3010,6 +3010,22 @@ class Version
 		return $projet->getQuota($annee);
 	}
 
+	/*
+	 * Nombre d'heures demandées, en comptant les rallonges
+	 */
+	public function getDemHeuresTotal()
+	{
+		return $this->getDemHeures() + $this->getDemHeuresRallonge();
+	}
+	 
+	/*
+	 * Nombred'heures attribuées, en comptant les rallonges et les pénalités
+	 */
+	public function getAttrHeuresTotal()
+	{
+		$h = $this->getAttrHeures() + $this->getAttrHeuresRallonge() - $this->getPenalHeures();
+		return $h<0?0:$h;
+	}
 
     // calcul de la consommation à partir de la table Consommation juste pour une session
     // TODOCONSOMMATION - Est  utilisé seulement pour les statistiques
