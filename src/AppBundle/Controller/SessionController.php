@@ -720,6 +720,9 @@ class SessionController extends Controller
     {
 	    $entetes =  [
 			'Projet',
+			'Demande',
+			'Attribution',
+			'Consommation',
 			'Titre',
 			'Thématique',
 			'Responsable scientifique',
@@ -751,6 +754,9 @@ class SessionController extends Controller
 	        $langage .=  Functions::string_conversion($version->getCodeLangage());
 	        $ligne = [
 				($version->getIdVersion() != null) ? $version->getIdVersion() : 'null',
+				$version->getDemHeures(),
+				$version->getAttrHeures(),
+				$version->getConsoCalcul(),
 				Functions::string_conversion($version->getPrjTitre()),
 				Functions::string_conversion($version->getPrjThematique()),
 				$version->getResponsable(),

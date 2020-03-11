@@ -37,12 +37,15 @@
             <tr>
                 <th>Numéro</th>
                 <th></th>
+                <th>Heures demandées</th>
+                <th>Heures attribuées</th>
+                <th>Heures consommées</th>
                 <th>titre</th>
                 <th>Thématique</th>
                 <th>Responsable</th>
                 <th>Laboratoire</th>
                 <th>Langage</th>
-		<th>GPU</th>
+				<th>GPU</th>
                 <th>Nom du code</th>
                 <th>Licence du code</th>
                 <th>Heure/job</th>
@@ -68,6 +71,9 @@
                 <img src="{{ asset('icones/consulter.png') }}" alt="consulter" /></a>
                 {% endif %}
             </td>
+            <td>{{ version.demHeures }}</td>
+            <td>{{ version.attrHeures }}</td>
+            <td>{{ version.getconsocalcul }}</td>
             <td>{{ version.prjTitre }}</td>
             <td>{{ version.prjThematique }}</td>
             <td>{{ version.responsable }}</td>
