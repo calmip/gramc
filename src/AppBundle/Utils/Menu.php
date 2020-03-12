@@ -707,6 +707,25 @@ class Menu
 
     //////////////////////////////////////
 
+    public static function info()    
+    {
+	    $menu['name']        = 'phpinfo';
+	    $menu['commentaire'] = "Exécuter phpinfo()";
+	    $menu['lien']        = "phpinfo";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
+        {
+	        $menu['ok'] = true;
+        }
+	    else
+        {
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être un administrateur pour accéder à cette page";
+        }
+	    return $menu;
+    }
+    //////////////////////////////////////
+
     public static function laboratoires()
     {
 	    $menu['name']   =   'gerer_laboratoires';
@@ -1337,19 +1356,19 @@ class Menu
 
     public static function connexions()
     {
-    $menu['name']           =   'connexions';
-    $menu['lien']           =   "Personnes connectées";
-    $menu['commentaire']    =   "Vous ne pouvez pas voir les personnes connectées";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    $menu['name']           =   'connexions';
+	    $menu['lien']           =   "Personnes connectées";
+	    $menu['commentaire']    =   "Vous ne pouvez pas voir les personnes connectées";
+	    $menu['ok']             =   false;
+	    $menu['raison']         =   "Vous n'êtes pas un administrateur";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Vous pouvez pouvez voir les personnes connectées";
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Vous pouvez pouvez voir les personnes connectées";
         }
 
-    return $menu;
+	    return $menu;
     }
 
  ////////////////////////////////////////////////////////////////////////////

@@ -86,34 +86,36 @@ class GramcSessionController extends Controller
 
     public function adminAccueilAction()
     {
-        $menu1[]= Menu::individu_gerer();
-        //$menu1[]= Menu::presidents();
+        $menu1[] = Menu::individu_gerer();
+        //$menu1[] = Menu::presidents();
 
-        $menu2[]= Menu::gerer_sessions();
-        $menu2[]= Menu::bilan_session();
-        $menu2[]= Menu::mailToResponsables();
-        $menu2[]= Menu::mailToResponsablesFiche();
+        $menu2[] = Menu::gerer_sessions();
+        $menu2[] = Menu::bilan_session();
+        $menu2[] = Menu::mailToResponsables();
+        $menu2[] = Menu::mailToResponsablesFiche();
 
-        $menu3[]= Menu::projet_session();
-        $menu3[]= Menu::projet_annee();
-        $menu3[]= Menu::projet_tous();
-        $menu3[]= Menu::projet_donnees();
-        $menu3[]= Menu::televersement_generique();
+        $menu3[] = Menu::projet_session();
+        $menu3[] = Menu::projet_annee();
+        $menu3[] = Menu::projet_tous();
+        $menu3[] = Menu::projet_donnees();
+        $menu3[] = Menu::televersement_generique();
 
-        $menu4[]= Menu::thematiques();
-        $menu4[]= Menu::metathematiques();
-        $menu4[]= Menu::laboratoires();
+        $menu4[] = Menu::thematiques();
+        $menu4[] = Menu::metathematiques();
+        $menu4[] = Menu::laboratoires();
 
-        $menu5[]= Menu::bilan_annuel();
-        $menu5[]= Menu::statistiques();
-        $menu5[]= Menu::publications();
+        $menu5[] = Menu::bilan_annuel();
+        $menu5[] = Menu::statistiques();
+        $menu5[] = Menu::publications();
 
-        $menu6[]= Menu::connexions();
-        $menu6[]= Menu::journal();
+        $menu6[] = Menu::connexions();
+        $menu6[] = Menu::journal();
         if ( AppBundle::getParameter('kernel.debug') )
-            $menu6[]= Menu::avancer();
-
-        $menu6[]= Menu::nettoyer();
+        {
+            $menu6[] = Menu::avancer();
+		}
+		$menu6[] = Menu::info();
+        $menu6[] = Menu::nettoyer();
 
         return $this->render('default/accueil_admin.html.twig',['menu1' => $menu1,
                                                                 'menu2' => $menu2,
@@ -288,13 +290,13 @@ class GramcSessionController extends Controller
 
         $form->handleRequest($request);
 
-        if ($form->get('save')->isClicked() )
-            {
-            $m = $user->getMail();
-            }
+        //if ($form->get('save')->isClicked() )
+        //    {
+        //    $m = $user->getMail();
+        //    }
 
         if ($form->isSubmitted() )
-            {
+		{
             $repository = $this->getDoctrine()->getRepository('AppBundle:Individu');
             $user = $repository->findOneByMail($user->getMail()->getMail() );
             $roles = $user->getRoles();
@@ -310,12 +312,11 @@ class GramcSessionController extends Controller
             $userChecker->checkPostAuth($user);
             Functions::infoMessage(__METHOD__ . ":" . __LINE__ . " connexion DBG de l'utilisateur " . $user);
 
-
             if( $request->getSession()->has('url') )
                 return $this->redirect( $request->getSession()->get('url') );
             else
                 return $this->redirectToRoute('accueil');
-            }
+		}
 
         return $this->render('default/connexion_dbg.html.twig', [ 'form' => $form->createView() ]  );
     }
@@ -716,6 +717,19 @@ class GramcSessionController extends Controller
 	    return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
     }
 
+	/**
+	 * @Route("/phpinfo", name="phpinfo")
+	 * @Method({"GET"})
+	 * @Security("has_role('ROLE_ADMIN')")
+     *********************************************/
+     public function infoAction(Request $request)
+     {
+		ob_start();
+		phpinfo();
+		$info = ob_get_clean(); 
+		return $this->render('default/phpinfo.html.twig', [ 'info' => $info ]);
+	 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -780,6 +794,4 @@ class GramcSessionController extends Controller
         if( $session_workflow->canExecute(\AppBundle\Utils\Signal::CLK_SESS_FIN, $session ) ) echo ' true '; else echo ' false ';
         return new Response();
     }
-
-
 }
