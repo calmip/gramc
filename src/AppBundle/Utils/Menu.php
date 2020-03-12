@@ -81,7 +81,7 @@ class Menu
 	 {
 		 $menu['name']      = 'projet_accueil';
 		 $menu['lien']      = 'Demandeur';
-         if(AppBundle::isGranted('ROLE_EXPERT') )
+         if(AppBundle::isGranted('ROLE_DEMANDEUR') )
 		 {		 
 			 $menu['ok']        = true;
 			 $menu['commentaire'] = 'Espace demandeurs';
