@@ -416,8 +416,12 @@ const LIBELLE_STATUT =
      */
     public function setMail($mail)
     {
+		// Suppression des accents et autres ç
+		// voir https://stackoverflow.com/questions/1284535/php-transliteration
+		//$mail_ascii = transliterator_transliterate('Any-Latin;Latin-ASCII;', $mail);
+        //$this->mail = $mail_ascii;
+		// Ne fonctionne pas ! plantage dans connection_dbg (???)
         $this->mail = $mail;
-
         return $this;
     }
 
