@@ -59,7 +59,7 @@ class ProjetWorkflow extends Workflow
                 [
                 Signal::CLK_DEMANDE         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_DEMANDE, [], true),
                 Signal::CLK_VAL_DEM         =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_DEM, [], true),
-                Signal::CLK_ARR             =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_ARR),
+                Signal::CLK_ARR             =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_ARR,     [], true),
                 Signal::CLK_VAL_EXP_OK      =>  new ProjetTransition(Etat::NON_RENOUVELABLE, Signal::CLK_VAL_EXP_OK, [], true),
     
                 Signal::CLK_VAL_EXP_CONT    =>  new ProjetTransition(Etat::TERMINE, Signal::CLK_VAL_EXP_CONT),
