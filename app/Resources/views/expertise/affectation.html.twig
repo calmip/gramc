@@ -10,6 +10,10 @@
 <section>
 
 <h1>{{ titre }}</h1>
+{% if forms|length > 0 %}
+<div class="message info"><em>Commencez par sélectionner une ou plusieurs demandes</em></div>
+{% endif %}
+
 <p>&nbsp;</p>
 {% if sessionForm != null %}
 	{{ form_start( sessionForm ) }}
@@ -92,7 +96,7 @@
                 {% endif %}
                 </td>
 
-                <td >{% if( version.labo != null ) %}{{ version.labo.acrolabo }}{% endif %}</td>
+                <td >{% if( version.labo != null ) %}{{ version.labo.acrolabo }}{% else %}TOTO{% endif %}</td>
                 <td >
                     {% if( version.hasExpert ) %}
                      <img src="{{ asset('icones/actif.png') }}" alt="Expert affecté" title="Expert affecté"><span class="invisible">affecté</span>

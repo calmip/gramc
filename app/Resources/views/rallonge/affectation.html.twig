@@ -17,6 +17,10 @@
         (sessions {{ session1 }}, {{ session2 }})
     {% endif %}
 </h1>
+{% if forms|length > 0 %}
+<div class="message info"><em>Commencez par sélectionner une ou plusieurs demandes</em></div>
+{% endif %}
+
 <p>&nbsp;</p>
 
 <div id="bilan_legende">

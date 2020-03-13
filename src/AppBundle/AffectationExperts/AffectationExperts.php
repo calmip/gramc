@@ -418,7 +418,13 @@ class AffectationExperts
 	}	
 	private static function cmpExpertises($a,$b) { return $a->getId() > $b ->getId(); }
 
-
+	/***********
+	 * getTableauExperts Renvoie un tableau permettant d'afficher le nombre de projets affectés à chaque expert
+	 * 
+	 * return Un tableau de tableaux.
+	 *        Pour chaque entrée: [ 'expert' => $e, 'projets' => $nb ]
+	 * 
+	 ***********************************************/
 	public function getTableauExperts()
 	{
 		$demandes      = $this->demandes;
