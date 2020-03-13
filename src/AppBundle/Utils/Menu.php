@@ -1336,19 +1336,19 @@ class Menu
 
     public static function nettoyer()
     {
-    $menu['name']           =   'projet_nettoyer';
-    $menu['lien']           =   "Nettoyage pour conformité au RGPD";
-    $menu['commentaire']    =   "Vous ne pouvez pas supprimer les projets ou les utilisateurs anciens";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    $menu['name']           =   'projet_nettoyer';
+	    $menu['lien']           =   "Nettoyage pour conformité au RGPD";
+	    $menu['commentaire']    =   "Vous ne pouvez pas supprimer les projets ou les utilisateurs anciens";
+	    $menu['ok']             =   false;
+	    $menu['raison']         =   "Vous n'êtes pas un administrateur";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Suppresion des anciens projets et des utilisateurs orphelins";
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Suppresion des anciens projets et des utilisateurs orphelins";
         }
 
-    return $menu;
+	    return $menu;
     }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1375,46 +1375,49 @@ class Menu
     public static function presidents()
     {
 
-    $menu['name']           =   'individu_president';
-    $menu['lien']           =   "Attribuer le rôle de président";
-    $menu['commentaire']    =   "Vous ne pouvez pas attribuer le rôle de président";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    $menu['name']           =   'individu_president';
+	    $menu['lien']           =   "Attribuer le rôle de président";
+	    $menu['commentaire']    =   "Vous ne pouvez pas attribuer le rôle de président";
+	    $menu['ok']             =   false;
+	    $menu['raison']         =   "Vous n'êtes pas un administrateur";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez attribuer la fonction du président à un utilisateur admin ou expert";
         }
 
-    return $menu;
+	    return $menu;
     }
 
     ////////////////////////////////////////////////////////////////////////////
 
     public static function rallonge_creation(Projet $projet)
     {
-    $menu['name']           =   'rallonge_creation';
-    $menu['param']          =   $projet->getIdProjet();
-    $menu['lien']           =   "Rallonge";
-    $menu['commentaire']    =   "Vous ne pouvez pas créer une nouvelle rallonge";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-
-    $version = $projet->versionActive();
-
-    if( $version == null )
-        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
-    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
-        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà traitée !";
-    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
-    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
-    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
-        {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Vous pouvez créer une nouvelle rallonge !";
-        }
+	    $menu['name']        = 'rallonge_creation';
+	    $menu['param']       = $projet->getIdProjet();
+	    $menu['lien']        = "Rallonge";
+	    $menu['commentaire'] = "Vous ne pouvez pas créer une nouvelle rallonge";
+	    $menu['ok']          = false;
+	    $menu['raison']      = "Vous n'êtes pas un administrateur";
+	
+	
+	    $version = $projet->versionActive();
+	
+	    if( $version == null )
+	        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
+	    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
+	        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà en cours de traitement !";
+	    // TODO - Mettre ce nombre en paramètre !!!!
+	    elseif( count($version->getRallonge()) >= 2)
+			$menu['raison']         =   "Pas plus de 2 rallonges par session !";
+	    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
+	    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
+	    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
+		{
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Vous pouvez créer une nouvelle rallonge !";
+		}
 
     return $menu;
 
