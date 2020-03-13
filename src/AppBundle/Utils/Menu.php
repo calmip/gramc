@@ -958,7 +958,7 @@ class Menu
             {
                 $menu['ok']          = true;
                 $menu['commentaire'] = "Téléverser votre rapport d'activité pour l'année " . $version->getAnneeSession() . "si vous avez déjà terminé vos calculs";
-                $menu['todo']        = "Demander au responsable du projet de le <strong>relire</strong> et de <strong>l'envoyer pour expertise</strong>";
+                $menu['todo']        = "Téléverser votre rapport d'activité pour " . $version->getAnneeSession();
             }
         }
     else
@@ -1003,7 +1003,6 @@ class Menu
             {
                 $menu['ok']          = true;
                 $menu['commentaire'] = "Télécharger un modèle de rapport d'activité";
-                $menu['todo']        = "Demander au responsable du projet de le <strong>relire</strong> et de <strong>l'envoyer pour expertise</strong>";
             }
         }
     else
