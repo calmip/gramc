@@ -195,24 +195,23 @@ class RallongeController extends Controller
      */
     public function consulterAction(Request $request, Rallonge $rallonge)
     {
-
-    $version = $rallonge->getVersion();
-    if( $version != null )
+	    $version = $rallonge->getVersion();
+	    if( $version != null )
         {
-        $projet  = $version->getProjet();
-        $session = $version->getSession();
+	        $projet  = $version->getProjet();
+	        $session = $version->getSession();
         }
-    else
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
+	    else
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
-    // ACL
-    if( ! Functions::projetACL( $projet ) || $projet == null )
+	    // ACL
+	    if( ! Functions::projetACL( $projet ) || $projet == null )
             Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-    $menu[]   = Menu::rallonge_modifier( $rallonge );
-    $menu[]   = Menu::rallonge_envoyer( $rallonge );
+	    $menu[]   = Menu::rallonge_modifier( $rallonge );
+	    $menu[]   = Menu::rallonge_envoyer( $rallonge );
 
-    return $this->render('rallonge/consulter.html.twig',
+	    return $this->render('rallonge/consulter.html.twig',
             [
             'rallonge'  => $rallonge,
             'session'   => $session,
