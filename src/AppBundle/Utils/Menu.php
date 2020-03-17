@@ -916,61 +916,61 @@ class Menu
 
     public static function televerser_rapport_annee( Version $version )
     {
-    $menu['name']           =   'televerser_rapport_annee';
-    $menu['ok']             =   false;
-
-    if( $version != null )
-        {
-            $etat           = $version->getEtatVersion();
-            $menu['param']  = $version->getIdVersion();
-            $menu['lien']   = "Téléverser le rapport d'activité pour l'année " . $version->getAnneeSession();
-
-            if( AppBundle::isGranted('ROLE_ADMIN') && ($etat == Etat::ACTIF || $etat == Etat::TERMINE))
-            {
-                $menu['commentaire'] = "Téléverser un rapport d'activité pour un projet en tant qu'administrateur";
-                $menu['raison']      = "L'admininstrateur peut TOUJOURS téléverser un rapport d'activité pour un projet !";
-                $menu['ok']          = true;
-                return $menu;
-            }
-
-            $menu['ok']          = false;
-            $menu['commentaire'] = "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
-
-            if( $version->getProjet() != null )
-                $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
-                    [
-                    'projet' => $version->getProjet(),
-                    'annee' => $version->getAnneeSession(),
-                    ]);
-            else
-                {
-                $rapportActivite = null;
-                Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " version " . $version . " n'est pas associée à aucun projet !");
-                }
-
-           if( $etat != Etat::ACTIF && $etat != Etat::TERMINE)
-                $menu['raison'] = "Vous devez soumettre le rapport annuel quand vous avez fini vos calculs de l'année en question";
-           elseif( ! $version->isCollaborateur() )
-                $menu['raison'] = "Seul un collaborateur du projet peut téléverser un rapport d'activité pour un projet";
-           //elseif( $rapportActivite != null)
-           //     $menu['raison'] = "Vous avez déjà téléversé un rapport d'activité pour ce projet pour l'année en question";
-            else
-            {
-                $menu['ok']          = true;
-                $menu['commentaire'] = "Téléverser votre rapport d'activité pour l'année " . $version->getAnneeSession() . "si vous avez déjà terminé vos calculs";
-                $menu['todo']        = "Téléverser votre rapport d'activité pour " . $version->getAnneeSession();
-            }
-        }
-    else
-        {
-        $menu['param']          =   0;
-        $menu['lien']           =   "Téléverser le rapport d'activité";
-        $menu['commentaire']    =   "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
-        $menu['raison']         =   "Mauvaise version du projet !";
-        Functions::errorMessage( __METHOD__ . ':' . __LINE__ . " Version null !");
-        }
-
-    return $menu;
+	    $menu['name']           =   'televerser_rapport_annee';
+	    $menu['ok']             =   false;
+	
+	    if( $version != null )
+		{
+			$etat           = $version->getEtatVersion();
+			$menu['param']  = $version->getIdVersion();
+			$menu['lien']   = "Téléverser le rapport d'activité pour l'année " . $version->getAnneeSession();
+	
+			if( AppBundle::isGranted('ROLE_ADMIN') && ($etat == Etat::ACTIF || $etat == Etat::TERMINE))
+			{
+				$menu['commentaire'] = "Téléverser un rapport d'activité pour un projet en tant qu'administrateur";
+				$menu['raison']      = "L'administrateur peut TOUJOURS téléverser un rapport d'activité pour un projet !";
+				$menu['ok']          = true;
+				return $menu;
+			}
+	
+			$menu['ok']          = false;
+			$menu['commentaire'] = "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
+	
+			if( $version->getProjet() != null )
+				$rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+					[
+					'projet' => $version->getProjet(),
+					'annee' => $version->getAnneeSession(),
+					]);
+			else
+				{
+				$rapportActivite = null;
+				Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " version " . $version . " n'est pas associée à aucun projet !");
+				}
+	
+		   if( $etat != Etat::ACTIF && $etat != Etat::TERMINE)
+				$menu['raison'] = "Vous devez soumettre le rapport annuel quand vous avez fini vos calculs de l'année en question";
+		   elseif( ! $version->isCollaborateur() )
+				$menu['raison'] = "Seul un collaborateur du projet peut téléverser un rapport d'activité pour un projet";
+		   //elseif( $rapportActivite != null)
+		   //     $menu['raison'] = "Vous avez déjà téléversé un rapport d'activité pour ce projet pour l'année en question";
+			else
+			{
+				$menu['ok']          = true;
+				$menu['commentaire'] = "Téléverser votre rapport d'activité pour l'année " . $version->getAnneeSession() . "si vous avez déjà terminé vos calculs";
+				$menu['todo']        = "Téléverser votre rapport d'activité pour " . $version->getAnneeSession();
+			}
+		}
+	    else
+	        {
+	        $menu['param']          =   0;
+	        $menu['lien']           =   "Téléverser le rapport d'activité";
+	        $menu['commentaire']    =   "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
+	        $menu['raison']         =   "Mauvaise version du projet !";
+	        Functions::errorMessage( __METHOD__ . ':' . __LINE__ . " Version null !");
+	        }
+	
+	    return $menu;
     }
 
     ////////////////////////////////////////////////////////////

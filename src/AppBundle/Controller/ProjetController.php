@@ -1667,12 +1667,14 @@ class ProjetController extends Controller
 		$menu[] =   Menu::donnees( $version );
 	    $menu[] =   Menu::telechargement_fiche( $version );
 	    $menu[] =   Menu::televersement_fiche( $version );
-	    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
 
 	    $etat_version = $version->getEtatVersion();
 	    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
+	    {
+		    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
 	        $menu[] =   Menu::televerser_rapport_annee( $version );
-
+		}
+		
 	    $menu[] =   Menu::gerer_publications( $projet );
 	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
 	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
