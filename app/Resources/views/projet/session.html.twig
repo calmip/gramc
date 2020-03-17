@@ -251,7 +251,11 @@
             	<a class="fermeture" href="{{ path('fermer_projet', { 'id': version.projet.idProjet }) }}" title="Fermer le projet">
                 	<img src="{{ asset('icones/process-stop.png') }}" alt="Fermer" />
             	</a>
-            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' or version.libelleEtat == 'EXPERTISE_TEST' ) %}
+            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' and session.libelleEtat == 'EDITION_DEMANDE' ) %}
+            	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
+                	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
+            	</a>
+            	{% elseif( version.libelleEtat == 'EXPERTISE_TEST' ) %}
             	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
                 	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
             	</a>
