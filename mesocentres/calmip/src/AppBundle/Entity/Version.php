@@ -3253,7 +3253,7 @@ class Version implements Demande
 		}
 	    else
 		{
-	        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
+	        //Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
 	        return null;
 		}
     }

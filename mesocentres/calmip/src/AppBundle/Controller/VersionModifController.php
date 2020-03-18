@@ -1124,10 +1124,11 @@ class VersionModifController extends Controller
 			if( $id != null )
 			{
 				$individu = AppBundle::getRepository(Individu::class)->find( $id );
-				if( $individu_form->getMail()  == null )
-				    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire est null !");
-				else
-					Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire= " . $individu_form->getMail());
+				// TODO - Je ne comprends pas l'implication de ces messages
+				// if( $individu_form->getMail()  == null )
+				//    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire est null !");
+				// else
+				//	Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire= " . $individu_form->getMail());
 			}
 			
 			// On a renseigné le mail de l'utilisateur: on recherche l'utilisateur !

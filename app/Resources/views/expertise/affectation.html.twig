@@ -108,6 +108,7 @@
                 {% else %}
                 <td >
                 {% endif %}
+                
 				{% if forms[version.getIdVersion()] is defined %}
                 <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
