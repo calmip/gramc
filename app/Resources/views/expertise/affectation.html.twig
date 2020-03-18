@@ -113,9 +113,11 @@
                 <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
                     {% for e in version.expertise %}
+                    {% if e.expert != null %}
                     <a class="sudo" href="{{ path('sudo',  { 'id': e.expert.id }) }}?" title="Changer d'identité">
                         <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
 						{{ e.expert}}
+					{% endif %}
 					{% endfor %}
 					<br />
                     {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert, {'attr' : {'class' : 'bouton_affecter'}} ) }}<br />{% endfor %}
