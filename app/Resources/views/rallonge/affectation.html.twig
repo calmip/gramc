@@ -161,7 +161,7 @@
                     {% endif %}
 
 					{% if forms[rallonge.id] is defined %}
-					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
+					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert, {'attr' : {'class' : 'bouton_affecter'}} ) }}<br />{% endfor %}
                     {% endif %}
 
                 </td>

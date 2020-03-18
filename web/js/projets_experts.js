@@ -146,19 +146,23 @@ $( document ).ready(function() {
 	// Connecté aux cb de sélection
 	// Change la couleur de la cellule du tableau
 	// Incrémente ou décrémente le compteur cpt_sel
-	// Affiche ou cache le div bouton_affecter
+	// Affiche ou cache le div bouton_affecter général
+	// Affiche ou cache le class bouton_affecter de la ligne
 
 	cpt_sel = 0;
 	function change_couleur() {
 		cell = $(this).parent();
+		line = cell.parent();
 		// Si la cb est cochée la cellule se teinte en bleu
 		if ( $(this).is(":checked")) {
 			cell.css("background-color","blue");
+			line.find(".bouton_affecter").show();
 			cpt_sel++;
 
 		// Sinon elle prend la couleur de la cellule d'à côté
 		} else {
 			cell.css("background-color",cell.next().css("background-color"));
+			line.find(".bouton_affecter").hide();
 			cpt_sel--;
 		}
 		
@@ -229,10 +233,17 @@ $( document ).ready(function() {
 	
 	// lors du chargement de la page, initialiser cpt_sel
 	$("input.expsel").each(function() {
+		cell = $(this).parent();
+		line = cell.parent();
 		if ( $(this).is(":checked") )
 		{
-			$(this).parent().css("background-color","blue");
+			cell.css("background-color","blue");
+			line.find(".bouton_affecter").show();
 			cpt_sel++;
+		}
+		else
+		{
+			line.find(".bouton_affecter").hide();
 		}
 	});
 	if (cpt_sel==0)

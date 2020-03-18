@@ -112,7 +112,13 @@
 				{% if forms[version.getIdVersion()] is defined %}
                 <span class="invisible">{% for e in version.expertise %}{{ e.expert}}{% endfor %}</span>
                     {# {{ form_start( forms[version.getIdVersion()] ) }} #}
-                    {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
+                    {% for e in version.expertise %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': e.expert.id }) }}?" title="Changer d'identité">
+                        <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
+						{{ e.expert}}
+					{% endfor %}
+					<br />
+                    {% for f in forms[version.getIdVersion()] %}{{ form_widget( f.expert, {'attr' : {'class' : 'bouton_affecter'}} ) }}<br />{% endfor %}
                     {# {{ form_end( forms[version.getIdVersion()] ) }} #}
                 {% else %}
                 	{% for e in version.expertise %}
@@ -132,7 +138,7 @@
             </tbody>
         </table>
         {% if forms['BOUTONS'] is defined %}
-        <div id="bouton_affecter">
+        <div id="bouton_affecter" >
 			<h2>Pour la sélection</h2>
 			{#{{ form_start( forms['BOUTONS'] ) }}#}
 			{{ form_widget( forms['BOUTONS'].sub1 ) }}
