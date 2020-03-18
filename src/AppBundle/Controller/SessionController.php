@@ -284,6 +284,10 @@ class SessionController extends Controller
                 AppBundle::getManager()->flush();
 			}
 		}
+		else
+		{
+			Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Une session ne peut être activée qu'en Décembre, en Janvier, en Juin ou en Juillet");
+		}
 
 		if ($ok==true)
 		{
