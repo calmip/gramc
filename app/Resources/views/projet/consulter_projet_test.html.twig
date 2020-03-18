@@ -192,6 +192,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </tbody>
 </table>
 
+
+{% if version.etat in [ 23, 9 ] %}
 <h3>IV - Commentaire de l'expert</h3>
 
 {% for expertise in version.expertise %}
@@ -225,6 +227,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </table>
 
 {% endfor %}
+{% endif %}
 <br>
 
 </section>

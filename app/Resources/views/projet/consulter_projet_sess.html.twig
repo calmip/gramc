@@ -522,6 +522,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </tbody>
 </table>
 
+{% if version.etat in [ 4, 5, 6, 9 ] %}
 <h3>VI- Commentaire de l'expert</h3>
 
 {% for expertise in version.expertise %}
@@ -555,6 +556,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </table>
 
 {% endfor %}
+
+{% endif %}
 
 {% if version.rallonge is not empty %}
 <h4>Rallonges</h4>

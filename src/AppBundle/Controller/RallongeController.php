@@ -345,10 +345,15 @@ class RallongeController extends Controller
 
     private function getFinaliserForm( Rallonge $rallonge )
     {
-    return $this->createFormBuilder($rallonge)
-            ->add('nbHeuresAtt', IntegerType::class, [ 'required'       =>  false ] )
-            ->add('commentaireInterne', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add('commentaireExterne', TextAreaType::class, [ 'required'       =>  false ] )
+		$nbHeuresAttrib = [ 'required' => false ];
+		if ($rallonge->getValidation() === false)
+		{
+			$nbHeuresAttrib['disabled'] = 'disabled';
+		}
+	    return $this->createFormBuilder($rallonge)
+            ->add('nbHeuresAtt', IntegerType::class, $nbHeuresAttrib )
+            ->add('commentaireInterne', TextAreaType::class, [ 'required' => false ] )
+            ->add('commentaireExterne', TextAreaType::class, [ 'required' => false ] )
             ->add('validation', ChoiceType::class,
                     [
                     'expanded' => true,
@@ -371,27 +376,27 @@ class RallongeController extends Controller
      */
     public function avantFinaliserAction(Request $request, Rallonge $rallonge)
     {
-    $erreurs = [];
-    $validation =   $rallonge->getValidation(); //  tout cela juste à cause de validation disabled
-
-    $editForm = $this->getFinaliserForm($rallonge);
-
-    $editForm->handleRequest($request);
-
-    $version = $rallonge->getVersion();
+	    $erreurs = [];
+	    $validation =   $rallonge->getValidation(); //  tout cela juste à cause de validation disabled
+	
+	    $editForm = $this->getFinaliserForm($rallonge);
+	
+	    $editForm->handleRequest($request);
+	
+	    $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
-    //if( ! $rallonge->isFinalisable() )
-    //    Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas en attente !");
+	    //if( ! $rallonge->isFinalisable() )
+	    //    Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas en attente !");
 
-    if ($editForm->isSubmitted()  )
-            {
+	    if ($editForm->isSubmitted()  )
+		{
             $rallonge->setValidation( $validation ); //  tout cela juste à cause de validation disabled
             $erreurs = Functions::dataError( $rallonge, ['president'] );
 
@@ -399,14 +404,14 @@ class RallongeController extends Controller
             $workflow = new RallongeWorkflow();
 
             if( ! $workflow->canExecute( Signal::CLK_VAL_PRS, $rallonge ) )
-                {
+			{
                 $erreur = "La finalisation de la rallonge " . $rallonge .
                     " refusée par le workflow, la rallonge est dans l'état " . Etat::getLibelle( $rallonge->getEtatRallonge() );
                 Functions::errorMessage(__METHOD__ . ":" . __LINE__ . ' ' . $erreur );
                 $erreurs[] = $erreur;
-                }
+			}
             elseif( $editForm->get('envoyer')->isClicked() && $erreurs == null  )
-                {
+			{
                 //$workflow->execute( Signal::CLK_VAL_PRS, $rallonge );
                 return $this->render('rallonge/finaliser.html.twig',
                     [
@@ -415,18 +420,18 @@ class RallongeController extends Controller
                     'session'   => $session,
                     'rallonge'  => $rallonge,
                     ]);
-                }
+			}
             //else
             //    return $this->redirectToRoute('avant_rallonge_finaliser', [ 'id' => $rallonge->getId() ] );
-            }
-
-    $editForm = $this->getFinaliserForm($rallonge);  //  tout cela juste à cause de validation disabled
-
-    $session    =   Functions::getSessionCourante();
-    $anneeCour  = 2000 +$session->getAnneeSession();
-    $anneePrec  = $anneeCour - 1;
-
-    return $this->render('rallonge/avant_finaliser.html.twig',
+		}
+	
+	    $editForm = $this->getFinaliserForm($rallonge);  //  tout cela juste à cause de validation disabled
+	
+	    $session    =   Functions::getSessionCourante();
+	    $anneeCour  = 2000 +$session->getAnneeSession();
+	    $anneePrec  = $anneeCour - 1;
+	
+	    return $this->render('rallonge/avant_finaliser.html.twig',
             [
             'erreurs'   => $erreurs,
             'rallonge'  => $rallonge,

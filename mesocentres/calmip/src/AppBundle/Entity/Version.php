@@ -3052,12 +3052,14 @@ class Version implements Demande
 
         $etat_version   =   $this->getEtatVersion();
 
-        if     ( $etat_version == Etat::ACTIF )             return 'ACTIF';
+        if     ( $etat_version == Etat::ACTIF             ) return 'ACTIF';
+        elseif ( $etat_version == Etat::ACTIF_TEST        ) return 'ACTIF';
         elseif ( $etat_version == Etat::ANNULE            ) return 'ANNULE';
         elseif ( $etat_version == Etat::EDITION_DEMANDE   ) return 'EDITION';
         elseif ( $etat_version == Etat::EDITION_TEST      ) return 'EDITION';
         elseif ( $etat_version == Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
         elseif ( $etat_version == Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::EN_ATTENTE        ) return 'EN ATTENTE';
         elseif ( $etat_version == Etat::TERMINE           ) 
         {
 			if ($this->getAttrAccept() == true) return 'TERMINE';
@@ -3253,7 +3255,7 @@ class Version implements Demande
 		}
 	    else
 		{
-	        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
+	        //Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
 	        return null;
 		}
     }

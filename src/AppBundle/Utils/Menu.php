@@ -916,61 +916,61 @@ class Menu
 
     public static function televerser_rapport_annee( Version $version )
     {
-    $menu['name']           =   'televerser_rapport_annee';
-    $menu['ok']             =   false;
-
-    if( $version != null )
-        {
-            $etat           = $version->getEtatVersion();
-            $menu['param']  = $version->getIdVersion();
-            $menu['lien']   = "Téléverser le rapport d'activité pour l'année " . $version->getAnneeSession();
-
-            if( AppBundle::isGranted('ROLE_ADMIN') && ($etat == Etat::ACTIF || $etat == Etat::TERMINE))
-            {
-                $menu['commentaire'] = "Téléverser un rapport d'activité pour un projet en tant qu'administrateur";
-                $menu['raison']      = "L'admininstrateur peut TOUJOURS téléverser un rapport d'activité pour un projet !";
-                $menu['ok']          = true;
-                return $menu;
-            }
-
-            $menu['ok']          = false;
-            $menu['commentaire'] = "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
-
-            if( $version->getProjet() != null )
-                $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
-                    [
-                    'projet' => $version->getProjet(),
-                    'annee' => $version->getAnneeSession(),
-                    ]);
-            else
-                {
-                $rapportActivite = null;
-                Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " version " . $version . " n'est pas associée à aucun projet !");
-                }
-
-           if( $etat != Etat::ACTIF && $etat != Etat::TERMINE)
-                $menu['raison'] = "Vous devez soumettre le rapport annuel quand vous avez fini vos calculs de l'année en question";
-           elseif( ! $version->isCollaborateur() )
-                $menu['raison'] = "Seul un collaborateur du projet peut téléverser un rapport d'activité pour un projet";
-           //elseif( $rapportActivite != null)
-           //     $menu['raison'] = "Vous avez déjà téléversé un rapport d'activité pour ce projet pour l'année en question";
-            else
-            {
-                $menu['ok']          = true;
-                $menu['commentaire'] = "Téléverser votre rapport d'activité pour l'année " . $version->getAnneeSession() . "si vous avez déjà terminé vos calculs";
-                $menu['todo']        = "Demander au responsable du projet de le <strong>relire</strong> et de <strong>l'envoyer pour expertise</strong>";
-            }
-        }
-    else
-        {
-        $menu['param']          =   0;
-        $menu['lien']           =   "Téléverser le rapport d'activité";
-        $menu['commentaire']    =   "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
-        $menu['raison']         =   "Mauvaise version du projet !";
-        Functions::errorMessage( __METHOD__ . ':' . __LINE__ . " Version null !");
-        }
-
-    return $menu;
+	    $menu['name']           =   'televerser_rapport_annee';
+	    $menu['ok']             =   false;
+	
+	    if( $version != null )
+		{
+			$etat           = $version->getEtatVersion();
+			$menu['param']  = $version->getIdVersion();
+			$menu['lien']   = "Téléverser le rapport d'activité pour l'année " . $version->getAnneeSession();
+	
+			if( AppBundle::isGranted('ROLE_ADMIN') && ($etat == Etat::ACTIF || $etat == Etat::TERMINE))
+			{
+				$menu['commentaire'] = "Téléverser un rapport d'activité pour un projet en tant qu'administrateur";
+				$menu['raison']      = "L'administrateur peut TOUJOURS téléverser un rapport d'activité pour un projet !";
+				$menu['ok']          = true;
+				return $menu;
+			}
+	
+			$menu['ok']          = false;
+			$menu['commentaire'] = "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
+	
+			if( $version->getProjet() != null )
+				$rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+					[
+					'projet' => $version->getProjet(),
+					'annee' => $version->getAnneeSession(),
+					]);
+			else
+				{
+				$rapportActivite = null;
+				Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " version " . $version . " n'est pas associée à aucun projet !");
+				}
+	
+		   if( $etat != Etat::ACTIF && $etat != Etat::TERMINE)
+				$menu['raison'] = "Vous devez soumettre le rapport annuel quand vous avez fini vos calculs de l'année en question";
+		   elseif( ! $version->isCollaborateur() )
+				$menu['raison'] = "Seul un collaborateur du projet peut téléverser un rapport d'activité pour un projet";
+		   //elseif( $rapportActivite != null)
+		   //     $menu['raison'] = "Vous avez déjà téléversé un rapport d'activité pour ce projet pour l'année en question";
+			else
+			{
+				$menu['ok']          = true;
+				$menu['commentaire'] = "Téléverser votre rapport d'activité pour l'année " . $version->getAnneeSession() . "si vous avez déjà terminé vos calculs";
+				$menu['todo']        = "Téléverser votre rapport d'activité pour " . $version->getAnneeSession();
+			}
+		}
+	    else
+	        {
+	        $menu['param']          =   0;
+	        $menu['lien']           =   "Téléverser le rapport d'activité";
+	        $menu['commentaire']    =   "Vous ne pouvez pas téléverser un rapport d'activité pour ce projet";
+	        $menu['raison']         =   "Mauvaise version du projet !";
+	        Functions::errorMessage( __METHOD__ . ':' . __LINE__ . " Version null !");
+	        }
+	
+	    return $menu;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1003,7 +1003,6 @@ class Menu
             {
                 $menu['ok']          = true;
                 $menu['commentaire'] = "Télécharger un modèle de rapport d'activité";
-                $menu['todo']        = "Demander au responsable du projet de le <strong>relire</strong> et de <strong>l'envoyer pour expertise</strong>";
             }
         }
     else
@@ -1337,19 +1336,19 @@ class Menu
 
     public static function nettoyer()
     {
-    $menu['name']           =   'projet_nettoyer';
-    $menu['lien']           =   "Nettoyage pour conformité au RGPD";
-    $menu['commentaire']    =   "Vous ne pouvez pas supprimer les projets ou les utilisateurs anciens";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    $menu['name']           =   'projet_nettoyer';
+	    $menu['lien']           =   "Nettoyage pour conformité au RGPD";
+	    $menu['commentaire']    =   "Vous ne pouvez pas supprimer les projets ou les utilisateurs anciens";
+	    $menu['ok']             =   false;
+	    $menu['raison']         =   "Vous n'êtes pas un administrateur";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Suppresion des anciens projets et des utilisateurs orphelins";
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Suppresion des anciens projets et des utilisateurs orphelins";
         }
 
-    return $menu;
+	    return $menu;
     }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1376,46 +1375,49 @@ class Menu
     public static function presidents()
     {
 
-    $menu['name']           =   'individu_president';
-    $menu['lien']           =   "Attribuer le rôle de président";
-    $menu['commentaire']    =   "Vous ne pouvez pas attribuer le rôle de président";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-    if( AppBundle::isGranted('ROLE_ADMIN') )
+	    $menu['name']           =   'individu_president';
+	    $menu['lien']           =   "Attribuer le rôle de président";
+	    $menu['commentaire']    =   "Vous ne pouvez pas attribuer le rôle de président";
+	    $menu['ok']             =   false;
+	    $menu['raison']         =   "Vous n'êtes pas un administrateur";
+	
+	    if( AppBundle::isGranted('ROLE_ADMIN') )
         {
         $menu['ok']             =   true;
         $menu['commentaire']    =   "Vous pouvez attribuer la fonction du président à un utilisateur admin ou expert";
         }
 
-    return $menu;
+	    return $menu;
     }
 
     ////////////////////////////////////////////////////////////////////////////
 
     public static function rallonge_creation(Projet $projet)
     {
-    $menu['name']           =   'rallonge_creation';
-    $menu['param']          =   $projet->getIdProjet();
-    $menu['lien']           =   "Rallonge";
-    $menu['commentaire']    =   "Vous ne pouvez pas créer une nouvelle rallonge";
-    $menu['ok']             =   false;
-    $menu['raison']         =   "Vous n'êtes pas un administrateur";
-
-
-    $version = $projet->versionActive();
-
-    if( $version == null )
-        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
-    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
-        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà traitée !";
-    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
-    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
-    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
-        {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Vous pouvez créer une nouvelle rallonge !";
-        }
+	    $menu['name']        = 'rallonge_creation';
+	    $menu['param']       = $projet->getIdProjet();
+	    $menu['lien']        = "Rallonge";
+	    $menu['commentaire'] = "Vous ne pouvez pas créer une nouvelle rallonge";
+	    $menu['ok']          = false;
+	    $menu['raison']      = "Vous n'êtes pas un administrateur";
+	
+	
+	    $version = $projet->versionActive();
+	
+	    if( $version == null )
+	        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
+	    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
+	        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà en cours de traitement !";
+	    // TODO - Mettre ce nombre en paramètre !!!!
+	    elseif( count($version->getRallonge()) >= 2)
+			$menu['raison']         =   "Pas plus de 2 rallonges par session !";
+	    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
+	    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
+	    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
+		{
+	        $menu['ok']             =   true;
+	        $menu['commentaire']    =   "Vous pouvez créer une nouvelle rallonge !";
+		}
 
     return $menu;
 

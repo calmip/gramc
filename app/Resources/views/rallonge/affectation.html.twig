@@ -17,6 +17,10 @@
         (sessions {{ session1 }}, {{ session2 }})
     {% endif %}
 </h1>
+{% if forms|length > 0 %}
+<div class="message info"><em>Commencez par sélectionner une ou plusieurs demandes</em></div>
+{% endif %}
+
 <p>&nbsp;</p>
 
 <div id="bilan_legende">
@@ -157,7 +161,7 @@
                     {% endif %}
 
 					{% if forms[rallonge.id] is defined %}
-					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert ) }}<br />{% endfor %}
+					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert, {'attr' : {'class' : 'bouton_affecter'}} ) }}<br />{% endfor %}
                     {% endif %}
 
                 </td>
