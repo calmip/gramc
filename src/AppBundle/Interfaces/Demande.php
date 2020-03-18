@@ -22,16 +22,22 @@
  *            Nicolas Renon - Université Paul Sabatier - CALMIP
  **/
 
-namespace AppBundle\Workflow;
+namespace AppBundle\Interfaces;
 
-/************************
- * Transition - Implémente une transition d'états
- *              Classe abstraite triviale
- *              canExecute pemet de définir des ACL: suivant la personne connectée la transition peut être exécutée ou pas.
- ************************/
-interface TransitionInterface
+// Interface Demande: 
+//      Une demande peut être soit une version, soit une rallonge
+//
+interface Demande
 {
-    public function canExecute($object);
-    public function execute($object);
-    public function __toString();
+    public function getAttrHeures();
+    public function getDemHeures();
+    public function getId();
+    public function getEtat();
+    public function getMetaEtat();
+//    public function getExperts();
+
+    public function setAttrHeures($attrHeures);
+    public function setDemHeures($demHeures);
+    public function setEtat($etat);
+    
 }

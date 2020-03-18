@@ -1,10 +1,15 @@
 {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
 
 {% import "projet/macros_graphiques.html.twig" as macros_graphiques %}
+{% block myjavascripts %}
+ <script   src="{{ asset('js/projets_experts.js') }}" ></script>
+{% endblock myjavascripts %}
 
 
 {% block body %}
 
+<section>
 <h1>Affectation des experts aux demandes de rallonges
     {% if( session2 == null ) %}
         (session {{ session1 }})
@@ -12,6 +17,11 @@
         (sessions {{ session1 }}, {{ session2 }})
     {% endif %}
 </h1>
+{% if forms|length > 0 %}
+<div class="message info"><em>Commencez par sélectionner une ou plusieurs demandes</em></div>
+{% endif %}
+
+<p>&nbsp;</p>
 
 <div id="bilan_legende">
     <div id="bilan">
@@ -22,15 +32,15 @@
                 </tr>
                 <tr>
                     <th>Nombre de demandes</th>
-                    <td>{{ nbDemandes }}</td>
+                    <td>{{ stats.nbProjets }}</td>
                 </tr>
                 <tr>
                     <th>Heures demandées</th>
-                    <td>{{ nbDemHeures }}</td>
+                    <td>{{ stats.nbDemHeures}}</td>
                 </tr>
                 <tr>
                     <th>Heures attribuées</th>
-                    <td>{{ nbAttHeures }}</td>
+                    <td>{{ stats.nbAttHeures}}</td>
                 </tr>
             </tbody>
         </table>
@@ -43,7 +53,8 @@
     <table id="affecte_experts">
         <thead>
             <tr>
-                <th>N/R</th>
+				<th title="Cocher la case pour sélectionner cette rallonge">S</th>
+				<th>N/R</th>
                 <th>Numéro</th>
                 <th>&nbsp;</th>
                 <th>Etat</th>
@@ -66,6 +77,7 @@
         <tbody>
             {% for projet in projets %}
             <tr>
+                <td>&nbsp;</td>
                 {% if ( projet.NR == "" ) %}
                 <td class="renouv">&nbsp;</td>
                 {% else %}
@@ -79,23 +91,23 @@
                 </td>
                 {#<td>{{ macros_graphiques.meta_etat_graphique( projet.etat ) }}</td>#}
                 <td>&nbsp;</td>
-                <td rowspan="{{ projet.rowspan }}">{{ projet.titre }}</td>
-                <td rowspan="{{ projet.rowspan }}">{{ projet.thematique }}</td>
+                <td rowspan="{{ projet.rowspan }}">{{ gramcmacros.afftitre(projet.version.prjtitre) }}</td>
+                <td rowspan="{{ projet.rowspan }}">{{ projet.version.prjthematique }}</td>
 
                 <td rowspan="{{ projet.rowspan }}">
-                    {% if( projet.responsable != null ) %}
-                    <a class="sudo" href="{{ path('sudo',  { 'id': projet.responsable.id }) }}?" title="Changer d'identité">
+                    {% if( projet.version.responsable != null ) %}
+                    <a class="sudo" href="{{ path('sudo',  { 'id': projet.version.responsable.id }) }}?" title="Changer d'identité">
                             <img class="bouton_poussoir" src="{{ asset('icones/sudo.png') }}" alt="Changer d'identité" /></a>
-                    <a href="mailto:{{ projet.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ projet.responsable.mail }}">
+                    <a href="mailto:{{ projet.version.responsable.mail }}" title="Envoyer un courriel au responsable à l'adresse {{ projet.version.responsable.mail }}">
                             <img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>
-                    {{ projet.responsable.prenom }} {{ projet.responsable.nom }}
+                    {{ projet.version.responsable.prenom }} {{ projet.version.responsable.nom }}
                     {% endif %}
                 </td>
 
 
 
-                <td rowspan="{{ projet.rowspan }}">{{ projet.labo }}</td>
-                <td rowspan="{{ projet.rowspan }}">
+                <td rowspan="{{ projet.rowspan }}">{{ projet.version.labo }}</td>
+                <td>
                     {% if( projet.affecte is defined and projet.affecte == true ) %}
                         <img src="{{ asset('icones/actif.png') }}" alt="Choix du président" titre="Affecté par le président">
                     {% endif %}
@@ -123,6 +135,7 @@
             </tr>
 			{% for rallonge in projet.rallonges %}
 			<tr>
+                <td>{% if forms['selection_' ~ rallonge.id] is defined %}{{ form_widget( forms['selection_' ~ rallonge.id].sel )}}{%endif%}</td>
                 <td><strong>R</strong></td>
                 <td>{{ rallonge.idRallonge }}</td>
                 <td>
@@ -137,6 +150,7 @@
                     {% endif %}
                 </td>
                 <td>{{ macros_graphiques.meta_etat_graphique( rallonge.metaetat ) }}</td>
+                <td>{% if (rallonge.expert!=null)%}<img src="{{ asset('icones/actif.png') }}" alt="Choix du président" titre="Affecté par le président">{% endif %}</td>
                 <td>
                     {% if( rallonge.expert!= null ) %}
                     <a class="sudo" href="{{ path('sudo',  { 'id': rallonge.expert.id }) }}?" title="Changer d'identité">
@@ -146,8 +160,8 @@
                     {{ rallonge.expert.prenom }} {{ rallonge.expert.nom }}
                     {% endif %}
 
-                    {% if( rallonge.libelleEtatRallonge == 'EDITION_EXPERTISE' or rallonge.libelleEtatRallonge == 'DESAFFECTE' ) %}
-                    {{ form_widget( projet.form[rallonge.idRallonge].expert ) }}
+					{% if forms[rallonge.id] is defined %}
+					{% for f in forms[rallonge.id] %}{{ form_widget( f.expert, {'attr' : {'class' : 'bouton_affecter'}} ) }}<br />{% endfor %}
                     {% endif %}
 
                 </td>
@@ -163,7 +177,21 @@
 		{% endfor %}
         </tbody>
     </table>
+    {% if forms['BOUTONS'] is defined %}
+		<div id="bouton_affecter">
+			<h2>Pour la sélection</h2>
+			{#{{ form_start( forms['BOUTONS'] ) }}#}
+			{{ form_widget( forms['BOUTONS'].sub1 ) }}
+			{{ form_widget( forms['BOUTONS'].sub2 ) }}
+			{% if max_expertises_nb > 1 %}
+				{{ form_widget( forms['BOUTONS'].sub3 ) }}
+				{{ form_widget( forms['BOUTONS'].sub4 ) }}
+			{% endif %}
+			{#{{ form_end( forms['BOUTONS'] ) }}#}
+		</div>
+	{% endif %}
 </div>
-<div id="bouton_affecter"><input value="Affecter les experts" type="submit"></div>
+
 </form>
+</section>
 {% endblock %}

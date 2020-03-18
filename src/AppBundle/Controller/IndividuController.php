@@ -110,7 +110,6 @@ class IndividuController extends Controller
         $Rallonge                   =   AppBundle::getRepository(Rallonge::class)->findBy(['expert' => $individu]);
         $Session                    =   AppBundle::getRepository(Session::class)->findBy(['president' => $individu]);
         $Sso                        =   AppBundle::getRepository(Sso::class)->findBy(['individu' => $individu]);
-        //$Version                    =   AppBundle::getRepository(Version::class)->findBy(['majInd' => $individu]);
         $Thematique                 =   $individu->getThematique();
 
         $erreurs  =   [];
@@ -182,11 +181,6 @@ class IndividuController extends Controller
 
                 foreach ( $Session  as $item )
                     $item->setPresident( $new_individu );
-
-                /*
-                foreach ( $Version  as $item )
-                    $item->setMajInd( $new_individu );
-                */
 
                 foreach ( $CompteActivation  as $item )
                     $em->remove($item);
@@ -855,56 +849,48 @@ class IndividuController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
 
-        //$individus = $em->getRepository('AppBundle:Individu')->findAll();
-
         $form = AppBundle::getFormBuilder('tri', GererUtilisateurType::class, [] )->getForm();
         $form->handleRequest($request);
 
         if ( $form->isSubmitted() && $form->isValid() )
-            {
+		{
             if( $form->getData()['all'] == true )
                $users = $em->getRepository(Individu::class)->findAll();
             else
                $users = $em->getRepository(Individu::class)->getActiveUsers();
 
-            $pattern = '/' . $form->getData()['filtre'] . '/';
+            $pattern = '/' . $form->getData()['filtre'] . '/i';
 
             $individus = [];
             foreach( $users as $individu )
                 if( preg_match ( $pattern, $individu->getMail() ) )
                     $individus[] = $individu;
-            }
+		}
         else
             $individus = $em->getRepository(Individu::class)->getActiveUsers();
 
         // statistiques
-
         $total = AppBundle::getRepository(Individu::class)->countAll();
         $actifs = 0;
-        $responsables = 0;
-        $collaborateurs = 0;
         $idps = [];
         foreach( $individus as $individu )
-            {
-                if( $individu->getResponsable() == true )  $responsables++;
-                if( $individu->getCollaborateur() == true ) $collaborateurs++;
+		{
+			$individu_ssos = $individu->getSso()->toArray();
+			if( count( $individu_ssos ) > 0 && $individu->getDesactive() == false ) $actifs++;
 
-                $individu_ssos = $individu->getSso()->toArray();
-                if( count( $individu_ssos ) > 0 && $individu->getDesactive() == false ) $actifs++;
-
-                $idps = array_merge( $idps,
-                    array_map(
-                        function($value)
-                            {
-                            $str = $value->__toString();
-                            preg_match ( '/^(.+)(@.+)$/', $str, $matches );
-                            if( array_key_exists ( 2, $matches ) )
-                                return $matches[2];
-                            else
-                                return '@';
-                            }
-                        , $individu_ssos ) );
-            }
+			$idps = array_merge( $idps,
+				array_map(
+					function($value)
+					{
+						$str = $value->__toString();
+						preg_match ( '/^(.+)(@.+)$/', $str, $matches );
+						if( array_key_exists ( 2, $matches ) )
+							return $matches[2];
+						else
+							return '@';
+					},
+					$individu_ssos ) );
+		}
         $idps = array_count_values ( $idps );
 
         return $this->render('individu/liste.html.twig',
@@ -912,8 +898,6 @@ class IndividuController extends Controller
             'idps'  => $idps,
             'total' => $total,
             'actifs' => $actifs,
-            'responsables' => $responsables,
-            'collaborateurs' => $collaborateurs,
             'form'  => $form->createView(),
             'individus' => $individus,
             ]);

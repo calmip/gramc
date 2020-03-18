@@ -401,19 +401,22 @@ class Session
         return $this;
     }
 
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatSession/setEtatSession !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatSession();
     }
-    
     public function setObjectState($state)
     {
         $this->setEtatSession($state);
         return $this;
     }
 
-    public function getSubWorkflow()        { return new \AppBundle\Workflow\ProjetWorkflow(); }
-    public function getSubObjects()         { return AppBundle::getRepository(Projet::class)->findNonTermines();  }
+    //public function getSubWorkflow()        { return new \AppBundle\Workflow\ProjetWorkflow(); }
+    //public function getSubObjects()         { return AppBundle::getRepository(Projet::class)->findNonTermines();  }
     
     
     ///////////////////////////////////////
@@ -445,4 +448,11 @@ class Session
     {
         return ($this->getAnneeSession() + 1) . 'A';
     }
+    
+    ////////////////////////////////////////////
+	public function getEtat()
+    {
+		return $this->getEtatProjet();
+	}
+
 }

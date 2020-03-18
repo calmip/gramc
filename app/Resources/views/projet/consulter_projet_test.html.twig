@@ -28,7 +28,9 @@
 
 <p>
 {% if app.debug %}<strong>DEBUG </strong><em>Etat du projet {{projet.id }}= {{ projet.getEtatProjet }} - Etat de la version {{version.idVersion }}= {{ version.getEtatVersion }}</em>{% endif %}<br />
-<em>Dernière modification par {{ version.majInd }} le {{ version.majStamp|date('Y-m-d H:i:s') }}</em>
+{% if version.majInd != null %}
+	<em>Dernière modification par {{ version.majInd }} le {{ version.majStamp|date('Y-m-d H:i:s') }}</em>
+{% endif %}
 </p>
 
 {% endblock before_body %}
@@ -190,6 +192,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </tbody>
 </table>
 
+
+{% if version.etat in [ 23, 9 ] %}
 <h3>IV - Commentaire de l'expert</h3>
 
 {% for expertise in version.expertise %}
@@ -223,6 +227,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </table>
 
 {% endfor %}
+{% endif %}
 <br>
 
 </section>

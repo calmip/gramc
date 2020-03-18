@@ -30,16 +30,6 @@
 
 $( document ).ready(function() {
 
-    /* Fermer */
-    // Le dialog js utilisé pour fermer un projet
-    formulaire_confirmation = $( "#formulaire_confirmation" ).dialog({autoOpen: false,
-            height: 500,
-            width: 400,
-            modal: true});
-
-    // garde en mémoire la ligne modifiée
-    //gramc_ligne="";
-
     // Sera connecté au click des liens de fermeture de projet
     // Déclenche une requête ajax, ouvre le dialog lorsqu'elle est finie
     function click_fermeture(event) {
@@ -81,19 +71,15 @@ $( document ).ready(function() {
     function submit_ferme( event )
     {
         event.preventDefault();
-	form = $( "#formulaire_confirmation form" );
+		form = $( "#formulaire_confirmation form" );
         h =  form.attr('action');
-	h += "&ajax=1";
-	$.ajax({url: h,
+		h += "&ajax=1";
+		$.ajax({url: h,
 	    type: "POST",
-	// context: gramc_ligne,
 	    context: gramc_cell,
 	    data: this.name+"="+this.value})
 	    .done(function(data){
 	    formulaire_confirmation.dialog("close");
-	    //alert(gramc_ligne.html());
-	    //alert(data);
-	    //gramc_ligne.html(data);
 	    gramc_cell.html('&nbsp;');
 	    gramc_cell.siblings().filter( ".en_standby" ).html('CLOSED');
 	    $( "a.fermeture" ).click(click_fermeture);
@@ -112,6 +98,94 @@ $( document ).ready(function() {
 		 });
 //		event.preventDefault();
 	};
+
+	// Calcul des statistiques sur les experts
+	function calcul_stats() {
+		//alert("HOHOHOHO");
+		// Remettre à 0 l'attribut nbprj sur les cb de #experts
+		//$( "#experts tr td .cb").attr('nbprj',0);
+
+		// Recalculer la valeur de cet attribut
+		$( "#experts tr td .cb").each(function(){
+			cl = '.' + $(this).attr("id");
+			v  = $(cl).length;
+			$(this).parent().parent().children('td:first').html(v);
+			//alert("coucou "+cl+' '+v)
+		});
+	}
+
+	// Appelé lorsque le select change de valeur
+	// TODO - Je ne crois pas que ça fonctionne !
+	function change_select(event) {
+		// changer la classe du parent du select
+		$(this).parent().removeClass();
+		cl = 'e' + $(this).val();
+		$(this).parent().addClass(cl);
+
+		// changer l'url de sudo
+		a   = $(this).parent().children("a");
+		url = a.attr("href");
+		//alert (url.match(/=\d+$/,url));
+		url=url.replace(/=\d+$/,"="+$(this).val());
+		//url=url.replace(/=\d+$/,"="+"***");
+		//alert(url);
+		$(this).parent().children("a").attr("href",url);
+		calcul_stats();
+	}
+
+	function change_cb_stat() {
+		$( "section div" ).show();
+		 $("input.cb_stat").each(function(){
+			 cl = '.' + $(this).attr("id");
+			 if (!$(this).is(":checked")) {
+				 $(cl).parent().hide();
+			 };
+		 });
+	};
+
+	// Connecté aux cb de sélection
+	// Change la couleur de la cellule du tableau
+	// Incrémente ou décrémente le compteur cpt_sel
+	// Affiche ou cache le div bouton_affecter général
+	// Affiche ou cache le class bouton_affecter de la ligne
+
+	cpt_sel = 0;
+	function change_couleur() {
+		cell = $(this).parent();
+		line = cell.parent();
+		// Si la cb est cochée la cellule se teinte en bleu
+		if ( $(this).is(":checked")) {
+			cell.css("background-color","blue");
+			line.find(".bouton_affecter").show();
+			cpt_sel++;
+
+		// Sinon elle prend la couleur de la cellule d'à côté
+		} else {
+			cell.css("background-color",cell.next().css("background-color"));
+			line.find(".bouton_affecter").hide();
+			cpt_sel--;
+		}
+		
+		// Suivant la valeur du compteur, cache ou affiche le cadre des boutons
+		if (cpt_sel==0)
+		{
+			$("#bouton_affecter").hide();
+		}
+		else
+		{
+			$("#bouton_affecter").show();
+		}
+	}
+
+/* CE CODE EST EXECUTE AU CHARGEMENT DE LA PAGE */
+
+    /* Fermer */
+    // Le dialogue utilisé pour fermer un projet
+    formulaire_confirmation = $( "#formulaire_confirmation" ).dialog({autoOpen: false,
+            height: 500,
+            width: 400,
+            modal: true
+	});
 
 	// Tout cocher ou décocher: thematiques
 	$( "#tX" ).click(function(event) {
@@ -139,39 +213,6 @@ $( document ).ready(function() {
 		change_cb();
 	});
 
-	// Calcul des statistiques sur les experts
-	function calcul_stats() {
-		//alert("HOHOHOHO");
-		// Remettre à 0 l'attribut nbprj sur les cb de #experts
-		//$( "#experts tr td .cb").attr('nbprj',0);
-
-		// Recalculer la valeur de cet attribut
-		$( "#experts tr td .cb").each(function(){
-			cl = '.' + $(this).attr("id");
-			v  = $(cl).length;
-			$(this).parent().parent().children('td:first').html(v);
-			//alert("coucou "+cl+' '+v)
-		});
-	}
-
-	// Appelé lorsque le select change de valeur
-	function change_select(event) {
-		// changer la classe du parent du select
-		$(this).parent().removeClass();
-		cl = 'e' + $(this).val();
-		$(this).parent().addClass(cl);
-
-		// changer l'url de sudo
-		a   = $(this).parent().children("a");
-		url = a.attr("href");
-		//alert (url.match(/=\d+$/,url));
-		url=url.replace(/=\d+$/,"="+$(this).val());
-		//url=url.replace(/=\d+$/,"="+"***");
-		//alert(url);
-		$(this).parent().children("a").attr("href",url);
-		calcul_stats();
-	}
-
 	// Connecter aux fonctions click lors de l'initialisation
 	$( "a.fermeture" ).click(click_fermeture);
 
@@ -184,14 +225,29 @@ $( document ).ready(function() {
 	// Commencer par calculer les stats
 	calcul_stats();
 
+	// C'est quoi ça ?
 	$( "input.cb_stat" ).change(change_cb_stat);
-	function change_cb_stat() {
-		$( "section div" ).show();
-		 $("input.cb_stat").each(function(){
-			 cl = '.' + $(this).attr("id");
-			 if (!$(this).is(":checked")) {
-				 $(cl).parent().hide();
-			 };
-		 });
-	};
+
+	// Checkboxes de sélection 
+	$( "input.expsel").change(change_couleur);
+	
+	// lors du chargement de la page, initialiser cpt_sel
+	$("input.expsel").each(function() {
+		cell = $(this).parent();
+		line = cell.parent();
+		if ( $(this).is(":checked") )
+		{
+			cell.css("background-color","blue");
+			line.find(".bouton_affecter").show();
+			cpt_sel++;
+		}
+		else
+		{
+			line.find(".bouton_affecter").hide();
+		}
+	});
+	if (cpt_sel==0)
+	{
+		$("#bouton_affecter").hide();
+	}
 });

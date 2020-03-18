@@ -91,13 +91,9 @@
 
 <p>
 {% if app.debug %}<strong>DEBUG </strong><em>Etat du projet {{projet.id }}= {{ projet.getEtatProjet }} - Etat de la version {{version.idVersion }}= {{ version.getEtatVersion }}</em>{% endif %}<br />
-{# patch 3 janvier 2020 = NE PAS AFFICHER le nom de l'expert !!!! 
-   Mais il faudra améliorer ça en ne mettant pas le nom de l'expert dans la B.D..... #}
-{% for user in version.CollaborateurVersion %}
-{% if version.majInd.idindividu == user.collaborateur.idindividu %}
-<em>Dernière modification par {{ version.majInd }} le {{ version.majStamp|date('Y-m-d H:i:s') }}</em>
+{% if version.majInd != null %}
+	<em>Dernière modification par {{ version.majInd }} le {{ version.majStamp|date('Y-m-d H:i:s') }}</em>
 {% endif %}
-{% endfor %}
 </p>
 
 {% endblock before_body %}
@@ -136,7 +132,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ (versionPrec.data.getDemHeuresRallonge + versionPrec.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
+            <td>{{ (versionPrec.getDemHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -144,7 +140,7 @@
             <th class="horiz">Nombre d'heures demandées session {{ session }}<br>
             <span class="petit">Y compris les rallonges</span>
             </th>
-            <td>{{ (version.data.getDemHeuresRallonge + version.data.getDemHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
+            <td>{{ (version.getDemHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
             {% if toomuch %} <img src="{{ asset('icones/attention16.png') }}" alt="Demande trop forte, cf. règles d'attribution" title="Demande trop forte, cf. règles d'attribution" /> {% endif %}
             </td>
         </tr>
@@ -160,7 +156,7 @@
             <th class="horiz">Nombre d'heures attribuées session {{ versionPrec.session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ (versionPrec.data.getAttrHeuresRallonge + versionPrec.data.getAttrHeures - versionPrec.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
+            <td>{{ (versionPrec.getAttrHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}</td>
         </tr>
         {% endif %}
         {% endif %}
@@ -168,8 +164,8 @@
             <th class="horiz">Nombre d'heures attribuées session {{ session }}<br>
             <span class="petit">Y compris les rallonges et les pénalités éventuelles</span>
             </th>
-            <td>{{ (version.data.attrHeuresRallonge + version.data.attrHeures - version.data.penalHeures)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
-            {% if version.data.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.data.attrHeuresEte |number_format(0, ',', ' ')|replace({' ':'&nbsp;'}) |raw }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
+            <td>{{ (version.attrHeuresTotal)|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }}
+            {% if version.attrHeuresEte != 0 %} <span class="attention">(dont {{ version.attrHeuresEte |number_format(0, ',', ' ')|replace({' ':'&nbsp;'}) |raw }} heures à utiliser entre le 1er Juillet et le 31 Août)</span> {% endif %}
             </td>
         </tr>
     </tbody>
@@ -187,9 +183,9 @@
                 <span class="petit">depuis le début de {{ session.getAnneeSession() + 2000 }}</span>
             </th>
             {# TODOPOLITIQUE #}
-            <td>{# {{ version.data.conso }}
+            <td>{# {{ version.conso }}
                 {% if(version.getQuota > 0) %}
-                    ({{ (version.data.conso * 100 / version.data.quota) |number_format(1)}} %)
+                    ({{ (version.consocalcul * 100 / version.quota) |number_format(1)}} %)
                 {% endif %}
                 <br /> #}
                 {{ conso|number_format(0, ',', ' ')|replace({' ':'&nbsp;'})|raw }} {% if(quota!=0) %} ({{consop|number_format(1)}} %) {% endif %}
@@ -283,7 +279,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
             <td>{{ version.prjGenciMachines }}</td>
         </tr>
         <tr>
-           <th class="horiz">Heures</th>
+           <th class="horiz">Heures accordées</th>
             <td>{{ version.prjGenciHeures }}</td>
         </tr>
         <tr>
@@ -526,6 +522,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </tbody>
 </table>
 
+{% if version.etat in [ 4, 5, 6, 9 ] %}
 <h3>VI- Commentaire de l'expert</h3>
 
 {% for expertise in version.expertise %}
@@ -559,6 +556,8 @@ Le laboratoire associé au projet est le laboratoire du responsable
 </table>
 
 {% endfor %}
+
+{% endif %}
 
 {% if version.rallonge is not empty %}
 <h4>Rallonges</h4>

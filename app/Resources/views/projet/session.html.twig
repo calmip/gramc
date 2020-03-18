@@ -251,15 +251,22 @@
             	<a class="fermeture" href="{{ path('fermer_projet', { 'id': version.projet.idProjet }) }}" title="Fermer le projet">
                 	<img src="{{ asset('icones/process-stop.png') }}" alt="Fermer" />
             	</a>
-                {# SUPPRIME POUR CAUSE DE BUG (plus prudent)
-            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' or version.libelleEtat == 'EXPERTISE_TEST' ) %}
+            	{% elseif( version.libelleEtat == 'EDITION_EXPERTISE' and session.libelleEtat == 'EDITION_DEMANDE' ) %}
             	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
                 	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
             	</a>
-            	{% elseif( version.libelleEtat == 'EDITION_DEMANDE' and session.libelleEtat != 'ACTIF') %}
+            	{% elseif( version.libelleEtat == 'EXPERTISE_TEST' ) %}
+            	<a class="arriere" href="{{ path('back_version', { 'id': version.idVersion }) }}" title="Revenir en édition">
+                	<img src="{{ asset('icones/back.png') }}" alt="En arrière" />
+            	</a>
+            	{% elseif( version.libelleEtat == 'EDITION_DEMANDE' and session.libelleEtat == 'EDITION_DEMANDE') %}
             	<a href="{{ path('fwd_version', { 'id': version.idVersion }) }}" title="Envoyer pour expertise">
                 	<img src="{{ asset('icones/forward.png') }}" alt="En avant" />
-            	</a>#}
+            	</a>
+            	{% elseif( version.libelleEtat == 'EDITION_TEST') %}
+            	<a href="{{ path('fwd_version', { 'id': version.idVersion }) }}" title="Envoyer pour expertise">
+                	<img src="{{ asset('icones/forward.png') }}" alt="En avant" />
+            	</a>
             	{% else %}
             	&nbsp;
             	{% endif %}

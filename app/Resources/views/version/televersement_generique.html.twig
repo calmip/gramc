@@ -5,7 +5,7 @@
 
 <section>
     <h2>Téléversement générique</h2>
-    <div class="message warning">Le fichier doit être <strong>un pdf de taille inférieure à 1 Mo</strong></div>
+    <div class="message warning"><h2>ATTENTION</h2><p><strong>Risque d'écrasement d'un fichier existant !</strong></p><p>Le fichier doit être <strong>un pdf de taille inférieure à 1 Mo</strong></p></div>
 
     {% if not erreurs == null %}
         <div class="message erreur">
@@ -26,16 +26,36 @@
 
 {{ form_start( form  )  }}
 
-<p><label><strong>projet </strong></label>{{ form_widget( form.projet ) }}</p>
-<p><label><strong>Session </strong> (ex. 16B, pour une fiche projet, par défault la session courante) </label>{{ form_widget( form.session ) }}</p>
-<p><label> <strong>Année</strong> (ex. 2016, pour un rapport d'activité, par défaut l'année courante) </label>{{ form_widget( form.annee ) }}</p>
-<p><label> <strong>Type de document </strong>{{ form_widget( form.type ) }}</p>
-<p><label><strong>Fichier à téléverser </strong>{{ form_widget( form.file ) }}</p>
-<p><input name="submit" value="Envoyer" type="submit"></p>
-
+<table>
+<tr><td class="center" ><label><strong>projet </strong></label></td><td>{{ form_widget( form.projet ) }}</td></tr>
+<tr><td class="center" ><label> <strong>Type de document </strong></td><td>{{ form_widget( form.type ) }}</td></tr>
+<tr><td class="center" ><label><strong>Session (def {{def_sess}})</strong><br /><small>Pour une fiche projet</small> </td><td></label>{{ form_widget( form.session ) }}</td></tr>
+<tr><td class="center" ><label> <strong>Année (def {{def_annee}})</strong><br /><small>Pour un rapport d'activité</small></label></td><td>{{ form_widget( form.annee) }}</td></tr>
+<tr><td class="center" ><label><strong>Fichier à téléverser</strong></td><td>{{ form_widget( form.file) }}</td></tr>
+<tr><td colspan="2"><input name="submit" value="Téléverser" type="submit"></td></tr></table>
 {{ form_end(form) }}
 
-<div class="message warning"><h2>ATTENTION</h2><strong>Risque d'écrasement d'un fichier existant !</strong></div>
+<hr />
+
+<h2>Modifier l'attribution de la version</h2>
+
+{% if not erreurs1 == null %}
+	<div class="message erreur">
+	{% for erreur in erreurs1 %}
+	<p>ERREUR: {{ erreur }}</p>
+	{% endfor %}
+	</div>
+{% endif %}
+
+{{ form_start(form1) }}
+<table>
+<tr><td class="center" ><label><strong>version </strong></label></td><td>{{ form_widget( form1.version ) }}</td></tr>
+<tr><td class="center" ><label> <strong>Attribution </strong></td><td>{{ form_widget( form1.attrHeures ) }}</td></tr>
+<tr><td class="center" ><label> <strong>Attribution <br /><small>pour l'été</small> </strong></td><td>{{ form_widget( form1.attrHeuresEte ) }}</td></tr>
+<tr><td colspan="2"><input name="submit" value="Entrer" type="submit"></td></tr></table>
+
+{{ form_end(form1) }}
+
 
 <nav>
     <ul>

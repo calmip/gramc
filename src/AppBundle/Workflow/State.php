@@ -28,21 +28,30 @@ use AppBundle\Utils\Signal;
 use AppBundle\Utils\Etat;
 
 /*****************
- * State - Une classe pour décrire des états d'objets, ainsi que les 
- *         transitions possibles à partir de ces objets
- *         Les transitions sont aussi des objets
+ * State - Une classe pour décrire l'ensemble des transitions possibles 
+ *         à partir d'un état donné ($stateIdentifier)
+ *         Les transitions acceptables sont dans le tableau $transitions, indexé par les signaux
+ *         Les transitions sont des objets, leurs méthodes contiennent le code exécuté lors du changement d'état
+ *             $transitions = [ signal1->transition1, signal2->transition2, ... ]
  * 
  *****************/
 class State
 {
-    protected $transitions      = [];
-    protected $stateIdentifier  = null;
+    private $transitions      = [];
+    private $stateIdentifier  = null;
 
+	/***********
+	 * Le constructeur
+	 * 
+	 * params:
+	 * 		$stateIdentifier L'état de départ (un entier, cf. Utils/Etat.php)
+	 *      $transitions     Un array de transitions (voir le format ci-dessus)
+	 **********************/ 
     public function __construct($stateIdentifier, $transitions)
     {
         $this->stateIdentifier = $stateIdentifier;
         $this->transitions = $transitions;
-    } // public function __construct()
+    }
 
     public function __toString()
     {
@@ -52,54 +61,78 @@ class State
         return $output . '}' ;   
     }
 
-    function addTransition($transitionConstant,$transitionObject)
-    {
-        $this->states[$transitionConstant] = $transitionObject;
-    }
+    //function addTransition($transitionConstant,$transitionObject)
+    //{
+        //$this->states[$transitionConstant] = $transitionObject;
+    //}
           
-    public function getTransitions()
+    //public function getTransitions()
+    //{
+    //    return $this->transitions;
+    //}
+
+
+    //public function getTransition($name)
+    //{
+      //  if( isset( $this->transitions[$name] ) )
+      //      return $this->transitions[$name];
+      //  else
+      //      return null;
+    //}
+
+	/******************
+	 * Existe-t-il une transition possible avec le signal $signal ?
+	 * 
+	 * params = $signal     Le signal
+	 * return = true/false
+	 **********************************/
+    private function hasTransition($signal)
     {
-        return $this->transitions;
+        if( isset( $this->transitions[$signal] ) ) return true;
+        else                                       return false;
     }
 
-    public function getTransition($name)
+    /****************
+     * La transition avec le signal peut-elle être exécutée sur l'objet $objet ?
+     * 
+     * params:
+     *      $signal = Un identifiant de signal
+     *      $object = Un objet 
+     * 
+     ********************************/
+    public function canExecute($signal,$object)
     {
-        if( isset( $this->transitions[$name] ) )
-            return $this->transitions[$name];
-        else
-            return null;
-    }
-
-    public function hasTransition($name)
-    {
-        if( isset( $this->transitions[$name] ) ) return true;
-        else return false;
-    }
-
-    // Renvoie true/false suivant que la transition peut être exécutée ou pas
-    public function canExecute($name,$object)
-    {
-        if(  $this->hasTransition($name))
+        if(  $this->hasTransition($signal))
         {
-            //echo ' State['.$this->stateIdentifier .'] signal ' . $name . ' on ' . get_class ( $object ) . ' existe ';   
-            return $this->transitions[$name]->canExecute($object);
+            return $this->transitions[$signal]->canExecute($object);
         }
         else
         {
-            //echo ' State['.$this->stateIdentifier .'] signal ' . $name . ' on ' . get_class ( $object ) . " n'existe pas "; 
+            //echo ' State['.$this->stateIdentifier .'] signal ' . $signal . ' on ' . get_class ( $object ) . " n'existe pas "; 
             return false;
         }    
     }
 
-    // Exécute la transition
-    public function execute($name,$object)
+    /****************
+     * Exécute la transition $signal sur l'objet $objet
+     * 
+     * params:
+     *      $signal = Un identifiant de signal
+     *      $object = Un objet associé
+     * 
+     * return:
+     * 		true  = transition ok
+     * 		false = transition non effectuée, objet intact
+     * 
+     ********************************/
+    public function execute($signal,$object)
     {
-        if( $this->hasTransition($name) )
+        if( $this->hasTransition($signal) )
         {
             //echo ' State['.$this->stateIdentifier .'] signal ' . $name . ' on ' . get_class ( $object ) . ' exécuté '; 
             //$msg = $this->transitions[$name] . ' -- on -- ' . $object;
             //AppBundle::getLogger()->info($msg);
-            return $this->transitions[$name]->execute($object);
+            return $this->transitions[$signal]->execute($object);
         }
         else
         {
@@ -108,8 +141,8 @@ class State
         }    
     }
     
-    public function getStateIdentifier()
-    {
-        return $this->stateIdentifier();
-    }
+//    public function getStateIdentifier()
+//    {
+//        return $this->stateIdentifier();
+//    }
 }

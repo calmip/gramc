@@ -30,6 +30,7 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
 
 use AppBundle\Utils\Functions;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Individu
@@ -88,6 +89,9 @@ const LIBELLE_STATUT =
      * @var string
      *
      * @ORM\Column(name="mail", type="string", length=200, nullable=false)
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email."
+     * )
      */
     private $mail;
 
@@ -118,20 +122,6 @@ const LIBELLE_STATUT =
      * @ORM\Column(name="expert", type="boolean", nullable=false)
      */
     private $expert = false;
-
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="responsable", type="boolean", nullable=false)
-     */
-    private $responsable = false;
-
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="collaborateur", type="boolean", nullable=false)
-     */
-    private $collaborateur = false;
 
     /**
      * @var boolean
@@ -426,8 +416,12 @@ const LIBELLE_STATUT =
      */
     public function setMail($mail)
     {
+		// Suppression des accents et autres ç
+		// voir https://stackoverflow.com/questions/1284535/php-transliteration
+		//$mail_ascii = transliterator_transliterate('Any-Latin;Latin-ASCII;', $mail);
+        //$this->mail = $mail_ascii;
+		// Ne fonctionne pas ! plantage dans connection_dbg (???)
         $this->mail = $mail;
-
         return $this;
     }
 
@@ -538,54 +532,6 @@ const LIBELLE_STATUT =
     }
 
     /**
-     * Set responsable
-     *
-     * @param boolean $responsable
-     *
-     * @return Individu
-     */
-    public function setResponsable($responsable)
-    {
-        $this->responsable = $responsable;
-
-        return $this;
-    }
-
-    /**
-     * Get responsable
-     *
-     * @return boolean
-     */
-    public function getResponsable()
-    {
-        return $this->responsable;
-    }
-
-    /**
-     * Set collaborateur
-     *
-     * @param boolean $collaborateur
-     *
-     * @return Individu
-     */
-    public function setCollaborateur($collaborateur)
-    {
-        $this->collaborateur = $collaborateur;
-
-        return $this;
-    }
-
-    /**
-     * Get collaborateur
-     *
-     * @return boolean
-     */
-    public function getCollaborateur()
-    {
-        return $this->collaborateur;
-    }
-
-    /**
      * Set president
      *
      * @param boolean $president
@@ -595,7 +541,6 @@ const LIBELLE_STATUT =
     public function setPresident($president)
     {
         $this->president = $president;
-
         return $this;
     }
 

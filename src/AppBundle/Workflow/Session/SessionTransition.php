@@ -24,14 +24,12 @@
 
 namespace AppBundle\Workflow\Session;
 
-use AppBundle\Workflow\TransitionInterface;
+use AppBundle\Workflow\Transition;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
-
-//use AppBundle\Exception\WorkflowException;
 
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
@@ -40,184 +38,117 @@ use AppBundle\Entity\Projet;
 use AppBundle\Entity\Version;
 
 
-class SessionTransition implements TransitionInterface
+class SessionTransition extends Transition
 {
-    protected   $etat                   = null;
-    protected   $signal_projet          = null;
-    protected   $toProjets              = false;
 
-
-    public function __construct( $etat, $signal_projet = null, $toProjets = false )
+    public function canExecute($session)
     {
-        $this->etat                 =   (int)$etat;
-        $this->signal_projet        =   $signal_projet;
-        $this->toProjets            =   $toProjets;
-    }
-
-    public function __toString()
-    {
-        $reflect = new \ReflectionClass($this);
-        $output = $reflect->getShortName().':';
-        $output .= 'etat=' . ($this->etat === null?'null':$this->etat) . ',';
-        $output .= 'signal_projet=' . ($this->signal_projet === null?'null':$this->signal_projet);
-        $output .= 'toProjets=' . ($this->toProjets === null?'null':$this->toProjets);
-        return $output;
-    }
-
-    ////////////////////////////////////////////////////
-
-    public function canExecute($object)
-    {
-       if ( $object instanceof Session )
-            {
-            $rtn = true;
-
-            if( $this->signal_projet != null )
-            {
-                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                // nous devons envoyer des signaux aux versions avant les projets
-                // car les projets tests se synchornisent avec leur version
-                // cet ordre n'est pas important pour les projets ordinaires
-
-                $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
-                $workflow = new VersionWorkflow();
-
-                // POUR DEBUG
-                        if( $versions == null )
-                        {
-                        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " aucune version" );
-                        }
-
-
-                foreach( $versions as $version )
-                {
-                    $output = $workflow->canExecute( $this->signal_projet, $version );
-                    $rtn = Functions::merge_return( $rtn, $output );
-                    // POUR DEBUG
-                        if( $output != true )
-                        {
-                        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Version " . $version . "  ne passe pas en état "
-                            . Etat::getLibelle( $version->getEtatVersion() ) . " signal = " . Signal::getLibelle( $this->signal_projet ));
-                        }
-
-                }
-
-                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                // les signaux envoyés par une session aux projets ne doivent pas être propagés aux versions
-                // les projets test ne feront que synchroniser leur état avec leur propre version,
-                // c'est pourquoi la version du projet test doit changer son état avant le projet test
-
-
-                if( $this->toProjets == true )
-                    {
-                    $projets = AppBundle::getRepository(Projet::class)->findAll();
-                    $workflow = new ProjetWorkflow();
-                    foreach( $projets as $projet )
-                        {
-                        $output = $workflow->canExecute( $this->signal_projet, $projet );
-                        /* POUR DEBUG
-                        if( $output != true )
-                        {
-                        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " Projet " . $projet . "  ne passe pas en état "
-                            . Etat::getLibelle( $projet->getEtatProjet() ) . " signal = " . Signal::getLibelle( $this->signal_projet ));
-                        }
-                        */
-                        $rtn = $rtn && $output;
-                        $rtn = Functions::merge_return( $rtn, $output );
-                        }
-                    }
-            }
-
-            return $rtn;
-
-            }
-        else
-            return false;
-
-    }
-
-    ///////////////////////////////////////////////////////
-
-    public function execute($object)
-    {
-        //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " entrer dans execute" );
-        if ( $object instanceof Session )
+		if ( !$session instanceof Session ) throw new \InvalidArgumentException;
+		
+		$rtn = true;
+		if (Transition::FAST == false && $this->getPropageSignal())
 		{
-            $rtn = true;
-
-			// Si on ne peut pas remettre toutes les sessions php à zéro, renvoie false
-			// La transition n'a pas eu lieu
-			// Cela est une sécurité afin de s'assurer que personne ne reste connecté, ne sachant pas que la session
-			// a changé d'état !
-			if (Functions::clear_phpSessions()==false)
+			// Propagation vers les versions
+			$versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session] );
+			$workflow = new VersionWorkflow();
+			if( $versions == null && Transition::DEBUG)
 			{
-				$rtn = false;
-				return $rtn;
-			}
-			else
-			{
-				Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
+				Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " aucune version pour la session " . $session );
 			}
 
-            if( $this->signal_projet == null )
-                Functions::debugMessage( __FILE__ . ":" . __LINE__ . " signal projet null" );
-
-            if( $this->signal_projet != null )
+			foreach( $versions as $version )
 			{
-                $versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $object] );
-                $workflow = new VersionWorkflow();
-
-                //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " size versions = " . count($versions) );
-
-                foreach( $versions as $version )
+				$output = $workflow->canExecute( $this->getSignal(), $version );
+				$rtn = Functions::merge_return( $rtn, $output );
+				if( $output != true && Transition::DEBUG)
 				{
-                    //if( $version->getIdVersion() == "19AP17002" )
-					//{
-                    //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Version " .  $version->getIdVersion());
-                    //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Etat Version " .  $version->getIdVersion()  . " = "
-                    //        . Etat::getLibelle( $version->getEtatVersion() ));
-					//}
-
-					//Functions::debugMessage( __FILE__ . ":" . __LINE__ . "  Envoi du signal " . $this->signal_projet . " à la version " . $version->getIdVersion());
-                    $output = $workflow->execute( $this->signal_projet, $version );
-
-                    //if( $version->getIdVersion() == "19AP17002" )
-					//{
-                    //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " output = " .  Functions::show( $output) );
-                    //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Etat Version " .  $version->getIdVersion()
-                    //        . " = " . Etat::getLibelle( $version->getEtatVersion() ));
-					//}
-
-                    $rtn = Functions::merge_return( $rtn, $output );
+					Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Version " . $version . "  ne passe pas en état "
+						. Etat::getLibelle( $version->getEtatVersion() ) . " signal = " . signal::getLibelle( $this->getSignal() ));
 				}
-
-                if( $this->toProjets == true )
-				{
-                    //Functions::debugMessage( __FILE__ . ":" . __LINE__ . " session courante " );
-                    $projets = AppBundle::getRepository(Projet::class)->findAll();
-                    $workflow = new ProjetWorkflow();
-                    foreach( $projets as $projet )
-					{
-                        //if( $version->getIdVersion() == "T19002" )
-                        //    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Projet T19002" );
-
-                        $output = $workflow->execute( $this->signal_projet, $projet );
-                        $rtn = $rtn && $output;
-                        $rtn = Functions::merge_return( $rtn, $output );
-					}
-				}
-                else
-                    Functions::debugMessage( __FILE__ . ":" . __LINE__ . " $this->toProjets == false " );
 			}
 
-            Functions::debugMessage(__METHOD__ .":" . __LINE__ . " Session = " . $object->getIdSession() . " transition de " . $object->getEtatSession() . " vers " . $this->etat . " suite à signal " .$this->signal_projet);
-            $object->setEtatSession( $this->etat );
-            Functions::sauvegarder( $object );
-            return $rtn;
+			// PAS DE Propagation vers les projets
+			/*
+			$projets = AppBundle::getRepository(Projet::class)->findAll();
+			$workflow = new ProjetWorkflow();
+			foreach( $projets as $projet )
+			{
+				$output = $workflow->canExecute( $this->signal, $projet );
+				// POUR 
+				if( $output != true && Transition::DEBUG )
+				{
+					Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " Projet " . $projet . "  ne passe pas en état "
+						. Etat::getLibelle( $projet->getEtatProjet() ) . " signal = " . signal::getLibelle( $this->signal ));
+				}
+				$rtn = $rtn && $output;
+				$rtn = Functions::merge_return( $rtn, $output );
+			} */
 		}
-        else
-        {
-            return false;
+		return $rtn;
+    }
+
+    public function execute($session)
+    {
+		if ( !$session instanceof Session ) throw new \InvalidArgumentException;
+		$rtn = true;
+
+		// Si on ne peut pas remettre toutes les sessions php à zéro, renvoie false
+		// La transition n'a pas eu lieu
+		// Cela est une sécurité afin de s'assurer que personne ne reste connecté, ne sachant pas que la session
+		// a changé d'état !
+		if (Functions::clear_phpSessions()==false)
+		{
+			$rtn = false;
+			Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " clear_phpSessions renvoie false");
+			return $rtn;
 		}
+		else
+		{
+			if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " nettoyage des sessions php" );
+		}
+
+		if( $this->getSignal() == null ) 
+		{
+			Functions::ErrorMessage( __FILE__ . ":" . __LINE__ . " signal null" );
+			return false;
+		}
+
+		$versions = AppBundle::getRepository(Version::class)->findBy( ['session' => $session] );
+		if ($this->getPropageSignal())
+		{
+			if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->getSignal()." à ".count($versions)." versions");
+	
+			$workflow = new VersionWorkflow();
+	
+			// Propage le signal à toutes les versions qui dépendent de la session
+			foreach( $versions as $version )
+			{
+				$output = $workflow->execute( $this->getSignal(), $version );
+				$rtn = Functions::merge_return( $rtn, $output );
+			}
+		}
+		
+		// Si demandé, propage le signal à tous les projets qui dépendent de la session
+	   /* if( $this->toProjets == true )
+		{
+			$projets = AppBundle::getRepository(Projet::class)->findAll();
+			if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " propagation du signal ".$this->signal." à ".count($projets)." projets");
+			$workflow = new ProjetWorkflow();
+			foreach( $projets as $projet )
+			{
+				$output = $workflow->execute( $this->signal, $projet );
+				$rtn = Functions::merge_return( $rtn, $output );
+			}
+		}
+		else
+		{
+			if (Transition::DEBUG) Functions::debugMessage( __FILE__ . ":" . __LINE__ . " Pas de propagation du signal aux projets " );
+		} */
+
+
+		// Change l'état de la session
+		$this->changeEtat($session);
+
+		return $rtn;
     }
 }

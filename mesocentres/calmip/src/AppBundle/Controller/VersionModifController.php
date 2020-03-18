@@ -954,42 +954,41 @@ class VersionModifController extends Controller
 	            ->getForm();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    //
-    // préparation de la liste des collaborateurs
-    //
-    /////////////////////////////////////////////////////////////////////////////
-
+    /**
+    * préparation de la liste des collaborateurs
+    * 
+    * params = $version
+    * return = Un tableau de IndividuForm
+    *************************************************************/
     private static function prepareCollaborateurs(Version $version)
     {
-    if( $version == null ) Functions::createException('VersionController:modifierCollaborateurs : version null');
-
-    // préparation de la liste des responsables potentiels
-
-    $dataR  =   [];
-    $dataNR =   [];
-    foreach( $version->getCollaborateurVersion() as $item )
-            {
-            $collaborateur   =  $item->getCollaborateur();
-            if( $collaborateur == null )
-                {
-                Functions::errorMessage("VersionController:modifierCollaborateurs : collaborateur null pour CollaborateurVersion ".
-                         $item->getId() );
-                continue;
-                }
-            else
-                {
-                $individuForm   =   new IndividuForm( $collaborateur );
-                $individuForm->setLogin( $item->getLogin() );
-                $individuForm->setResponsable( $item->getResponsable() );
-                if( $individuForm->getResponsable() == true )
-                    $dataR[] = $individuForm;
-                else
-                    $dataNR[] = $individuForm;
-                }
-            }
-
-    return array_merge($dataR, $dataNR);
+	    if( $version == null ) Functions::createException('VersionController:modifierCollaborateurs : version null');
+	
+	    // préparation de la liste des responsables potentiels
+	
+	    $dataR  =   [];
+	    $dataNR =   [];
+	    foreach( $version->getCollaborateurVersion() as $item )
+		{
+			$collaborateur   =  $item->getCollaborateur();
+			if( $collaborateur == null )
+			{
+				Functions::errorMessage("VersionController:modifierCollaborateurs : collaborateur null pour CollaborateurVersion ".
+						 $item->getId() );
+				continue;
+			}
+			else
+			{
+				$individuForm   =   new IndividuForm( $collaborateur );
+				$individuForm->setLogin( $item->getLogin() );
+				$individuForm->setResponsable( $item->getResponsable() );
+				if( $individuForm->getResponsable() == true )
+					$dataR[] = $individuForm;
+				else
+					$dataNR[] = $individuForm;
+			}
+		}
+	    return array_merge($dataR, $dataNR);
     }
 
     /**
@@ -1005,16 +1004,18 @@ class VersionModifController extends Controller
 	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la liste des collaborateurs de la version " . $version .
 	            " parce que : " . Menu::modifier_collaborateurs($version)['raison'] );
 
-		/* Si le bouton modifier est actif, on doit impérativement passer par là ! */
+		/* Si le bouton modifier est actif, on doit impérativement passer par le formulaire de la version ! */
         $modifier_version_menu = Menu::modifier_version( $version );
 		if ($modifier_version_menu['ok'] == true)
 		{
 			return $this->redirectToRoute($modifier_version_menu['name'],['id' => $version, '_fragment' => 'liste_des_collaborateurs'] );
 		}
 
-    $collaborateur_form = $this
+	    $collaborateur_form = $this
            ->get('form.factory')
-           ->createNamedBuilder('form_projet', FormType::class, [ 'individus' => self::prepareCollaborateurs($version) ])
+           ->createNamedBuilder('form_projet', FormType::class, [
+	           'individus' => self::prepareCollaborateurs($version) 
+           ])
            ->add('individus', CollectionType::class, [
                'entry_type'     =>  IndividuFormType::class,
                'label'          =>  false,
@@ -1026,60 +1027,62 @@ class VersionModifController extends Controller
                'delete_empty'   =>  true,
                'attr'         => ['class' => "profil-horiz",],
            ])
-        //->add('my_test', TextType::class )
-        ->add('submit', SubmitType::class,
-            [
-            'label' => 'Sauvegarder',
-            ])
-        ->getForm();
+	       //->add('my_test', TextType::class )
+	       ->add('submit', SubmitType::class, [
+	            'label' => 'Sauvegarder',
+           ])
+		   ->getForm();
 
-    $collaborateur_form->handleRequest($request);
+	    $collaborateur_form->handleRequest($request);
 
-    $projet =  $version->getProjet();
-
-    if( $projet != null )
-            $idProjet   =   $projet->getIdProjet();
-    else
-            {
-            Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
+	    $projet =  $version->getProjet();
+	    if( $projet != null )
+	    {
+			$idProjet   =   $projet->getIdProjet();
+		}
+	    else
+		{
+			Functions::errorMessage(__METHOD__ .':' . __LINE__ . " : projet null pour version " . $version->getIdVersion());
             $idProjet   =   null;
-            }
+		}
 
-    if ( $collaborateur_form->isSubmitted() && $collaborateur_form->isValid() )
-            {
+	    if ( $collaborateur_form->isSubmitted() && $collaborateur_form->isValid() )
+		{
+			// Un formulaire par individu
             $individu_forms =  $collaborateur_form->getData()['individus'];
             $validated = static::validateIndividuForms( $individu_forms );
             if( ! $validated )
+            {
                 return $this->render('version/collaborateurs_invalides.html.twig',
                     [
                     'projet' => $idProjet,
                     'version'   =>  $version,
                     'session'   =>  $version->getSession(),
                     ]);
-
+			}
+			// On traite les formulaires d'individus un par un
             static::handleIndividuForms( $individu_forms, $version );
 
+	
             // return new Response( Functions::show( $resultat ) );
             // return new Response( print_r( $mail, true ) );
             //return new Response( print_r($request->request,true) );
-            return $this->redirectToRoute('modifier_collaborateurs',
-                [
-                //'version' => $version->getIdVersion(),
-                'id'    => $version->getIdVersion() ,
-                ]
-                );
 
-            }
+			// SI ON VIRE ça ON N'A PLUS LES MAILS: POURQUOI ???????????????
+            return $this->redirectToRoute('modifier_collaborateurs',	
+			[
+				'id'    => $version->getIdVersion() ,
+			]);
+		}
 
-    //return new Response( dump( $collaborateur_form->createView() ) );
-     return $this->render('version/collaborateurs.html.twig',
-            [
-            'projet' => $idProjet,
-            'collaborateur_form'   => $collaborateur_form->createView(),
-            'version'   =>  $version,
-            'session'   =>  $version->getSession(),
-            ]
-            );
+	    //return new Response( dump( $collaborateur_form->createView() ) );
+	     return $this->render('version/collaborateurs.html.twig',
+         [
+			 'projet' => $idProjet,
+             'collaborateur_form'   => $collaborateur_form->createView(),
+             'version'   =>  $version,
+             'session'   =>  $version->getSession(),
+		 ]);
 
     }
 
@@ -1088,9 +1091,9 @@ class VersionModifController extends Controller
 
     private static function validateIndividuForms( $individu_forms, $definitif = false )
     {
-    foreach(  $individu_forms as  $individu_form )
+	    foreach(  $individu_forms as  $individu_form )
         {
-        if( $definitif ==  true  &&
+	        if( $definitif ==  true  &&
                 ( $individu_form->getPrenom() == null   || $individu_form->getNom() == null
                 || $individu_form->getEtablissement() == null
                 || $individu_form->getLaboratoire() == null || $individu_form->getStatut() == null
@@ -1098,101 +1101,134 @@ class VersionModifController extends Controller
             )   return false;
         }
 
-    if( $individu_forms != [] )
-        return true;
-    else
-        return false;
+	    if( $individu_forms != [] )
+	        return true;
+	    else
+	        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-
-    private static function handleIndividuForms( $individu_forms, Version $version )
+	/***************************************
+	 * Traitement des formulaires des individus individuellement
+	 * 
+	 * $individu_forms = Tableau contenant un formulaire par individu
+	 * $version        = La version considérée
+	 ****************************************************************/
+    private static function handleIndividuForms($individu_forms, Version $version)
     {
-    foreach(  $individu_forms as  $individu_form )
-                {
-                $id =  $individu_form->getId();
+	    foreach($individu_forms as $individu_form)
+		{
+			$id =  $individu_form->getId();
 
-                if( $id != null ) // les utilisateurs existants
-                    {
-                    $individu = AppBundle::getRepository(Individu::class)->find( $id );
-                    //if( $individu_form->getMail()  == null )
-                    //    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . ' le mail du formulaire est null !');
-                    }
-                elseif( $individu_form->getMail() != null )
-                    {
-                    $individu = AppBundle::getRepository(Individu::class)->findOneBy( [ 'mail' =>  $individu_form->getMail() ]);
-                    Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' le nouveau mail correspond à un utilisateur existant');
-                    }
-                else
-                    {
-                    //Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' mail et id sont nulls en même temps !');
-                    $individu = null;
-                    }
+			// Le formulaire correspond à un utilisateur existant
+			if( $id != null )
+			{
+				$individu = AppBundle::getRepository(Individu::class)->find( $id );
+				// TODO - Je ne comprends pas l'implication de ces messages
+				// if( $individu_form->getMail()  == null )
+				//    Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire est null !");
+				// else
+				//	Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " $id: le mail du formulaire= " . $individu_form->getMail());
+			}
+			
+			// On a renseigné le mail de l'utilisateur: on recherche l'utilisateur !
+			// Si $utilisateur == null, il faudra le créer (voir plus loin)
+			elseif( $individu_form->getMail() != null )
+			{
+				$individu = AppBundle::getRepository(Individu::class)->findOneBy( [ 'mail' =>  $individu_form->getMail() ]);
+				if ( $individu!=null) Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' mail=' . $individu_form->getMail() . ' correspond à individu ' . $individu);
+				else                  Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' mail=' . $individu_form->getMail() . ' individu pas trouvé');
+			}
+			
+			// Pas de mail -> pas d'utilisateur !
+			else
+			{
+				//Functions::errorMessage(__METHOD__ . ':' . __LINE__ . ' mail et id sont nulls en même temps !');
+				$individu = null;
+			}
 
-                if( $individu == null && $id != null )
-                        Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' idIndividu ' . $id . 'du formulaire ne correspond pas à un utilisateur');
-                elseif( is_array( $individu_form ) )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu_form est array ' . Functions::show( $individu_form) );
-                elseif( is_array( $individu ) )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu est array ' . Functions::show( $individu) );
-                elseif( $individu != null && $individu_form->getMail() != null && $individu_form->getMail() != $individu->getMail() )
-                            Functions::errorMessage(__METHOD__ . ':' . __LINE__ ." l'adresse mails de l'utilisateur " .
-                            $individu . ' est incorrecte dans le formulaire :' . $individu_form->getMail() . ' != ' . $individu->getMail());
-                elseif( $individu != null && $individu_form->getDelete() == true ) // supprimer un collaborateur
-                    {
-                    Functions::infoMessage(__METHOD__ . ':' . __LINE__ ." le collaborateur " .
-                            $individu . " sera supprimé de la liste des collaborateurs de la version ".$version." s'il est présent");
-                    $version->supprimerCollaborateur( $individu );
-                    }
-                elseif( $individu != null ) // ancien utilisateur
-                    {
-                    $individu = $individu_form->modifyIndividu( $individu );
-                    $em =   AppBundle::getManager();
+			// Cas d'erreur qui ne devraient jamais se produire
+			if( $individu == null && $id != null )
+					Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' idIndividu ' . $id . 'du formulaire ne correspond pas à un utilisateur');
+			elseif( is_array( $individu_form ) )
+				Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu_form est array ' . Functions::show( $individu_form) );
+			elseif( is_array( $individu ) )
+				Functions::errorMessage(__METHOD__ . ':' . __LINE__ .' individu est array ' . Functions::show( $individu) );
+			elseif( $individu != null && $individu_form->getMail() != null && $individu_form->getMail() != $individu->getMail() )
+				Functions::errorMessage(__METHOD__ . ':' . __LINE__ ." l'adresse mails de l'utilisateur " .
+					$individu . ' est incorrecte dans le formulaire :' . $individu_form->getMail() . ' != ' . $individu->getMail());
+			
+			// Suppression d'un collaborateur
+			elseif( $individu != null && $individu_form->getDelete() == true )
+			{
+				Functions::infoMessage(__METHOD__ . ':' . __LINE__ ." le collaborateur " .
+					$individu . " sera supprimé de la liste des collaborateurs de la version ".$version);
+				$version->supprimerCollaborateur( $individu );
+			}
+			
+			// L'individu existe déjà
+			elseif( $individu != null )
+			{
+				$individu = $individu_form->modifyIndividu( $individu );
+				$em =   AppBundle::getManager();
 
-                    if( ! $version->isCollaborateur( $individu ) )
-                        {
-                        Functions::infoMessage(__METHOD__ . ':' . __LINE__ .' utilisateur existant ' .
-                              $individu . ' ajouté à la version ' .$version );
-                        $collaborateurVersion   =   new CollaborateurVersion( $individu );
-                        $collaborateurVersion->setVersion( $version );
-                        $collaborateurVersion->setLogin( $individu_form->getLogin() );
-                        $em->persist( $collaborateurVersion );
-                        $em->flush();
-                        }
-                    else
-                        {
-                        Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' utilisateur '
-                            . $individu . ' existant juste modifié (ou pas)');
-                        $version->modifierLogin( $individu, $individu_form->getLogin() );
+				// Nouveau collaborateur
+				if( ! $version->isCollaborateur( $individu ) )
+				{
+					Functions::infoMessage(__METHOD__ . ':' . __LINE__ .' individu ' .
+						$individu . ' ajouté à la version ' .$version );
+					$collaborateurVersion   =   new CollaborateurVersion( $individu );
+					$collaborateurVersion->setVersion( $version );
+					$collaborateurVersion->setLogin( $individu_form->getLogin() );
+					$em->persist( $collaborateurVersion );
+					$em->flush();
+				}
+				else
+				{
+					Functions::debugMessage(__METHOD__ . ':' . __LINE__ .' individu ' .
+						$individu . ' confirmé pourla version '.$version.' (et peut-être modifié) ');
+					$version->modifierLogin( $individu, $individu_form->getLogin() );
 
-                        // modification du labo du projet
-                        if( $version->isResponsable( $individu ) )
-                            $version->setLaboResponsable( $individu );
-                        }
-                    //$individu_form->setMail( $individu->getMail() );
-                    }
-                elseif( $individu_form->getMail() != null && $individu_form->getDelete() == false ) // nouvel utilisateur
-                    {
-                    $individu = $individu_form->nouvelIndividu();
-                    $collaborateurVersion   =   new CollaborateurVersion( $individu );
-                    $collaborateurVersion->setLogin( $individu_form->getLogin() );
-                    $collaborateurVersion->setVersion( $version );
-
-                    Functions::infoMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur ' . $individu .
-                        ' créé et ajouté comme collaborateur à la version ' . $version);
-
-                    $em =   AppBundle::getManager();
-                    $em->persist( $individu );
-                    $em->persist( $collaborateurVersion );
-                    $em->persist( $version );
-                    $em->flush();
-                    }
-                elseif( $individu_form->getMail() == null && $id == null)
-                    Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur vide ignoré');
-                if( $individu != null )
-                    $individu_form->setMail( $individu->getMail() );
-            }
-
+					// modification du labo du projet
+					if( $version->isResponsable( $individu ) ) $version->setLaboResponsable( $individu );
+				}
+			}
+			
+			// Nouvel utilisateur (adresse mail pas trouvée)
+			elseif( $individu_form->getMail() != null && $individu_form->getDelete() == false )
+			{
+				// Création d'un individu à partir du formulaire
+				$individu = $individu_form->nouvelIndividu();
+				
+				// Pas d'individu créé si la validation est négative
+				if ($individu != null)
+				{
+					$collaborateurVersion   =   new CollaborateurVersion( $individu );
+					$collaborateurVersion->setLogin( $individu_form->getLogin() );
+					$collaborateurVersion->setVersion( $version );
+	
+					Functions::infoMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur ' . $individu .
+						' créé et ajouté comme collaborateur à la version ' . $version);
+	
+					$em = AppBundle::getManager();
+					$em->persist( $individu );
+					$em->persist( $collaborateurVersion );
+					$em->persist( $version );
+					$em->flush();
+				}
+			}
+			
+			// Ligne vide
+			elseif( $individu_form->getMail() == null && $id == null)
+			{
+				Functions::debugMessage(__METHOD__ . ':' . __LINE__ . ' nouvel utilisateur vide ignoré');
+			}
+			
+			//if( $individu != null )
+			//{
+			//	$individu_form->setMail( $individu->getMail() );
+            //}
+		}
     }
 
 	/**
@@ -1425,9 +1461,18 @@ class VersionModifController extends Controller
 	            &&  $version->getSondVolDonnPerm() != '< 1To'
 	            &&  $version->getSondVolDonnPerm() != '1 To'
 	            &&  $version->getSondVolDonnPerm() !=  'je ne sais pas')
-	            {
-					$todo[] = 'sond_justif_donn_perm';
-				}
+            {
+				$todo[] = 'sond_justif_donn_perm';
+			}
+
+			// Centres nationaux
+			if ( $version->getPrjGenciCentre()     == null
+				|| $version->getPrjGenciMachines() == null
+				|| $version->getPrjGenciHeures()   == null
+				|| $version->getPrjGenciDari()     == null)
+			{
+				$todo[] = 'genci';
+			};
 
 	        // Partage de données
 	        if ($version->getDataMetaDataFormat() == null ) $todo[] = 'Format de métadonnées';

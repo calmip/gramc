@@ -18,7 +18,7 @@ v 3.4.6 - 7 Jan 2020
 --------------------
 	- BUG - Refonte du système de métaetats des projets, l'affichage était insuffisant lorsque la session devient active
 
-v 3.4.5 - 3 Jan 2020
+v 2.4.5 - 3 Jan 2020
 --------------------
 	- BUG - Suppression de l'affichage de dernière modification si la personne responsable de la 
 	  modif ne fait pas partie des collaborateurs (experts, admins)

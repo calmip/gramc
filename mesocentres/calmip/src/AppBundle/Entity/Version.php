@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
+use AppBundle\Interfaces\Demande;
 
 use AppBundle\Politique\Politique;
 
@@ -38,7 +39,7 @@ use AppBundle\Politique\Politique;
  * @ORM\Entity(repositoryClass="AppBundle\Repository\VersionRepository")
  * @ORM\HasLifecycleCallbacks()
  */
-class Version
+class Version implements Demande
 {
     /**
      * @var integer
@@ -75,14 +76,6 @@ class Version
      * @ORM\Column(name="attr_heures", type="integer", nullable=false)
      */
     private $attrHeures = '0';
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="cons_heures", type="integer", nullable=false)
-     */
-    private $consHeures = '0';
-
 
     /**
      * @var integer
@@ -596,8 +589,13 @@ class Version
     */
     public function setUpdateMajStamp()
     {
+		// On renseigne le stamp de mise à jour SSI la personne connectée est un collaborateur
+		// Sinon (admin, expert, ... rien ne se passe !
+		if ($this->isCollaborateur())
+		{
             $this->majStamp = new \DateTime();
             $this->majInd   = AppBundle::getUser();
+		}
     }
 
     /**
@@ -744,7 +742,8 @@ class Version
 
         return $this;
     }
-
+	public function setEtat($etatVersion) { return $this->setEtatVersion(); }
+	
     /**
      * Get etatVersion
      *
@@ -850,30 +849,6 @@ class Version
     public function getAttrHeures()
     {
         return $this->attrHeures;
-    }
-
-    /**
-     * Set consHeures
-     *
-     * @param integer $consHeures
-     *
-     * @return Version
-     */
-    public function setConsHeures($consHeures)
-    {
-        $this->consHeures = $consHeures;
-
-        return $this;
-    }
-
-    /**
-     * Get consHeures
-     *
-     * @return integer
-     */
-    public function getConsHeures()
-    {
-        return $this->consHeures;
     }
 
     /**
@@ -2628,10 +2603,10 @@ class Version
         return $this->expertise;
     }
 
-    /////////////////////////////////
-
-    // pour workflow
-
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatVersion/setEtatVersion !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatVersion();
@@ -2644,8 +2619,8 @@ class Version
         return $this;
     }
 
-    public function getSubWorkflow()    { return new \AppBundle\Workflow\RallongeWorkflow(); }
-    public function getSubObjects()     { return $this->getRallonge();   }
+    //public function getSubWorkflow()    { return new \AppBundle\Workflow\RallongeWorkflow(); }
+    //public function getSubObjects()     { return $this->getRallonge();   }
 
     ///////////////////////////////////////////////////////////////////////////////////
 
@@ -3066,33 +3041,31 @@ class Version
     // Ne sert que pour l'affichage des états de version
     public function getMetaEtat()
     {
-        $projet =  $this->getProjet();
-        if( $projet != null )
-        {
-            $etat_projet = $projet->getEtatProjet();
+        //$projet =  $this->getProjet();
+        //if( $projet != null )
+        //{
+        //    $etat_projet = $projet->getEtatProjet();
 
-            if      (   $etat_projet    ==  Etat::EN_STANDBY    )   return 'STANDBY'; //En attente, renouvellement possible
-            elseif  (   $etat_projet    ==  Etat::TERMINE       )   return 'TERMINE';
-        }
+        //    if      (   $etat_projet    ==  Etat::EN_STANDBY    )   return 'STANDBY'; //En attente, renouvellement possible
+        //    elseif  (   $etat_projet    ==  Etat::TERMINE       )   return 'TERMINE';
+        //}
 
         $etat_version   =   $this->getEtatVersion();
 
-        if      (   $etat_version   ==  Etat::ANNULE                )   return 'ANNULE';
-        elseif  (   $etat_version   ==  Etat::EDITION_DEMANDE       )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EDITION_TEST          )   return 'EDITION';
-        elseif  (   $etat_version   ==  Etat::EDITION_EXPERTISE     )   return 'EXPERTISE';
-        elseif  (   $etat_version   ==  Etat::EXPERTISE_TEST        )   return 'EXPERTISE';
-        elseif  (   $etat_version   ==  Etat::EN_STANDBY            )   return 'STANDBY';
-        elseif  (   $etat_version   ==  Etat::TERMINE               )   return 'TERMINE';
-        elseif  (   $this->getAttrAccept()   ==  true            )
+        if     ( $etat_version == Etat::ACTIF             ) return 'ACTIF';
+        elseif ( $etat_version == Etat::ACTIF_TEST        ) return 'ACTIF';
+        elseif ( $etat_version == Etat::ANNULE            ) return 'ANNULE';
+        elseif ( $etat_version == Etat::EDITION_DEMANDE   ) return 'EDITION';
+        elseif ( $etat_version == Etat::EDITION_TEST      ) return 'EDITION';
+        elseif ( $etat_version == Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::EN_ATTENTE        ) return 'EN ATTENTE';
+        elseif ( $etat_version == Etat::TERMINE           ) 
         {
-            $session = Functions::getSessionCourante();
-            if( $session->getEtatSession() == Etat::EDITION_DEMANDE &&  $session->getLibelleTypeSession() === 'A' )
-                return 'NONRENOUVELE'; // Non renouvelé
-            else
-                return 'ACCEPTE'; // Projet ou rallonge accepté par le comité d'attribution
-        }
-        else    return 'REFUSE';
+			if ($this->getAttrAccept() == true) return 'TERMINE';
+			else                                return 'REFUSE';
+		}
+		return 'INCONNU';
     }
 
     //
@@ -3119,15 +3092,17 @@ class Version
     public function modifierLogin(Individu $individu, $login)
     {
         foreach( $this->getCollaborateurVersion() as $item )
+        {
             if($item->getCollaborateur() == null )
                 Functions::errorMessage('Version:modifierLogin collaborateur null pour CollaborateurVersion ' . $item);
             elseif( $item->getCollaborateur()->isEqualTo($individu ) )
-                {
+			{
                 $item->setLogin( $login );
                 $em = AppBundle::getManager();
                 $em->persist( $item );
                 $em->flush();
-                }
+			}
+		}
     }
 
     public function isCollaborateur(Individu $individu = null)
@@ -3280,7 +3255,7 @@ class Version
 		}
 	    else
 		{
-	        Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
+	        //Functions::noticeMessage(__METHOD__ . " version " . $this . " n'a pas d'expertise !");
 	        return null;
 		}
     }
@@ -3391,4 +3366,14 @@ class Version
     else
         Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Le nouveau responsable " . $moi . " ne fait partie d'aucun laboratoire");
     }
+    
+    /////////////////////////////////////////////////////
+    public function getEtat()
+    {
+		return $this->getEtatVersion();
+	}
+	public function getId()
+	{
+		return $this->getIdVersion();
+	}
 }

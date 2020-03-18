@@ -10,17 +10,14 @@
 
 <section>
 {% if sent == false %}
-    <div class="message info">Le message sera envoyé aux responsables des projets indiqués ci-dessous </div>
+    <div class="message info">Le message sera envoyé aux responsables des projets que vous avez sélectionnés </div>
 
-    <p>
-    {{ form_start(form) }}
-    {{ form_widget( form)}}
-    {{ form_end(form) }}
-    </p>
+    <p>{{ form_start(form) }}</p>
 
     <table><tbody>
     {% for responsable in responsables %}
 	<tr>
+		<td>{{ form_widget(responsable.selform ) }}</td>
 	    <td>{{ responsable.responsable.prenom }}</td>
 	    <td>{{ responsable.responsable.nom }}</td>
 	    <td>{{ responsable.responsable.mail }}</td>
@@ -33,9 +30,16 @@
     {% endfor %}
     </tbody></table>
 
+	<div class="center">
+	<p>
+    {{ form_widget( form)}}
+    {{ form_end(form) }}
+    </p>
+	</div>
+	
 {% else %}
 
-    <div class="message info">Le message a bien été envoyé</div>
+    <div class="message info">{{ nb_msg }} messages envoyés</div>
 
 {% endif %}
 </section>

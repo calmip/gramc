@@ -29,11 +29,9 @@ use Doctrine\ORM\Mapping as ORM;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
-use Symfony\Component\Validator\Constraints as Assert;
+use AppBundle\Interfaces\Demande;
 
-use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Rallonge
@@ -46,7 +44,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
  *  message="Si vous voulez attribuer des heures pour cette demande, choisissez ""Accepter""",groups={"expertise"})
  * @ORM\HasLifecycleCallbacks()
  */
-class Rallonge
+class Rallonge implements Demande
 {
     /**
      * @var integer
@@ -78,20 +76,6 @@ class Rallonge
      * @Assert\NotBlank(message="Vous n'avez pas rempli la justification scientifique")
      */
     private $prjJustifRallonge;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="maj_ind", type="integer", nullable=false)
-     */
-    private $majInd = '0';
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="maj_stamp", type="datetime", nullable=false)
-     */
-    private $majStamp;
 
     /**
      * @var boolean
@@ -167,22 +151,6 @@ class Rallonge
     /////////
 
     /**
-    * @ORM\PrePersist
-    */
-    public function setInitialMajStamp()
-    {
-    $this->majStamp = new \DateTime();
-    }
-
-    /**
-    * @ORM\PreUpdate
-    */
-    public function setUpdateMajStamp()
-    {
-    $this->majStamp = new \DateTime();
-    }
-
-    /**
     * @ORM\PostLoad
     */
     public function convert()
@@ -229,6 +197,7 @@ class Rallonge
 
         return $this;
     }
+	public function setEtat($etatVersion) { return $this->setEtatVersion(); }
 
     /**
      * Get etatRallonge
@@ -310,54 +279,6 @@ class Rallonge
     public function getPrjJustifRallonge()
     {
         return $this->prjJustifRallonge;
-    }
-
-    /**
-     * Set majInd
-     *
-     * @param integer $majInd
-     *
-     * @return Rallonge
-     */
-    public function setMajInd($majInd)
-    {
-        $this->majInd = $majInd;
-
-        return $this;
-    }
-
-    /**
-     * Get majInd
-     *
-     * @return integer
-     */
-    public function getMajInd()
-    {
-        return $this->majInd;
-    }
-
-    /**
-     * Set majStamp
-     *
-     * @param \DateTime $majStamp
-     *
-     * @return Rallonge
-     */
-    public function setMajStamp($majStamp)
-    {
-        $this->majStamp = $majStamp;
-
-        return $this;
-    }
-
-    /**
-     * Get majStamp
-     *
-     * @return \DateTime
-     */
-    public function getMajStamp()
-    {
-        return $this->majStamp;
     }
 
     /**
@@ -580,14 +501,14 @@ class Rallonge
         return $this->expert;
     }
 
-    /////////////////////////////////////////////////////////////////////////////
-
-    // pour workflow
+	/***************************************************
+	 * Fonctions utiles pour la class Workflow
+	 * Autre nom pour getEtatRallonge/setEtatRallonge !
+	 ***************************************************/
     public function getObjectState()
     {
         return $this->getEtatRallonge();
     }
-
     public function setObjectState($state)
     {
         $this->setEtatRallonge($state);
@@ -653,52 +574,6 @@ class Rallonge
     return Etat::getLibelle( $this->getEtatRallonge() );
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //
-    // préparation du formulaire du choix d'expert
-    //
-
-    public function getExpertForm()
-    {
-
-	    $expert = $this->getExpert();
-	    $version    =   $this->getVersion();
-
-	    if( $version != null )
-	        $projet =   $version->getProjet();
-	    else
-	        $projet =   null;
-
-	    $collaborateurs = AppBundle::getRepository(CollaborateurVersion::class)->getCollaborateurs($projet);
-
-	    if( $expert ==  null && $projet != null)
-        {
-	        //$expert  =  $projet->proposeExpert( $collaborateurs );
-	        // L'expert proposé est celui de la dernière expertise du projet, s'il y en a plusieurs
-	        // NOTE - plantage si aucune expertise, mais cela ne devrait jamais arriver
-	        $expertises = $version -> getExpertise()->toArray();
-	        $expert     = end($expertises)->getExpert();
-	        Functions::debugMessage(__METHOD__ . ":" . __LINE__ ." nouvel expert proposé à la rallonge " . $this . " : " . Functions::show( $expert ) );
-        }
-
-
-	    return AppBundle::getContainer()->get( 'form.factory')
-	            ->createNamedBuilder(   'expert'.$this->getIdRallonge() , FormType::class, null  ,  ['csrf_protection' => false ])
-	                ->add('expert', ChoiceType::class,
-	                    [
-	                'multiple'  =>  false,
-	                'required'  =>  false,
-	                'label'     => '',
-	                //'choices'       => $choices, // cela ne marche pas à cause d'un bogue de symfony
-	                'choice_loader' => new ExpertChoiceLoader($collaborateurs), // nécessaire pour contourner le bogue de symfony
-	                'data'          => $expert,
-	                //'choice_value' => function (Individu $entity = null) { return $entity->getIdIndividu(); },
-	                'choice_label' => function ($individu)
-	                   { return $individu->__toString(); },
-	                    ])
-	                    ->getForm();
-    }
-
     ////////////////////////////////////////////////////////////////////////
 
     public function isExpert(Individu $individu = null)
@@ -728,4 +603,11 @@ class Rallonge
     else
         return false;
     }
+    
+    ////////////////////////////////////////////////////////////////////////
+	public function getEtat()
+    {
+		return $this->getEtatRallonge();
+	}
+		
 }

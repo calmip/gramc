@@ -153,57 +153,63 @@ class VersionController extends Controller
      */
     public function supprimerAction(Version $version, $rtn )
     {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
+	    // ACL
+	    if( Menu::modifier_version($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ':' . __LINE__ . " impossible de supprimer la version " . $version->getIdVersion().
+	            " parce que : " . Menu::modifier_version($version)['raison'] );
 
-    $em =   AppBundle::getManager();
-    $etat = $version->getEtatVersion();
-    if( $version->getProjet() == null )
+	    $em =   AppBundle::getManager();
+	    $etat = $version->getEtatVersion();
+	    if( $version->getProjet() == null )
         {
-        $idProjet = null;
-        $idVersion == $version->getIdVersion();
+	        $idProjet = null;
+	        $idVersion == $version->getIdVersion();
         }
-    else
-        $idProjet   =  $version->getProjet()->getIdProjet();
+	    else
+	    {
+	        $idProjet   =  $version->getProjet()->getIdProjet();
+		}
 
 
-    if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
+	    if( $etat == Etat::EDITION_DEMANDE || $etat == Etat::EDITION_TEST )
         {
-        foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
-            $em->remove( $collaborateurVersion );
-        $workflow = new ProjetWorkflow();
-        $workflow->execute( Signal::CLK_ERASE, $version->getProjet() );
+			// Suppression des collaborateurs
+	        foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
+	            $em->remove( $collaborateurVersion );
 
-        $expertises = $version->getExpertise();
-        foreach( $expertises as $expertise)
-            $em->remove( $expertise );
+			// Suppression des expertises éventuelles
+	        $expertises = $version->getExpertise();
+	        foreach( $expertises as $expertise)
+	            $em->remove( $expertise );
 
-        $em->remove( $version );
-        $em->flush();
+	        $em->remove( $version );
+	        $em->flush();
         }
 
-    if( $idProjet == null )
-        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $idVersion . " sans projet supprimée");
-    else
+	    if( $idProjet == null )
+	        Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $idVersion . " sans projet supprimée");
+	    else
         {
-        $projet =   AppBundle::getRepository(Projet::class)->findOneBy(['idProjet' => $idProjet]);
-        if( $projet != null && $projet->getVersion() != null && count( $projet->getVersion() ) == 0 )
+	        $projet =   AppBundle::getRepository(Projet::class)->findOneBy(['idProjet' => $idProjet]);
+	        
+	        // Si pas d'autre version, on supprime le projet
+	        if( $projet != null && $projet->getVersion() != null && count( $projet->getVersion() ) == 0 )
             {
-            $em->remove( $projet );
-            $em->flush();
+	            $em->remove( $projet );
+	            $em->flush();
             }
-        elseif( $projet != null )
-            $projet->calculDerniereVersion();
+	        elseif( $projet != null )
+	        {
+	            $projet->calculDerniereVersion();
+			}
         }
 
-    //return $this->redirectToRoute( 'projet_accueil' );
-    // Il faudrait plutôt revenir là d'où on vient !
-    if( $rtn == "X" )
-        return $this->redirectToRoute( 'projet_accueil' );
-    else
-        return $this->redirectToRoute( $rtn );
+	    //return $this->redirectToRoute( 'projet_accueil' );
+	    // Il faudrait plutôt revenir là d'où on vient !
+	    if( $rtn == "X" )
+	        return $this->redirectToRoute( 'projet_accueil' );
+	    else
+	        return $this->redirectToRoute( $rtn );
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -614,161 +620,231 @@ class VersionController extends Controller
     }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Téléverser le rapport d'actitivé de l'année précedente
+     * Téléversements génériques de rapport d'activité ou de fiche projet
      *
      * @Route("/televersement", name="televersement_generique")
      * @Method({"POST","GET"})
      * @Security("has_role('ROLE_ADMIN')")
      */
+
     public function televersementGeneriqueAction(Request $request)
     {
-    $format_fichier = new \Symfony\Component\Validator\Constraints\File(
-                [
-                'mimeTypes'=> [ 'application/pdf' ],
-                'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
-                'maxSize' => "2024k",
-                'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
-                'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
-                ]);
+	    $format_fichier = new \Symfony\Component\Validator\Constraints\File(
+		[
+			'mimeTypes'=> [ 'application/pdf' ],
+			'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
+			'maxSize' => "2024k",
+			'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
+			'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
+		]);
 
-     $form = $this
-           ->get('form.factory')
-           ->createNamedBuilder( 'upload', FormType::class, [], ['csrf_protection' => false ] )
-           ->add('projet', TextType::class, [   'label'=> "", 'required'    => false, ] )
-           ->add('session', TextType::class, [  'label'=> "", 'required'    => false, ] )
-           ->add('annee', TextType::class, [  'label'=> "",  'required'    => false,] )
-           ->add('type',  ChoiceType::class,
-                    [
-                    'required'       =>  true,
-                    'choices'  =>   [
-                                    "Rapport d'activité"                    =>  "r",
-                                    "Fiche projet"                          =>  "f",
-                                    ],
-                    'label'     =>  "",
-                    ])
-           ->add('file', FileType::class,
-                [
-                'required'          =>  true,
-                'label'             => "",
-                'constraints'       => [$format_fichier , new PagesNumber() ]
-                ])
-           ->getForm();
+		$def_annee = GramcDate::get()->format('Y');
+		$def_sess  = Functions::getSessionCourante()->getIdSession();
 
-    $erreurs = [];
-    $resultat   =   [];
+        $form = $this
+		   ->get('form.factory')
+		   ->createNamedBuilder( 'upload', FormType::class, [], ['csrf_protection' => false ] )
+		   ->add('projet',  TextType::class, [ 'label'=> "", 'required' => false, 'attr' => ['placeholder' => 'P12345']] )
+		   ->add('session', TextType::class, [ 'label'=> "", 'required' => false, 'attr' => ['placeholder' => $def_sess]] )
+		   ->add('annee',   TextType::class, [ 'label'=> "", 'required' => false, 'attr' => ['placeholder' => $def_annee]] )
+		   ->add('type',  ChoiceType::class,
+			[
+				'required' => true,
+				'choices'  => [
+								"Rapport d'activité" => "r",
+								"Fiche projet"       => "f",
+							  ],
+				'label'    => "",
+			])
+	       ->add('file', FileType::class,
+			[
+				'required'    =>  true,
+				'label'       => "",
+				'constraints' => [$format_fichier , new PagesNumber() ]
+			])
+		   ->getForm();
 
-    $form->handleRequest( $request );
-    if( $form->isSubmitted() )
+		$erreurs  = [];
+	    $resultat = [];
+	    
+  	    $form->handleRequest( $request );
+	    if( $form->isSubmitted() )
         {
-        $data   =   $form->getData();
-
-        if( isset( $data['projet'] ) && $data['projet'] != null )
+	        $data   =   $form->getData();
+	
+	        if( isset( $data['projet'] ) && $data['projet'] != null )
             {
-            $projet = AppBundle::getRepository(Projet::class)->find( $data['projet'] );
-            if( $projet == null )
-                $erreurs[]  =   "Le projet " . $data['projet'] . " n'existe pas";
+	            $projet = AppBundle::getRepository(Projet::class)->find( $data['projet'] );
+	            if( $projet == null ) $erreurs[]  =   "Le projet " . $data['projet'] . " n'existe pas";
             }
-        else
-            $projet = null;
+	        else
+	        {
+	            $projet = null;
+			}
 
-        if( isset( $data['session'] ) && $data['session'] != null )
+	        if( isset( $data['session'] ) && $data['session'] != null )
             {
-            $session = AppBundle::getRepository(Session::class)->find(  $data['session'] );
-            if( $session == null )
-                $erreurs[]  =   "La session " . $data['session'] . " n'existe pas";
+	            $session = AppBundle::getRepository(Session::class)->find(  $data['session'] );
+	            if( $session == null )
+	                $erreurs[] = "La session " . $data['session'] . " n'existe pas";
             }
-        else
-            $session = Functions::getSessionCourante();
+	        else
+	            $session = Functions::getSessionCourante();
 
-        if( isset( $data['annee'] ) && $data['annee'] != null )
-            $annee  =   $data['annee'];
-        else
-            $annee  =   $session->getAnneeSession() + 2000;
+	        if( isset( $data['annee'] ) && $data['annee'] != null )
+	            $annee = $data['annee'];
+	        else
+	            $annee = $session->getAnneeSession() + 2000;
 
-        if( isset( $data['file'] ) && $data['file'] != null )
+	        if( isset( $data['file'] ) && $data['file'] != null )
             {
-            $tempFilename = $data['file'];
-            if( ! empty( $tempFilename  ) && $tempFilename != "" )
+	            $tempFilename = $data['file'];
+	            if( ! empty( $tempFilename  ) && $tempFilename != "" )
                 {
-                $validator = AppBundle::getContainer()->get('validator');
-                $violations = $validator->validate( $tempFilename, [ $format_fichier, new PagesNumber() ] );
-                foreach( $violations as $violation )    $erreurs[]  =   $violation->getMessage();
+	                $validator = AppBundle::getContainer()->get('validator');
+	                $violations = $validator->validate( $tempFilename, [ $format_fichier, new PagesNumber() ] );
+	                foreach( $violations as $violation )    $erreurs[]  =   $violation->getMessage();
                 }
             }
-        else
-            $tempFilename = null;
+	        else
+	            $tempFilename = null;
 
-        $type = $data['type'];
+	        $type = $data['type'];
+	
+	        if( $annee == null && $type != "f" )    $erreurs[] =  "L'année doit être donnée pour un rapport d'activité";
+	        if( $projet == null )                   $erreurs[] =  "Le projet doit être donné";
+	        if( $session == null && $type == "f" )  $erreurs[] =  "La session doit être donnée pour une fiche projet";
+	
+	        Functions::createDirectories( $annee, $session );
 
-        if( $annee == null && $type != "f" )    $erreurs[] =  "L'année doit être donnée pour un rapport d'activité";
-        if( $projet == null )                   $erreurs[] =  "Le projet doit être donné";
-        if( $session == null && $type == "f" )  $erreurs[] =  "La session doit être donnée pour une fiche projet";
-
-        Functions::createDirectories( $annee, $session );
-
-        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
+	        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
                 $file = new File( $tempFilename );
             elseif( is_dir( $tempFilename ) )
-                {
+			{
                 Functions::errorMessage(__METHOD__ .":" . __LINE__ . " Le nom  " . $tempFilename . " correspond à un répertoire");
                 $erreurs[]  =  " Le nom  " . $tempFilename . " correspond à un répertoire";
-                }
+			}
             else
-                {
+			{
                 Functions::errorMessage(__METHOD__ .":" . __LINE__ . " Le fichier " . $tempFilename . " n'existe pas" );
                 $erreurs[]  =  " Le fichier " . $tempFilename . " n'existe pas";
-                }
+			}
 
-        if( $form->isValid() && $erreurs == [] )
+			if( $form->isValid() && $erreurs == [] )
             {
-            if( $type == "f" )
-                {
-                $filename = AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession() .
-                                "/" . $session->getIdSession() . $projet->getIdProjet() . ".pdf";
-                $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
-                                 $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
+	            if( $type == "f" )
+				{
+	                $filename = AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession() .
+	                                "/" . $session->getIdSession() . $projet->getIdProjet() . ".pdf";
+	                $file->move( AppBundle::getParameter('signature_directory') .'/'.$session->getIdSession(),
+	                                 $session->getIdSession() . $projet->getIdProjet() . ".pdf" );
+	
+	                // on marque le téléversement de la fiche projet
+	                $version = AppBundle::getRepository(Version::class)->findOneBy( ['projet' => $projet, 'session' => $session ] );
+	                if( $version != null )
+					{
+	                    $version->setPrjFicheVal(true);
+	                    AppBundle::getManager()->flush();
+					}
+	                else
+	                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Il n'y a pas de version du projet " . $projet . " pour la session " . $session );
+	
+	                $resultat[] =   " Fichier " . $filename . " téléversé";
+				}
+	            elseif( $type = "r" )
+				{
+	                $filename = AppBundle::getParameter('rapport_directory') .'/'.$annee .
+	                                "/" . $annee . $projet->getIdProjet() . ".pdf";
+	                $file->move( AppBundle::getParameter('rapport_directory') .'/'.$annee,
+	                                 $annee . $projet->getIdProjet() . ".pdf" );
+	                $resultat[] =   " Fichier " . $filename . " téléversé";
+	                static::modifyRapport( $projet, $annee, $filename, false );
+				}
+			}
+		}
 
-                // on marque le téléversement de la fiche projet
-                $version = AppBundle::getRepository(Version::class)->findOneBy( ['projet' => $projet, 'session' => $session ] );
-                if( $version != null )
-                    {
-                    $version->setPrjFicheVal(true);
-                    AppBundle::getManager()->flush();
-                    }
-                else
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Il n'y a pas de version du projet " . $projet . " pour la session " . $session );
+	    $form1 = $this
+			->get('form.factory')
+			->createBuilder()
+			->add('version', TextType::class, [
+					'label' => "Numéro de version",'required' => true, 'attr' => ['placeholder' => $def_sess.'P12345']])
+			->add('attrHeures', IntegerType::class, [
+					'label' => 'Attribution', 'required' => true, 'attr' => ['placeholder' => '100000']])
+			->add('attrHeuresEte', IntegerType::class, [
+					'label' => 'Attribution', 'required' => false, 'attr' => ['placeholder' => '10000']])
+			->getForm();
 
-                $resultat[] =   " Fichier " . $filename . " téléversé";
-                }
-            elseif( $type = "r" )
-                {
-                $filename = AppBundle::getParameter('rapport_directory') .'/'.$annee .
-                                "/" . $annee . $projet->getIdProjet() . ".pdf";
-                $file->move( AppBundle::getParameter('rapport_directory') .'/'.$annee,
-                                 $annee . $projet->getIdProjet() . ".pdf" );
-                $resultat[] =   " Fichier " . $filename . " téléversé";
-                static::modifyRapport( $projet, $annee, $filename, false );
-                }
-
-
+		$erreurs1 = [];
+  	    $form1->handleRequest( $request );
+	    if( $form1->isSubmitted() )
+        {
+			$data    = $form1->getData();
+	        if( isset( $data['version'] ) && $data['version'] != null )
+            {
+	            $version = AppBundle::getRepository(Version::class)->find( $data['version'] );
+	            if( $version == null ) $erreurs1[]  =   "La version " . $data['version'] . " n'existe pas";
             }
+	        else
+	        {
+	            $version     = null;
+	            $erreurs1[]  = "Pas de version spécifiée";
+			}
+			if ($version != null)
+			{
+				$etat = $version -> getEtatVersion();
+				if ($etat != Etat::ACTIF && $etat != Etat::EN_ATTENTE)
+				{
+					$libelle = Etat::LIBELLE_ETAT[$etat];
+					$erreurs1[] = "La version ".$version->getIdVersion()." est en état $libelle, pas possible de changer son attribution !";
+				}
+			}
+			
+			$attrHeures = $data['attrHeures'];
+			if ($attrHeures<0)
+			{
+				$erreurs1[] = "$attrHeures ne peut être une attribution";
+			}
+			if (isset($data['attrHeuresEte']) && $data['attrHeuresEte'] != null)
+			{
+				$attrHeuresEte = $data["attrHeuresEte"];
+				if ($attrHeuresEte<0)
+				{
+					$erreurs1[] = "$attrHeuresEte ne peut être une attribution, même pour un été torride";
+				}
+			}
+			else
+			{
+				$attrHeuresEte = -1;
+			}
+			
+			if (count($erreurs1) == 0)
+			{
+				$version->setAttrHeures($attrHeures);
+				if ($attrHeuresEte>=0)
+				{
+					$version->setAttrHeuresEte($attrHeuresEte);
+				}
+		        $em = $this->getDoctrine()->getManager();
+		        $em->persist($version);
+	            $em->flush();
+			}
+		}
 
-        }
+	    return $this->render('version/televersement_generique.html.twig',
+		[
+			'form'     => $form->createView(),
+			'erreurs'  => $erreurs,
+			'form1'    => $form1->createView(),
+			'erreurs1' => $erreurs1,
+			'def_annee' => $def_annee,
+			'def_sess'  => $def_sess,
+			'resultat' => $resultat,
+		]);
 
-    return $this->render('version/televersement_generique.html.twig',
-            [
-            'form'          =>  $form->createView(),
-            'erreurs'       =>  $erreurs,
-            'resultat'      =>  $resultat,
-            ]);
-
-    }
-
-
+	}
 
     ///////////////////////////////////////////////////////////////
 

@@ -43,6 +43,8 @@ use AppBundle\Utils\Etat;
 use AppBundle\Utils\Signal;
 use AppBundle\Utils\Functions;
 use AppBundle\Workflow\Rallonge\RallongeWorkflow;
+use AppBundle\AffectationExperts\AffectationExperts;
+use AppBundle\AffectationExperts\AffectationExpertsRallonge;
 
 use AppBundle\Utils\Menu;
 
@@ -343,10 +345,15 @@ class RallongeController extends Controller
 
     private function getFinaliserForm( Rallonge $rallonge )
     {
-    return $this->createFormBuilder($rallonge)
-            ->add('nbHeuresAtt', IntegerType::class, [ 'required'       =>  false ] )
-            ->add('commentaireInterne', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add('commentaireExterne', TextAreaType::class, [ 'required'       =>  false ] )
+		$nbHeuresAttrib = [ 'required' => false ];
+		if ($rallonge->getValidation() === false)
+		{
+			$nbHeuresAttrib['disabled'] = 'disabled';
+		}
+	    return $this->createFormBuilder($rallonge)
+            ->add('nbHeuresAtt', IntegerType::class, $nbHeuresAttrib )
+            ->add('commentaireInterne', TextAreaType::class, [ 'required' => false ] )
+            ->add('commentaireExterne', TextAreaType::class, [ 'required' => false ] )
             ->add('validation', ChoiceType::class,
                     [
                     'expanded' => true,
@@ -369,27 +376,27 @@ class RallongeController extends Controller
      */
     public function avantFinaliserAction(Request $request, Rallonge $rallonge)
     {
-    $erreurs = [];
-    $validation =   $rallonge->getValidation(); //  tout cela juste à cause de validation disabled
-
-    $editForm = $this->getFinaliserForm($rallonge);
-
-    $editForm->handleRequest($request);
-
-    $version = $rallonge->getVersion();
+	    $erreurs = [];
+	    $validation =   $rallonge->getValidation(); //  tout cela juste à cause de validation disabled
+	
+	    $editForm = $this->getFinaliserForm($rallonge);
+	
+	    $editForm->handleRequest($request);
+	
+	    $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
-    //if( ! $rallonge->isFinalisable() )
-    //    Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas en attente !");
+	    //if( ! $rallonge->isFinalisable() )
+	    //    Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas en attente !");
 
-    if ($editForm->isSubmitted()  )
-            {
+	    if ($editForm->isSubmitted()  )
+		{
             $rallonge->setValidation( $validation ); //  tout cela juste à cause de validation disabled
             $erreurs = Functions::dataError( $rallonge, ['president'] );
 
@@ -397,14 +404,14 @@ class RallongeController extends Controller
             $workflow = new RallongeWorkflow();
 
             if( ! $workflow->canExecute( Signal::CLK_VAL_PRS, $rallonge ) )
-                {
+			{
                 $erreur = "La finalisation de la rallonge " . $rallonge .
                     " refusée par le workflow, la rallonge est dans l'état " . Etat::getLibelle( $rallonge->getEtatRallonge() );
                 Functions::errorMessage(__METHOD__ . ":" . __LINE__ . ' ' . $erreur );
                 $erreurs[] = $erreur;
-                }
+			}
             elseif( $editForm->get('envoyer')->isClicked() && $erreurs == null  )
-                {
+			{
                 //$workflow->execute( Signal::CLK_VAL_PRS, $rallonge );
                 return $this->render('rallonge/finaliser.html.twig',
                     [
@@ -413,18 +420,18 @@ class RallongeController extends Controller
                     'session'   => $session,
                     'rallonge'  => $rallonge,
                     ]);
-                }
+			}
             //else
             //    return $this->redirectToRoute('avant_rallonge_finaliser', [ 'id' => $rallonge->getId() ] );
-            }
-
-    $editForm = $this->getFinaliserForm($rallonge);  //  tout cela juste à cause de validation disabled
-
-    $session    =   Functions::getSessionCourante();
-    $anneeCour  = 2000 +$session->getAnneeSession();
-    $anneePrec  = $anneeCour - 1;
-
-    return $this->render('rallonge/avant_finaliser.html.twig',
+		}
+	
+	    $editForm = $this->getFinaliserForm($rallonge);  //  tout cela juste à cause de validation disabled
+	
+	    $session    =   Functions::getSessionCourante();
+	    $anneeCour  = 2000 +$session->getAnneeSession();
+	    $anneePrec  = $anneeCour - 1;
+	
+	    return $this->render('rallonge/avant_finaliser.html.twig',
             [
             'erreurs'   => $erreurs,
             'rallonge'  => $rallonge,
@@ -579,7 +586,7 @@ class RallongeController extends Controller
         if( $rallonge->getValidation() == true )
             $workflow->execute( Signal::CLK_VAL_PRS, $rallonge );
         else
-            $workflow->execute( Signal::FERMER_RALLONGE, $rallonge );
+            $workflow->execute( Signal::CLK_FERM, $rallonge );
 
         $version = $rallonge->getVersion();
         if( $version != null )
@@ -681,162 +688,80 @@ class RallongeController extends Controller
         }
 	    else
 	        $session2   =  null;
+        $annee    = $session->getAnneeSession();
 
 	    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
 	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
-
-	    $idProjets = [];
-	    foreach( $all_rallonges as $rallonge )
-        {
-	        $version = $rallonge->getVersion();
-	        if( $version != null && $version->getProjet() != null )
-            {
-	            $projet         =   $version->getProjet();
-			    $idProjet       =   $projet->getIdProjet();
-	            $expert     =  $version->getExpert();
-	            if( $expert == null )
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas d'expert ");
-	            elseif( $expert->getExpert() == false )
-                {
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " " . $expert . " n'est plus un expert ");
-	                $expert == null;
-                }
-
-	            $labo       =  $version->getLabo();
-	            if( $labo == null )
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de labo ");
-
-	            $titre      =  $version->getTitreCourt();
-	            if( $titre == null )
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de titre ");
-
-	            $responsable      =  $version->getResponsable();
-	            if( $responsable == null )
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de responsable ");
-
-	            $thematique      =  $version->getPrjThematique();
-	            if( $thematique == null )
-	                Functions::warningMessage(__METHOD__ . ':' . __LINE__ . " version " . $version . " n'a pas de thematique ");
-
-	            $idProjets[$rallonge->getIdRallonge()] =  $idProjet;
-	            $projets[ $idProjet ]['projet']     = $projet;
-	            $projets[ $idProjet ]['version']    = $version;
-	            $projets[ $idProjet ]['expert']     = $expert;
-	            $projets[ $idProjet ]['rallonges']  = [];
-	            $projets[ $idProjet ]['forms']      = [];
-	            $projets[ $idProjet ]['titre']      = $titre;
-	            $projets[ $idProjet ]['responsable']= $responsable;
-	            $projets[ $idProjet ]['labo']       = $labo;
-	            $projets[ $idProjet ]['thematique'] = $thematique;
-	            $projets[ $idProjet ]['etat']       = $projet->getMetaEtat();
-	            $projets[ $idProjet ]['etatProjet']         = $projet->getEtatProjet();
-	            $projets[ $idProjet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
-	            $projets[ $idProjet ]['etatVersion']        = $version->getEtatVersion();
-	            $projets[ $idProjet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
-	            $projets[ $idProjet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
-
-	            if( $version->isNouvelle() )
-	                $projets[ $idProjet ]['NR']   =   'N';
-	            else
-	                $projets[ $idProjet ]['NR']   =   '';
-            }
-        }
-
-	    foreach( $all_rallonges as $rallonge )
-        //if(  $rallonge->getEtatRallonge() != Etat::ANNULE )
-            $projets[ $idProjets[$rallonge->getIdRallonge()] ]['rallonges'][$rallonge->getIdRallonge()] = $rallonge;
-
-	    $nbDemandes = 0;
-	    foreach( $projets as $key => $projet )
-        {
-	        foreach( $projet['rallonges'] as $rallonge )
-            {
-	            if( $projet['etat'] != Etat::EDITION_DEMANDE ) $nbDemandes++;
-            }
-	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
-        }
-
-    ///////////////////////
-
-	    $thematiques = [];
-	    foreach( AppBundle::getRepository(Thematique::class)->findAll() as $thematique )
-        {
-	        foreach( $thematique->getExpert() as $expert )
-	            if( $expert->getExpert() == false )
-                {
-	                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " Le mauvais expert " . $expert . " supprimé de la thématique " . $thematique);
-	                Functions::noThematique( $expert );
-                }
-	        $thematiques[ $thematique->getIdThematique() ] = ['thematique' => $thematique, 'experts' => $thematique->getExpert(), 'projets' => 0 ];
-        }
-
-    ///////////////////////
-
-	    $experts = [];
-	    foreach( AppBundle::getRepository(Individu::class)->findBy(['expert' => true]) as $expert )
-	        $experts[ $expert->getIdIndividu() ] = ['expert' => $expert, 'projets' => 0 ];
-
-
-    ////////////////////////
-
-        $nbDemHeures    =   0;
-        $nbAttHeures    =   0;
-
-        foreach( $projets as $idProjet => $projet )
+	    
+		$affectationExperts = new AffectationExpertsRallonge($request, $all_rallonges, $this->get('form.factory'), $this->getDoctrine());
+		
+		//
+		// 1ere etape = Traitement des formulaires qui viennent d'être soumis
+		//              Puis on redirige sur la page
+		//
+		$form_buttons = $affectationExperts->getFormButtons();
+		$form_buttons->handleRequest($request);
+		if ($form_buttons->isSubmitted())
 		{
-            foreach ( $projet['rallonges'] as $idRallonge => $rallonge )
-			{
-                $etatRallonge       = $rallonge->getEtatRallonge();
-                if( $etatRallonge != Etat::EDITION_DEMANDE && $etatRallonge != Etat::ANNULE )
-				{
-                    $nbDemHeures        +=  $rallonge->getDemHeures();
-                    $nbAttHeures        +=  $rallonge->getAttrHeures();
-				}
-
-                if(  $etatRallonge == Etat::EDITION_EXPERTISE || $etatRallonge == Etat::DESAFFECTE )
-				{
-                    $projets[$idProjet]['form'][$idRallonge]  = $rallonge->getExpertForm();
-
-                    // traitement du formulaire d'affectation
-                    $form = $projets[$idProjet]['form'][$idRallonge];
-                    $form->handleRequest($request);
-                    if( $form->isSubmitted()   && $form->isValid()  )
-					{
-                        $workflow = new RallongeWorkflow();
-                        $expert     =   $form->getData()['expert'];
-                        Functions::debugMessage(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " affectée à l'expert " . $expert);
-                        $rallonge->setExpert($expert);
-                        Functions::sauvegarder( $rallonge );
-                        $form  = $rallonge->getExpertForm();
-                        if( $expert != null )
-                            $workflow->execute( Signal::CLK_AFFECTER, $rallonge );
-                        else
-                            $workflow->execute( Signal::CLK_DESAFFECTER, $rallonge );
-					}
-	                    $form = $projets[$idProjet]['form'][$idRallonge] = $form->createView();
-				}
-
-                $expert = $rallonge->getExpert();
-                if( $expert != null )
-                        $projets[$idProjet]['affecte']  =   true;
-                else
-                        $projets[$idProjet]['affecte']  =   false;
-			}
+			$affectationExperts->traitementFormulaires();
+			return $this->redirectToRoute('rallonge_affectation');
 		}
 
-        /* if( $forms['17BP17003'] == $forms['17BP17002'] )
-            Functions::debugMessage( __METHOD__ . ' forms same' . Functions::show( $forms ) );
-        else
-            Functions::debugMessage( __METHOD__ . ' forms not same' . Functions::show( $forms ) ); */
+		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
+	    $projets       = [];
+		foreach ($all_rallonges as $rallonge)
+		{
+			$version = $rallonge->getVersion();
+			$projet  = $version->getProjet();
+			$id_projet = $projet->getIdProjet();
+			if ( ! isset($projets[$id_projet] ))
+			{
+				$p = [];
+				$projets[$id_projet] = $p;
+	            $projets[$id_projet ]['projet']     = $projet;
+	            $projets[$id_projet ]['version']    = $version;
+	            $projets[ $id_projet ]['rallonges']  = [];
+	            $projets[ $id_projet ]['etat']       = $projet->getMetaEtat();
+	            $projets[ $id_projet ]['etatProjet']         = $projet->getEtatProjet();
+	            $projets[ $id_projet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
+	            $projets[ $id_projet ]['etatVersion']        = $version->getEtatVersion();
+	            $projets[ $id_projet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
+	            $projets[ $id_projet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
+	                           $expert = $rallonge->getExpert();
+                if( $rallonge->getExpert() != null )
+                {
+					$projets[$id_projet]['affecte'] = true;
+				}
+                else
+                {
+					$projets[$id_projet]['affecte'] = false;
+				}
+
+	            if( $version->isNouvelle() )
+	                $projets[ $id_projet ]['NR']   =   'N';
+	            else
+	                $projets[ $id_projet ]['NR']   =   '';
+			}
+			$projets[ $id_projet ]['rallonges'][] = $rallonge;
+		}
+
+	    foreach( $projets as $key => $projet )
+        {
+	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
+        }
+  
+		
+		$forms       = $affectationExperts->getExpertsForms();
+		$stats       = $affectationExperts->getStats();
+		$titre = "Affectation des experts aux rallonges de l'année 20$annee"; 
 
         return $this->render('rallonge/affectation.html.twig',
 		[
             'projets'       => $projets,
+            'forms'         => $forms,
             'session1'      => $session1,
             'session2'      => $session2,
-            'nbDemandes'    => $nbDemandes,
-            'nbDemHeures'   => $nbDemHeures,
-            'nbAttHeures'   => $nbAttHeures,
+            'stats'         => $stats,
 		]);
     }
 

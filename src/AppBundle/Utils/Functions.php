@@ -264,12 +264,10 @@ class Functions
 
 /*********************************************************************************************/
 
-
-
     /*****
      * Envoi d'une notification
      *
-     * param $twig_sujet, $twig_contenu Templates Twig des messages
+     * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des fichiers)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
      * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
      *
@@ -294,8 +292,35 @@ class Functions
         static::sendRawMessage( $subject, $body, $users );
     }
 
-    // Envoie du messages sans templates
+    /*****
+     * Envoi d'une notification
+     *
+     * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des strings)
+     * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
+     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     *
+     *********/
+    static public function sendMessageFromString( $twig_sujet, $twig_contenu, $params, $users = null )
+    {
+        // Twig avec des extensions
+        $twig = clone AppBundle::getTwig();
+        $twig->setLoader(new \Twig_Loader_String());
 
+        // Twig sans extensions - meilleure sécurité
+        /* $twig = new \Twig_Environment( new \Twig_Loader_String(),
+                 [
+                 'strict_variables' => false,
+                 'autoescape' => false,
+                 ]);
+        */
+
+        $body       =   $twig->render( $twig_contenu, $params );
+        $subject    =   $twig->render( $twig_sujet,   $params);
+        static::sendRawMessage( $subject, $body, $users );
+    }
+
+
+    // Envoi du messages sans templates
     static public function sendRawMessage( $subject, $body, $users = null )
     {
         $message = \Swift_Message::newInstance()
@@ -489,8 +514,12 @@ class Functions
     return array_unique( $mail );
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    // getSessionCourante
+    /***********
+    * Renvoie la session courante, c'est-à-dire la PLUS RECENTE session NON TERMINEE
+    * 
+    * NOTE -  A chaque instant il n'y a qu'UNE session active
+    * 
+    ************************************************************/
     static function getSessionCourante()
     {
         if( AppBundle::getSession()->has('SessionCourante') )
@@ -1480,5 +1509,51 @@ class Functions
 			}
 		}
 		return $result;
+	}
+	
+	/**********
+	 * Renvoie un tableau avec la liste des connexions actives
+	 **********************************************************/
+	 public static function getConnexions()
+	 {
+	    $connexions = [];
+ 	    $dir = session_save_path();
+	    $scan = scandir( $dir );
+	
+	    $save = $_SESSION;
+	    $time = time();
+	    foreach ( $scan as $filename )
+	    {
+	        if( $filename != '.' && $filename != '..' )
+            {
+	            $atime = fileatime( $dir . '/' . $filename );
+	            $mtime = filemtime( $dir . '/' . $filename );
+	            $ctime = filectime( $dir . '/' . $filename );
+	            //$atime = max ( [ $atime, $mtime, $ctime ] );
+	
+	            $diff  = intval( ($time - $mtime) / 60 );
+	            $min   = $diff % 60;
+	            $heures= intVal($diff/60);
+	            $contents = file_get_contents( $dir . '/' . $filename );
+	            session_decode($contents );
+	
+	            if(  ! array_key_exists('_sf2_attributes', $_SESSION ) )
+	                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Une session autre que symfony !" );
+	            elseif( array_key_exists('real_user', $_SESSION['_sf2_attributes'] ) )
+	                {
+	                $user = $_SESSION['_sf2_attributes']['real_user'];
+	                $individu = AppBundle::getRepository(Individu::class)->find( $user->getIdIndividu() );
+	                if( $individu == null )
+	                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème d'individu " . $user );
+	                else
+	                    $connexions[] = [ 'user' => $individu, 'minutes' => $min,'heures' => $heures ];
+	                }
+	            elseif( ! array_key_exists( '_security_consoupload', $_SESSION['_sf2_attributes'] ) )
+	                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème avec le fichier session " . $filename );
+	
+            }
+		}
+	    $_SESSION = $save;
+	    return $connexions;
 	}
 }

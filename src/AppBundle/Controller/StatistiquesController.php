@@ -21,7 +21,6 @@ use AppBundle\Entity\Statut;
 
 use AppBundle\Utils\Functions;
 use AppBundle\Utils\Menu;
-use AppBundle\Workflow\MessageTransition;
 
 use libphonenumber\PhoneNumberUtil;
 use libphonenumber\NumberParseException;

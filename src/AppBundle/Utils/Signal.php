@@ -41,16 +41,16 @@ class Signal
     const CLK_ARR           = 14;
     const CLK_VAL_PRS       = 15;
 
-    const CLK_SESS_DEB           = 20;
-    const CLK_SESS_FIN          = 21;
+    const CLK_SESS_DEB      = 20;
+    const CLK_SESS_FIN      = 21;
     const CLK_FERM          = 22;
 
     const DAT_STDBY         = 30;
     const FIN_EVENEMENTS    = 31;
 
     // nouveaux signaux
-    const FERMER_RALLONGE       = 40;
-    const CLK_VAL_EXP_OK_RETARD = 41;
+    // const FERMER_RALLONGE       = 40;
+    // const CLK_VAL_EXP_OK_RETARD = 41;
     const CLK_TEST              = 42;
     const CLK_ERASE             = 43;
 
@@ -82,10 +82,10 @@ class Signal
             self::CLK_SESS_DEB               =>  'DAT_SESS_DEB',
             self::CLK_SESS_FIN               =>  'DAT_SESS_FIN',
 
-            self::FERMER_RALLONGE       => 'FERMER_RALLONGE',
-            self::CLK_VAL_EXP_OK_RETARD => 'CLK_VAL_EXP_OK_RETARD',
+            //self::FERMER_RALLONGE       => 'FERMER_RALLONGE',
+            //self::CLK_VAL_EXP_OK_RETARD => 'CLK_VAL_EXP_OK_RETARD',
             self::CLK_TEST              =>  'CLK_TEST',
-            self::CLK_ERASE             =>  'CLK_ERASE',
+            //self::CLK_ERASE             =>  'CLK_ERASE',
 
             self::CLK_AFFECTER          =>  'CLK_AFFECTER',
             self::CLK_DESAFFECTER       =>  'CLK_DESAFFECTER',

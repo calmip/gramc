@@ -86,34 +86,36 @@ class GramcSessionController extends Controller
 
     public function adminAccueilAction()
     {
-        $menu1[]= Menu::individu_gerer();
-        //$menu1[]= Menu::presidents();
+        $menu1[] = Menu::individu_gerer();
+        //$menu1[] = Menu::presidents();
 
-        $menu2[]= Menu::gerer_sessions();
-        $menu2[]= Menu::bilan_session();
-        $menu2[]= Menu::mailToResponsables();
-        $menu2[]= Menu::mailToResponsablesFiche();
+        $menu2[] = Menu::gerer_sessions();
+        $menu2[] = Menu::bilan_session();
+        $menu2[] = Menu::mailToResponsables();
+        $menu2[] = Menu::mailToResponsablesFiche();
 
-        $menu3[]= Menu::projet_session();
-        $menu3[]= Menu::projet_annee();
-        $menu3[]= Menu::projet_tous();
-        $menu3[]= Menu::projet_donnees();
-        $menu3[]= Menu::televersement_generique();
+        $menu3[] = Menu::projet_session();
+        $menu3[] = Menu::projet_annee();
+        $menu3[] = Menu::projet_tous();
+        $menu3[] = Menu::projet_donnees();
+        $menu3[] = Menu::televersement_generique();
 
-        $menu4[]= Menu::thematiques();
-        $menu4[]= Menu::metathematiques();
-        $menu4[]= Menu::laboratoires();
+        $menu4[] = Menu::thematiques();
+        $menu4[] = Menu::metathematiques();
+        $menu4[] = Menu::laboratoires();
 
-        $menu5[]= Menu::bilan_annuel();
-        $menu5[]= Menu::statistiques();
-        $menu5[]= Menu::publications();
+        $menu5[] = Menu::bilan_annuel();
+        $menu5[] = Menu::statistiques();
+        $menu5[] = Menu::publications();
 
-        $menu6[]= Menu::connexions();
-        $menu6[]= Menu::journal();
+        $menu6[] = Menu::connexions();
+        $menu6[] = Menu::journal();
         if ( AppBundle::getParameter('kernel.debug') )
-            $menu6[]= Menu::avancer();
-
-        $menu6[]= Menu::nettoyer();
+        {
+            $menu6[] = Menu::avancer();
+		}
+		$menu6[] = Menu::info();
+        $menu6[] = Menu::nettoyer();
 
         return $this->render('default/accueil_admin.html.twig',['menu1' => $menu1,
                                                                 'menu2' => $menu2,
@@ -144,9 +146,15 @@ class GramcSessionController extends Controller
      *
      */
     public function accueilAction()
-        {
-        return $this->render('default/accueil.html.twig', ['projet_test' => Menu::nouveau_projet_test()['ok'] ]);
-        }
+	{
+		$menu = [];
+		$menu[] = Menu::demandeur();
+		$menu[] = Menu::expert();
+		$menu[] = Menu::administrateur();
+		$menu[] = Menu::president();
+		$menu[] = Menu::aide();
+        return $this->render('default/accueil.html.twig', ['menu' => $menu, 'projet_test' => Menu::nouveau_projet_test()['ok'] ]);
+	}
 
     /**
      * @Route("/president", name="president_accueil" )
@@ -155,7 +163,7 @@ class GramcSessionController extends Controller
     public function presidentAccueilAction()
         {
         $menu[] =  Menu::affectation();
-        $menu[] =  Menu::commentaires();
+        $menu[] =  Menu::commSess();
 	    $menu[] =  Menu::affectation_rallonges();
         $menu[] =  Menu::affectation_test();
         return $this->render('default/president.html.twig', ['menu' => $menu]);
@@ -282,13 +290,13 @@ class GramcSessionController extends Controller
 
         $form->handleRequest($request);
 
-        if ($form->get('save')->isClicked() )
-            {
-            $m = $user->getMail();
-            }
+        //if ($form->get('save')->isClicked() )
+        //    {
+        //    $m = $user->getMail();
+        //    }
 
         if ($form->isSubmitted() )
-            {
+		{
             $repository = $this->getDoctrine()->getRepository('AppBundle:Individu');
             $user = $repository->findOneByMail($user->getMail()->getMail() );
             $roles = $user->getRoles();
@@ -304,12 +312,11 @@ class GramcSessionController extends Controller
             $userChecker->checkPostAuth($user);
             Functions::infoMessage(__METHOD__ . ":" . __LINE__ . " connexion DBG de l'utilisateur " . $user);
 
-
             if( $request->getSession()->has('url') )
                 return $this->redirect( $request->getSession()->get('url') );
             else
                 return $this->redirectToRoute('accueil');
-            }
+		}
 
         return $this->render('default/connexion_dbg.html.twig', [ 'form' => $form->createView() ]  );
     }
@@ -706,45 +713,23 @@ class GramcSessionController extends Controller
      */
     public function connexionsAction(Request $request)
     {
-    $dir = session_save_path();
-    $scan = scandir( $dir );
-
-    $save = $_SESSION;
-    $time = time();
-    $connexions = [];
-    foreach ( $scan as $filename )
-        if( $filename != '.' && $filename != '..' )
-            {
-            $atime = fileatime( $dir . '/' . $filename );
-            $mtime = filemtime( $dir . '/' . $filename );
-            $ctime = filectime( $dir . '/' . $filename );
-            //$atime = max ( [ $atime, $mtime, $ctime ] );
-
-            $diff  = intval( ($time - $mtime) / 60 );
-            $min   = $diff % 60;
-            $heures= intVal($diff/60);
-            $contents = file_get_contents( $dir . '/' . $filename );
-            session_decode($contents );
-
-            if(  ! array_key_exists('_sf2_attributes', $_SESSION ) )
-                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Une session autre que symfony !" );
-            elseif( array_key_exists('real_user', $_SESSION['_sf2_attributes'] ) )
-                {
-                $user = $_SESSION['_sf2_attributes']['real_user'];
-                $individu = AppBundle::getRepository(Individu::class)->find( $user->getIdIndividu() );
-                if( $individu == null )
-                    Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème d'individu " . $user );
-                else
-                    $connexions[] = [ 'user' => $individu, 'minutes' => $min,'heures' => $heures ];
-                }
-            elseif( ! array_key_exists( '_security_consoupload', $_SESSION['_sf2_attributes'] ) )
-                Functions::errorMessage(__METHOD__ . ':' . __LINE__ . " Problème avec le fichier session " . $filename );
-
-            }
-
-    $_SESSION = $save;
-    return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
+		$connexions = Functions::getConnexions();
+	    return $this->render('default/connexions.html.twig', [ 'connexions' => $connexions ] );
     }
+
+	/**
+	 * @Route("/phpinfo", name="phpinfo")
+	 * @Method({"GET"})
+	 * @Security("has_role('ROLE_ADMIN')")
+     *********************************************/
+     public function infoAction(Request $request)
+     {
+		ob_start();
+		phpinfo();
+		$info = ob_get_clean(); 
+		return $this->render('default/phpinfo.html.twig', [ 'info' => $info ]);
+	 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -809,6 +794,4 @@ class GramcSessionController extends Controller
         if( $session_workflow->canExecute(\AppBundle\Utils\Signal::CLK_SESS_FIN, $session ) ) echo ' true '; else echo ' false ';
         return new Response();
     }
-
-
 }
