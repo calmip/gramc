@@ -884,6 +884,7 @@ class ProjetController extends Controller
 
         $header  = [
                     'projet',
+                    'Demande',
                     'titre',
                     'thématique',
                     'courriel du resp',
@@ -905,6 +906,11 @@ class ProjetController extends Controller
 			$line   = [];
 			$p = $prj_array['p'];
 			$line[] = $p->getIdProjet();
+			$d      = "";
+			if ($prj_array['stk']===true) $d  = "S ";
+			if ($prj_array['ptg']===true) $d .= "P";
+			if ($prj_array['stk']===false && $prj_array['ptg']===false) $d = "N";
+			$line[] = $d;
             $line[] = $p->getTitre();
             $line[] = $p->getThematique();
             $line[] = $p->getResponsable()->getMail();

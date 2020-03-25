@@ -1,20 +1,29 @@
-v 3.4.9 - 27 jan 2020
+v 2.5.1
+-------
+	- Page Données plus claire (séparation demandes de stockage et de partage)
+
+v 2.5.0
+-------
+	- Mise au propre du code des workflows
+	- Réécriture des pages attribution et factorisation du code correspondant 
+
+v 2.4.9 - 27 jan 2020
 ---------------------
 	- Bug sur la page demandeurs
 
-v 3.4.8 - 21 Jan 2020
+v 2.4.8 - 21 Jan 2020
 ---------------------
 	- Publications et Données téléchargeables en CSV
 	- Changement d'adresse du DPD CNRS
 	- Améliorations et divers bugs dans l'écran admin/Données
 
-v 3.4.7 - 16 Jan 2020
+v 2.4.7 - 16 Jan 2020
 ---------------------
 	- Ajout de l'écran admin Publications par année
 	- Journal: ne montrer par défaut que les messages du jour
 	- BUG: Affichage des projets tests: la réponse à la question GPU n'était pas affichée
 
-v 3.4.6 - 7 Jan 2020
+v 2.4.6 - 7 Jan 2020
 --------------------
 	- BUG - Refonte du système de métaetats des projets, l'affichage était insuffisant lorsque la session devient active
 

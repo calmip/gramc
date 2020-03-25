@@ -12,7 +12,7 @@
 <div id="dialog-compta"></div>
 
 <section>
-    <h2>Projets ayant du stockage pérenne ({{annee}})</h2>
+    <h2>Gestion et valorisation des données ({{annee}})</h2>
 
     {{ form_start(form) }}
         {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
@@ -78,10 +78,11 @@
 </div>
 
 <div id="projets" >
-    <table id="table_projets_annee" class="dataTable no-footer" >
+    <table id="table_projets_data" class="dataTable no-footer" >
         <thead>
             <tr>
                 <th>N°</th>
+                <th title="Demande: S=stockage, P=partage, N=aucune">D</th>
                 <th></th>
                 {% if noconso==false %}<th title="Consommation">C</th>{% endif %}
                 <th>Titre</th>
@@ -105,17 +106,15 @@
 			{% if prj_array != null %}
 	            {% set projet=prj_array.p %}
 					{% if noconso==false %}
-			            {% if prj_array.cp >= conso_seuil_2 %}
-				            <tr class="conso_seuil_2" >
-			            {% elseif prj_array.cp >= conso_seuil_1 %}
-				            <tr class="conso_seuil_1" >
-			            {% else %}
-				            <tr>
-			            {% endif %}
-			        {% else %}
-						<tr>
+						{% set cls="" %}
+						{% if prj_array.cp >= conso_seuil_2 %}     {% set cls="conso_seuil_2 " %}
+						{% elseif prj_array.cp >= conso_seuil_1 %} {% set cls="conso_seuil_1 " %}
+						{% endif %}
 					{%endif%}
-	                <td>{{ projet.id }}</td>
+					{% if not prj_array.stk and not prj_array.ptg %} {% set cls=cls~"pasdem "  %} {% endif %}
+					{% if not cls == "" %} <tr class="{{cls}}">{% else %}<tr>{% endif %}
+	                <td title="{% if prj_array.stk %} stockage {% endif %} {% if prj_array.ptg %} partage {% endif %}{% if not prj_array.stk and not prj_array.ptg %}pas de demande{% endif %}" >{{ projet.id }}</td>
+					<td>{% if prj_array.stk %} S {% endif %}{% if prj_array.ptg %} P {% endif %}{% if not prj_array.stk and not prj_array.ptg %}N{% endif %}</td>
 	                <td>
 	                    {% set version=annee|slice(2,2) ~ 'A' ~ projet %}
 	                    <a href="{{ path('consulter_version', { 'id':projet.idprojet,'version': version }) }}" title="Consulter le projet">

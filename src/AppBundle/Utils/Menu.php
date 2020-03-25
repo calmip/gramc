@@ -647,8 +647,8 @@ class Menu
     public static function projet_donnees()
     {
         $menu['name']        =   'projet_donnees';
-        $menu['commentaire'] =   "Projets ayant des besoins en stockage ou partage de données";
-        $menu['lien']        =   "Données (par année)";
+        $menu['commentaire'] =   "Projets ayant des demandes en stockage ou partage de données";
+        $menu['lien']        =   "Gestion et valo des données";
 
         if( AppBundle::isGranted('ROLE_OBS') || AppBundle::isGranted('ROLE_PRESIDENT') )
         {
