@@ -7,6 +7,15 @@ $(document).ready(function() { // table projets par année
 	});
 });
 
+$(document).ready(function() { // table projets par année
+	$('#table_projets_data').DataTable( {
+		"bPaginate": false,
+		"bFilter":	 false,
+		"info":    	 false,
+		"aoColumnDefs": [{bSortable: false,aTargets: [ 2,3 ]}]
+	});
+});
+
 $(document).ready(function() { // table projets par session
 	$('#table_projets_session').DataTable( {
 		"bPaginate": false,

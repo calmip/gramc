@@ -1112,8 +1112,8 @@ class Functions
 			$p = [];
 			$p_id = $v->getProjet()->getIdProjet();
 			$keep_it = Functions::donneesParProjetFiltre($v,$p);
-			if ($keep_it === true)
-			{
+			//if ($keep_it === true)
+			//{
 				Functions::addConsoStockage($p,$annee,$ress);
 				if ($p['stk'])
 				{
@@ -1130,8 +1130,9 @@ class Functions
 					$total['pprj'] += 1;
 				}
 	            $projets[$p_id] = $p;
-			}
-			else
+			//}
+			//else
+			if ($keep_it === false)
 			{
 				$total['autostk'] += 1;
 			}
@@ -1149,7 +1150,7 @@ class Functions
 
 				$keep_it = Functions::donneesParProjetFiltre($v,$p);
 
-				if ($keep_it === true) {
+				//if ($keep_it === true) {
 					Functions::addConsoStockage($p,$annee,$ress);
 		            $projets[$p_id] = $p;
 					if ($p['stk'])
@@ -1162,8 +1163,13 @@ class Functions
 					{
 						$total['autostk'] += 1;
 					}
-				}
-				else
+					if ($p['ptg'])
+					{
+						$total['pprj'] += 1;
+					}
+				//}
+				//else
+				if ($keep_it === false)
 				{
 					$total['autostk'] += 1;
 				}

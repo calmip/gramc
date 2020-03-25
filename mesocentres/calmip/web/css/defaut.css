@@ -647,6 +647,11 @@ img.bouton_on:hover {
 	font-style: italic;
 	}
 
+/* Tableau projet data si pas demandes */
+.pasdem {
+	font-style: italic;
+	opacity: 50%;
+}
 
 /* Légende page projets par année */
 #camembert {
