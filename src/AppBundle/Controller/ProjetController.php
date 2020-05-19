@@ -1700,7 +1700,7 @@ class ProjetController extends Controller
 	    $toomuch = false;
 	    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
 	        $version_prec = $version->versionPrecedente();
-	        if ($version_prec->getAnneeSession() == $version_prec->getAnneeSession()) {
+	        if ($version_prec->getAnneeSession() == $version->getAnneeSession()) {
 	            $toomuch = Functions::is_demande_toomuch($version_prec->getAttrHeures(),$version->getDemHeures());
 	        }
 	    }
