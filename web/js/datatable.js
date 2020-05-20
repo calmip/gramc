@@ -67,7 +67,7 @@ $(document).ready(function() { // table d'affectation des experts
 		"bPaginate": false,
 		"bFilter":	 false,
 		"info":    	 false,
-		"aoColumnDefs": [{bSortable: false,aTargets: [ 2,4]}]
+		"aoColumnDefs": [{bSortable: false,aTargets: [ 3,4]}]
 	});
 });
 
