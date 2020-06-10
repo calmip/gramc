@@ -114,7 +114,7 @@ abstract class BilanSession
         foreach( $versions as $version )
 		{
 			$sortie .= join("\t",$this->getLigne($version,$totaux));
-			$sortie.= "\t;";
+			$sortie.= "\t";
             $sortie .= join("\t",$this->getLigneConso($version, $totaux));
             $sortie .= "\n";
 		} 
