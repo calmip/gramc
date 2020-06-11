@@ -598,9 +598,9 @@ class Functions
 
     public static function selectSession(Request $request)
     {
-    $session = Functions::getSessionCourante();
-    $form = AppBundle::createFormBuilder( ['session' => $session ] )
-            ->add('session',   ChoiceType::class,
+	    $session = Functions::getSessionCourante();
+	    $form = AppBundle::createFormBuilder( ['session' => $session ] )
+	            ->add('session',   ChoiceType::class,
                     [
                     'multiple' => false,
                     'required'  =>  true,
@@ -608,8 +608,8 @@ class Functions
                     'choices' =>  AppBundle::getRepository(Session::class)->findBy([],['idSession' => 'DESC']),
                     'choice_label' => function ($session) { return $session->__toString(); },
                     ])
-        ->add('submit', SubmitType::class, ['label' => 'Choisir'])
-        ->getForm();
+		        ->add('submit', SubmitType::class, ['label' => 'Choisir'])
+		        ->getForm();
         $form->handleRequest($request);
 
         if ( $form->isSubmitted() && $form->isValid() )
@@ -1318,7 +1318,7 @@ class Functions
 
         // Boucle sur les versions de la session B
         foreach ( $versions_B as $v)
-        {
+		{
             $p_id = $v->getProjet()->getIdProjet();
             if (isset($projets[$p_id])) {
                 $p = $projets[$p_id];
@@ -1327,7 +1327,8 @@ class Functions
                 $p = [];
                 $p['p'] = $v->getProjet();
                 $p['va'] = null;
-                $p['penal_a'] = 0;
+                $p['penal_a']     = 0;
+                $p['recuperable'] = 0;
                 $p['r']  = 0;
                 $p['attrib'] = 0;
             }
@@ -1383,14 +1384,17 @@ class Functions
                 $p['consoete']    = $v->getProjet()->getConsoIntervalle(['cpu','gpu'],[$d,$f]);
                 $p['recuperable'] = SessionController::calc_recup_heures_automne($p['consoete'],$p['attrete']);
                 $total['recupHeuresP'] += ($v->getPenalHeures()==0)?$p['recuperable']:0;
-            } else {
+            
+            // Si recuPrintemps est à true, 'recuperable' est déjà calculé, ne pas y toucher
+            // NB - Oui il y a des gens qui ne consomment pas en A et qui demandent des heures en B !
+            } elseif ($isRecupPrintemps==false) {
                 $p['recuperable'] = 0;
             }
 
-            $projets[$p_id] = $p;
-        }
+			$projets[$p_id] = $p;
+		}
 
-        return [$projets,$total];
+		return [$projets,$total];
     }
 
     // supprimer les répertoires

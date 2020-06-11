@@ -14,11 +14,11 @@ $(document).ready(function() {
 	    ligne.children('td.penalite').html(data['penalite']);
 	    ligne.children('td.recuperable').html(data['recuperable']);
 	    ligne.find('.bouton_penalite').toggleClass('invisible');
-	    stats_penal = parseInt($('#stats_penal').html());
-	    stats_recuperables = parseInt($('#stats_recuperables').html());
-	    stats_attribuees   = parseInt($('#stats_attribuees').html());
-	    stats_attribuables = parseInt($('#stats_attribuables').html());
-	    attr        = parseInt(ligne.children('td.attr').html());
+	    stats_penal = parseInt($('#stats_penal').html().replace(/ /g,''));
+	    stats_recuperables = parseInt($('#stats_recuperables').html().replace(/ /g,''));
+	    stats_attribuees   = parseInt($('#stats_attribuees').html().replace(/ /g,''));
+	    stats_attribuables = parseInt($('#stats_attribuables').html().replace(/ /g,''));
+	    attr               = parseInt(ligne.children('td.attr').html().replace(/ /g,''));
 
 		// Mise à jour des stats pénalités, attribution, et de la colonne attribution
 		if (data['penalite']==0) {

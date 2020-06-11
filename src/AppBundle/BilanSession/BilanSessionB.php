@@ -57,21 +57,16 @@ class BilanSessionB extends BilanSession
                     'Thématique',
                     'Responsable scientifique',
                     'Laboratoire',
-                    'Rapport',
                     'Expert',
-                    'Demandes '     .$full_annee_prec,
-                    'Dem rall '     .$full_annee_prec,
-                    'Attr rall '    .$full_annee_prec,
-                    'Pénalités '    .$full_annee_prec,
-                    'Attributions ' .$full_annee_prec,
                     'Demandes '     .$annee_cour.'A',
-                    'Attributions ' .$annee_cour.'A',
+                    'Attr init '    .$annee_cour.'A',
+                    'Attr rall '    .$annee_cour.'A',
                     'Demandes '     .$id_session,
                     'Attributions ' .$id_session,
                     'Quota '        .$annee_conso,
-                    'Consommation ' .$annee_conso,
+                    'Consommation ' .$full_annee_cour,
                     "Conso gpu normalisée",
-                    "Consommation $annee_conso (%)",
+                    "Consommation $full_annee_cour (%)",
                     "Récupérables",
                     "quota $nom_ress (To)",
                     "occup $nom_ress (%)"
@@ -88,24 +83,22 @@ class BilanSessionB extends BilanSession
 	{
         $totaux=
 		[
-            "dem_heures_prec"       =>  0,
-            "attr_heures_prec"      =>  0,
-            "dem_rall_heures_prec"  =>  0,
-            "attr_rall_heures_prec" =>  0,
-            "penal_heures_prec"     =>  0,
-            "dem_heures_A"          =>  0, // session B
-            "attr_heures_A"         =>  0, // session B
-            "dem_heures_cour"       =>  0,
-            "attr_heures_cour"      =>  0,
-            "quota"                 =>  0,
-            "conso_an"              =>  0,
-            "conso_gpu"             =>  0,
-            "recuperable"           =>  0,
-            "conso_stock"           =>  0,
-            "quota_stock"           =>  0,
+			"dem_heures_A"           =>  0,
+            "attr_heures_A"          =>  0,
+            "attr_heures_rallonge_A" => 0,
+            "dem_heures_cour"        =>  0,
+            "attr_heures_cour"       =>  0,
+            "quota"                  =>  0,
+            "conso_an"               =>  0,
+            "conso_gpu"              =>  0,
+            "recuperable"            =>  0,
+            "conso_stock"            =>  0,
+            "quota_stock"            =>  0,
 		];
+		
         $conso_flds = ['m00','m01','m02','m03','m04','m05','m06','m07','m08','m09','m10','m11'];
         foreach  ($conso_flds as $m)    $totaux[$m] =   0;
+        
         return $totaux;
 	}
 	
@@ -123,7 +116,6 @@ class BilanSessionB extends BilanSession
 		$session_precedente_A = $this->session_precedente_A;
 		$session_precedente_B = $this->session_precedente_B;
 		$session_courante_A   = $this->session_courante_A;
-		$full_annee_prec      = $this->full_annee_prec;
 		$full_annee_cour      = $this->full_annee_cour;
 		$annee_conso          = $full_annee_cour;
 		$annee_cour           = $this->annee_cour;
@@ -146,59 +138,31 @@ class BilanSessionB extends BilanSession
 			$date_recup = $d30j;
 		}
 		
-        if( $session_precedente_A != null )
-			$version_precedente_A = AppBundle::getRepository(Version::class)
-                            ->findOneVersion($session_precedente_A, $version->getProjet() );
-		else $version_precedente_A = null;
-
-		if( $session_precedente_B != null )
-			$version_precedente_B = AppBundle::getRepository(Version::class)
-                            ->findOneVersion($session_precedente_B, $version->getProjet() );
-		else $version_precedente_B = null;
-
 		if( $session_courante_A != null )
 			$version_courante_A = AppBundle::getRepository(Version::class)
                             ->findOneVersion($session_courante_A, $version->getProjet() );
 		else $version_courante_A = null;
 
-		$dem_heures_prec           = 0;
-		if( $version_precedente_A != null ) $dem_heures_prec += $version_precedente_A->getDemHeures();
-		if( $version_precedente_B != null ) $dem_heures_prec += $version_precedente_B->getDemHeures();
-
-		$attr_heures_prec          = 0;
-		if( $version_precedente_A != null ) $attr_heures_prec += $version_precedente_A->getAttrHeures();
-		if( $version_precedente_B != null ) $attr_heures_prec += $version_precedente_B->getAttrHeures();
-
-		$penal_heures              = 0;
-		if( $version_precedente_A != null ) $penal_heures   += $version_precedente_A->getPenalHeures();
-		if( $version_precedente_B != null ) $penal_heures   += $version_precedente_B->getPenalHeures();
-
-		$dem_heures_rallonge       = 0;
-		if( $version_precedente_A != null ) $dem_heures_rallonge    += $version_precedente_A->getDemHeuresRallonge();
-		if( $version_precedente_B != null ) $dem_heures_rallonge    += $version_precedente_B->getDemHeuresRallonge();
-
-		$attr_heures_rallonge      = 0;
-		if( $version_precedente_A != null ) $attr_heures_rallonge   += $version_precedente_A->getAttrHeuresRallonge();
-		if( $version_precedente_B != null ) $attr_heures_rallonge   += $version_precedente_B->getAttrHeuresRallonge();
-
 		$dem_heures_A              = 0;
 		if( $version_courante_A != null ) $dem_heures_A += $version_courante_A->getDemHeures();
 
 		$attr_heures_A             = 0;
-		if( $version_courante_A != null ) $attr_heures_A +=
-			$version_courante_A->getAttrHeures() + $version_courante_A->getAttrHeuresRallonge() - $version_courante_A->getPenalHeures();
+		if( $version_courante_A != null ) $attr_heures_A += $version_courante_A->getAttrHeures();
+
+		$attr_heures_rallonge_A    = 0;
+		if( $version_courante_A != null ) $attr_heures_rallonge_A += $version_courante_A->getAttrHeuresRallonge();
 
 		$consoRessource = $projet->getConsoRessource('cpu',$annee_conso);
-		$conso          = $consoRessource[0];
+		$conso_cpu      = $consoRessource[0];
 		$quota          = $consoRessource[1];
 		$conso_gpu      = $projet->getConsoRessource('gpu',$annee_conso)[0];
+		$conso          = $conso_cpu + $conso_gpu;
 		$dem_heure_cour = $version->getDemHeures();
 		$attr_heure_cour= $version->getAttrHeures();
 
 		// Calcul des heures récupérables au printemps
 		if( $version_courante_A != null )
 		{
-			// TODO - VERIFIER EN 2020 QUE CA MARCHE !
 			$conso_juin = $version->getConsoCalcul($date_recup->format('Y-m-d'));
 			$recuperable= SessionController::calc_recup_heures_printemps( $conso_juin, $attr_heures_A);
 		}
@@ -207,7 +171,7 @@ class BilanSessionB extends BilanSession
 			$recuperable        =   0;
 		}
 
-		$stockRessource = $projet->getConsoRessource($ress,$full_annee_prec);
+		$stockRessource = $projet->getConsoRessource($ress,$full_annee_cour);
 		$conso_stock    = $stockRessource[0];	// Occupation de l'espace-disque
 		$quota_stock    = $stockRessource[1];	// Quota de disque
 		if ($quota_stock != 0)
@@ -228,16 +192,11 @@ class BilanSessionB extends BilanSession
 				'"'. $version->getPrjThematique() .'"',
 				'"'.$version->getResponsable() .'"',
 				'"'.$version->getLabo().'"',
-				( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',
 				( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),
-				$dem_heures_prec,
-				$dem_heures_rallonge,
-				$attr_heures_rallonge,
-				$penal_heures,
-				$attr_heures_prec+$attr_heures_rallonge-$penal_heures,
+				$dem_heures_A,
+				$attr_heures_A,
+				$attr_heures_rallonge_A,
 			];
-
-		$ligne = array_merge( $ligne, [ $dem_heures_A, $attr_heures_A ] );
 
 		$ligne = array_merge( $ligne,
 			[
@@ -246,23 +205,21 @@ class BilanSessionB extends BilanSession
 				$quota,
 				$conso,
 				$conso_gpu,
-				$quota != 0  ? intval(round( $conso * 100 /$quota ) ): 0,
+				$quota != 0  ? intval(round( $conso * 100.0 /$quota ) ): 0,
 				$recuperable,
 				$quota_stock,
 				$conso_stock
 			]);
 		
-		$totaux["dem_heures_prec"]       += $dem_heures_prec;
-		$totaux["attr_heures_prec"]      += $attr_heures_prec;
-		$totaux["dem_rall_heures_prec"]  += $dem_heures_rallonge;
-		$totaux["attr_rall_heures_prec"] += $attr_heures_rallonge;
-		$totaux["penal_heures_prec"]     += $penal_heures;
+		//$totaux["attr_rall_heures_prec"] += $attr_heures_rallonge;
+		$totaux["dem_heures_A"]          += $dem_heures_A;
+		$totaux["attr_heures_A"]         += $attr_heures_A;
+		$totaux["attr_heures_rallonge_A"]+= $attr_heures_rallonge_A;
 		$totaux["dem_heures_cour"]       += $dem_heure_cour;
 		$totaux["attr_heures_cour"]      += $attr_heure_cour;
-		$totaux["dem_heures_A"]          +=  $dem_heures_A;
-		$totaux["attr_heures_A"]         +=  $attr_heures_A;
 		$totaux["quota"]                 += $quota;
-		$totaux["conso_an"]              += $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
+		//$totaux["conso_an"]              += $version->getConsoCalcul(); //( $consommation != null ) ? $consommation->conso(): 0;
+		$totaux["conso_an"]              += $conso;
 		$totaux["conso_gpu"]             += $conso_gpu;
 		$totaux["recuperable"]           += $recuperable;
 
@@ -279,31 +236,21 @@ class BilanSessionB extends BilanSession
 		// dernière ligne = les totaux
         $ligne  =
 			[
-			'TOTAL','','','','','',
-			$totaux["dem_heures_prec"],
-			$totaux["dem_rall_heures_prec"],
-			$totaux["attr_rall_heures_prec"],
-			$totaux["penal_heures_prec"],
-			$totaux["attr_heures_prec"]+$totaux["attr_rall_heures_prec"]-$totaux["penal_heures_prec"],
-			];
-
-		$totaux_quota_stock = intval($totaux['quota_stock']/$t_fact);
-		$totaux_conso_stock = intval($totaux['conso_stock']/$t_fact);
-
-		$ligne  =  array_merge( $ligne,
-			[
+			'TOTAL','','','','',
+			$totaux["dem_heures_A"],
+			$totaux["attr_heures_A"],
+			$totaux["attr_heures_rallonge_A"],
 			$totaux["dem_heures_cour"],
 			$totaux["attr_heures_cour"],
-            $totaux["dem_heures_A"],
-            $totaux["attr_heures_A"],
 			$totaux["quota"],
 			$totaux["conso_an"],
 			$totaux["conso_gpu"],
-			'', // %
-			"$totaux_quota_stock (To)",
-			"$totaux_conso_stock (To)",
-			$totaux['recuperable']
-			]);
+			"N/A",
+			$totaux["recuperable"],
+			intval($totaux['quota_stock']/$t_fact),
+			//intval($totaux['conso_stock']/$t_fact),
+			"N/A"
+			];
 
 		$ligne  = array_merge( $ligne,
 			[

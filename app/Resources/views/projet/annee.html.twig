@@ -189,7 +189,7 @@
 		    </tr>
 		    <tr>
 		        <th>Heures attribuables</th>
-		        <td id="stats_attribuables">
+		        <td id="stats_attribuables" title="h_par_an/2 - (h_attribuees - h_consommees)">
 		            {# Pertinent seulement à la fin Juin ! #}
 		            {% if isRecupPrintemps %}
 		                {% set attribuables = heures_par_an/2 - (total.attrHeuresP-total.consoHeuresP) %}
