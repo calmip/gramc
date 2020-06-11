@@ -963,10 +963,10 @@ class ProjetController extends Controller
         $projets = $paa[0];
         $total   = $paa[1];
 
-        $sortie = "Projets de l'année " . $annee . "\n";
+        $sortie = '';
 
         $header  = [
-                    'projet',
+                    'projets '.$annee,
                     'titre',
                     'thématique',
                     'courriel du resp',
