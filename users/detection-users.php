@@ -99,6 +99,7 @@ exit(0);
      
      $msg = $titre . "\n";
      foreach ($users as $u) {
+	 $msg .= "ID    = " . $u[0] . "\n";
          $msg .= "PRENOM= " . $u[3] . "\n";
          $msg .= "NOM   = " . $u[4] . "\n";
          $msg .= "PROJET= " . $u[1] . "\n";

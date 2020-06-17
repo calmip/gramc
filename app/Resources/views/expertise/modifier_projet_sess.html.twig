@@ -134,9 +134,9 @@
     #}
 
     {% if not erreurs == null %}
-    <div class="message erreur">
+    <div class="message warning">
     {% for erreur in erreurs %}
-    <p>ERREUR: {{ erreur }}</p>
+    <p><strong>ATTENTION:</strong> {{ erreur }}</p>
     {% endfor %}
     </div>
     {% endif %}
