@@ -24,6 +24,8 @@
 
 namespace AppBundle\Workflow;
 use AppBundle\Utils\Functions;
+use AppBundle\Utils\Etat;
+use AppBundle\Utils\Signal;
 
 /************************
  * Transition - Implémente une transition d'états

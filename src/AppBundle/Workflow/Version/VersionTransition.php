@@ -69,6 +69,7 @@ class VersionTransition extends Transition
     public function execute($version)
     {
 		if ( !$version instanceof Version ) throw new \InvalidArgumentException;
+		if (Transition::DEBUG) Functions::debugMessage(">>> " .  __FILE__ . ":" . __LINE__ . " $this $version" );
 
 		// Pour éviter une boucle infinie entre projet et version !
 		if (self::$execute_en_cours) return true;
@@ -110,6 +111,7 @@ class VersionTransition extends Transition
 		$this->sendNotif($version);
 
 		self::$execute_en_cours = false;
+		if (Transition::DEBUG) Functions::debugMessage( "<<< " . __FILE__ . ":" . __LINE__ . " rtn = " . Functions::show($rtn));
 
 		return $rtn;
     }

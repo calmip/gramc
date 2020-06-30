@@ -78,7 +78,8 @@ class ProjetTransition extends Transition
     public function execute($projet)
     {		
 		if ( !$projet instanceof Projet ) throw new \InvalidArgumentException;
-
+		if (Transition::DEBUG) Functions::debugMessage( ">>> " . __FILE__ . ":" . __LINE__ . " $this $projet");
+		
 		// Pour éviter une boucle infinie entre projet et version !
 		if (self::$execute_en_cours) return true;
 		self::$execute_en_cours = true;
@@ -101,6 +102,8 @@ class ProjetTransition extends Transition
 		$this->changeEtat($projet);
 
 		self::$execute_en_cours = false;
+		if (Transition::DEBUG) Functions::debugMessage( "<<< " . __FILE__ . ":" . __LINE__ . " rtn = " . Functions::show($rtn));
+
         return $rtn;
     }
 

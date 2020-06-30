@@ -179,17 +179,16 @@ class Functions
         $journal = new Journal();
         $journal->setStamp( new \DateTime() );
 
-
         if( AppBundle::getUser() instanceof Individu )
-            {
+		{
             $journal->setIdIndividu( AppBundle::getUser()->getId() );
             $journal->setIndividu( AppBundle::getUser() );
-            }
+		}
         else
-            {
+		{
             $journal->setIdIndividu( null );
             $journal->setIndividu( null );
-            }
+		}
 
         $journal->setGramcSessId( AppBundle::getSession()->getId() );
         $journal->setIp( AppBundle::getClientIp() );
@@ -201,15 +200,17 @@ class Functions
 
         // nous testons des problèmes de Doctrine pour éviter une exception
         if( AppBundle::getEnvironment() != 'test' )
-            {
+		{
             if( $em->isOpen() )
-                {
+			{
                 $em->persist( $journal );
                 $em->flush();
-                }
+			}
             else
+            {
                 AppBundle::getLogger()->error('Entity manager closed, message = ' . $message);
-            }
+			}
+		}
 
         return $journal;
     }
