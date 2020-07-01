@@ -72,21 +72,29 @@ class DoubleProjetTransition extends ProjetTransition
     public function execute($projet)
     {
         if ( ! $projet instanceof Projet ) return false;
-        
+		if (Transition::DEBUG) Functions::debugMessage( ">>> " . __FILE__ . ":" . __LINE__ . " $this $projet");
+
         // Envoie le signal en utilisant ProjetTransition
         $rtn = parent::execute( $projet );
-        
-        $workflow = new VersionWorkflow();
 
+		// NOTE - DoubleProjetTransition ne doit être employée QUE avec le signal CLK_VAL_EXP_OK
+        // Si la session COURANTE est active, l'expert est en retard: il expertise le projet APRES l'activation de la session
+        // Dans ce cas, après CLK_VAL_EXP_OK, on envoie aux versions le signal CLK_SESS_DEB        
+		$session = Functions::getSessionCourante();
+		if( $session == null )
+		{
+			Functions::errorMessage("DoubleProjetTransition : session courante nulle");
+			return false;
+		}
+		if( $session->getEtatSession() != Etat::ACTIF )
+		{
+			if (Transition::DEBUG) Functions::debugMessage( "<<< " . __FILE__ . ":" . __LINE__ . " rtn = " . Functions::show($rtn));
+			return $rtn;
+		}
+	                
+        $workflow = new VersionWorkflow();
         foreach( $projet->getVersion() as $version )
 		{
-            $session = $version->getSession();
-            if( $session == null )
-			{
-                Functions::errorMessage("DoubleProjetTransition : session null pour la version " . $projet);
-                return false;
-			}
-                
             if( $session->getEtatSession() == Etat::ACTIF )
 			{
 				// Renvoie le signal de début de session à la version
@@ -94,13 +102,10 @@ class DoubleProjetTransition extends ProjetTransition
                 $rtn = Functions::merge_return( $rtn, $return );
                 Functions::sauvegarder( $version );
 			}
-            
-            elseif( $session->getEtatSession() == Etat::ACTIF )
-                Functions::errorMessage("DoubleProjetTransition : mauvais return de la fonction getLibelleTypeSession() pour la session "
-                                        . $session  . "(" . Etat::getLibelle($session->getEtatSession() ) . ") type = '" . $session->getLibelleTypeSession() . "'");
 		}
+
+		if (Transition::DEBUG) Functions::debugMessage( "<<< " . __FILE__ . ":" . __LINE__ . " rtn = " . Functions::show($rtn));
 
 	    return $rtn; 
     }
-
 }
