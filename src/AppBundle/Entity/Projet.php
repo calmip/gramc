@@ -611,7 +611,8 @@ class Projet
 		{
             if( $version->getEtatVersion() == Etat::ACTIF || 
                 $version->getEtatVersion() == Etat::NOUVELLE_VERSION_DEMANDEE ||
-                $version->getEtatVersion() == Etat::EN_ATTENTE )
+                $version->getEtatVersion() == Etat::EN_ATTENTE ||
+                $version->getEtatVersion() == Etat::ACTIF_TEST)
             {
                 $result = $version;
                 break;
