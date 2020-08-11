@@ -919,94 +919,97 @@ class VersionController extends Controller
 
     private function handleRapport(Request $request, Version $version, $annee = null )
     {
-    $format_fichier = new \Symfony\Component\Validator\Constraints\File(
-                [
-                'mimeTypes'=> [ 'application/pdf' ],
-                'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
-                'maxSize' => "2048k",
-                'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
-                'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
-                ]);
+		$format_fichier = new \Symfony\Component\Validator\Constraints\File(
+			[
+			'mimeTypes'=> [ 'application/pdf' ],
+			'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
+			'maxSize' => "2048k",
+			'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
+			'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
+			]);
 
-     $form = $this
-           ->get('form.factory')
-           ->createNamedBuilder( 'rapport', FormType::class, [], ['csrf_protection' => false ] )
-           ->add('rapport', FileType::class,
-                [
-                'required'          =>  true,
-                'label'             => "Rapport d'activité",
-                'constraints'       => [$format_fichier , new PagesNumber() ]
+		$form = $this
+			->get('form.factory')
+			->createNamedBuilder( 'rapport', FormType::class, [], ['csrf_protection' => false ] )
+			->add('rapport', FileType::class,
+				[
+					'required'          =>  true,
+					'label'             => "Rapport d'activité",
+					'constraints'       => [$format_fichier , new PagesNumber() ]
                 ])
-           ->getForm();
-     //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
+			->getForm();
+		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
 
-     $form->handleRequest( $request );
+		$form->handleRequest( $request );
 
-     if( $form->isSubmitted() && $form->isValid() )
+		if( $form->isSubmitted() && $form->isValid() )
         {
-        $tempFilename = $form->getData()['rapport'];
-        if( $annee == null)
-            $annee = $version->anneeRapport();
+	        $tempFilename = $form->getData()['rapport'];
+	        if( $annee == null)
+	            $annee = $version->anneeRapport();
+	
+	        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
+	            $file = new File( $tempFilename );
+	        elseif( is_dir( $tempFilename ) )
+	            return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
+	        else
+	            return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
+	
+	        $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
 
-        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
-            $file = new File( $tempFilename );
-        elseif( is_dir( $tempFilename ) )
-            return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
-        else
-            return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
-
-        $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
-
-        if(  ! file_exists( $dir ) )
-            mkdir( $dir );
-        elseif( ! is_dir(  $dir ) )
+	        if(  ! file_exists( $dir ) )
+	        {
+	            mkdir( $dir );
+			}
+	        elseif( ! is_dir(  $dir ) )
             {
-            unlink( $dir );
-            mkdir( $dir );
+	            unlink( $dir );
+	            mkdir( $dir );
             }
 
-        //$file->move( $dir, $version->getIdVersion() . ".pdf" );
-        //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
-        $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
-        $file->move( $dir, $filename );
-        $filename = $dir . "/" . $filename;
+	        //$file->move( $dir, $version->getIdVersion() . ".pdf" );
+	        //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
+	        $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
+	        $file->move( $dir, $filename );
+	        $filename = $dir . "/" . $filename;
 
-        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
+	        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
 
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
-        // création de la table RapportActivite
-        $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+	        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
+	        // création de la table RapportActivite
+	        $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
                 [
                 'projet' => $version->getProjet(),
                 'annee' => $annee,
                 ]);
-        if( $rapportActivite == null )
-            $rapportActivite    = new RapportActivite( $version->getProjet(), $annee);
+	        if( $rapportActivite == null )
+	            $rapportActivite    = new RapportActivite( $version->getProjet(), $annee);
 
-        $rapportActivite->setTaille( filesize( $filename ) );
-        $rapportActivite->setNomFichier($filename);
-        $rapportActivite->setFiledata("");
+	        $rapportActivite->setTaille( filesize( $filename ) );
+	        $rapportActivite->setNomFichier($filename);
+	        $rapportActivite->setFiledata("");
 
-        $em =   AppBundle::getManager();
-        $em->persist( $rapportActivite  );
-        $em->flush();
-
-        return 'OK';
+	        $em =   AppBundle::getManager();
+	        $em->persist( $rapportActivite  );
+	        $em->flush();
+	
+	        return 'OK';
         }
-    elseif( $form->isSubmitted() && ! $form->isValid() )
+		elseif( $form->isSubmitted() && ! $form->isValid() )
         {
-        if( isset( $form->getData()['rapport'] ) )
-            return  Functions::formError( $form->getData()['rapport'], [$format_fichier , new PagesNumber() ]) ;
-        else
-            return "Les fichier n'a pas été soumis correctement";
-         }
-    elseif( $request->isXMLHttpRequest() )
-       return "Le formulaire n'a pas été soumis";
-    else
-        return $form;
-
-
-
+	        if( isset( $form->getData()['rapport'] ) )
+	            return  Functions::formError( $form->getData()['rapport'], [$format_fichier , new PagesNumber() ]) ;
+	        else
+	            return "Le fichier n'a pas été soumis correctement";
+		}
+		elseif( $request->isXMLHttpRequest() )
+		{
+			return "Le formulaire n'a pas été soumis";
+		}
+	    else
+	    {
+	        return $form;
+		}
     }
 
     private static function modifyRapport(Projet $projet, $annee, $filename )

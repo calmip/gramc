@@ -38,38 +38,46 @@ use AppBundle\Utils\Functions;
 class PagesNumberValidator extends ConstraintValidator
 {
 	public function validate($path, Constraint $constraint)
-   	 {
-	if( AppBundle::hasParameter('max_pdf_pages') )
-		$max_pdf_pages	=	 AppBundle::getParameter('max_pdf_pages');
-	else
+	{
+		if( AppBundle::hasParameter('max_pdf_pages') )
 		{
-		Functions::warningMessage("Le paramètre max_pdf_pages n'est pas défini");
-		$max_pdf_pages  =	5;
+			$max_pdf_pages = intval(AppBundle::getParameter('max_pdf_pages'));
+		}
+		else
+		{
+			Functions::warningMessage("Le paramètre max_pdf_pages n'est pas défini");
+			$max_pdf_pages = 5;
 		}
 
-    if( $path != null && ! empty( $path ) && $path != "" )
+	    if( $path != null && ! empty( $path ) && $path != "" )
         {
-        $pdftext    = file_get_contents($path);
-        //$num        = preg_match_all("/\/Page\W/", $pdftext, $dummy); // calcul le nombre des pages
-        $num = exec ("pdftk " . $path . "  dump_data | grep NumberOfPages | awk '{print $2}'");
+	        //$pdftext    = file_get_contents($path);
+	        //$num        = preg_match_all("/\/Page\W/", $pdftext, $dummy); // calcul le nombre des pages
+	        $num = exec ("pdftk " . $path . "  dump_data | grep NumberOfPages | awk '{print $2}'");
+			$num = intval($num);
         }
-    else
-        $num  = 0;
-    //Functions::debugMessage("PagesNumberValidator: Le fichier PDF a " . $num . " pages");
+	    else
+	    {
+	        $num  = 0;
+		}
+	    //Functions::debugMessage("PagesNumberValidator: Le fichier PDF a " . $num . " pages");
     
-    if( $num > $max_pdf_pages )
+	    if( $num > $max_pdf_pages )
         {
-        if( $max_pdf_pages == 1 )
-            $this->context->buildViolation($constraint->message1)
-                ->setParameter('{{ pages }}', $num)
-                ->addViolation();
-        else
-            $this->context->buildViolation($constraint->message2)
-                ->setParameter('{{ pages }}', $num)
-                ->setParameter('{{ max_pages }}', $max_pdf_pages )
-                ->addViolation();
-        //Functions::debugMessage("PagesNumberValidator: violation ajoutée");
+	        if( $max_pdf_pages == 1 )
+	        {
+	            $this->context->buildViolation($constraint->message1)
+	                ->setParameter('{{ pages }}', $num)
+	                ->addViolation();
+			}
+	        else
+	        {
+	            $this->context->buildViolation($constraint->message2)
+	                ->setParameter('{{ pages }}', $num)
+	                ->setParameter('{{ max_pages }}', $max_pdf_pages )
+	                ->addViolation();
+			}
+	        //Functions::debugMessage("PagesNumberValidator: violation ajoutée");
         }
    	 }
-
 }

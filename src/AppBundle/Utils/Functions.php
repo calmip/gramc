@@ -743,18 +743,20 @@ class Functions
 
     public static function formError( $data, $constraintes )
     {
-    $violations = [];
-    $violations = AppBundle::getContainer()->get('validator')->validate( $data, $constraintes );
-
-    if (0 !== count($violations) )
+	    $violations = [];
+	    $violations = AppBundle::getContainer()->get('validator')->validate( $data, $constraintes );
+	
+	    if (0 !== count($violations) )
         {
-        $errors = "<strong>Erreur : </strong>";
-        foreach ($violations as $violation)
-            $errors .= $violation->getMessage() .' ';
-        return $errors;
+	        $errors = "<strong>Erreur : </strong>";
+	        foreach ($violations as $violation)
+	            $errors .= $violation->getMessage() .' ';
+	        return $errors;
         }
-    else
-        return "Erreur indeterminée concernant des données soumises, les limites du système ont été probablement dépassées";
+	    else
+	    {
+	        return "Erreur indeterminée concernant des données soumises, les limites du système ont été probablement dépassées";
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
