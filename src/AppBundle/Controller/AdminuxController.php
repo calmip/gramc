@@ -271,7 +271,7 @@ class AdminuxController extends Controller
 		// SEULEMENT si session n'est pas spécifié: On ne garde que les versions actives... ou presque actives
 		if ( $id_session == null )
 		{
-			$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE];
+			$etats = [Etat::ACTIF, Etat::EN_ATTENTE, Etat::NOUVELLE_VERSION_DEMANDEE, Etat::ACTIF_TEST];
 			foreach ($v_tmp as $v)
 			{
 				if ($v == null) continue;
@@ -287,6 +287,7 @@ class AdminuxController extends Controller
 		}
 
 		// Si la session est spécifiée: On renvoie la version demandée, quelque soit son état
+		// On renvoie aussi l'état de la version et l'état de la session
 		else
 		{
 			$versions = $v_tmp;
@@ -324,6 +325,7 @@ class AdminuxController extends Controller
 			$r['idSession']       = $v->getSession()->getIdSession();
 			$r['idVersion']       = $v->getIdVersion();
 			$r['etatVersion']     = $v->getEtatVersion();
+			$r['etatProjet']      = $v->getProjet()->getEtatProjet();
 			$r['mail']            = $v->getResponsable()->getMail();
 			$r['attrHeures']      = $attr;
 			$r['sondVolDonnPerm'] = $v->getSondVolDonnPerm();
