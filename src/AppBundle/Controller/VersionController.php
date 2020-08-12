@@ -608,15 +608,15 @@ class VersionController extends Controller
      */
     public function avant_modifierAction(Request $request, Version $version )
     {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
-
-    return $this->render('version/avant_modifier.html.twig',
-            [
-            'version'   => $version
-            ]);
+	    // ACL
+	    if( Menu::modifier_version($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
+	            " parce que : " . Menu::modifier_version($version)['raison'] );
+	
+	    return $this->render('version/avant_modifier.html.twig',
+		[
+			'version'   => $version
+		]);
     }
 
 

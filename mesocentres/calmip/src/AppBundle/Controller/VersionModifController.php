@@ -1088,11 +1088,14 @@ class VersionModifController extends Controller
 
     ///////////////////////////////////////////////////////////////////////////////////
 
-
+	/**
+	 * Validation du formulaire des collaborateurs - Retourn true/false */
     private static function validateIndividuForms( $individu_forms, $definitif = false )
     {
+		$one_login = false;
 	    foreach(  $individu_forms as  $individu_form )
         {
+			if ($individu_form->getLogin()) $one_login = true; 
 	        if( $definitif ==  true  &&
                 ( $individu_form->getPrenom() == null   || $individu_form->getNom() == null
                 || $individu_form->getEtablissement() == null
@@ -1100,6 +1103,9 @@ class VersionModifController extends Controller
                 )
             )   return false;
         }
+        
+        // Personne n'a de login !
+        if ($definitif == true && $one_login == false) return false;
 
 	    if( $individu_forms != [] )
 	        return true;
