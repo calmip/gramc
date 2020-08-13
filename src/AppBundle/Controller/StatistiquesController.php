@@ -674,42 +674,13 @@ class StatistiquesController extends Controller
 	 */
     private function statistiques( $annee, $critere, $titre = "Titre" )
     {
-		// pour debug echo '<br><br><br><br><br><br>';
-		$projets = Functions::projetsParAnnee($annee)[0];
+		$stats = Functions::projetsParCritere($annee, $critere);
+		$acros       = $stats[0];
+		$num_projets = $stats[1];
+		$dem_heures  = $stats[3];
+		$attr_heures = $stats[4];
+		$conso       = $stats[5];
 		
-		// La liste des acronymes
-		$acros       = [];
-		
-		// Ces quatre tableaux sont indexés par le critère ($acro)
-		$num_projets = [];
-		$dem_heures  = [];
-		$attr_heures = [];
-		$conso       = [];
-
-
-		// Remplissage des quatre tableaux précédents
-		foreach ($projets as $p)
-		{
-			$v    = ($p['vb']==null) ? $p['va'] : $p['vb'];
-			$acro = $v -> $critere();
-			if ($acro == "") $acro = "Autres";
-
-	        if( ! in_array( $acro, $acros ) )              $acros[]            = $acro;
-            if( !array_key_exists( $acro, $num_projets ) ) $num_projets[$acro] = 0;
-            if( !array_key_exists( $acro, $dem_heures ) )  $dem_heures[$acro]  = 0;
-            if( !array_key_exists( $acro, $attr_heures ) ) $attr_heures[$acro] = 0;
-            if( !array_key_exists( $acro, $conso ) )       $conso[$acro]       = 0;
-			
-			$num_projets[$acro] += 1;
-			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeures();
-			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeures();
-			//if ($acro=='LA') echo 'LA '.$p['p']->getIdProjet().' ';			
-			$attr_heures[$acro] += $p['attrib'];
-			$conso[$acro]       += $p['c'];
-		}
-		
-	    asort( $acros );
-
 	    $image_data = [];
 	    foreach( $acros as $key => $acro )
 	        $image_data[$key]   =  $num_projets[$acro];

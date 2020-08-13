@@ -317,7 +317,7 @@
                     {{ gramcmacros.tronquer_chaine(projet.thematique,20) }}
                 </td>
                 <td class="w170">
-                    <a href="mailto:{{ p.resp.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ p.resp.prenom }} {{ p.resp.nom }}
+                    <a href="mailto:{{ prj_array.resp.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ prj_array.resp.prenom }} {{ prj_array.resp.nom }}
                 </td>
                 <td class="w80">
                     {{ gramcmacros.tronquer_chaine(prj_array.labo,20) }}

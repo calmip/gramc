@@ -1411,8 +1411,68 @@ class Functions
 		return [$projets,$total];
     }
 
-    // supprimer les répertoires
+	/*
+	 * Appelle projetsParAnnee et renvoie les tableaux suivants, indexés par le critère
+	 * 
+	 *    - Nombre de projets
+	 *    - Heures demandées
+	 *    - Heures attribuées
+	 *    - Heures consommées
+	 *    - Liste des projets
+	 * 
+	 * $annee   = Année
+	 * $critere = Un nom de getter de Version permettant de consolider partiellement les données
+	 *            Le getter renverra un acronyme (laboratoire, établissement etc)
+	 *            (ex = getAcroLaboratoire())
+	 * 
+	 * Fonction utilisée pour les statistiques et pour le bilan annuel
+	 */
+	public static function projetsParCritere($annee, $critere)
+	{
+		// pour debug echo '<br><br><br><br><br><br>';
+		$projets = Functions::projetsParAnnee($annee)[0];
+		
+		// La liste des acronymes
+		$acros       = [];
+		
+		// Ces quatre tableaux sont indexés par l'acronyme ($acro)
+		$num_projets   = [];
+		$liste_projets = [];
+		$dem_heures    = [];
+		$attr_heures   = [];
+		$conso         = [];
 
+
+		// Remplissage des quatre tableaux précédents
+		foreach ($projets as $p)
+		{
+			$v    = ($p['vb']==null) ? $p['va'] : $p['vb'];
+			$acro = $v -> $critere();
+			if ($acro == "") $acro = "Autres";
+
+	        if( ! in_array($acro, $acros))               $acros[]              = $acro;
+            if( !array_key_exists($acro, $num_projets )) $num_projets[$acro]   = 0;
+            if( !array_key_exists($acro, $dem_heures ))  $dem_heures[$acro]    = 0;
+            if( !array_key_exists($acro, $attr_heures )) $attr_heures[$acro]   = 0;
+            if( !array_key_exists($acro, $conso ))       $conso[$acro]         = 0;
+            if( !array_key_exists($acro, $liste_projets))$liste_projets[$acro] = [];
+			
+			$num_projets[$acro]    += 1;
+			$liste_projets[$acro][] = $p['p']->getIdProjet();
+			
+			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeures();
+			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeures();
+			//if ($acro=='LA') echo 'LA '.$p['p']->getIdProjet().' ';			
+			$attr_heures[$acro] += $p['attrib'];
+			$conso[$acro]       += $p['c'];
+		}
+		
+	    asort( $acros );
+	    
+	    return [$acros, $num_projets, $liste_projets, $dem_heures, $attr_heures, $conso];
+	}	
+
+    // supprimer les répertoires
     public static function erase_parameter_directory( $parameter, $projet = 'none')
         {
         if( AppBundle::hasParameter($parameter) )
