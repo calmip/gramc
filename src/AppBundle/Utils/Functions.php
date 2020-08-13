@@ -1184,13 +1184,18 @@ class Functions
 
     /**
      * Liste tous les projets qui ont une version cette annee
-     *       Utilise par ProjetController et AdminuxController
+     *       Utilise par ProjetController et AdminuxController, et aussi par StatistiquesController
      *
      * Param : $annee
-     *         $isRecupPrintemps (true/false, def=false)
-     *         $isRecupAutomne (true/false, def=false)
+     *         $isRecupPrintemps (true/false, def=false) -> Calcule les heures récupérables au printemps
+     *         $isRecupAutomne (true/false, def=false)   -> Calcule les heures récupérables à l'Automne
+     * 
      * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
      *
+     * NOTE - Si un projet a DEUX VERSIONS et change de responsable, donc de laboratoire, au cours de l'année, 
+     *        on affiche les données de la VERSION A (donc celles du début d'année)
+     * 		  Cela peut conduire à une erreur à la marge dans les statistiques
+     * 
      */
 
      // Ajoute les champs 'c','g','q', 'cp' au tableau $p
@@ -1261,6 +1266,8 @@ class Functions
             $p['p']      = $v->getProjet();
             $p['va']     = $v;
             $p['penal_a']= $v->getPenalHeures();
+            $p['labo']   = $v->getLabo();
+            $p['resp']   = $v->getResponsable();
 
             // Ces champs seront renseignés en session B
             $p['vb']      = null;
@@ -1334,6 +1341,10 @@ class Functions
                 $p['recuperable'] = 0;
                 $p['r']  = 0;
                 $p['attrib'] = 0;
+                $p['labo']   = $v->getLabo();         // Si version A et B on choisit le labo
+				$p['resp']   = $v->getResponsable();  // et le responsable de la version B (pas obligatoirement le même)
+
+
             }
             $p['vb']      = $v;
             $rallonges    = $v->getRallonge();

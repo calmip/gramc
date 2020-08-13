@@ -317,10 +317,10 @@
                     {{ gramcmacros.tronquer_chaine(projet.thematique,20) }}
                 </td>
                 <td class="w170">
-                    <a href="mailto:{{ projet.responsable.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ projet.responsable.prenom }} {{ projet.responsable.nom }}
+                    <a href="mailto:{{ p.resp.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ p.resp.prenom }} {{ p.resp.nom }}
                 </td>
                 <td class="w80">
-                    {{ gramcmacros.tronquer_chaine(projet.laboratoire,20) }}
+                    {{ gramcmacros.tronquer_chaine(prj_array.labo,20) }}
                 </td>
                 <td class="w15">
                    {# {% if not projet.rapportactivite %}

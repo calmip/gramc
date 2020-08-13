@@ -29,13 +29,13 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Esxtension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 use JpGraph\JpGraph;
 
 /**
- * Statistiquse controller.
+ * Statistiques controller.
  *
  * @Route("statistiques")
  * @Security("has_role('ROLE_OBS') or has_role('ROLE_PRESIDENT')")
@@ -469,9 +469,9 @@ class StatistiquesController extends Controller
     {
 
     $data = Functions::selectAnnee($request, $annee);
-    $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
+    //$versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
 
-    $stats = $this->statistiques( $versions, "getAcroLaboratoire", "laboratoire" );
+    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
 
     return $this->render('statistiques/laboratoire.html.twig',
             [
@@ -482,11 +482,11 @@ class StatistiquesController extends Controller
             'dem_heures'    =>  $stats['dem_heures'],
             'attr_heures'   =>  $stats['attr_heures'],
             'conso'         =>  $stats['conso'],
-            'projets'       =>  $stats['projets'],
-            'image_projets'         =>  $stats['image_projets'],
-            'image_dem'         =>  $stats['image_dem'],
-            'image_attr'         =>  $stats['image_attr'],
-            'image_conso'         =>  $stats['image_conso'],
+            //'projets'       =>  $stats['projets'],
+            'image_projets' =>  $stats['image_projets'],
+            'image_dem'     =>  $stats['image_dem'],
+            'image_attr'    =>  $stats['image_attr'],
+            'image_conso'   =>  $stats['image_conso'],
             ]);
     }
 
@@ -631,8 +631,8 @@ class StatistiquesController extends Controller
     $ligne  =   ["laboratoire","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
     $sortie .= join("\t",$ligne) . "\n";
 
-    $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
-    $stats = $this->statistiques( $versions, "getAcroLaboratoire", "laboratoire" );
+    //$versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
+    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
 
     foreach( $stats['acros'] as $acro )
         {
@@ -665,77 +665,150 @@ class StatistiquesController extends Controller
     return Functions::csv($sortie,'statistiques_etablissement.csv');
     }
 
-    ////////////////////////////////////////////////////////////////////////
-
-    private function statistiques( $versions, $critere, $titre = "Titre" )
+	/*
+	 * $annee   = L'année considérée
+	 * $critere = Un nom de getter de Version permettant de consolider partiellement les données
+	 *            Le getter renverra un acronyme (laboratoire, établissement etc)
+	 *            (ex = getAcroLaboratoire())
+	 * $titre   = Titre du camembert
+	 */
+    private function statistiques( $annee, $critere, $titre = "Titre" )
     {
-    $projets    =   []; // information si deux versions dans l'année ou juste une
-    foreach( $versions as $version )
+		// pour debug echo '<br><br><br><br><br><br>';
+		$projets = Functions::projetsParAnnee($annee)[0];
+		
+		// La liste des acronymes
+		$acros       = [];
+		
+		// Ces quatre tableaux sont indexés par le critère ($acro)
+		$num_projets = [];
+		$dem_heures  = [];
+		$attr_heures = [];
+		$conso       = [];
+
+
+		// Remplissage des quatre tableaux précédents
+		foreach ($projets as $p)
+		{
+			$v    = ($p['vb']==null) ? $p['va'] : $p['vb'];
+			$acro = $v -> $critere();
+			if ($acro == "") $acro = "Autres";
+
+	        if( ! in_array( $acro, $acros ) )              $acros[]            = $acro;
+            if( !array_key_exists( $acro, $num_projets ) ) $num_projets[$acro] = 0;
+            if( !array_key_exists( $acro, $dem_heures ) )  $dem_heures[$acro]  = 0;
+            if( !array_key_exists( $acro, $attr_heures ) ) $attr_heures[$acro] = 0;
+            if( !array_key_exists( $acro, $conso ) )       $conso[$acro]       = 0;
+			
+			$num_projets[$acro] += 1;
+			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeures();
+			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeures();
+			//if ($acro=='LA') echo 'LA '.$p['p']->getIdProjet().' ';			
+			$attr_heures[$acro] += $p['attrib'];
+			$conso[$acro]       += $p['c'];
+		}
+		
+	    asort( $acros );
+
+	    $image_data = [];
+	    foreach( $acros as $key => $acro )
+	        $image_data[$key]   =  $num_projets[$acro];
+	    $image_projets = $this->camembert( $image_data, $acros, "Nombre de projets par " . $titre );
+	
+	    $image_data = [];
+	    foreach( $acros as $key => $acro )
+	        $image_data[$key]   =  $dem_heures[$acro];
+	    $image_dem = $this->camembert( $image_data, $acros, "Nombre d'heures demandées par " . $titre );
+	
+	    $image_data = [];
+	    foreach( $acros as $key => $acro )
+	        $image_data[$key]   =  $attr_heures[$acro];
+	    $image_attr = $this->camembert( $image_data, $acros, "Nombre d'heures attribuées par " . $titre );
+		
+	    $image_data = [];
+	    foreach( $acros as $key => $acro )
+	        $image_data[$key]   =  $conso[$acro];
+	    $image_conso = $this->camembert( $image_data, $acros, "Consommation par " . $titre );
+
+	    return ["acros"         => $acros, 
+				"num_projets"   => $num_projets,
+	            "dem_heures"    => $dem_heures,
+	            "attr_heures"   => $attr_heures,
+	            "conso"         => $conso,
+	            "image_projets" => $image_projets,
+	            "image_dem"     => $image_dem,
+	            "image_attr"    => $image_attr,
+	            "image_conso"   => $image_conso ];
+    }
+
+    private function statistiques_AJETER( $versions, $critere, $titre = "Titre" )
+    {
+	    $projets    =   []; // information si deux versions dans l'année ou juste une
+	    foreach( $versions as $version )
         {
         $idProjet   =   $version->getProjet()->getIdProjet();
 
         if( ! array_key_exists( $idProjet, $projets ) )
-            $projets[$idProjet] = false; // une version dans l'année
+            $projets[$idProjet] = false; // une version dans l'année (ou on traite la première)
         else
-            $projets[$idProjet] = true; //  deux versions l'année
+            $projets[$idProjet] = true; //  deux versions l'année (et c'est la seconde)
 
         }
 
-
-    $acros          =   [];
-    $acro_projets   =   []; // contient acro pour chaque projet
-    $num_projets    =   []; // contient nombre de projets pour chaque acro
-    $dem_heures     =   [];
-    $attr_heures    =   [];
-    $conso          =   [];
-
-    foreach( $versions as $version )
+	    $acros          =   [];
+	    $acro_projets   =   []; // contient acro pour chaque projet
+	    $num_projets    =   []; // contient nombre de projets pour chaque acro
+	    $dem_heures     =   [];
+	    $attr_heures    =   [];
+	    $conso          =   [];
+	
+	    foreach( $versions as $version )
         {
-        $acro       =   $version->$critere();
-        if( $acro == "" ) $acro = "Autres";
-        $idProjet   =   $version->getProjet()->getIdProjet();
-
-        if( ! in_array( $acro, $acros ) )
-            $acros[]    =   $acro;
-
-        if( ! array_key_exists( $idProjet, $acro_projets ) ) // aucune autre version du projet n'est encore comptée
+	        $acro       =   $version->$critere();
+	        if( $acro == "" ) $acro = "Autres";
+	        $idProjet   =   $version->getProjet()->getIdProjet();
+	
+	        if( ! in_array( $acro, $acros ) )
+	            $acros[]    =   $acro;
+	
+	        if( ! array_key_exists( $idProjet, $acro_projets ) ) // aucune autre version du projet n'est encore comptée
             {
-            $acro_projets[$idProjet] = $acro;
-            if( array_key_exists( $acro, $num_projets ) )
-                $num_projets[$acro] =  $num_projets[$acro] + 1;
-            else
-                $num_projets[$acro] = 1;
-
+	            $acro_projets[$idProjet] = $acro;
+	            if( array_key_exists( $acro, $num_projets ) )
+	                $num_projets[$acro] =  $num_projets[$acro] + 1;
+	            else
+	                $num_projets[$acro] = 1;
+	
             }
-
-        elseif( $acro_projets[$idProjet] != $acro ) // une autre version du projet est déjà comptée mais le labo du projet a changé
+	
+	        elseif( $acro_projets[$idProjet] != $acro ) // une autre version du projet est déjà comptée mais le labo du projet a changé
             {
-            // il n'y a que le nombre de projets qui change, la consommation n'est pas comptée dans ce cas
-            if( array_key_exists( $acro, $num_projets ) )
-                $num_projets[$acro] =  $num_projets[$acro] + 1;
-            else
-                $num_projets[$acro] = 1;
+	            // il n'y a que le nombre de projets qui change, la consommation n'est pas comptée dans ce cas
+	            if( array_key_exists( $acro, $num_projets ) )
+	                $num_projets[$acro] =  $num_projets[$acro] + 1;
+	            else
+	                $num_projets[$acro] = 1;
             }
-
-        if( array_key_exists( $acro, $dem_heures ) )
-            $dem_heures[$acro]  =  $dem_heures[$acro] + $version->getDemHeures();
-        else
-            $dem_heures[$acro]  =  $version->getDemHeures();
-
-        if( array_key_exists( $acro, $attr_heures ) )
-            $attr_heures[$acro]  =  $attr_heures[$acro] + $version->getAttrHeures();
-        else
-            $attr_heures[$acro]  =  $version->getAttrHeures();
-
-        if( $projets[$idProjet] == true )
-            $consoV  =   $version->getConsoSession(); // deux versions dans l'année
-        else
-            $consoV  =   $version->getConsoCalcul(); // une seule version dans l'année
-
-        if( array_key_exists( $acro, $conso ) )
-            $conso[$acro]       =  $conso[$acro] + $consoV;
-        else
-            $conso[$acro]       =  $consoV;
+	
+	        if( array_key_exists( $acro, $dem_heures ) )
+	            $dem_heures[$acro]  =  $dem_heures[$acro] + $version->getDemHeures();
+	        else
+	            $dem_heures[$acro]  =  $version->getDemHeures();
+	
+	        if( array_key_exists( $acro, $attr_heures ) )
+	            $attr_heures[$acro]  =  $attr_heures[$acro] + $version->getAttrHeures();
+	        else
+	            $attr_heures[$acro]  =  $version->getAttrHeures();
+	
+ 	        if( $projets[$idProjet] == true )
+	            $consoV  =   0; // Seconde version = Conso déjà comptée !
+	        else
+	            $consoV  =   $version->getConsoCalcul(); // une seule version dans l'année
+	
+	        if( array_key_exists( $acro, $conso ) )
+	            $conso[$acro]       =  $conso[$acro] + $consoV;
+	        else
+	            $conso[$acro]       =  $consoV;
 
         }
 

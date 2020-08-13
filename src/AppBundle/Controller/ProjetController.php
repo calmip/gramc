@@ -995,10 +995,10 @@ class ProjetController extends Controller
             $line[] = $p->getIdProjet();
             $line[] = $p->getTitre();
             $line[] = $p->getThematique();
-            $line[] = $p->getResponsable()->getMail();
-            $line[] = $p->getResponsable()->getNom();
-            $line[] = $p->getResponsable()->getPrenom();
-            $line[] = $p->getLaboratoire();
+            $line[] = $prj_array['resp']->getMail();
+            $line[] = $prj_array['resp']->getNom();
+            $line[] = $prj_array['resp']->getPrenom();
+            $line[] = $prj_array['labo'];
             if (!empty($va)) {
                 $line[] = $va->getDemHeures();
                 $line[] = $va->getAttrHeures();
