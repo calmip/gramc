@@ -1,6 +1,8 @@
 {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
 
 {% block menu %}
+{{ gramcmacros.menu(menu) }}
 <nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
 {% endblock menu %}
 
@@ -12,7 +14,7 @@
 
 <section>
 
-<h1>Répartition des heures par établissement de l'année {{ annee }}</h1>
+<h1>Répartition des heures par établissement - {{ annee }}</h1>
 
 {{ form_start(form) }}
 {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}

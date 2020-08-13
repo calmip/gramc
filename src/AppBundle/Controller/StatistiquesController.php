@@ -59,99 +59,75 @@ class StatistiquesController extends Controller
     }
 
    /**
-     * @Route("/", name="statistiques")
+     * @Route("/{annee}", name="statistiques")
      * @Security("has_role('ROLE_OBS') or has_role('ROLE_PRESIDENT')")
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request,$annee=null)
     {
+		$data = Functions::selectAnnee($request,$annee);
+		$annee= $data['annee'];
 
-   $data = Functions::selectAnnee($request);
-   $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
-   $annee   =   $data['annee'];
+	    $menu[] = Menu::statistiques_laboratoire( $annee );
+	    $menu[] = Menu::statistiques_etablissement( $annee );
+	    $menu[] = Menu::statistiques_thematique( $annee );
+	    $menu[] = Menu::statistiques_metathematique( $annee );
+	    $menu[] = Menu::statistiques_collaborateur( $annee );
+	    $menu[] = Menu::statistiques_repartition( $annee );
 
-    /*
-    $stats = $this->statistiques( $versions, "getAcroLaboratoire" );
-    $stats = $this->statistiques( $versions, "getAcroEtablissement" );
-    $stats = $this->statistiques( $versions, "getAcroThematique" );
-    $stats = $this->statistiques( $versions, "getPrjSousThematique" );
-    $stats = $this->statistiques( $versions, "getAcroMetaThematique" );
+	    $projets_renouvelles = AppBundle::getRepository(Projet::class)->findProjetsAnnee($annee, Functions::ANCIENS );
+	    $projets_nouveaux    = AppBundle::getRepository(Projet::class)->findProjetsAnnee($annee, Functions::NOUVEAUX );
+	    
+	    $conso_nouveaux = 0;
+	    foreach( $projets_nouveaux as $projet )
+	        $conso_nouveaux += $projet->getConsoCalcul($annee);
 
-    $acros          =   $stats['acros'];
-    $num_projets    =   $stats['num_projets'];
-    $dem_heures     =   $stats['dem_heures'];
-    $attr_heures    =   $stats['attr_heures'];
-    $conso          =   $stats['conso'];
-    */
+	    $conso_renouvelles =   0;
+	    foreach( $projets_renouvelles as $projet )
+	        $conso_renouvelles += $projet->getConsoCalcul($annee);
 
-    $menu[] =   Menu::statistiques_laboratoire( $data['annee'] );
-    $menu[] =   Menu::statistiques_etablissement( $data['annee'] );
-    $menu[] =   Menu::statistiques_thematique( $data['annee'] );
-    $menu[] =   Menu::statistiques_metathematique( $data['annee'] );
-    $menu[] =   Menu::statistiques_collaborateur( $data['annee'] );
-    $menu[] =   Menu::statistiques_repartition( $data['annee'] );
+	    $num_projets_renouvelles = count($projets_renouvelles);
+	    $num_projets_nouveaux    = count($projets_nouveaux);
+	    $num_projets             = $num_projets_renouvelles    +   $num_projets_nouveaux;
 
-    $projets_renouvelles    =   AppBundle::getRepository(Projet::class)->findProjetsAnnee($data['annee'], Functions::ANCIENS );
-    $projets_nouveaux       =   AppBundle::getRepository(Projet::class)->findProjetsAnnee($data['annee'], Functions::NOUVEAUX );
+	    $heures_tous             = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::TOUS );
+	    $heures_renouvelles      = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::ANCIENS );
+	    $heures_nouveaux         = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::NOUVEAUX );
 
-    $conso_nouveaux         =   0;
-    foreach( $projets_nouveaux as $projet )
-        $conso_nouveaux =   $conso_nouveaux +   $projet->getConsoCalcul($annee);
-
-    $conso_renouvelles         =   0;
-    foreach( $projets_renouvelles as $projet )
-        $conso_renouvelles      =   $conso_renouvelles  +   $projet->getConsoCalcul($annee);
-
-    $num_projets_renouvelles    =   count($projets_renouvelles);
-    $num_projets_nouveaux       =   count($projets_nouveaux);
-    $num_projets                =   $num_projets_renouvelles    +   $num_projets_nouveaux;
-
-    $heures_tous                =   AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::TOUS );
-    $heures_renouvelles         =   AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::ANCIENS );
-    $heures_nouveaux            =   AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::NOUVEAUX );
-    //return new Response( Functions::show( $heures_nouveaux ));
-
-    $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
-
-    $individus  =   [];
-    $individus_uniques  =   [];
-
-    foreach( $versions as $version )
+	    $versions          = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
+	    $individus         = [];
+	    $individus_uniques = [];
+	
+	    foreach( $versions as $version )
         {
-        $collaborateurs_versions    =   $version->getCollaborateurVersion();
-        foreach( $collaborateurs_versions as $collaborateurVersion )
+	        $collaborateurs_versions = $version->getCollaborateurVersion();
+	        foreach( $collaborateurs_versions as $collaborateurVersion )
             {
-            $individu       =   $collaborateurVersion->getCollaborateur();
-            if( $individu == null ) continue;
-            $idIndividu     =   $individu->getIdIndividu();
+	            $individu       = $collaborateurVersion->getCollaborateur();
+	            if( $individu == null ) continue;
+	            $idIndividu     = $individu->getIdIndividu();
 
-            if( count( $collaborateurs_versions ) == 1 )
-                $individus_uniques[$idIndividu] =   $individu;
+	            if( count( $collaborateurs_versions ) == 1 )
+	                $individus_uniques[$idIndividu] = $individu;
 
-            $individus[$idIndividu] =   $individu;
+	            $individus[$idIndividu] =   $individu;
            }
         }
 
-    return $this->render('statistiques/index.html.twig',
+	    return $this->render('statistiques/index.html.twig',
             [
-            'form'  =>  $data['form']->createView(),
-            'annee' =>  $data['annee'],
-            'menu'  =>  $menu,
-            'num_projets'   =>  $num_projets,
-            'num_projets_renouvelles'   =>  $num_projets_renouvelles,
-            'num_projets_nouveaux'      =>  $num_projets_nouveaux,
-            'heures_tous'               =>  $heures_tous,
-            'heures_renouvelles'        =>  $heures_renouvelles,
-            'heures_nouveaux'           =>  $heures_nouveaux,
-            'num_individus'             =>  count( $individus   ),
-            'num_individus_uniques'     =>  count( $individus_uniques   ),
-            'conso_nouveaux'            =>  $conso_nouveaux,
-            'conso_renouvelles'         =>  $conso_renouvelles,
-
-      /*      'acros' =>  $acros,
-            'num_projets'   =>  $num_projets,
-            'dem_heures'    =>  $dem_heures,
-            'attr_heures'   =>  $attr_heures,
-            'conso'         =>  $conso, */
+            'form'                    => $data['form']->createView(),
+            'annee'                   => $annee,
+            'menu'                    => $menu,
+            'num_projets'             => $num_projets,
+            'num_projets_renouvelles' => $num_projets_renouvelles,
+            'num_projets_nouveaux'    => $num_projets_nouveaux,
+            'heures_tous'             => $heures_tous,
+            'heures_renouvelles'      => $heures_renouvelles,
+            'heures_nouveaux'         => $heures_nouveaux,
+            'num_individus'           => count( $individus   ),
+            'num_individus_uniques'   => count( $individus_uniques   ),
+            'conso_nouveaux'          => $conso_nouveaux,
+            'conso_renouvelles'       => $conso_renouvelles,
             ]);
     }
 
@@ -467,26 +443,32 @@ class StatistiquesController extends Controller
      */
     public function laboratoireAction(Request $request, $annee)
     {
+	    $data = Functions::selectAnnee($request, $annee);
+	    $annee= $data['annee'];
+	    
+		$menu[] = Menu::statistiques_laboratoire( $annee );
+	    $menu[] = Menu::statistiques_etablissement( $annee );
+	    $menu[] = Menu::statistiques_thematique( $annee );
+	    $menu[] = Menu::statistiques_metathematique( $annee );
+	    $menu[] = Menu::statistiques_collaborateur( $annee );
+	    $menu[] = Menu::statistiques_repartition( $annee );
 
-    $data = Functions::selectAnnee($request, $annee);
-    //$versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
+	    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
 
-    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
-
-    return $this->render('statistiques/laboratoire.html.twig',
+	    return $this->render('statistiques/laboratoire.html.twig',
             [
-            'form'  =>  $data['form']->createView(),
-            'annee' =>  $data['annee'],
-            'acros' =>  $stats['acros'],
-            'num_projets'   =>  $stats['num_projets'],
-            'dem_heures'    =>  $stats['dem_heures'],
-            'attr_heures'   =>  $stats['attr_heures'],
-            'conso'         =>  $stats['conso'],
-            //'projets'       =>  $stats['projets'],
-            'image_projets' =>  $stats['image_projets'],
-            'image_dem'     =>  $stats['image_dem'],
-            'image_attr'    =>  $stats['image_attr'],
-            'image_conso'   =>  $stats['image_conso'],
+            'menu'          => $menu, 
+            'form'          => $data['form']->createView(),
+            'annee'         => $annee,
+            'acros'         => $stats['acros'],
+            'num_projets'   => $stats['num_projets'],
+            'dem_heures'    => $stats['dem_heures'],
+            'attr_heures'   => $stats['attr_heures'],
+            'conso'         => $stats['conso'],
+            'image_projets' => $stats['image_projets'],
+            'image_dem'     => $stats['image_dem'],
+            'image_attr'    => $stats['image_attr'],
+            'image_conso'   => $stats['image_conso'],
             ]);
     }
 
@@ -497,25 +479,32 @@ class StatistiquesController extends Controller
     public function etablissementAction(Request $request, $annee)
     {
 
-    $data = Functions::selectAnnee($request, $annee);
-    $versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($data['annee']);
+	    $data = Functions::selectAnnee($request, $annee);
+	    $annee= $data['annee'];
 
-    $stats = $this->statistiques( $versions, "getAcroEtablissement", "établissement" );
+ 		$menu[] = Menu::statistiques_laboratoire( $annee );
+	    $menu[] = Menu::statistiques_etablissement( $annee );
+	    $menu[] = Menu::statistiques_thematique( $annee );
+	    $menu[] = Menu::statistiques_metathematique( $annee );
+	    $menu[] = Menu::statistiques_collaborateur( $annee );
+	    $menu[] = Menu::statistiques_repartition( $annee );
 
-    return $this->render('statistiques/etablissement.html.twig',
+		$stats = $this->statistiques( $annee, "getAcroEtablissement", "établissement" );
+
+	    return $this->render('statistiques/etablissement.html.twig',
             [
-            'form'  =>  $data['form']->createView(),
-            'annee' =>  $data['annee'],
-            'acros' =>  $stats['acros'],
-            'num_projets'   =>  $stats['num_projets'],
-            'dem_heures'    =>  $stats['dem_heures'],
-            'attr_heures'   =>  $stats['attr_heures'],
-            'conso'         =>  $stats['conso'],
-            'projets'       =>  $stats['projets'],
-            'image_projets'         =>  $stats['image_projets'],
-            'image_dem'         =>  $stats['image_dem'],
-            'image_attr'         =>  $stats['image_attr'],
-            'image_conso'         =>  $stats['image_conso'],
+            'menu'          => $menu, 
+            'form'          => $data['form']->createView(),
+            'annee'         => $annee,
+            'acros'         => $stats['acros'],
+            'num_projets'   => $stats['num_projets'],
+            'dem_heures'    => $stats['dem_heures'],
+            'attr_heures'   => $stats['attr_heures'],
+            'conso'         => $stats['conso'],
+            'image_projets' => $stats['image_projets'],
+            'image_dem'     => $stats['image_dem'],
+            'image_attr'    => $stats['image_attr'],
+            'image_conso'   => $stats['image_conso'],
             ]);
     }
 
@@ -627,20 +616,20 @@ class StatistiquesController extends Controller
      */
     public function laboratoireCSVAction(Request $request, $annee)
     {
-    $sortie =   "Statistiques de l'année ". $annee . " par laboratoire \n";
-    $ligne  =   ["laboratoire","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
-    $sortie .= join("\t",$ligne) . "\n";
-
-    //$versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
-    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
-
-    foreach( $stats['acros'] as $acro )
+	    $sortie =   "Statistiques de l'année ". $annee . " par laboratoire \n";
+	    $ligne  =   ["laboratoire","Nombre d'heures demandées","Nombre d'heures attribuées","Consommation"];
+	    $sortie .= join("\t",$ligne) . "\n";
+	
+	    //$versions = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
+	    $stats = $this->statistiques( $annee, "getAcroLaboratoire", "laboratoire" );
+	
+	    foreach( $stats['acros'] as $acro )
         {
-        $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
-        $sortie .= join("\t",$ligne) . "\n";
+	        $ligne = [ '"' . $acro . '"', $stats['dem_heures'][$acro], $stats['attr_heures'][$acro], $stats['conso'][$acro] ];
+	        $sortie .= join("\t",$ligne) . "\n";
         }
 
-    return Functions::csv($sortie,'statistiques_laboratoire.csv');
+	    return Functions::csv($sortie,'statistiques_laboratoire.csv');
     }
 
     /**

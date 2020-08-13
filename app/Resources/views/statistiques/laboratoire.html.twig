@@ -1,7 +1,9 @@
 {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
 
 {% block menu %}
-<nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
+{{ gramcmacros.menu(menu) }}
+<nav><ul><a class="lien_actif" href="{{ path('statistiques',{'annee': annee}) }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
 {% endblock menu %}
 
 
@@ -14,14 +16,14 @@
 
 <section>
 
-<h1>Répartition des heures par laboratoires de l'année {{ annee }}</h1>
+<h1>Répartition des heures par laboratoires - {{ annee }}</h1>
 
 {{ form_start(form) }}
 {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
 {{ form_end(form) }}
 
 <form action="{{ path('statistiques_laboratoire_csv', { 'annee' : annee }) }}">
-<input type="submit" value="Télécharger en csv les statistiques par laboratoire de l'année {{ annee }}">
+<input type="submit" value="Télécharger en csv les statistiques par laboratoire - année {{ annee }}">
 </form>
 
 <br />
