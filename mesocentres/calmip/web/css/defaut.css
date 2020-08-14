@@ -286,6 +286,16 @@ table.projet th.horiz {
 	width: 33%;
 }
 
+/* Appliqué à tr, mettre la ligne en gras */
+table.projet .gras {
+	font-weight: bold;
+}
+
+/* Appliqué à tr, mettre la ligne en pâle */
+table.projet .leger {
+	opacity: .6;
+}
+
 /* Le formulaire projet */
 #form_projet {
 	width: auto;

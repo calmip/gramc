@@ -206,6 +206,13 @@ class ExpertiseController extends Controller
             ]);
     }
 
+	// Helper function used by listeAction
+	private static function exptruefirst($a,$b) { 
+		if ($a['expert']==true  && $b['expert']==true)  return 0;
+		if ($a['expert']==false && $b['expert']==false) return 0;
+		if ($a['expert']==true  && $b['expert']==false) return -1;
+		return 1;
+	}
 
 	/**
 	 * Liste les expertises attribuées à un expert
@@ -250,9 +257,9 @@ class ExpertiseController extends Controller
                                                          ];
         }
 
-	//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
-	// Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
-
+		//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
+		// Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
+	
         // Les projets associés à une de mes thématiques
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
@@ -298,7 +305,7 @@ class ExpertiseController extends Controller
 	                {
 	                    $output['expert']   =   false;
 					}
-	                $expertises[$version->getIdVersion()]   =   $output;
+	                $expertises[$version->getIdVersion()] = $output;
 				}
             }
 
@@ -306,6 +313,15 @@ class ExpertiseController extends Controller
         }
 
         ///////////////////
+        // tri des tableaux expertises_by_thematique: d'abord les expertises pour lesquelles je dois intervenir
+		foreach( $expertises_by_thematique as &$exp_thema )
+		{
+			uasort($exp_thema['expertises'],"self::exptruefirst");
+		}
+			
+
+        
+		///////////////////
 
         $old_expertises = [];
         $expertises  = $expertiseRepository->findExpertisesByExpertForAllSessions($moi);
