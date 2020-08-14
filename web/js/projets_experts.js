@@ -100,13 +100,16 @@ $( document ).ready(function() {
 	};
 
 	// Connecté au checkbox inverser_selection
-	// Inverse tous les checkboxes de la classe expsel
+	// Inverse tous les checkboxes non cachés de la classe expsel
 	// Puis appelle change_couleur dessus
 	
 	function invsel_all() {
 		$("input.expsel").each(function(){
-			$(this).prop('checked', !$(this).is(':checked'))
-			change_couleur($(this));
+			if ($(this).is(':visible'))
+			{
+				$(this).prop('checked', !$(this).is(':checked'));
+				change_couleur($(this));
+			}
 		});
 	}
 

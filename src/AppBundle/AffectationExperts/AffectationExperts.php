@@ -197,9 +197,6 @@ class AffectationExperts
 		}
 		if ($form_buttons->get('sub2')->isClicked())
 		{
-
-			Functions::debugMessage( __METHOD__ . " coucou " );
-
 			$this->notifierExperts();
 		}
 	}
@@ -604,7 +601,7 @@ class AffectationExperts
 		{
 			$dest   = [ $e ];
 			$params = [ 'object' => $liste_d ];
-			Functions::debugMessage( __METHOD__ . "Envoi d'un message à " . join(',',$dest) . " - " . Functions::show($liste_d) );
+			//Functions::debugMessage( __METHOD__ . "Envoi d'un message à " . join(',',$dest) . " - " . Functions::show($liste_d) );
 
 			Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
 									'notification/affectation_expert_version-contenu.html.twig',
