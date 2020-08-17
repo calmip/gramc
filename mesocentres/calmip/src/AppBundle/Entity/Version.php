@@ -521,6 +521,17 @@ class Version implements Demande
      */
     private $prjThematique;
 
+
+    /**
+     * @var \AppBundle\Entity\Rattachement
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Rattachement")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="prj_id_rattachement", referencedColumnName="id_rattachement")
+     * })
+     */
+    private $prjRattachement;
+
     /**
      * @var \AppBundle\Entity\Session
      *
@@ -2448,6 +2459,30 @@ class Version implements Demande
     public function getPrjThematique()
     {
         return $this->prjThematique;
+    }
+
+    /**
+     * Set prjRattachement
+     *
+     * @param \AppBundle\Entity\Rattachement $prjRattachement
+     *
+     * @return Version
+     */
+    public function setPrjRattachement(\AppBundle\Entity\Rattachement $prjRattachement = null)
+    {
+        $this->prjRattachement = $prjRattachement;
+
+        return $this;
+    }
+
+    /**
+     * Get prjRattachement
+     *
+     * @return \AppBundle\Entity\Rattachement
+     */
+    public function getPrjRattachement()
+    {
+        return $this->prjRattachement;
     }
 
     /**

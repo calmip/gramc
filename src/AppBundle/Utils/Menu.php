@@ -768,6 +768,27 @@ class Menu
 
     //////////////////////////////////////
 
+    public static function rattachements()
+    {
+	    $menu['name']   =   'gerer_rattachements';
+	    $menu['commentaire']    =   "Gérer la liste des rattachements";
+	    $menu['lien']           =   "Rattachements";
+
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
+
+	    return $menu;
+    }
+
+    //////////////////////////////////////
+
     public static function metathematiques()
     {
 	    $menu['name']   =   'gerer_metaThematiques';
