@@ -430,6 +430,14 @@ class Projet
             return null;
     }
 
+    public function getRattachement()
+    {
+        if( $this->derniereVersion() != null )
+            return $this->derniereVersion()->getPrjRattachement();
+        else
+            return null;
+    }
+
     public function getLaboratoire()
     {
         if( $this->derniereVersion() != null )
