@@ -29,6 +29,7 @@ use AppBundle\Entity\Version;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Thematique;
+use AppBundle\Entity\Rattachement;
 use AppBundle\Entity\Expertise;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
@@ -587,6 +588,7 @@ class ProjetController extends Controller
         $termine        =   Etat::getEtat('TERMINE');
         $nombreTermines =   0;
 
+		// Les thématiques
         $thematiques = AppBundle::getRepository(Thematique::class)->findAll();
         if( $thematiques == null ) new Response('Aucune thématique !');
 
@@ -594,6 +596,16 @@ class ProjetController extends Controller
         {
             $statsThematique[$thematique->getLibelleThematique()]    =   0;
             $idThematiques[$thematique->getLibelleThematique()]      =   $thematique->getIdThematique();
+        }
+
+		// Les rattachements
+        $rattachements = AppBundle::getRepository(Rattachement::class)->findAll();
+        if( $rattachements == null ) new Response('Aucun rattachement !');
+
+        foreach( $rattachements as $rattachement )
+        {
+            $statsRattachement[$rattachement->getLibelleRattachement()]    =   0;
+            $idRattachements[$rattachement->getLibelleRattachement()]      =   $rattachement->getIdRattachement();
         }
 
         $items  =   [];
@@ -608,6 +620,9 @@ class ProjetController extends Controller
             if( $version->isNouvelle() == true )    $nombreNouveaux++;
             if( $version->getPrjThematique() != null )
                 $statsThematique[$version->getPrjThematique()->getLibelleThematique()]++;
+            if( $version->getPrjRattachement() != null )
+                $statsRattachement[$version->getPrjRattachement()->getLibelleRattachement()]++;
+                
             if( $version->isSigne() )       $nombreSignes++;
             if( $version->hasRapport() )    $nombreRapports++;
             if( $version->hasExpert() )     $nombreExperts++;
@@ -722,6 +737,8 @@ class ProjetController extends Controller
             'nombreNouveaux'    =>  $nombreNouveaux,
             'thematiques'       =>  $statsThematique,
             'idThematiques'     =>  $idThematiques,
+            'rattachements'     =>  $statsRattachement,
+            'idRattachements'   =>  $idRattachements,
             'nombreSignes'      =>  $nombreSignes,
             'nombreRapports'    =>  $nombreRapports,
             'nombreExperts'     =>  $nombreExperts,
