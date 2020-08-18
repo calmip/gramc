@@ -26,6 +26,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Thematique;
+use AppBundle\Entity\Rattachement;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
 
@@ -735,42 +736,59 @@ class IndividuController extends Controller
      */
     public function thematiqueAction(Request $request, Individu $individu)
     {
-     $form = $this->createFormBuilder($individu)
-            ->add('thematique', EntityType::class,
+		$em   = $this->getDoctrine()->getManager();
+		$form = $this->createFormBuilder($individu)
+			->add('thematique', EntityType::class,
                 [
                 'multiple' => true,
                 'expanded' => true,
                 'class' => 'AppBundle:Thematique',
                 ])
+            ->add('rattachement', EntityType::class,
+                [
+                'multiple' => true,
+                'expanded' => true,
+                'class' => 'AppBundle:Rattachement',
+                ])
             ->add('submit',SubmitType::class, ['label' => 'modifier' ])
             ->add('reset',ResetType::class, ['label' => 'reset' ])
             ->getForm();
 
-    $form->handleRequest($request);
+	    $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid())
-        {
-            // thématiques && Doctrine ManyToMany
-            $all_thematiques = AppBundle::getRepository(Thematique::class)->findAll();
-            $my_thematiques = $individu->getThematique();
+	    if ($form->isSubmitted() && $form->isValid())
+		{
+			// thématiques && Doctrine ManyToMany
+			$all_thematiques = AppBundle::getRepository(Thematique::class)->findAll();
+			$my_thematiques = $individu->getThematique();
+	
+			foreach($all_thematiques as $thematique )
+			{
+				if( $my_thematiques->contains( $thematique ) )
+					$thematique->addExpert($individu);
+				else
+					$thematique->removeExpert($individu);
+			}
 
-            foreach($all_thematiques as $thematique )
-                {
-                if( $my_thematiques->contains( $thematique ) )
-                    $thematique->addExpert($individu);
-                else
-                    $thematique->removeExpert($individu);
-                }
-            AppBundle::getManager()->flush();
+			// rattachement && Doctrine ManyToMany
+			$all_ratt = AppBundle::getRepository(Rattachement::class)->findAll();
+			$my_ratt = $individu->getRattachement();
+	
+			foreach($all_ratt as $ratt )
+			{
+				if( $my_ratt->contains( $ratt ) )
+					$ratt->addExpert($individu);
+				else
+					$ratt->removeExpert($individu);
+			}
+			$em->flush();
+		}
 
-            return $this->redirectToRoute('individu_gerer');
-        }
-
-    return $this->render('individu/thematique.html.twig',
-            [
+	    return $this->render('individu/thematique.html.twig',
+		[
             'individu' => $individu,
             'form' => $form->createView(),
-            ]);
+		]);
     }
 
     /**

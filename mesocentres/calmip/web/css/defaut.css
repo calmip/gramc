@@ -69,14 +69,10 @@ hr.retour {
     text-align: left;
 }
 
+
 div.gauche {
-	width: 20%;
+	width: 50%;
 	float: left;
-	background-color: blue;
-	font-weight: bold;
-}
-div.droite {
-	margin-left: 20%;
 }
 
 .petit {
@@ -1058,3 +1054,4 @@ div.ui-dialog {
 .ui-widget-content {
 	background: inherit;
 }
+
