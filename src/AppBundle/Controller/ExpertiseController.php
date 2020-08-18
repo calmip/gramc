@@ -121,6 +121,7 @@ class ExpertiseController extends Controller
             'forms'         => $forms,
             'sessionForm'   => null,
             'thematiques'   => null,
+            'rattachements' => null,
             'experts'       => null,
             'stats'         => $stats,
             'attHeures'     => $attHeures,
@@ -165,11 +166,12 @@ class ExpertiseController extends Controller
 		}
 
 		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
-	    $thematiques = $affectationExperts->getTableauThematiques();
-	    $experts     = $affectationExperts->getTableauExperts();
-		$forms       = $affectationExperts->getExpertsForms();
-		$stats       = $affectationExperts->getStats();
-		$attHeures   = $affectationExperts->getAttHeures($versions);
+	    $thematiques   = $affectationExperts->getTableauThematiques();
+	    $rattachements = $affectationExperts->getTableauRattachements();
+	    $experts       = $affectationExperts->getTableauExperts();
+		$forms         = $affectationExperts->getExpertsForms();
+		$stats         = $affectationExperts->getStats();
+		$attHeures     = $affectationExperts->getAttHeures($versions);
 		
 		$sessionForm      = $sessionData['form']->createView();
 		$titre            = "Affectation des experts aux projets de la session " . $session;
@@ -180,6 +182,7 @@ class ExpertiseController extends Controller
             'forms'         => $forms,
             'sessionForm'   => $sessionForm,
             'thematiques'   => $thematiques,
+            'rattachements' => $rattachements,
             'experts'       => $experts,
             'stats'         => $stats,
             'attHeures'     => $attHeures,

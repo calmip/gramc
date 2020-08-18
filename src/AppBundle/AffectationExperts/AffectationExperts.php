@@ -46,6 +46,7 @@ use Symfony\Component\HttpFoundation\Response;
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 
 use AppBundle\Entity\Thematique;
+use AppBundle\Entity\Rattachement;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
@@ -66,13 +67,14 @@ class AffectationExperts
 
 	function __construct (Request $request, $demandes, $ff, $dct)
 	{
-		$this->formFactory = $ff;
-		$this->doctrine    = $dct;
-		$this->request     = $request;
-		$this->demandes    = $demandes;
+		$this->formFactory   = $ff;
+		$this->doctrine      = $dct;
+		$this->request       = $request;
+		$this->demandes      = $demandes;
 		$this->notifications = []; // notifications à envoyer, mises en réserve
-		$this->form_buttons= null;
-		$this->thematiques = null;
+		$this->form_buttons  = null;
+		$this->thematiques   = null;
+		$this->rattachements = null;
 	}
 	
 	// Renvoie le formulaire des boutons principaux 
@@ -134,6 +136,51 @@ class AffectationExperts
 			$this->thematiques = $thematiques;
 		}
         return $this->thematiques;
+	}
+	
+	/*********************************************
+	 * getTableauRattachements = Calcule et renvoie le tableau des rattachements, 
+	 * avec pour chacun la liste des experts associés et 
+	 * le nombre de projets affectés au rattachement
+	 * 
+	 * return: Le tableau des rattachements
+	 * 
+	 ***************************************************/
+	public function getTableauRattachements()
+	{
+		if ($this->rattachements==null)
+		{
+			// Construction du tableau des thématiques
+		    $rattachements = [];
+		    foreach( AppBundle::getRepository(Rattachement::class)->findAll() as $rattachement )
+	        {
+		        foreach( $rattachement->getExpert() as $expert )
+		        {
+		            if( $expert->getExpert() == false )
+	                {
+		                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " $expert" . " est supprimé de la thématique pour ce projet" . $rattachement);
+		                Functions::noRattachement( $expert );
+	                }
+				}
+		        $rattachements[ $rattachement->getIdRattachement() ] =
+		            ['rattachement' => $rattachement, 'experts' => $rattachement->getExpert(), 'projets' => 0 ];
+	        }
+	        
+	        // Remplissage avec le nb de demandes par thématiques
+	        $demandes = $this->demandes;
+	        foreach( $demandes as $demande )
+			{
+	            $etatDemande    =   $demande->getEtat();
+	            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue; 
+	        
+				if( $demande->getPrjRattachement() != null )
+	            {
+	                $rattachements[ $demande->getPrjRattachement()->getIdRattachement() ]['projets']++;
+				}
+			}
+			$this->rattachements = $rattachements;
+		}
+        return $this->rattachements;
 	}
 
 	/*********************************************

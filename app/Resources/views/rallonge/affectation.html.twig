@@ -60,6 +60,7 @@
                 <th>Etat</th>
                 <th>titre</th>
                 <th>Thématique</th>
+                <th>Rattachement</th>
                 <th>Responsable</th>
                 <th>Laboratoire</th>
                 <th>Affecté</th>
@@ -93,6 +94,7 @@
                 <td>&nbsp;</td>
                 <td rowspan="{{ projet.rowspan }}">{{ gramcmacros.afftitre(projet.version.prjtitre) }}</td>
                 <td rowspan="{{ projet.rowspan }}">{{ projet.version.prjthematique }}</td>
+                <td rowspan="{{ projet.rowspan }}">{% if projet.version.prjrattachement.id>1 %}{{ projet.version.prjrattachement }}{% endif %}</td>
 
                 <td rowspan="{{ projet.rowspan }}">
                     {% if( projet.version.responsable != null ) %}
