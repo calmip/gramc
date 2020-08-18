@@ -220,6 +220,19 @@ $( document ).ready(function() {
 		change_cb();
 	});
 
+	// Tout cocher ou décocher: rattachements
+	$( "#rX" ).click(function(event) {
+		//alert("HOHO " + $(this).is(':checked') );
+		if ( $(this).is(':checked') ) {
+			$("#themas tr td input.cb").prop('checked','checked');
+			$(this).parent().parent().children('th').html('Tout décocher');
+		} else {
+			$("#themas tr td .cb").attr('checked',false);
+			$(this).parent().parent().children('th').html('Tout cocher');
+		};
+		change_cb();
+	});
+
 	// Tout cocher ou décocher: experts
 	$( "#eX" ).click(function(event) {
 		//alert("HOHO " + $(this).is(':checked') );
