@@ -183,6 +183,13 @@ const LIBELLE_STATUT =
      */
     private $thematique;
 
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Rattachement", mappedBy="expert")
+     */
+    private $rattachement;
+
     ///////////////////////////////////////
 
     /**
@@ -327,6 +334,7 @@ const LIBELLE_STATUT =
     public function __construct()
     {
         $this->thematique = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->rattachement = new \Doctrine\Common\Collections\ArrayCollection();
         $this->session = new \Doctrine\Common\Collections\ArrayCollection();
         $this->sso = new \Doctrine\Common\Collections\ArrayCollection();
         $this->collaborateurVersion = new \Doctrine\Common\Collections\ArrayCollection();
@@ -692,6 +700,40 @@ const LIBELLE_STATUT =
     public function getThematique()
     {
         return $this->thematique;
+    }
+
+    /**
+     * Add rattachement
+     *
+     * @param \AppBundle\Entity\Rattachement $rattachement
+     *
+     * @return Individu
+     */
+    public function addRattachement(\AppBundle\Entity\Rattachement $rattachement)
+    {
+        $this->rattachement[] = $rattachement;
+
+        return $this;
+    }
+
+    /**
+     * Remove rattachement
+     *
+     * @param \AppBundle\Entity\Rattachement $rattachement
+     */
+    public function removeRattachement(\AppBundle\Entity\Rattachement $rattachement)
+    {
+        $this->rattachement->removeElement($rattachement);
+    }
+
+    /**
+     * Get rattachement
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRattachement()
+    {
+        return $this->rattachement;
     }
 
     /**
