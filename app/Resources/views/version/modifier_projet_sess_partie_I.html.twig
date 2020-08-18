@@ -2,8 +2,6 @@
     <br><br>
     <h3>Présentation générale</h3>
     <table class="projet"><tbody>
-
-
     <tr>
         <th class="horiz">{{ form_label( form.prjTitre  ,"Titre du projet *" ) }}</th>
         <td>{{ form_widget( form.prjTitre  ,
@@ -24,8 +22,13 @@
         <th class="horiz">{{ form_label( form.prjSousThematique, "Sous-thématique (éventuellement)" ) }} </th>
         <td>{{ form_widget( form.prjSousThematique ) }}</td>
     </tr>
+    </tbody></table>
 
-
+    <table class="projet"><tbody>
+    <tr>
+        <th class="horiz">{{ form_label( form.prjRattachement, "Rattachement administratif" ) }} </th>
+        <td>{{ form_widget( form.prjRattachement ) }}</td>
+    </tr>
     </tbody></table>
 
     <div class="message warning"><h2>Heures normalisées</h2>

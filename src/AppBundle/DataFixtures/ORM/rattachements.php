@@ -18,7 +18,7 @@ class Rattachements  implements FixtureInterface
 	{
 		// Remplir la table rattachements
 		$ratt = new Rattachement();
-		$ratt->setLibelleRattachement('ACADEMIQUE');
+		$ratt->setLibelleRattachement('AUCUN');
 		$em->persist( $ratt );
 		
 		$ratt = new Rattachement();
@@ -87,7 +87,7 @@ class Rattachements  implements FixtureInterface
 		
 		$em->flush();
 		
-		echo "Modification de la table Version effectuée";
+		echo "Modification de la table Version effectuée\n\n";
 		echo "BILAN:\n";
 		echo "======\n\n";
 		echo "Versions traitées              = $nb_versions\n";
@@ -98,6 +98,7 @@ class Rattachements  implements FixtureInterface
 		{
 			echo "+++++++++++++ ATTENTION ++++++++++++ PAS COHERENT\n";
 		}
+		echo "\n";
 		
 		// Modifier l'affectation de deux experts (hl + jle)	
 		$hl = $em->getRepository(Individu::class) -> findOneBy( [ 'idIndividu' => 1317 ] );
@@ -128,7 +129,7 @@ class Rattachements  implements FixtureInterface
 		$metathemaOnera = $em->getRepository(MetaThematique::class)->findOneBy( ['idMetaThematique' => 11] );
 		$em->remove($metathemaOnera);
 		$em->flush();
-		echo "Suppression de ANITI et ONERA de la table MetaThematiques OK\n";		
+		echo "Suppression de ANITI et ONERA de la table MetaThematiques OK\n\n";		
 		
 	}
 }

@@ -201,7 +201,13 @@ table#profil_horiz tr td.resp {
 	border: 4px outset #c0c0c0;
 }
 
-
+/* Formulaire de projet: boutons rattachement */
+#form_prjRattachement {
+	margin: 10px 0;
+}
+#form_prjRattachement label {
+	padding-right: 2em;
+}
 #quitter input, #quitter button, .quitter button {
 	margin: 10px;
 	width: 180px;
