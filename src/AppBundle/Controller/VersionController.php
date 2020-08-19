@@ -33,6 +33,9 @@ use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\RapportActivite;
 use AppBundle\Entity\Expertise;
 
+use AppBundle\PropositionExperts\PropositionExperts;
+use AppBundle\PropositionExperts\PropositionExpertsType1;
+use AppBundle\PropositionExperts\PropositionExpertsType2;
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 
@@ -686,6 +689,7 @@ class VersionController extends Controller
      */
     public function envoyerAction(Version $version,  Request $request)
     {
+		$em = $this->getDoctrine()->getManager();
 		Functions::MenuACL( Menu::envoyer_expert($version), " Impossible d'envoyer la version " . $version->getIdVersion() . " à l'expert", __METHOD__, __LINE__ );
 	
 		$projet = $version -> getProjet();
@@ -708,7 +712,8 @@ class VersionController extends Controller
 		    $expertise->setVersion( $version );
 	
 		    // Attention, l'algorithme de proposition des experts dépend du type de projet
-            $expert = $projet->proposeExpert();
+		    $prop_expert = PropositionExperts::factory($em,$version);
+		    $expert      = $prop_expert->getProposition($version);
             if ($expert != null)
             {
 				$expertise->setExpert( $expert );
