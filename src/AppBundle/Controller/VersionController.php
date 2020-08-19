@@ -31,6 +31,8 @@ use AppBundle\Entity\Session;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\RapportActivite;
+use AppBundle\Entity\Expertise;
+
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 
@@ -617,6 +619,116 @@ class VersionController extends Controller
 		[
 			'version'   => $version
 		]);
+    }
+
+    /**
+     * envoyer à l'expert
+     *
+     * @Route("/{id}/avant_envoyer", name="avant_envoyer_expert")
+     * @Method({"GET","POST"})
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+    public function avantEnvoyerAction(Version $version,  Request $request)
+    {
+	    Functions::MenuACL( Menu::envoyer_expert($version), "Impossible d'envoyer la version " . $version->getIdVersion() . " à l'expert", __METHOD__, __LINE__ );
+
+	    $projet  = $version->getProjet();
+	    $session = $version->getSession();
+
+	    $form = AppBundle::createFormBuilder()
+	            ->add('CGU',   CheckBoxType::class,
+	                    [
+	                    'required'  =>  false,
+	                    'label'     => '',
+	                    ])
+	        ->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
+	        ->add('annuler', SubmitType::class, ['label' => "Annuler"])
+	        ->getForm();
+
+	    $form->handleRequest($request);
+	    if ( $form->isSubmitted() && $form->isValid() )
+	    {
+	        $CGU = $form->getData()['CGU'];
+	        if( $form->get('annuler')->isClicked() )
+	             return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+
+	        if( $CGU == false && $form->get('envoyer')->isClicked() )
+	        {
+	            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
+	            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	            return $this->render('projet/avant_envoyer_expert.html.twig',
+	                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
+	                    );
+
+	        }
+	        elseif ( $CGU == true && $form->get('envoyer')->isClicked() )
+	        {
+	            $version->setCGU( true );
+	            Functions::sauvegarder( $version );
+	            return $this->redirectToRoute('envoyer_expert',[ 'id' => $version->getIdVersion() ] );
+	        }
+	        else
+	            Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $version->getIdVersion());
+	    }
+
+	    return $this->render('version/avant_envoyer_expert.html.twig',
+	                        [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
+	                        );
+
+    }
+
+    /**
+     * envoyer à l'expert
+     *
+     * @Route("/{id}/envoyer", name="envoyer_expert")
+     * @Method("GET")
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+    public function envoyerAction(Version $version,  Request $request)
+    {
+		Functions::MenuACL( Menu::envoyer_expert($version), " Impossible d'envoyer la version " . $version->getIdVersion() . " à l'expert", __METHOD__, __LINE__ );
+	
+		$projet = $version -> getProjet();
+		
+		if( Menu::envoyer_expert($version)['incomplet'] == true )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Version " . $version->getIdVersion() . " incomplet envoyé à l'expert !");
+	
+		if( $version->getCGU() == false )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
+	
+	    // S'il y a déjà une expertise on ne fait rien
+	    // Sinon on la crée et on appelle le programme d'affectation automatique des experts
+		if( count( $version->getExpertise() ) > 0 )
+        {
+		    Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
+        }
+		else
+        {
+		    $expertise = new Expertise();
+		    $expertise->setVersion( $version );
+	
+		    // Attention, l'algorithme de proposition des experts dépend du type de projet
+            $expert = $projet->proposeExpert();
+            if ($expert != null)
+            {
+				$expertise->setExpert( $expert );
+		    }
+		    Functions::sauvegarder( $expertise );
+        }
+
+		$projetWorkflow = new ProjetWorkflow();
+		$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+	
+		//Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
+		//    . "(" . $projet->getObjectState() . ")" );
+
+		if( $rtn == true )
+		    return $this->render('version/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
+		else
+        {
+		    Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+		    return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+        }
     }
 
 
