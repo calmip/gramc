@@ -16,6 +16,15 @@ class Rattachements  implements FixtureInterface
 {
 	public function load(ObjectManager $em)
 	{
+		// Est-ce déjà traité ?
+		$themaAniti = $em->getRepository(Thematique::class)  ->findOneBy( ['idThematique' => 20] );
+		$themaInfo  = $em->getRepository(Thematique::class)  ->findOneBy( ['idThematique' => 7] );
+		if ($themaAniti == null)
+		{
+			echo "Aniti/Onera déjà traités !\n";
+			return;
+		}
+
 		// Remplir la table rattachements
 		$ratt = new Rattachement();
 		$ratt->setLibelleRattachement('AUCUN');
@@ -44,9 +53,6 @@ class Rattachements  implements FixtureInterface
 		// AUTRES:
 		//    - Rattachement => 0 (Académique)
 		
-		$themaAniti = $em->getRepository(Thematique::class)  ->findOneBy( ['idThematique' => 20] );
-		$themaInfo  = $em->getRepository(Thematique::class)  ->findOneBy( ['idThematique' => 7] );
-
 		$rattAniti  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 2] );
 		$rattOnera  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 3] );
 		$rattAcad   = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 1] );
@@ -56,6 +62,7 @@ class Rattachements  implements FixtureInterface
 		$nb_aniti   = 0;
 		$nb_onera   = 0;
 		$nb_acad    = 0;
+		
 		foreach( $versions as $version )
 		{
 			if ($version->getPrjThematique() == $themaAniti)
