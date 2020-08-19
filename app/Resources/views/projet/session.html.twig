@@ -327,13 +327,8 @@
             <td>
             {% endif %}
             </td>
-            {# On n'affiche pas le rattachement id=1, c'est le défaut (académique, pas de rattachement, comme on veut) #}
             {% if version.prjRattachement != null %}
-	            {% if version.prjRattachement.id == 1 %}
-		            <td class="r1">
-				{% else %}
-					<td class="r{{ idRattachements[version.prjRattachement.libelleRattachement] }}">{{ version.prjRattachement }}
-				{% endif %}
+				<td class="r{{ idRattachements[version.prjRattachement.libelleRattachement] }}">{{ version.prjRattachement }}
             {% else %}
             <td>
             {% endif %}

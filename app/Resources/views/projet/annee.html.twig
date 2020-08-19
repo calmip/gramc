@@ -318,7 +318,7 @@
                     {{ gramcmacros.tronquer_chaine(projet.thematique,20) }}
                 </td>
                  <td class="w170">
-					 {% if projet.rattachement.id == 1 %} &nbsp; {% else %} {{ gramcmacros.tronquer_chaine(projet.rattachement,20) }} {% endif %}
+					 {% if projet.rattachement == null %} &nbsp; {% else %} {{ gramcmacros.tronquer_chaine(projet.rattachement,20) }} {% endif %}
                 </td>
                
                 <td class="w170">

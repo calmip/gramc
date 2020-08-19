@@ -311,9 +311,9 @@ class VersionModifController extends Controller
                     'multiple'    => false,
                     'expanded'    => true,
                     'class'       => 'AppBundle:Rattachement',
-                    'empty_data'  => '1',
+                    'empty_data'  => null,
                     'label'       => '',
-                    'placeholder' => false,
+                    'placeholder' => 'AUCUN',
                     ])
             ->add('demHeures', IntegerType::class, [ 'required'       => false ])
             ->add('prjFinancement', TextType::class, [ 'required'     => false ])
@@ -559,9 +559,9 @@ class VersionModifController extends Controller
                     'multiple'    => false,
                     'expanded'    => true,
                     'class'       => 'AppBundle:Rattachement',
-                    'empty_data'  => '1',
+                    'empty_data'  => null,
                     'label'       => '',
-                    'placeholder' => false,
+                    'placeholder' => 'AUCUN',
                     ])
 			->add('demHeures', IntegerType::class,
 				[

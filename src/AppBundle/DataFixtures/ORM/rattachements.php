@@ -27,10 +27,6 @@ class Rattachements  implements FixtureInterface
 
 		// Remplir la table rattachements
 		$ratt = new Rattachement();
-		$ratt->setLibelleRattachement('AUCUN');
-		$em->persist( $ratt );
-		
-		$ratt = new Rattachement();
 		$ratt->setLibelleRattachement('ANITI');
 		$em->persist( $ratt );
 
@@ -53,9 +49,9 @@ class Rattachements  implements FixtureInterface
 		// AUTRES:
 		//    - Rattachement => 0 (Académique)
 		
-		$rattAniti  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 2] );
-		$rattOnera  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 3] );
-		$rattAcad   = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 1] );
+		$rattAniti  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 1] );
+		$rattOnera  = $em->getRepository(rattachement::class)->findOneby( ['idRattachement' => 2] );
+		$rattAcad   = null;
 		
 		$versions   = $em->getRepository(Version::class)     ->findAll();
 		$nb_versions= 0;
@@ -100,7 +96,7 @@ class Rattachements  implements FixtureInterface
 		echo "Versions traitées              = $nb_versions\n";
 		echo "Versions ANITI traitées        = $nb_aniti\n";
 		echo "Versions ONERA traitées        = $nb_onera\n";
-		echo "Versions ACADEMIQUES traitées  = $nb_acad\n";
+		echo "Versions SANS RATT traitées    = $nb_acad\n";
 		if ($nb_versions != $nb_aniti+$nb_onera+$nb_acad)
 		{
 			echo "+++++++++++++ ATTENTION ++++++++++++ PAS COHERENT\n";
