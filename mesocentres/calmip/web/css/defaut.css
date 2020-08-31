@@ -173,24 +173,35 @@ table#profil_horiz tr td.resp {
 	position: fixed;
 	top: 115px;
 	right: 0;
-	text-align: right;
-	max-width: 200px;
+	text-align: left;
+	width: 200px;
 	background-color:  black;
 	border: red 2px solid;
 
 }
 #envoyer {
-	top: 250px;
+	top: 305px;
 }
-
+#quitter img {
+	height: 50px;
+}
+#quitter img.left {
+	position: relative;
+	left: 0px;
+	margin-left: 10px;
+}
+#quitter img.right {
+	margin-left: 60px;
+}
+	
 #quitter input, #quitter button, .quitter button, #envoyer button {
 	margin: 10px;
 	width: 180px;
 }
-#quitter input:first-child, #quitter button:first-child {
+#quitter input:first-of-type, #quitter button:first-of-type {
 	margin-bottom: 0;
 }
-#quitter input:last-child, #quitter button:last-child {
+#quitter input:last-of-type, #quitter button:last-of-type {
 	margin-top: 0;
 }
 
@@ -586,7 +597,7 @@ td.ERREUR {
 
 /* Les boutons */
 /* bouton_poussoir: je presse une fois et ça revient */
-img.bouton_poussoir, input.bouton_poussoir {
+img.bouton_poussoir, input.bouton_poussoir, img.bouton_inactif {
 	border: 2px outset #c0c0c0;
 	opacity: 0.6;
 	padding: 1px;
@@ -626,7 +637,8 @@ img.bouton_on:hover {
 	width: 15px;
 	height: 15px;
 	}
-/* Bouton de tri du tableaux utilisateurs */
+	
+/* Bouton de tri du tableau utilisateurs */
 #utilisateurs button {
 	background: none;
 	}

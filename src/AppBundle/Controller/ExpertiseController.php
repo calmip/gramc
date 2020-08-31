@@ -211,9 +211,8 @@ class ExpertiseController extends Controller
 
 	// Helper function used by listeAction
 	private static function exptruefirst($a,$b) { 
-		if ($a['expert']==true  && $b['expert']==true)  return 0;
-		if ($a['expert']==false && $b['expert']==false) return 0;
 		if ($a['expert']==true  && $b['expert']==false) return -1;
+		if ($a['projetId'] < $b['projetId']) return -1;
 		return 1;
 	}
 
@@ -349,8 +348,8 @@ class ExpertiseController extends Controller
         };
 
         // rallonges
-        $rallonges  =   [];
-        $all_rallonges  =   AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
+        $rallonges     = [];
+        $all_rallonges = AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
         foreach( $all_rallonges as $rallonge )
 		{
             $version    =   $rallonge->getVersion();
@@ -401,7 +400,7 @@ class ExpertiseController extends Controller
             'mes_commentaires_flag'      => $mes_commentaires_flag,
             'mes_commentaires'           => $mes_commentaires,
             'mes_commentaires_maj'       => $mes_commentaires_maj,
-			'session'       => $session,
+			'session'                    => $session,
             ]);
     }
 
@@ -473,6 +472,13 @@ class ExpertiseController extends Controller
         ));
     }
 
+
+	// Helper function used by modifierAction
+	private static function expprjfirst($a,$b) { 
+		if ($a->getVersion()->getProjet()->getId() < $b->getVersion()->getId()) return -1;
+		return 1;
+	}
+
     /**
      * L'expert vient de cliquer sur le bouton "Modifier expertise"
      * Il entre son expertise et éventuellement l'envoie
@@ -492,8 +498,10 @@ class ExpertiseController extends Controller
                 " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert() );
         }
 
-        $session    =   Functions::getSessionCourante();
-        $commGlobal =  $session->getcommGlobal();
+		$em         = $this->getDoctrine()->getManager();
+        $expertiseRepository = $em->getRepository(Expertise::class);
+        $session    = Functions::getSessionCourante();
+        $commGlobal = $session->getcommGlobal();
         $anneeCour  = 2000 +$session->getAnneeSession();
         $anneePrec  = $anneeCour - 1;
 
@@ -501,7 +509,6 @@ class ExpertiseController extends Controller
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
-
 
 		// $session_edition -> Si false, on autorise le bouton Envoyer
 		//                  -> Si true, on n'autorise pas
@@ -683,6 +690,26 @@ class ExpertiseController extends Controller
 				break;
 		}
 
+		$expertises = $expertiseRepository->findExpertisesByExpert($moi, $session);
+		uasort($expertises,"self::expprjfirst");
+
+		$k          = array_search($expertise,$expertises);
+		if ($k==0) 
+		{
+			$prev = null;
+		}
+		else
+		{
+			$prev = $expertises[$k-1];
+		}
+		if ($k==count($expertises)-1)
+		{
+			$next = null;
+		}
+		else
+		{
+			$next = $expertises[$k+1];
+		}
         return $this->render($twig,
             [
             'expertise'         => $expertise,
@@ -696,6 +723,8 @@ class ExpertiseController extends Controller
             'session_edition'   => $session_edition,
             'erreurs'           => $erreurs,
             'toomuch'           => $toomuch,
+            'prev'              => $prev,
+            'next'              => $next
             ]);
     }
 
