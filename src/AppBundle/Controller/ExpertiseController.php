@@ -604,38 +604,36 @@ class ExpertiseController extends Controller
 	        if ($session->getTypeSession())
 	            $editForm -> add('nbHeuresAttEte');
 
-        //$definitif  =   $expertise->getDefinitif();
-        //if( $definitif == false )
-            //$editForm = $editForm->add('enregistrer',   SubmitType::class, ['label' =>  'Enregistrer' ]);
-        //if( $definitif == false && $session_edition == false)
-            //$editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
-        //$editForm->add( 'retour',   SubmitType::Class );
-
 		// Les boutons d'enregistrement ou d'envoi
 		$editForm = $editForm->add('enregistrer', SubmitType::class, ['label' =>  'Enregistrer' ]);
         if( $session_edition == false)
+        {
             $editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
-        $editForm->add( 'retour',   SubmitType::Class );
+		}
+		$editForm->add( 'annuler', SubmitType::Class, ['label' =>  'Annuler' ]);
+        $editForm->add( 'fermer',  SubmitType::Class );
 
 
         $editForm = $editForm->getForm();
+        
         $editForm->handleRequest($request);
 
         if( $editForm->isSubmitted() && ! $editForm->isValid() )
              Functions::warningMessage(__METHOD__ . " form error " .  Functions::show($editForm->getErrors() ) );
 
-        // Bouton RETOUR
-        if( $editForm->isSubmitted() && $editForm->get('retour')->isClicked() )
-             return $this->redirectToRoute('expertise_liste');
+        // Bouton ANNULER
+        if( $editForm->isSubmitted() && $editForm->get('annuler')->isClicked() )
+        {
+			return $this->redirectToRoute('expertise_liste');
+		}
 
-        $erreur = 0;
+		// Boutons ENREGISTRER, FERMER ou ENVOYER
+        $erreur  = 0;
         $erreurs = [];
-        if ($editForm->isSubmitted() /* && $editForm->isValid()  */ )
+        if ($editForm->isSubmitted() /* && $editForm->isValid()*/ )
         {
             $erreurs = Functions::dataError( $expertise);
-
             $validation = $expertise->getValidation();
-
             if( $validation != 1 )
 			{
                 $expertise->setNbHeuresAtt(0);
@@ -650,6 +648,12 @@ class ExpertiseController extends Controller
             $em->persist( $expertise );
             $em->flush();
 
+			// Bouton FERMER
+			if ($editForm->get('fermer')->isClicked())
+			{
+				return $this->redirectToRoute('expertise_liste');
+			}
+				
             // Bouton ENVOYER --> Vérification des champs non renseignés puis demande de confirmation
             if( ! $session_edition && $editForm->get('envoyer')->isClicked() && $erreurs == null )
                     return $this->redirectToRoute('expertise_validation', [ 'id' => $expertise->getId() ]);

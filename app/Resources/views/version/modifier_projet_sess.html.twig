@@ -150,19 +150,13 @@
 </div>
 
 <div id="quitter">
-
-{# <input id="id_version4" name="id_version" value="17BP17022" type="hidden"> #}
     {% if renouvellement %}
-    <input class="invisible_if_no_js" name="RENOUVELER" id="Renouveler" value="Renouvellement" title="Renouveler le projet" type="submit"><br />
+		<input class="invisible_if_no_js" name="RENOUVELER" id="Renouveler" value="Renouvellement" title="Renouveler le projet" type="submit"><br />
     {% else %}
-    <input class="invisible_if_no_js"  type="submit" name="ENREGISTRER" id="Enregistrer" value="Enregistrer" title="Enregistrer le projet sans le fermer" />
-    {# {{ form_widget( form.enregistrer, { 'attr': { 'class' : 'invisible_if_no_js', 'title' : 'Enregistrer le projet sans le fermer' } }) }}  #}
+		<input class="invisible_if_no_js"  type="submit" name="ENREGISTRER" id="Enregistrer" value="Enregistrer" title="Enregistrer le projet sans le fermer" />
     {{ form_widget( form.annuler, { 'attr': { 'title' : 'Abandonner les modifications' } }) }}
     {{ form_widget( form.fermer, { 'attr': { 'title' : 'Enregistrer et fermer le projet'  } }) }}
-    {# <input type="submit" name="QUITTER" value="FERMER" title="Enregistrer et fermer le projet"/> #}
     {% endif %}
-    {# <input type="submit" name="ANNULER" value="Annuler" title="Abandonner les modifications"/> #}
-
 </div>
 
 {{ form_end(form) }}

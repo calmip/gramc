@@ -167,9 +167,9 @@ table#profil_horiz tr td.resp {
 	background-color: black;
 }
 
-/* formulaire de projet => Boutons sauvegarder etc. */
+/* formulaire de projet/expertise => Boutons sauvegarder etc. */
 /* Page affectation (presque) pareil */
-#quitter {
+#quitter, #envoyer {
 	position: fixed;
 	top: 115px;
 	right: 0;
@@ -179,6 +179,22 @@ table#profil_horiz tr td.resp {
 	border: red 2px solid;
 
 }
+#envoyer {
+	right: 220px;
+}
+
+#quitter input, #quitter button, .quitter button, #envoyer button {
+	margin: 10px;
+	width: 180px;
+}
+#quitter input:first-child, #quitter button:first-child {
+	margin-bottom: 0;
+}
+#quitter input:last-child, #quitter button:last-child {
+	margin-top: 0;
+}
+
+
 #bouton_affecter {
 	width: 200px;
 	position: fixed;
@@ -201,22 +217,11 @@ table#profil_horiz tr td.resp {
 	border: 4px outset #c0c0c0;
 }
 
-/* Formulaire de projet: boutons rattachement */
 #form_prjRattachement {
 	margin: 10px 0;
 }
 #form_prjRattachement label {
 	padding-right: 2em;
-}
-#quitter input, #quitter button, .quitter button {
-	margin: 10px;
-	width: 180px;
-}
-#quitter input:first-child, #quitter button:first-child {
-	margin-bottom: 0;
-}
-#quitter input:last-child, #quitter button:last-child {
-	margin-top: 0;
 }
 
 /* Le bouton Fermer dans le téléchargement d'images "classique" */
