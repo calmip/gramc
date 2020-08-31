@@ -180,7 +180,7 @@ table#profil_horiz tr td.resp {
 
 }
 #envoyer {
-	right: 220px;
+	top: 250px;
 }
 
 #quitter input, #quitter button, .quitter button, #envoyer button {
