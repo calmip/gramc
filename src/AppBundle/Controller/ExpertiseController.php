@@ -701,25 +701,36 @@ class ExpertiseController extends Controller
 				break;
 		}
 
+		// Dans le cas de projets tests, $expertises peut être vide même s'il y a un projet test dans la liste
+		// (session B et projet test non expertisé en session A)
 		$expertises = $expertiseRepository->findExpertisesByExpert($moi, $session);
 		uasort($expertises,"self::expprjfirst");
 
-		$k          = array_search($expertise,$expertises);
-		if ($k==0) 
+		if (count($expertises)!=0)
+		{
+			$k = array_search($expertise,$expertises);
+			if ($k==0) 
+			{
+				$prev = null;
+			}
+			else
+			{
+				$prev = $expertises[$k-1];
+			}
+			$next = null;
+			if ($k==count($expertises)-1)
+			{
+				$next = null;
+			}
+			else
+			{
+				$next = $expertises[$k+1];
+			}
+		}
+		else
 		{
 			$prev = null;
-		}
-		else
-		{
-			$prev = $expertises[$k-1];
-		}
-		if ($k==count($expertises)-1)
-		{
 			$next = null;
-		}
-		else
-		{
-			$next = $expertises[$k+1];
 		}
         return $this->render($twig,
             [
