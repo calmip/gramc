@@ -183,7 +183,8 @@ table#profil_horiz tr td.resp {
 	top: 305px;
 }
 #quitter img {
-	height: 50px;
+	height: 32px;
+	border: none;
 }
 #quitter img.left {
 	position: relative;
@@ -191,7 +192,7 @@ table#profil_horiz tr td.resp {
 	margin-left: 10px;
 }
 #quitter img.right {
-	margin-left: 60px;
+	margin-left: 110px;
 }
 	
 #quitter input, #quitter button, .quitter button, #envoyer button {
