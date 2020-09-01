@@ -430,6 +430,14 @@ class Projet
             return null;
     }
 
+    public function getRattachement()
+    {
+        if( $this->derniereVersion() != null )
+            return $this->derniereVersion()->getPrjRattachement();
+        else
+            return null;
+    }
+
     public function getLaboratoire()
     {
         if( $this->derniereVersion() != null )
@@ -661,7 +669,7 @@ class Projet
     *
 	* params = $exclus Un liste d'individus exclus du choix (par exemple les collaborateurs)
 	*
-	* return = je ne sais pas quoi
+	* return = l'expert proposé
 	*
 	******/
     public function proposeExpert( $exclus = [] )
@@ -762,76 +770,76 @@ class Projet
 	        return null;
         }
 
-	   // on cherche un expert de la thématique le moins sollicité
-
-	   // Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
-	    $expertises = [];
+	    // on cherche un expert de la thématique le moins sollicité
+		// $nb_expertises contient le nombre d'experties pour chaque expert: key = nombre d'expertises, val = expert 
+		// Functions::debugMessage(__METHOD__ ." thematique " . $thematique . " expert le moins sollicité " );
+	    $nb_expertises = [];
 	    foreach( $experts as $expert )
 	    {
 	        if( $expert->isExpert() &&  ! array_key_exists( $expert->getIdIndividu(), $exclus ) )
-	            $expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
+	            $nb_expertises[ AppBundle::getRepository(Expertise::class)->countExpertises($expert) ] = $expert;
 	        elseif( ! $expert->isExpert() )
             {
 	            Functions::errorMessage(__METHOD__  .  ":" . __LINE__ . " " .  $expert . " est un expert de la thématique " . $thematique . " sans être un expert !");
 	            Functions::noThematique( $expert );
             }
 		}
-
-	    if( $expertises != null )
+		// Tri sur les clés et renvoie le premier élément
+	    if( count($nb_expertises) != 0 )
         {
-	        ksort( $expertises );
+	        ksort( $nb_expertises );
 	        return  reset($expertises);
         }
 	    else
 	        return null;
-    }
+	}
 
     ////////////////////////////////////////////
 
     // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS experts
     //        Remplacée par Version::getExperts()
 
-    public function getExpert(Session $session = null)
-    {
-	    if( $session == null ) $session = Functions::getSessionCourante();
-
-	    $expertise  = $this->getOneExpertise($session);
-	    if( $expertise  == null )
-	        return null;
-	    else
-	        return $expertise->getExpert();
-    }
+//    public function getExpert(Session $session = null)
+//    {
+//	    if( $session == null ) $session = Functions::getSessionCourante();
+//
+//	    $expertise  = $this->getOneExpertise($session);
+//	    if( $expertise  == null )
+//	        return null;
+//	    else
+//	        return $expertise->getExpert();
+//    }
 
     ///////////////////////////////////////////////
     // TODO - Supprimer cette fonction, car maintenant on peut renvoyer PLUSIEURS exprites
     //        Remplacée par Version::getExpertise()
     //
 
-    public function getOneExpertise(Session $session)
-    {
-	    if( $this->isProjetTest() )
-	        $version    =   $this->derniereVersion();
-	    else
-	        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
-
-	    if( $version != null )
-        {
-	        $expertises =   $version->getExpertise()->toArray();
-	        if( $expertises !=  null )
-            {
-	            $expertise  =   current( $expertises );
+//    public function getOneExpertise(Session $session)
+//    {
+//	    if( $this->isProjetTest() )
+//	        $version    =   $this->derniereVersion();
+//	    else
+//	        $version    =   AppBundle::getRepository(Version::class)->findOneBy(['session' => $session, 'projet' => $this]);
+//
+//	    if( $version != null )
+//        {
+//	        $expertises =   $version->getExpertise()->toArray();
+//	        if( $expertises !=  null )
+//            {
+//	            $expertise  =   current( $expertises );
 	            //Functions::debugMessage(__METHOD__ . " expertise = " . Functions::show( $expertise )
 	            //    . " expertises = " . Functions::show( $expertises ));
-	            return $expertise;
-            }
+//	            return $expertise;
+//            }
 	        //else
 	        //    Functions::noticeMessage(__METHOD__ . " version " . $version . " n'a pas d'expertise !");
-        }
-	    else
-	        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
-
-	    return null;
-    }
+//        }
+//	    else
+//	        Functions::noticeMessage(__METHOD__ . " projet " . $this . " n'a pas de version pour la session " . $session . " !");
+//
+//	    return null;
+//    }
 
 	/************************************
 	* calcul de la consommation et du quota d'une ressource à une date donnée

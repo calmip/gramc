@@ -222,7 +222,7 @@
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+3*15+3*170+6*80+ 20*20 + 20 + 20 %}
+{% set width=45+3*15+4*170+6*80+ 21*20 + 20 + 20 %}
 {% if noconso==false %}
    {% set width = 15 + 6*80 + width %}
 	{% if isRecupPrintemps %}
@@ -243,6 +243,7 @@
                 {% if noconso==false %}<th class="w15" title="Consommation">C</th>{% endif %}
                 <th class="w170" title="Etat du projet">Titre</th>
                 <th class="w170">Thématique</th>
+                <th class="w170">Rattachement</th>
                 <th class="w170">Responsable</th>
                 <th class="w80">Laboratoire</th>
                 <th class="w15">R.A.</th>
@@ -316,6 +317,10 @@
                 <td class="w170">
                     {{ gramcmacros.tronquer_chaine(projet.thematique,20) }}
                 </td>
+                 <td class="w170">
+					 {% if projet.rattachement == null %} &nbsp; {% else %} {{ gramcmacros.tronquer_chaine(projet.rattachement,20) }} {% endif %}
+                </td>
+               
                 <td class="w170">
                     <a href="mailto:{{ projet.responsable.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ projet.responsable.prenom }} {{ projet.responsable.nom }}
                 </td>

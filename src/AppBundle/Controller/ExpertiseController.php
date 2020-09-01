@@ -121,6 +121,7 @@ class ExpertiseController extends Controller
             'forms'         => $forms,
             'sessionForm'   => null,
             'thematiques'   => null,
+            'rattachements' => null,
             'experts'       => null,
             'stats'         => $stats,
             'attHeures'     => $attHeures,
@@ -165,11 +166,12 @@ class ExpertiseController extends Controller
 		}
 
 		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
-	    $thematiques = $affectationExperts->getTableauThematiques();
-	    $experts     = $affectationExperts->getTableauExperts();
-		$forms       = $affectationExperts->getExpertsForms();
-		$stats       = $affectationExperts->getStats();
-		$attHeures   = $affectationExperts->getAttHeures($versions);
+	    $thematiques   = $affectationExperts->getTableauThematiques();
+	    $rattachements = $affectationExperts->getTableauRattachements();
+	    $experts       = $affectationExperts->getTableauExperts();
+		$forms         = $affectationExperts->getExpertsForms();
+		$stats         = $affectationExperts->getStats();
+		$attHeures     = $affectationExperts->getAttHeures($versions);
 		
 		$sessionForm      = $sessionData['form']->createView();
 		$titre            = "Affectation des experts aux projets de la session " . $session;
@@ -180,6 +182,7 @@ class ExpertiseController extends Controller
             'forms'         => $forms,
             'sessionForm'   => $sessionForm,
             'thematiques'   => $thematiques,
+            'rattachements' => $rattachements,
             'experts'       => $experts,
             'stats'         => $stats,
             'attHeures'     => $attHeures,
@@ -206,6 +209,12 @@ class ExpertiseController extends Controller
             ]);
     }
 
+	// Helper function used by listeAction
+	private static function exptruefirst($a,$b) { 
+		if ($a['expert']==true  && $b['expert']==false) return -1;
+		if ($a['projetId'] < $b['projetId']) return -1;
+		return 1;
+	}
 
 	/**
 	 * Liste les expertises attribuées à un expert
@@ -261,9 +270,9 @@ class ExpertiseController extends Controller
                                                          ];
         }
 
-	//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
-	// Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
-
+		//Functions::debugMessage(__METHOD__ . " my_expertises " . Functions::show($my_expertises));
+		// Functions::debugMessage(__METHOD__ . " mes_thematiques " . Functions::show($mes_thematiques). " count=" . count($mes_thematiques->ToArray()));
+	
         // Les projets associés à une de mes thématiques
         $expertises_by_thematique   =   [];
         foreach( $mes_thematiques as $thematique )
@@ -309,7 +318,7 @@ class ExpertiseController extends Controller
 	                {
 	                    $output['expert']   =   false;
 					}
-	                $expertises[$version->getIdVersion()]   =   $output;
+	                $expertises[$version->getIdVersion()] = $output;
 				}
             }
 
@@ -317,6 +326,15 @@ class ExpertiseController extends Controller
         }
 
         ///////////////////
+        // tri des tableaux expertises_by_thematique: d'abord les expertises pour lesquelles je dois intervenir
+		foreach( $expertises_by_thematique as &$exp_thema )
+		{
+			uasort($exp_thema['expertises'],"self::exptruefirst");
+		}
+			
+
+        
+		///////////////////
 
         $old_expertises = [];
         $expertises  = $expertiseRepository->findExpertisesByExpertForAllSessions($moi);
@@ -341,8 +359,8 @@ class ExpertiseController extends Controller
         };
 
         // rallonges
-        $rallonges  =   [];
-        $all_rallonges  =   AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
+        $rallonges     = [];
+        $all_rallonges = AppBundle::getRepository(Rallonge::class)->findRallongesExpert($moi);
         foreach( $all_rallonges as $rallonge )
 		{
             $version    =   $rallonge->getVersion();
@@ -393,7 +411,7 @@ class ExpertiseController extends Controller
             'mes_commentaires_flag'      => $mes_commentaires_flag,
             'mes_commentaires'           => $mes_commentaires,
             'mes_commentaires_maj'       => $mes_commentaires_maj,
-			'session'       => $session,
+			'session'                    => $session,
             ]);
     }
 
@@ -465,6 +483,13 @@ class ExpertiseController extends Controller
         ));
     }
 
+
+	// Helper function used by modifierAction
+	private static function expprjfirst($a,$b) { 
+		if ($a->getVersion()->getProjet()->getId() < $b->getVersion()->getId()) return -1;
+		return 1;
+	}
+
     /**
      * L'expert vient de cliquer sur le bouton "Modifier expertise"
      * Il entre son expertise et éventuellement l'envoie
@@ -484,8 +509,10 @@ class ExpertiseController extends Controller
                 " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert() );
         }
 
-        $session    =   Functions::getSessionCourante();
-        $commGlobal =  $session->getcommGlobal();
+		$em         = $this->getDoctrine()->getManager();
+        $expertiseRepository = $em->getRepository(Expertise::class);
+        $session    = Functions::getSessionCourante();
+        $commGlobal = $session->getcommGlobal();
         $anneeCour  = 2000 +$session->getAnneeSession();
         $anneePrec  = $anneeCour - 1;
 
@@ -493,7 +520,6 @@ class ExpertiseController extends Controller
         $version = $expertise->getVersion();
         if( $version == null )
             Functions::createException(__METHOD__ . ":" . __LINE__ . "  " . $expertise . " n'a pas de version !" );
-
 
 		// $session_edition -> Si false, on autorise le bouton Envoyer
 		//                  -> Si true, on n'autorise pas
@@ -596,38 +622,36 @@ class ExpertiseController extends Controller
 	        if ($session->getTypeSession())
 	            $editForm -> add('nbHeuresAttEte');
 
-        //$definitif  =   $expertise->getDefinitif();
-        //if( $definitif == false )
-            //$editForm = $editForm->add('enregistrer',   SubmitType::class, ['label' =>  'Enregistrer' ]);
-        //if( $definitif == false && $session_edition == false)
-            //$editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
-        //$editForm->add( 'retour',   SubmitType::Class );
-
 		// Les boutons d'enregistrement ou d'envoi
 		$editForm = $editForm->add('enregistrer', SubmitType::class, ['label' =>  'Enregistrer' ]);
         if( $session_edition == false)
+        {
             $editForm   =   $editForm->add('envoyer',   SubmitType::class, ['label' =>  'Envoyer' ]);
-        $editForm->add( 'retour',   SubmitType::Class );
+		}
+		$editForm->add( 'annuler', SubmitType::Class, ['label' =>  'Annuler' ]);
+        $editForm->add( 'fermer',  SubmitType::Class );
 
 
         $editForm = $editForm->getForm();
+        
         $editForm->handleRequest($request);
 
         if( $editForm->isSubmitted() && ! $editForm->isValid() )
              Functions::warningMessage(__METHOD__ . " form error " .  Functions::show($editForm->getErrors() ) );
 
-        // Bouton RETOUR
-        if( $editForm->isSubmitted() && $editForm->get('retour')->isClicked() )
-             return $this->redirectToRoute('expertise_liste');
+        // Bouton ANNULER
+        if( $editForm->isSubmitted() && $editForm->get('annuler')->isClicked() )
+        {
+			return $this->redirectToRoute('expertise_liste');
+		}
 
-        $erreur = 0;
+		// Boutons ENREGISTRER, FERMER ou ENVOYER
+        $erreur  = 0;
         $erreurs = [];
-        if ($editForm->isSubmitted() /* && $editForm->isValid()  */ )
+        if ($editForm->isSubmitted() /* && $editForm->isValid()*/ )
         {
             $erreurs = Functions::dataError( $expertise);
-
             $validation = $expertise->getValidation();
-
             if( $validation != 1 )
 			{
                 $expertise->setNbHeuresAtt(0);
@@ -642,6 +666,12 @@ class ExpertiseController extends Controller
             $em->persist( $expertise );
             $em->flush();
 
+			// Bouton FERMER
+			if ($editForm->get('fermer')->isClicked())
+			{
+				return $this->redirectToRoute('expertise_liste');
+			}
+				
             // Bouton ENVOYER --> Vérification des champs non renseignés puis demande de confirmation
             if( ! $session_edition && $editForm->get('envoyer')->isClicked() && $erreurs == null )
                     return $this->redirectToRoute('expertise_validation', [ 'id' => $expertise->getId() ]);
@@ -671,6 +701,37 @@ class ExpertiseController extends Controller
 				break;
 		}
 
+		// Dans le cas de projets tests, $expertises peut être vide même s'il y a un projet test dans la liste
+		// (session B et projet test non expertisé en session A)
+		$expertises = $expertiseRepository->findExpertisesByExpert($moi, $session);
+		uasort($expertises,"self::expprjfirst");
+
+		if (count($expertises)!=0)
+		{
+			$k = array_search($expertise,$expertises);
+			if ($k==0) 
+			{
+				$prev = null;
+			}
+			else
+			{
+				$prev = $expertises[$k-1];
+			}
+			$next = null;
+			if ($k==count($expertises)-1)
+			{
+				$next = null;
+			}
+			else
+			{
+				$next = $expertises[$k+1];
+			}
+		}
+		else
+		{
+			$prev = null;
+			$next = null;
+		}
         return $this->render($twig,
             [
             'expertise'         => $expertise,
@@ -684,6 +745,8 @@ class ExpertiseController extends Controller
             'session_edition'   => $session_edition,
             'erreurs'           => $erreurs,
             'toomuch'           => $toomuch,
+            'prev'              => $prev,
+            'next'              => $next
             ]);
     }
 

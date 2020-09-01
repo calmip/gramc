@@ -291,54 +291,69 @@ class RallongeController extends Controller
     public function expertiserAction(Request $request, Rallonge $rallonge)
     {
 
-    // ACL
-    if( Menu::rallonge_expertiser($rallonge)['ok'] == false )
-        Functions::createException(__METHOD__ . " impossible d'expertiser la rallonge " . $rallonge->getIdRallonge().
-            " parce que : " . Menu::rallonge_expertiser($rallonge)['raison'] );
-
-    $editForm = $this->createFormBuilder($rallonge)
-            ->add('nbHeuresAtt', IntegerType::class, [ 'required'       =>  false, 'data' => $rallonge->getDemHeures() ] )
-            ->add('commentaireInterne', TextAreaType::class, [ 'required'       =>  false ] )
-            ->add('validation', ChoiceType::class, ['expanded' => true, 'multiple' => false, 'choices' => [ 'Accepter' => true, 'Refuser' => false ]])
-            ->add('enregistrer',SubmitType::class, ['label' => 'Enregistrer' ])
-            ->add('envoyer',SubmitType::class, ['label' => 'Envoyer' ])
-            ->getForm();
-
-
-    $erreurs = [];
-    $editForm->handleRequest($request);
-
-    $version = $rallonge->getVersion();
-    if( $version != null )
+	    // ACL
+	    if( Menu::rallonge_expertiser($rallonge)['ok'] == false )
+	        Functions::createException(__METHOD__ . " impossible d'expertiser la rallonge " . $rallonge->getIdRallonge().
+	            " parce que : " . Menu::rallonge_expertiser($rallonge)['raison'] );
+	
+	    $editForm = $this->createFormBuilder($rallonge)
+	            ->add('nbHeuresAtt', IntegerType::class, [ 'required'       =>  false, 'data' => $rallonge->getDemHeures() ] )
+	            ->add('commentaireInterne', TextAreaType::class, [ 'required'       =>  false ] )
+	            ->add('validation', ChoiceType::class, ['expanded' => true, 'multiple' => false, 'choices' => [ 'Accepter' => true, 'Refuser' => false ]])
+	            ->add('enregistrer',SubmitType::class, ['label' => 'Enregistrer' ])
+	            ->add('annuler',SubmitType::class, ['label' => 'Annuler' ])
+	            ->add('fermer',SubmitType::class, ['label' => 'Fermer' ])
+	            ->add('envoyer',SubmitType::class, ['label' => 'Envoyer' ])
+	            ->getForm();
+	
+	
+	    $erreurs = [];
+	    $editForm->handleRequest($request);
+	
+	    $version = $rallonge->getVersion();
+	    if( $version != null )
         {
-        $projet = $version->getProjet();
-        $session = $version->getSession();
+	        $projet = $version->getProjet();
+	        $session = $version->getSession();
         }
-    else
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
+	    else
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
+		
+        // Bouton ANNULER
+        if( $editForm->isSubmitted() && $editForm->get('annuler')->isClicked() )
+        {
+			return $this->redirectToRoute('expertise_liste');
+		}
 
-    if ($editForm->isSubmitted()  )
-            {
+		// Boutons ENREGISTRER, FERMER ou ENVOYER
+	    if ($editForm->isSubmitted()  )
+		{
             $erreurs = Functions::dataError( $rallonge, ['expertise'] );
-
             AppBundle::getManager()->flush();
 
+			// Bouton FERMER
+			if ($editForm->get('fermer')->isClicked())
+			{
+				return $this->redirectToRoute('expertise_liste');
+			}
+
+			// bouton ENVOYER
             if( $editForm->get('envoyer')->isClicked() )
                 return $this->redirectToRoute('avant_rallonge_envoyer_president', [ 'id' => $rallonge->getId() ]);
-            }
-
-    $session    =   Functions::getSessionCourante();
-    $anneeCour  = 2000 +$session->getAnneeSession();
-    $anneePrec  = $anneeCour - 1;
-
-    return $this->render('rallonge/expertiser.html.twig',
-            [
-            'rallonge'  => $rallonge,
-            'edit_form' => $editForm->createView(),
-            'erreurs'   => $erreurs,
-            'anneePrec' => $anneePrec,
-            'anneeCour' => $anneeCour
-            ]);
+		}
+	
+	    $session    =   Functions::getSessionCourante();
+	    $anneeCour  = 2000 +$session->getAnneeSession();
+	    $anneePrec  = $anneeCour - 1;
+	
+	    return $this->render('rallonge/expertiser.html.twig',
+	            [
+	            'rallonge'  => $rallonge,
+	            'edit_form' => $editForm->createView(),
+	            'erreurs'   => $erreurs,
+	            'anneePrec' => $anneePrec,
+	            'anneeCour' => $anneeCour
+	            ]);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -457,10 +472,10 @@ class RallongeController extends Controller
 
         $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 

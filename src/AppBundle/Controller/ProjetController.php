@@ -29,7 +29,8 @@ use AppBundle\Entity\Version;
 use AppBundle\Entity\Session;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Thematique;
-use AppBundle\Entity\Expertise;
+use AppBundle\Entity\Rattachement;
+//use AppBundle\Entity\Expertise;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
 use AppBundle\Entity\CompteActivation;
@@ -587,6 +588,7 @@ class ProjetController extends Controller
         $termine        =   Etat::getEtat('TERMINE');
         $nombreTermines =   0;
 
+		// Les thématiques
         $thematiques = AppBundle::getRepository(Thematique::class)->findAll();
         if( $thematiques == null ) new Response('Aucune thématique !');
 
@@ -594,6 +596,16 @@ class ProjetController extends Controller
         {
             $statsThematique[$thematique->getLibelleThematique()]    =   0;
             $idThematiques[$thematique->getLibelleThematique()]      =   $thematique->getIdThematique();
+        }
+
+		// Les rattachements
+        $rattachements = AppBundle::getRepository(Rattachement::class)->findAll();
+        if( $rattachements == null ) new Response('Aucun rattachement !');
+
+        foreach( $rattachements as $rattachement )
+        {
+            $statsRattachement[$rattachement->getLibelleRattachement()]    =   0;
+            $idRattachements[$rattachement->getLibelleRattachement()]      =   $rattachement->getIdRattachement();
         }
 
         $items  =   [];
@@ -608,6 +620,9 @@ class ProjetController extends Controller
             if( $version->isNouvelle() == true )    $nombreNouveaux++;
             if( $version->getPrjThematique() != null )
                 $statsThematique[$version->getPrjThematique()->getLibelleThematique()]++;
+            if( $version->getPrjRattachement() != null )
+                $statsRattachement[$version->getPrjRattachement()->getLibelleRattachement()]++;
+                
             if( $version->isSigne() )       $nombreSignes++;
             if( $version->hasRapport() )    $nombreRapports++;
             if( $version->hasExpert() )     $nombreExperts++;
@@ -722,6 +737,8 @@ class ProjetController extends Controller
             'nombreNouveaux'    =>  $nombreNouveaux,
             'thematiques'       =>  $statsThematique,
             'idThematiques'     =>  $idThematiques,
+            'rattachements'     =>  $statsRattachement,
+            'idRattachements'   =>  $idRattachements,
             'nombreSignes'      =>  $nombreSignes,
             'nombreRapports'    =>  $nombreRapports,
             'nombreExperts'     =>  $nombreExperts,
@@ -1477,123 +1494,123 @@ class ProjetController extends Controller
 	            );
     }
 
-    /**
-     * envoyer à l'expert
-     *
-     * @Route("/{id}/avant_envoyer", name="avant_envoyer_expert")
-     * @Method({"GET","POST"})
-     * @Security("has_role('ROLE_DEMANDEUR')")
-     */
-    public function avantEnvoyerAction(Projet $projet,  Request $request)
-    {
-	    Functions::MenuACL( Menu::envoyer_expert($projet), "Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
+    ///**
+     //* envoyer à l'expert
+     //*
+     //* @Route("/{id}/avant_envoyer", name="avant_envoyer_expert")
+     //* @Method({"GET","POST"})
+     //* @Security("has_role('ROLE_DEMANDEUR')")
+     //*/
+    //public function avantEnvoyerAction(Projet $projet,  Request $request)
+    //{
+	    //Functions::MenuACL( Menu::envoyer_expert($projet), "Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
 
-	    $version    =    $projet->derniereVersion();
-	    if( $version == null ) Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
+	    //$version    =    $projet->derniereVersion();
+	    //if( $version == null ) Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
 
-	    $session = $version->getSession();
+	    //$session = $version->getSession();
 
-	    $form = AppBundle::createFormBuilder()
-	            ->add('CGU',   CheckBoxType::class,
-	                    [
-	                    'required'  =>  false,
-	                    'label'     => '',
-	                    ])
-	        ->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
-	        ->add('annuler', SubmitType::class, ['label' => "Annuler"])
-	        ->getForm();
+	    //$form = AppBundle::createFormBuilder()
+	            //->add('CGU',   CheckBoxType::class,
+	                    //[
+	                    //'required'  =>  false,
+	                    //'label'     => '',
+	                    //])
+	        //->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
+	        //->add('annuler', SubmitType::class, ['label' => "Annuler"])
+	        //->getForm();
 
-	    $form->handleRequest($request);
-	    if ( $form->isSubmitted() && $form->isValid() )
-	    {
-	        $CGU = $form->getData()['CGU'];
-	        if( $form->get('annuler')->isClicked() )
-	             return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	    //$form->handleRequest($request);
+	    //if ( $form->isSubmitted() && $form->isValid() )
+	    //{
+	        //$CGU = $form->getData()['CGU'];
+	        //if( $form->get('annuler')->isClicked() )
+	             //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
 
-	        if( $CGU == false && $form->get('envoyer')->isClicked() )
-	        {
-	            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
-	            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
-	            return $this->render('projet/avant_envoyer_expert.html.twig',
-	                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
-	                    );
+	        //if( $CGU == false && $form->get('envoyer')->isClicked() )
+	        //{
+	            ////Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
+	            ////return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	            //return $this->render('projet/avant_envoyer_expert.html.twig',
+	                    //[ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
+	                    //);
 
-	        }
-	        elseif ( $CGU == true && $form->get('envoyer')->isClicked() )
-	        {
-	            $version->setCGU( true );
-	            Functions::sauvegarder( $version );
-	            return $this->redirectToRoute('envoyer_expert',[ 'id' => $projet->getIdProjet() ] );
-	        }
-	        else
-	            Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $projet->getIdProjet());
-	    }
+	        //}
+	        //elseif ( $CGU == true && $form->get('envoyer')->isClicked() )
+	        //{
+	            //$version->setCGU( true );
+	            //Functions::sauvegarder( $version );
+	            //return $this->redirectToRoute('envoyer_expert',[ 'id' => $projet->getIdProjet() ] );
+	        //}
+	        //else
+	            //Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $projet->getIdProjet());
+	    //}
 
-	    return $this->render('projet/avant_envoyer_expert.html.twig',
-	                        [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
-	                        );
+	    //return $this->render('projet/avant_envoyer_expert.html.twig',
+	                        //[ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
+	                        //);
 
-    }
+    //}
 
 
-    /**
-     * envoyer à l'expert
-     *
-     * @Route("/{id}/envoyer", name="envoyer_expert")
-     * @Method("GET")
-     * @Security("has_role('ROLE_DEMANDEUR')")
-     */
-    public function envoyerAction(Projet $projet,  Request $request)
-    {
-		//if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
-		//   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
+    ///**
+     //* envoyer à l'expert
+     //*
+     //* @Route("/{id}/envoyer", name="envoyer_expert")
+     //* @Method("GET")
+     //* @Security("has_role('ROLE_DEMANDEUR')")
+     //*/
+    //public function envoyerAction(Projet $projet,  Request $request)
+    //{
+		////if( Menu::envoyer_expert($projet)['ok'] == false && (  AppBundle::hasParameter('kernel.debug') && AppBundle::getParameter('kernel.debug') == false ) )
+		////   Functions::createException(__METHOD__ ." Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert");
 	
-		Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
+		//Functions::MenuACL( Menu::envoyer_expert($projet), " Impossible d'envoyer le projet " . $projet->getIdProjet() . " à l'expert", __METHOD__, __LINE__ );
 	
-		$version    =    $projet->derniereVersion();
-		if( $version == null )
-		    Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
+		//$version    =    $projet->derniereVersion();
+		//if( $version == null )
+		    //Functions::createException(__METHOD__ .":". __LINE__ ." Aucune version du projet " . $projet->getIdProjet());
 	
-		if( Menu::envoyer_expert($projet)['incomplet'] == true )
-		    Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
+		//if( Menu::envoyer_expert($projet)['incomplet'] == true )
+		    //Functions::createException(__METHOD__ .":". __LINE__ ." Projet " . $projet->getIdProjet() . " incomplet envoyé à l'expert !");
 	
-		if( $version->getCGU() == false )
-		    Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
+		//if( $version->getCGU() == false )
+		    //Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
 	
-	    // S'il y a déjà une expertise on ne fait rien
-	    // Sinon on la crée et on appelle le programme d'affectation automatique des experts
-		if( count( $version->getExpertise() ) > 0 )
-        {
-		    Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
-        }
-		else
-        {
-		    $expertise = new Expertise();
-		    $expertise->setVersion( $version );
+	    //// S'il y a déjà une expertise on ne fait rien
+	    //// Sinon on la crée et on appelle le programme d'affectation automatique des experts
+		//if( count( $version->getExpertise() ) > 0 )
+        //{
+		    //Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
+        //}
+		//else
+        //{
+		    //$expertise = new Expertise();
+		    //$expertise->setVersion( $version );
 	
-		    // Attention, l'algorithme de proposition des experts dépend du type de projet
-            $expert = $projet->proposeExpert();
-            if ($expert != null)
-            {
-				$expertise->setExpert( $expert );
-		    }
-		    Functions::sauvegarder( $expertise );
-        }
+		    //// Attention, l'algorithme de proposition des experts dépend du type de projet
+            //$expert = $projet->proposeExpert();
+            //if ($expert != null)
+            //{
+				//$expertise->setExpert( $expert );
+		    //}
+		    //Functions::sauvegarder( $expertise );
+        //}
 
-		$projetWorkflow = new ProjetWorkflow();
-		$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+		//$projetWorkflow = new ProjetWorkflow();
+		//$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
 	
-		//Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
-		//    . "(" . $projet->getObjectState() . ")" );
+		////Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
+		////    . "(" . $projet->getObjectState() . ")" );
 
-		if( $rtn == true )
-		    return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
-		else
-        {
-		    Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
-		    return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
-        }
-    }
+		//if( $rtn == true )
+		    //return $this->render('projet/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
+		//else
+        //{
+		    //Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+		    //return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+        //}
+    //}
 
     /**
      * Affiche un projet avec un menu pour choisir la version
@@ -1668,7 +1685,7 @@ class ProjetController extends Controller
 	    $menu[] =   Menu::changer_responsable($version);
 	    $menu[] =   Menu::renouveler_version($version);
 	    $menu[] =   Menu::modifier_version( $version );
-	    $menu[] =   Menu::envoyer_expert( $projet );
+	    $menu[] =   Menu::envoyer_expert( $version );
 	    $menu[] =   Menu::modifier_collaborateurs( $version );
 		$menu[] =   Menu::donnees( $version );
 	    $menu[] =   Menu::telechargement_fiche( $version );
@@ -1728,7 +1745,7 @@ class ProjetController extends Controller
 	{
         if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
         $menu[] =   Menu::modifier_version( $version );
-        $menu[] =   Menu::envoyer_expert( $projet );
+        $menu[] =   Menu::envoyer_expert( $version );
         $menu[] =   Menu::modifier_collaborateurs( $version );
 
         return $this->render('projet/consulter_projet_test.html.twig',
@@ -1770,7 +1787,7 @@ class ProjetController extends Controller
 	    $menu[] =   Menu::changer_responsable($version);
 	    $menu[] =   Menu::renouveler_version($version);
 	    $menu[] =   Menu::modifier_version( $version );
-	    $menu[] =   Menu::envoyer_expert( $projet );
+	    $menu[] =   Menu::envoyer_expert( $version );
 	    $menu[] =   Menu::modifier_collaborateurs( $version );
 	    $menu[] =   Menu::telechargement_fiche( $version );
 	    $menu[] =   Menu::televersement_fiche( $version );

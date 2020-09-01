@@ -31,6 +31,8 @@ use AppBundle\Entity\Session;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\RapportActivite;
+use AppBundle\Entity\Rattachement;
+
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 
@@ -55,6 +57,7 @@ use AppBundle\Utils\IndividuForm;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -62,7 +65,6 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 use AppBundle\Form\IndividuFormType;
 use AppBundle\Validator\Constraints\PagesNumber;
@@ -290,29 +292,40 @@ class VersionModifController extends Controller
 
 	/* Les champs de la partie I */
 	private function modifierPartieI($version,&$form)
-	{
+	{ 
+		$em = $this->getDoctrine()->getManager();
 		$form
             ->add('prjTitre', TextType::class, [ 'required'       =>  false ])
             ->add('prjThematique', EntityType::class,
                     [
-                    'required'       =>  false,
-                    'multiple' => false,
-                    'class' => 'AppBundle:Thematique',
-                    'label'     => '',
+                    'required'    => false,
+                    'multiple'    => false,
+                    'class'       => 'AppBundle:Thematique',
+                    'label'       => '',
                     'placeholder' => '-- Indiquez la thématique',
                     ])
             ->add('prjSousThematique', TextType::class, [ 'required'       =>  false ])
-            ->add('demHeures', IntegerType::class, [ 'required'       =>  false ])
-            ->add('prjFinancement', TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciCentre',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciMachines',   TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciHeures',     TextType::class, [ 'required'       =>  false ])
-            ->add('prjGenciDari',     TextType::class, [ 'required'       =>  false ]);
+            ->add('prjRattachement', EntityType::class,
+                    [
+                    'required'    => false,
+                    'multiple'    => false,
+                    'expanded'    => true,
+                    'class'       => 'AppBundle:Rattachement',
+                    'empty_data'  => null,
+                    'label'       => '',
+                    'placeholder' => 'AUCUN',
+                    ])
+            ->add('demHeures', IntegerType::class, [ 'required'       => false ])
+            ->add('prjFinancement', TextType::class, [ 'required'     => false ])
+            ->add('prjGenciCentre',     TextType::class, [ 'required' => false ])
+            ->add('prjGenciMachines',   TextType::class, [ 'required' => false ])
+            ->add('prjGenciHeures',     TextType::class, [ 'required' => false ])
+            ->add('prjGenciDari',     TextType::class, [ 'required'   => false ]);
 
 		/* Pour un renouvellement, ajouter la justification du renouvellement */
 		if( count( $version->getProjet()->getVersion() ) > 1  )
 		{
-			 $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required'       =>  false ]);
+			 $form = $form->add('prjJustifRenouv', TextAreaType::class, [ 'required' => false ]);
 		}
 	}
 
@@ -540,6 +553,16 @@ class VersionModifController extends Controller
 					'label'     => '',
 					'placeholder' => '-- Indiquez la thématique',
 					])
+            ->add('prjRattachement', EntityType::class,
+                    [
+                    'required'    => false,
+                    'multiple'    => false,
+                    'expanded'    => true,
+                    'class'       => 'AppBundle:Rattachement',
+                    'empty_data'  => null,
+                    'label'       => '',
+                    'placeholder' => 'AUCUN',
+                    ])
 			->add('demHeures', IntegerType::class,
 				[
 				'required'       =>  false,
