@@ -222,12 +222,23 @@ class ExpertiseController extends Controller
         $moi    =   AppBundle::getUser();
         if( is_string( $moi ) ) Functions::createException();
 
-        $mes_thematiques     =   $moi->getThematique();
-        $expertiseRepository = AppBundle::getRepository(Expertise::class);
+        $mes_thematiques     = $moi->getThematique();
+        $expertiseRepository = $em->getRepository(Expertise::class);
         $session             = Functions::getSessionCourante();
 
 	// Les expertises affectées à cet expert
         $expertises  = $expertiseRepository->findExpertisesByExpert($moi, $session);
+        # Pour une session B on lit aussi les expertises de la session A (il peut y avoir des projets tests qui trainent)
+        if ($session->getTypeSession())
+        {
+			$id_sessionA= $session->getAnneeSession().'A';
+			$sessionRepository = $em->getRepository(Session::class);
+			$sessionA   = $sessionRepository->findOneBy( ['idSession' => $id_sessionA ] );
+			$expertisesA= $expertiseRepository->findExpertisesByExpert($moi, $sessionA);
+			$expertisesB= $expertises;
+			$expertises = array_merge($expertisesA,$expertisesB);
+		}
+		
         $my_expertises  =   [];
         foreach( $expertises as $expertise )
         {
