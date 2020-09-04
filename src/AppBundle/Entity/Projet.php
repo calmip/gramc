@@ -523,6 +523,7 @@ class Projet
                 return 'ACCEPTE'; // Projet ou rallonge accepté par le comité d'attribution
         }
         elseif ( $etat_version ==  Etat::EN_ATTENTE        ) return 'ACCEPTE';
+        elseif ( $etat_version ==  Etat::TERMINE           ) return 'STANDBY';
         elseif ($veract == null                            ) return 'STANDBY';
 	}
 
