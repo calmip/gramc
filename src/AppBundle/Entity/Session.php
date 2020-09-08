@@ -431,7 +431,7 @@ class Session
         return $lettre;
     }
 
-    // juste les deux derniers chiffres de l'année
+    // Renvoie les deux derniers chiffres de l'année
     public  function getAnneeSession()
     {
         return intval(substr($this->getIdSession(),0,-1));

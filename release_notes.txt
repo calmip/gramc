@@ -1,3 +1,34 @@
+v 2.5.8
+-------
+    - Bug - Les projets tests à expertiser de la session A n'apparaissaient pas en session B 
+    
+v 2.5.7
+-------
+    - Bug - dans l'API REST
+
+v 2.5.6
+-------
+    - Changement de nom d'un état pour les projets tests
+
+v 2.5.5
+-------
+    - Bug dans le workflow lors d'une attribution "zéro heures" en session B
+
+v 2.5.4
+-------
+    - Modif d'un message d'erreur concernant les expertises (devient un warning)
+    
+v 2.5.3
+-------
+    - Refonte du bilan de session pour la session B
+    - Bug - génération de projets par année en CSV
+    - Petites améliorations de l'affichage projets/session (concerne uniquement la session B)
+
+v 2.5.2
+-------
+    - Bug d'affichage dans l'écran d'affectation des experts 
+    - Bug dans le calcul de la règle 3 si projet non renouvelé en session A
+
 v 2.5.1
 -------
 	- Page Données plus claire (séparation demandes de stockage et de partage)

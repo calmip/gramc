@@ -99,6 +99,26 @@ $( document ).ready(function() {
 //		event.preventDefault();
 	};
 
+	// Connecté au checkbox inverser_selection
+	// Inverse tous les checkboxes non cachés de la classe expsel
+	// Puis appelle change_couleur dessus
+	
+	function invsel_all() {
+		$("input.expsel").each(function(){
+			if ($(this).is(':visible'))
+			{
+				$(this).prop('checked', !$(this).is(':checked'));
+				change_couleur($(this));
+			}
+		});
+	}
+
+	// Connecté aux checkboxes de sélection
+	// Appelle change_couleur
+	function invsel_one() {
+		change_couleur($(this));
+	}
+
 	// Calcul des statistiques sur les experts
 	function calcul_stats() {
 		//alert("HOHOHOHO");
@@ -150,11 +170,11 @@ $( document ).ready(function() {
 	// Affiche ou cache le class bouton_affecter de la ligne
 
 	cpt_sel = 0;
-	function change_couleur() {
-		cell = $(this).parent();
+	function change_couleur(cb) {
+		cell = cb.parent();
 		line = cell.parent();
 		// Si la cb est cochée la cellule se teinte en bleu
-		if ( $(this).is(":checked")) {
+		if ( cb.is(":checked")) {
 			cell.css("background-color","blue");
 			line.find(".bouton_affecter").show();
 			cpt_sel++;
@@ -200,6 +220,19 @@ $( document ).ready(function() {
 		change_cb();
 	});
 
+	// Tout cocher ou décocher: rattachements
+	$( "#rX" ).click(function(event) {
+		//alert("HOHO " + $(this).is(':checked') );
+		if ( $(this).is(':checked') ) {
+			$("#themas tr td input.cb").prop('checked','checked');
+			$(this).parent().parent().children('th').html('Tout décocher');
+		} else {
+			$("#themas tr td .cb").attr('checked',false);
+			$(this).parent().parent().children('th').html('Tout cocher');
+		};
+		change_cb();
+	});
+
 	// Tout cocher ou décocher: experts
 	$( "#eX" ).click(function(event) {
 		//alert("HOHO " + $(this).is(':checked') );
@@ -228,8 +261,11 @@ $( document ).ready(function() {
 	// C'est quoi ça ?
 	$( "input.cb_stat" ).change(change_cb_stat);
 
+	// Connecter au bouton inverser la sélection
+	$( "img#invsel").click(invsel_all);
+	
 	// Checkboxes de sélection 
-	$( "input.expsel").change(change_couleur);
+	$( "input.expsel").change(invsel_one);
 	
 	// lors du chargement de la page, initialiser cpt_sel
 	$("input.expsel").each(function() {

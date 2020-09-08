@@ -100,6 +100,7 @@ class GramcSessionController extends Controller
         $menu3[] = Menu::projet_donnees();
         $menu3[] = Menu::televersement_generique();
 
+        $menu4[] = Menu::rattachements();
         $menu4[] = Menu::thematiques();
         $menu4[] = Menu::metathematiques();
         $menu4[] = Menu::laboratoires();

@@ -1,9 +1,12 @@
 Bonjour
 
-Merci d'expertiser (si possible rapidement) la demande de rallonge de ressources
-n° {{ object |raw }}, projet {{ object.version.projet |raw }} (resp {{ object.version.responsable |raw }})
+Merci d'expertiser (si possible rapidement) la ou les demandes de rallonge:
 
-Retrouver le projet : {{ absolute_url(path('rallonge_expertiser', { 'id' : object })) |raw }}
+{% for rallonge in object %}
+   - n° {{ rallonge }} (resp {{ rallonge.version.responsable |raw }})
+{% endfor %}
+
+Retrouver la liste des expertises demandées: {{ absolute_url(path('expertise_liste')) }}
 
 Nous vous rappelons que votre réponse (nombre d'heures accordées) pourra être modifiée
 par le président du Comité d'Attributions, en fonction des disponibilités du supercalculateur.

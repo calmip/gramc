@@ -27,46 +27,36 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Thematique
+ * Rattachement
  *
- * @ORM\Table(name="thematique")
+ * @ORM\Table(name="rattachement")
  * @ORM\Entity
  */
-class Thematique
+class Rattachement
 {
     /**
      * @var string
      *
-     * @ORM\Column(name="libelle_thematique", type="string", length=200, nullable=false)
+     * @ORM\Column(name="libelle_rattachement", type="string", length=200, nullable=false)
      */
-    private $libelleThematique;
-
-     /**
-     * @var \AppBundle\Entity\MetaThematique
-     *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\MetaThematique")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_meta_thematique", referencedColumnName="id_meta_thematique")
-     * })
-     */
-    private $metaThematique;
+    private $libelleRattachement;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_thematique", type="integer")
+     * @ORM\Column(name="id_rattachement", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idThematique;
+    private $idRattachement;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Individu", inversedBy="idThematique")
-     * @ORM\JoinTable(name="thematiqueExpert",
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Individu", inversedBy="idRattachement")
+     * @ORM\JoinTable(name="rattachementExpert",
      *   joinColumns={
-     *     @ORM\JoinColumn(name="id_thematique", referencedColumnName="id_thematique")
+     *     @ORM\JoinColumn(name="id_rattachement", referencedColumnName="id_rattachement")
      *   },
      *   inverseJoinColumns={
      *     @ORM\JoinColumn(name="id_expert", referencedColumnName="id_individu")
@@ -78,15 +68,15 @@ class Thematique
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\OneToMany(targetEntity="\AppBundle\Entity\Version", mappedBy="thematique")
+     * @ORM\OneToMany(targetEntity="\AppBundle\Entity\Version", mappedBy="rattachement")
      */
     private $version;
 
 
     //////////////////////////////////////////////////////////
 
-    public function getId(){ return $this->getIdThematique(); }
-    public function __toString(){ return $this->getLibelleThematique(); }
+    public function getId(){ return $this->getIdRattachement(); }
+    public function __toString(){ return $this->getLibelleRattachement(); }
 
     //////////////////////////////////////////////////////////
 
@@ -102,61 +92,37 @@ class Thematique
     }
 
     /**
-     * Set libelleThematique
+     * Set libelleRattachement
      *
-     * @param string $libelleThematique
+     * @param string $libelleRattachement
      *
-     * @return Thematique
+     * @return Rattachement
      */
-    public function setLibelleThematique($libelleThematique)
+    public function setLibelleRattachement($libelleRattachement)
     {
-        $this->libelleThematique = $libelleThematique;
+        $this->libelleRattachement = $libelleRattachement;
 
         return $this;
     }
 
     /**
-     * Get libelleThematique
+     * Get libelleRattachement
      *
      * @return string
      */
-    public function getLibelleThematique()
+    public function getLibelleRattachement()
     {
-        return $this->libelleThematique;
+        return $this->libelleRattachement;
     }
 
     /**
-     * Get idThematique
+     * Get idRattachement
      *
      * @return integer
      */
-    public function getIdThematique()
+    public function getIdRattachement()
     {
-        return $this->idThematique;
-    }
-
-    /**
-     * Set metaThematique
-     *
-     * @param \AppBundle\Entity\MetaThematique $metaThematique
-     *
-     * @return Thematique
-     */
-    public function setMetaThematique(\AppBundle\Entity\MetaThematique $metaThematique = null)
-    {
-        $this->metaThematique = $metaThematique;
-
-        return $this;
-    }
-
-    /**
-     * Get metaThematique
-     *
-     * @return \AppBundle\Entity\MetaThematique
-     */
-    public function getMetaThematique()
-    {
-        return $this->metaThematique;
+        return $this->idRattachement;
     }
 
     /**
@@ -164,7 +130,7 @@ class Thematique
      *
      * @param \AppBundle\Entity\Individu $expert
      *
-     * @return Thematique
+     * @return Rattachement
      */
     public function addExpert(\AppBundle\Entity\Individu $expert)
     {
@@ -199,7 +165,7 @@ class Thematique
      *
      * @param \AppBundle\Entity\Version $version
      *
-     * @return Thematique
+     * @return Rattachement
      */
     public function addVersion(\AppBundle\Entity\Version $version)
     {
@@ -227,7 +193,4 @@ class Thematique
     {
         return $this->version;
     }
-
-    
-
 }

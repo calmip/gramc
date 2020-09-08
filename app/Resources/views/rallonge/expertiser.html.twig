@@ -25,6 +25,7 @@
 
 	<div id="dialog-compta"></div>
 
+
     <h1>Saisie de l'expertise de la demande de rallonge {{  rallonge }}</h1>
 
 
@@ -116,15 +117,14 @@
 
     </fieldset>
 
-    {# ############################################################################ #}
-
-    <fieldset>
-        <legend>Sauvegardez vos modifications</legend>
-            {{ form_widget(edit_form.enregistrer) }}
-            <input value="Annuler" name="Annuler" type="reset">
-            {{ form_widget(edit_form.envoyer) }}
-    </fieldset>
-    {{ form_end(edit_form) }}
+	<div id="envoyer">
+		{{ form_widget(edit_form.envoyer) }}
+	</div>
+	<div id="quitter">
+		{{ form_widget(edit_form.enregistrer, {'attr': {'title' : 'Enregistrer l\'expertise et continuer'}}) }}
+		{{ form_widget( edit_form.annuler,{ 'attr': { 'title' : 'Abandonner les modifications' } }) }}
+		{{ form_widget( edit_form.fermer, { 'attr': { 'title' : 'Enregistrer et fermer l\'expertise' } }) }}
+	</div>
 
 </section>
 

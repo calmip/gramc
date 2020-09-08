@@ -180,15 +180,30 @@
         </tbody>
     </table>
 
+{% if( not session_edition ) %}
+<div id="envoyer">
+	{{ form_widget(edit_form.envoyer) }}
+</div>
+{% endif %}
+
 <div id="quitter">
-        {% if( expertise.definitif == false ) %}
-            {{ form_widget(edit_form.enregistrer) }}
-            {% if( not session_edition ) %}{{ form_widget(edit_form.envoyer) }}{% endif %}
-        {% endif %}
-        {{ form_widget( edit_form.retour, { 'attr': { 'title' : 'Retour' } }) }}
+	{{ form_widget(edit_form.enregistrer, {'attr': {'title' : 'Enregistrer l\'expertise et continuer'}}) }}
+	{{ form_widget( edit_form.annuler,{ 'attr': { 'title' : 'Abandonner les modifications' } }) }}
+	{{ form_widget( edit_form.fermer, { 'attr': { 'title' : 'Enregistrer et fermer l\'expertise' } }) }}
+	{% if prev!=null %}
+		<a href="{{ path('expertise_modifier', { 'id' : prev.id } ) }}"><img class="left bouton_poussoir" src="{{ asset('icones/go-prev.png') }}" title="{{prev.version.projet}}" alt="Expertise précédente" /></a>
+	{% else %}
+		<img class="left bouton_inactif" src="{{ asset('icones/go-prev.svg') }}" title="Pas d'expertise précédente" alt="Pas d'expertise précédente" />
+	{% endif %}
+	{% if next!=null %}
+		<a href="{{ path('expertise_modifier', { 'id' : next.id } ) }}"><img class="right bouton_poussoir" src="{{ asset('icones/go-next.png') }}"title="{{next.version.projet}}" alt="Expertise suivante" /></a>
+	{% else %}
+		<img class="right bouton_inactif" src="{{ asset('icones/go-next.svg') }}"title="Pas d'expertise suivante" alt="Pas d'expertise suivante" />
+	{% endif %}
 </div>
 
 {{ form_end(edit_form) }}
+
 
 </section>
 {% endblock %}
