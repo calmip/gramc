@@ -578,6 +578,14 @@ class Version implements Demande
     /////////
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="fct_stamp", type="datetime", nullable=true)
+     */
+    private $fctStamp;
+
+
+    /**
     * @ORM\PrePersist
     */
     public function setInitialMajStamp()
@@ -2179,6 +2187,30 @@ class Version implements Demande
     public function getMajStamp()
     {
         return $this->majStamp;
+    }
+
+    /**
+     * Set fctStamp
+     *
+     * @param \DateTime $fctStamp
+     *
+     * @return Version
+     */
+    public function setFctStamp($fctStamp)
+    {
+        $this->fctStamp = $fctStamp;
+
+        return $this;
+    }
+
+    /**
+     * Get fctStamp
+     *
+     * @return \DateTime
+     */
+    public function getFctStamp()
+    {
+        return $this->fctStamp;
     }
 
     /**
