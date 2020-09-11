@@ -35,3 +35,6 @@ services:
         class: AppBundle\Utils\AppBundleInitialize
         arguments: ['@kernel']
         
+     app.gramc_DonneesFacturation:
+        class: AppBundle\GramcServices\DonneesFacturation
+        arguments: [%dfct_directory%]

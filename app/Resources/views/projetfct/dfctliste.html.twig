@@ -11,8 +11,19 @@
 	    </tbody>
 	</table>
 
-	<h2>Données déjà émises</h2>
+	{% if emises|length == 0 %}
 	<em>Aucune donnée de facturation actuellement</em>
+	{% else %}
+	<h2>Données déjà émises</h2>
+	<ul>
+	{% for e in emises %}
+	<li><a href="{{ path('dfct_dl_projet', {'id':projet, 'annee':annee, 'nb':e}) }}">Données déjà émises ({{e}})</a> </li>
+	{% endfor %}
+	</ul>
+	{% endif %}
+	
+	<p><button class="dialog-close" >FERMER</button></p>
+	
 </section>
 
 {% endblock body %}

@@ -21,7 +21,7 @@
  *            Nicolas Renon - Université Paul Sabatier - CALMIP
  **/
 
-namespace AppBundle\Controller;
+namespace AppBundle\GramcServices;
 
 use AppBundle\Entity\Projet;
 //use AppBundle\Entity\Version;
@@ -36,12 +36,12 @@ use AppBundle\Entity\Projet;
 //use AppBundle\Entity\Journal;
 //use AppBundle\Entity\Compta;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
-use Symfony\Component\HttpFoundation\Request;
+//use Symfony\Component\HttpFoundation\Request;
 //use Symfony\Component\HttpFoundation\Response;
 //use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -72,54 +72,80 @@ use Symfony\Component\HttpFoundation\Request;
  // Tous ces controleurs sont exécutés au moins par OBS, certains par ADMIN seulement
  // et d'autres par DEMANDEUR
 
-class ProjetDfctController extends Controller
+class DonneesFacturation 
 {
-    /**
-     * Appelé quand on clique sur le bouton € dans la page projets par année
-     * Affiche les données de facturation actuelles
-     *
-     * @Route("/{id}/dfctliste/{annee}", name="dfct_liste")
-     * @Method({"GET","POST"})
-     */
-	public function dfctlisteAction(Projet $projet, $annee,  Request $request)
+	private $dfct_directory;
+	
+	public function __construct($dfct_directory='popo')
 	{
-		$em = $this -> getDoctrine() -> getManager();
-		$versions = $projet -> getVersionsAnnee($annee);
-		if (isset ($versions['A']))
-		{
-			$version = $versions['A'];
-		}
-		else
-		{
-			$version = $versions['B'];
-		}
-		$dfct   = $this->get('app.gramc_DonneesFacturation');
-		$emises = $dfct->getNbEmises($projet, $annee);
-		return $this->render('projetfct/dfctliste.html.twig', ['projet' => $projet, 'version' => $version, 'annee' => $annee, 'emises' => $emises]);
+		$this->dfct_directory = $dfct_directory;
 	}
-	
-    /**
-     * Téléchargement d'un pdf avec les données de facturation déjà émises
-     *
-     * @Route("/{id}/dfctdl/{annee}/{nb}", name="dfct_dl_projet")
-     * @Method({"GET","POST"})
-     */
-	
-	public function downloaddfctAction(Projet $projet, $annee, $nb, Request $request)
-	{
-        if( ! Functions::projetACL( $version->getProjet() ) )
-            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
 
-		$dfct      = $this->get('app.gramc_DonneesFacturation');
-		$filename = $dfct->getPath($projet, $annee, $nb);
-		if ($filename == '')
-		{
-            Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " fichier de données de facturation $nb, projet $projet, année $anne n'existe pas");
-            return Functions::pdf( null );
-		}
-		else
-		{
-			return Functions::pdf( file_get_contents ($filename ) );
-		}
+	/*
+	 * Construit le nom de répertoire à partir du projet, et de l'année 
+	 */
+	private function getDirName(Projet $projet, $annee)
+	{
+		return $this->dfct_directory . '/' . $annee . '/' . $projet;
 	}
+	
+	/*
+	 * Renvoie un tableau trié de chemins correspondant aux pdf de facturation
+	 */
+	private function getPathes(Projet $projet, $annee)
+	{
+		$dfct_dir   = $this->getDirName($projet, $annee);
+		$dfct_files = [];
+		if (is_dir($dfct_dir))
+		{
+			$dir = dir($dfct_dir);
+			if (false !== $dir)
+			{
+				while (false !== ($entry = $dir->read())) 
+				{
+					if (is_dir($entry)) continue;
+					// On ne garde que les fichiers dfctN.pdb avec N=1..9
+					if (preg_match('/^dfct[123456789]\.pdb$/',$entry)===1)
+					{
+						$dfct_files[] = $entry;
+					}
+					sort($dfct_files);
+				}
+			}
+		}
+		return $dfct_files;
+	}
+	
+	/*
+	 * Renvoie un array de numéros qui permettra de reconstruire la liste des données de facturation
+	 */ 
+	 
+	public function getNbEmises(Projet $projet, $annee)
+	{
+		
+		$dfct_files = $this->getPathes($projet, $annee);
+		$numeros    = [];
+		foreach ($dfct_files as $f)
+		{
+			$numeros[] = substr($f,4,1);	// dfct1.pdb -> "1"
+		}
+		return $numeros;
+	}
+	
+	/*
+	 * Renvoie le chemin du fichier numéro $nb, ou '' s'il n'existe pas
+	 */
+	 public function getPath(Projet $projet, $annee, $nb)
+	 {
+		 $f = $this->getDirName($projet, $annee) . '/dfct'.$nb.'.pdb';
+		 if (is_file($f))
+		 {
+			 return $f;
+		 }
+		 else
+		 {
+			 return '';
+		 }
+	 }
+		 
 }
