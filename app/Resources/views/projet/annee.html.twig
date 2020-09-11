@@ -314,7 +314,7 @@
                 <td class="w15">
                     <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/euro16.png') }}"
                     title="{{ projet.idProjet }}: Données de facturation pour {{annee}}" alt="{{ projet.idProjet }}: Données de facturation pour {{annee}}"
-                    data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
+                    data-href="{{ absolute_url(path('dfctaff_projet', { 'id': projet.idProjet, 'annee' : annee })) }}" />
                 </td>
                 {% endif %}
 

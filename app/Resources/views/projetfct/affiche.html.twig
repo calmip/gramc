@@ -1,0 +1,18 @@
+{% block body %}
+
+<section>
+    <h1>{{projet}}: Données de facturation pour {{annee}}</h1>
+	<table class="projet">
+	    <tbody> 
+	        <tr><th class="horiz">Titre</th><td>{{ version.prjTitre }}</td></tr>
+	        <tr><th class="horiz">Thématique</th><td>{{ version.prjThematique }}</td></tr>
+	        <tr><th class="horiz">Sous Thématique</th><td>{{ version.prjSousThematique }}</td></tr>
+	        <tr><th class="horiz">Rattachement</th><td>{{ version.prjRattachement }}</td></tr>
+	    </tbody>
+	</table>
+
+	<h2>Données déjà émises</h2>
+	<em>Aucune donnée de facturation actuellement</em>
+</section>
+
+{% endblock body %}
