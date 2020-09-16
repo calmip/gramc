@@ -1,4 +1,4 @@
-{% extends 'default/base.html.twig' %}
+                                           {% extends 'default/base.html.twig' %}
 {% import "default/macros.html.twig" as gramcmacros %}
 
 {% block body %}
@@ -27,7 +27,7 @@
 	</ul>
 	{% endif %}
 	
-	<h3>Nouvelles données de facturation</h3>
+	<h2>Nouvelles données de facturation</h2>
 	<table class="projet">
 	    <tbody>
 			<tr><th class="horiz">Début de la période</th><td>{{debut|date('Y-m-d')}}</td></tr> 
@@ -35,8 +35,17 @@
 			<tr><th class="horiz">Consommation</th><td>{{conso}}</td></tr> 
 		</tbody>
 	</table>
+
+	{% if dessin_periode != null %}
+	<h2>Evolution de la consommation sur la période</h2>
+	<img class="dfct" src="data:image/png;base64,{{ dessin_periode }}" />
+	{% endif %}
+	{% if dessin_annee != null %}
+		<h2>Evolution de la consommation sur l'année {{annee}}</h2>
+		<img class="dfct" src="data:image/png;base64,{{ dessin_annee }}" />
+	{% endif %}
 	
-	<button id="generer_dfct" type="button" onclick=document.location.href="{{path('dfct_gen',{ 'id' : projet, 'fin_periode': fin|date('Y-m-d') }) }}"> Générer les données</button>
+	<button id="generer_dfct" type="button" onclick=document.location.href="{{path('dfct_gen',{ 'id' : projet, 'fin_periode': fin|date('Y-m-d') }) }}"> Générer de nouvelles données</button>
 </section>
 
 	

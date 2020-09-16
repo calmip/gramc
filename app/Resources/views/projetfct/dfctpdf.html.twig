@@ -1,4 +1,9 @@
-{% extends 'default/base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+	</head>
+</html>
 
 {% block header %}
 {% endblock header %}
@@ -7,7 +12,7 @@
 {% endblock stylesheets %}
 
 {% block mystyles %}
-        <link href="{{ absolute_url(asset('css/dfct.css'))  }}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{{ absolute_url(asset('css/defaut.css'))  }}" rel="stylesheet" type="text/css" media="screen" />
 {% endblock mystyles %}
 
 {% block javascripts %}
@@ -28,19 +33,22 @@
 {% block body %}
 <h1>CALMIP - Données de facturation</h1>
 
-<table id="dfct">
+<table>
 	<tbody>
 		<tr class="titre"><th colspan=2>Données de facturation {{projet}}-{{numero}}</th></tr>
-		<tr><th class="horiz">Projet</th><td>{{projet}}</td></tr>
-		<tr><th class="horiz">Données de facturation numéro</th><td>{{numero}}</td></tr>
-		<tr><th class="horiz">Début de la période</th><td>{{debut_periode|date('d-M-Y')}}</td></tr>
-		<tr><th class="horiz">Fin de la période</th><td>{{fin_periode|date('d-M-Y')}}</td></tr>
-		<tr><th class="horiz">Consommation normalisée</th><td>{{conso}}</td></tr>
+		<tr><th>Projet</th><td>{{projet}}</td></tr>
+		<tr><th>Données de facturation numéro</th><td>{{numero}}</td></tr>
+		<tr><th>Début de la période</th><td>{{debut_periode|date('d-M-Y')}}</td></tr>
+		<tr><th>Fin de la période</th><td>{{fin_periode|date('d-M-Y')}}</td></tr>
+		<tr><th>Consommation normalisée</th><td>{{conso}}</td></tr>
 	</tbody>
 </table>
 
 <h2>Evolution de la consommation sur la période</h2>
-<h2>Evolution de la consommation sur l'nnée {{annee}}</h2>
+<img class="dfct" src="data:image/png;base64,{{ dessin_periode }}" />
+<h2>Evolution de la consommation sur l'année {{annee}}</h2>
+<img class="dfct" src="data:image/png;base64,{{ dessin_annee }}" />
+
 {% endblock body %}
 
 

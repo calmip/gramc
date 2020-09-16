@@ -141,8 +141,8 @@ class AdminuxController extends Controller
    /**
      * set loginname
      *
-     * @Route("/setloginname/{idProjet}/projet/{idIndividu}/individu/{loginname}/loginname", name="set_loginname")
-     * @Method({"GET"})
+     * @Route("/users/setloginname/{idProjet}/projet/{idIndividu}/individu/{loginname}/loginname", name="set_loginname")
+     * @Method({"POST"})
      */
 	public function setloginnameAction(Request $request, $idProjet, $idIndividu, $loginname)
 	{
@@ -381,6 +381,8 @@ class AdminuxController extends Controller
 	 * @Method({"POST"})
 	 *
 	 */
+
+	// curl --netrc -H "Content-Type: application/json" -X POST  -d '{ "projet" : "P0044", "mail" : null }' https://attribution-ressources-dev.calmip.univ-toulouse.fr/gramc2-manu/adminux/users/get
 
 	 public function usersGetAction(Request $request)
 	 {

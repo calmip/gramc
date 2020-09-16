@@ -66,14 +66,11 @@ use Doctrine\ORM\EntityManager;
 //use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 //use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
-/**
- * ProjetFctController rassemble les controleurs dédiés au bouton "Euro" (données de facturation)
- *
- * @Security("has_role('ROLE_OBS')")
- * @Route("projet")
+/* Ce service est utilisé par la fonctionnalité données de facturation 
+ * 
+ * NOTE - LIMITATION = On considère qu'il ne peut pas y avoir plus que 9 données de facturation pour un projet !
+ * 
  */
- // Tous ces controleurs sont exécutés au moins par OBS, certains par ADMIN seulement
- // et d'autres par DEMANDEUR
 
 class DonneesFacturation 
 {
@@ -138,19 +135,36 @@ class DonneesFacturation
 	}
 	
 	/*
-	 * Renvoie le chemin du fichier numéro $nb, ou '' s'il n'existe pas
+	 * Renvoie le chemin du fichier numéro $nb
+	 * 	-> si $new = false renvoie '' si le fichier n'existe pas
+	 *  -> si $new = true  renvoie '' si le fichier existe déjà !
 	 */
-	 public function getPath(Projet $projet, $annee, $nb)
+	 public function getPath(Projet $projet, $annee, $nb, $new=false)
 	 {
 		 $f = $this->getDirName($projet, $annee) . '/dfct'.$nb.'.pdb';
 		 if (is_file($f))
 		 {
-			 return $f;
+			 if ($new==false)
+			 {
+				 return $f;
+			 }
+			 else
+			 {
+				 return '';
+			 }
 		 }
 		 else
 		 {
-			 return '';
+			 if ($new==true)
+			 {
+				 return $f;
+			 }
+			 else
+			 {
+				 return '';
+			 }
 		 }
+		 return '';
 	 }
 	 
 	 /*
@@ -194,6 +208,34 @@ class DonneesFacturation
 			$conso_periode = $fin_conso - $debut_conso;
 		}
 		return $conso_periode;
+	 }
+	 
+	 /*
+	  * Sauvegarde le pdf dans un fichier au bon endroit avec le bon nom
+	  */
+	public function savePdf(Projet $projet, $annee, $pdf)
+	{
+		$dir = getDirName($projet, $annee);
+		mkdir($dir,$mode=0750,$recursive = true);
+		
+		$numeros = $this->getNbEmises($projet, $annee);
+		if (count($numeros)==0)
+		{
+			$nb = 1;
+		}
+		else
+		{
+			sort($numeros, SORT_NUMERIC);
+			$nb = $numeros[count($numeros)-1] + 1;
+		}
+
+		$path = $this->getPath($projet, $annee, $nb, true);
+		if ($path=='')
+		{
+			Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " getPath renvoie vide ($projet $annee $nb");
+		}
+		
+		file_put_contents ( $path, $pdf, FILE_APPEND );		 
 	 }
 	 
 	 /*

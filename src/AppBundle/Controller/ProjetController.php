@@ -1373,7 +1373,7 @@ class ProjetController extends Controller
 			$db_work     = $compta_repo->consoResPrj( $projet, $ressource, $annee );
 			$dessin_work = $this -> get('app.gramc.graf_stockage');
 	        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work,$ressource['unite']);
-	        $image_conso  = $dessin_work->createImage($struct_data, $ressource)[0];
+	        $image_conso = $dessin_work->createImage($struct_data, $ressource)[0];
 		}
 
         $twig     = new \Twig_Environment( new \Twig_Loader_String(), array( 'strict_variables' => false ) );

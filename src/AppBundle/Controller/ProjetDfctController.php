@@ -84,12 +84,16 @@ class ProjetDfctController extends Controller
      */
 	public function dfctlisteAction(Projet $projet, $annee,  Request $request)
 	{
+		$em     = $this->getDoctrine()->getManager();
 		$dfct   = $this->get('app.gramc_DonneesFacturation');
 		$emises = $dfct->getNbEmises($projet, $annee);
 		$version= $dfct->getVersion($projet, $annee);
 
 		$menu   = [];
 	    $menu[] = Menu::projet_annee();
+
+		$jourdelan = new \DateTime($annee.'-01-01');
+		$ssylvestre= new \DateTime($annee.'-12-31');
 
 		$debut_periode = $version -> getFctStamp();
 		if ($debut_periode==null)
@@ -118,6 +122,34 @@ class ProjetDfctController extends Controller
 
 		$conso_periode = $dfct->getConsoPeriode($projet,$debut_periode,$fin_periode);
 		if ($conso_periode == -1) $conso_periode = 'N/A';
+		
+		$compta_repo   = $em -> getRepository(Compta::class);
+        $db_conso      = $compta_repo->conso( $projet, $annee );
+		$dessin_heures = $this -> get('app.gramc.graf_calcul');
+
+		// conso  sur la période
+		$struct_data   = $dessin_heures->createStructuredData($debut_periode,$fin_periode,$db_conso);
+		if ($struct_data > 10)
+		{
+			$dessin_heures->resetConso($struct_data);
+	        $image_conso_p = $dessin_heures->createImage($struct_data)[0];
+		}
+		else
+		{
+			$image_conso_p = null;
+		}
+
+		// conso sur toute l'année
+		$struct_data   = $dessin_heures->createStructuredData($jourdelan,$ssylvestre,$db_conso);
+		if ($struct_data > 10)
+		{
+			$dessin_heures->resetConso($struct_data);
+	        $image_conso_a = $dessin_heures->createImage($struct_data)[0];
+		}
+		else
+		{
+			$image_conso_a = null;
+		}
 
 		return $this->render('projetfct/dfctliste.html.twig', 
 							['projet'  => $projet, 
@@ -128,6 +160,8 @@ class ProjetDfctController extends Controller
 							 'debut'   => $debut_periode,
 							 'fin'     => $fin_periode,
 							 'conso'   => $conso_periode,
+				             'dessin_periode' => $image_conso_p,
+				             'dessin_annee'   => $image_conso_a,
 							 'menu'    => $menu
 							 ]);
 	}
@@ -162,16 +196,19 @@ class ProjetDfctController extends Controller
      */
     public function dfct_genAction(Projet $projet, \DateTime $fin_periode, Request $request)
     {
-		$annee = $fin_periode->format('Y');
+		$em     = $this->getDoctrine()->getManager();
+		$annee  = $fin_periode->format('Y');
 		$dfct   = $this->get('app.gramc_DonneesFacturation');
 		$emises = $dfct->getNbEmises($projet, $annee);
 		$numero = count($emises) + 1;
 		$version= $dfct->getVersion($projet, $annee);
 		
+		$jourdelan = new \DateTime($annee.'-01-01');
+		$ssylvestre= new \DateTime($annee.'-12-31');
 		$debut_periode = $version -> GetFctStamp();
 		if ($debut_periode==null)
 		{
-			$debut_periode = new \DateTime($annee.'-01-01');
+			$debut_periode = $jourdelan;
 		}
 		else
 		{
@@ -185,8 +222,36 @@ class ProjetDfctController extends Controller
 			return $this->redirectToRoute('dfct_liste', array('id' => $projet->getId(), 'annee' => $annee));
 		}
 		
-		//$conso=10;
 		$conso    = $dfct->getConsoPeriode($projet, $debut_periode, $fin_periode);
+		
+		$compta_repo   = $em -> getRepository(Compta::class);
+        $db_conso      = $compta_repo->conso( $projet, $annee );
+		$dessin_heures = $this -> get('app.gramc.graf_calcul');
+
+		// conso  sur la période
+		$struct_data   = $dessin_heures->createStructuredData($debut_periode,$fin_periode,$db_conso);
+		if (count($struct_data)>10)
+		{
+			$dessin_heures->resetConso($struct_data);
+	        $image_conso_p = $dessin_heures->createImage($struct_data)[0];
+		}
+		else
+		{
+			$image_conso_p = null;
+		}
+
+		// conso sur toute l'année
+		$struct_data   = $dessin_heures->createStructuredData($jourdelan,$ssylvestre,$db_conso);
+		if (count($struct_data)>10)
+		{
+			$dessin_heures->resetConso($struct_data);
+	        $image_conso_a = $dessin_heures->createImage($struct_data)[0];
+		}
+		else
+		{
+			$image_conso_a = null;
+		}
+
 	    $html4pdf =  $this->render('projetfct/dfctpdf.html.twig',
             [
             'projet' => $projet,
@@ -194,12 +259,26 @@ class ProjetDfctController extends Controller
             'numero' => $numero,
             'debut_periode' => $debut_periode,
             'fin_periode'   => $fin_periode,
-            'conso'  => $conso
+            'conso'  => $conso,
+            'dessin_periode' => $image_conso_p,
+            'dessin_annee'   => $image_conso_a
             ]
             );
 
 		//return $html4pdf;
 	    $pdf = $this->get('knp_snappy.pdf')->getOutputFromHtml($html4pdf->getContent());
+
+		// On stoque la date de fin de la période + 1j
+		$stamp = clone $fin_periode;
+		$stamp->add(new \DateInterval('P1D'));
+
+		$version -> setFctStamp($stamp);
+		$em->persist($version);
+		$em->flush();
+		
+		// On sauvegarde le pdf
+		//$dfct->savePdf($projet, $annee, $pdf);
+		
 	    return Functions::pdf( $pdf );
     }
 		
