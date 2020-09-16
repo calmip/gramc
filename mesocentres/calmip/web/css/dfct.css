@@ -1,0 +1,51 @@
+html, body {
+	height: 100%;
+	top: 0;
+	font-family: sans-serif;
+}
+
+h1{
+    text-align: center;
+    font-weight: bold;
+    font-size: 2em;
+    padding-top: 1em;
+}
+
+h2 {
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.5em;
+	padding: .5em;
+}
+
+h3 {
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.1em;
+}
+
+img {
+	float: left;
+}
+hr.retour {
+	visibility: hidden;
+	clear: both;
+}
+
+table tr.titre {
+	background-color: black;
+	color: white;
+}
+
+table {
+	border-collapse: collapse;
+	margin: 1em auto;
+}
+
+table tr,td,th {
+	border: solid black 2px;
+}
+
+footer {
+	display: none;
+}

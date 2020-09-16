@@ -34,7 +34,7 @@ use AppBundle\Entity\Projet;
 //use AppBundle\Entity\Sso;
 //use AppBundle\Entity\CompteActivation;
 //use AppBundle\Entity\Journal;
-//use AppBundle\Entity\Compta;
+use AppBundle\Entity\Compta;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -46,22 +46,23 @@ use Symfony\Component\HttpFoundation\Request;
 //use Symfony\Component\HttpFoundation\RedirectResponse;
 
 //use AppBundle\AppBundle;
-//use AppBundle\Utils\Functions;
-//use AppBundle\Utils\Menu;
+use AppBundle\Utils\Functions;
+use AppBundle\Utils\Menu;
 //use AppBundle\Utils\Etat;
 //use AppBundle\Utils\Signal;
 //use AppBundle\Workflow\Projet\ProjetWorkflow;
 //use AppBundle\Workflow\Version\VersionWorkflow;
-//use AppBundle\Utils\GramcDate;
+use AppBundle\Utils\GramcDateTime;
 
 //use AppBundle\GramcGraf\Calcul;
 //use AppBundle\GramcGraf\CalculTous;
 //use AppBundle\GramcGraf\Stockage;
 
 //use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-//use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 //use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 //use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 
 /**
  * ProjetFctController rassemble les controleurs dédiés au bouton "Euro" (données de facturation)
@@ -83,19 +84,52 @@ class ProjetDfctController extends Controller
      */
 	public function dfctlisteAction(Projet $projet, $annee,  Request $request)
 	{
-		$em = $this -> getDoctrine() -> getManager();
-		$versions = $projet -> getVersionsAnnee($annee);
-		if (isset ($versions['A']))
-		{
-			$version = $versions['A'];
-		}
-		else
-		{
-			$version = $versions['B'];
-		}
 		$dfct   = $this->get('app.gramc_DonneesFacturation');
 		$emises = $dfct->getNbEmises($projet, $annee);
-		return $this->render('projetfct/dfctliste.html.twig', ['projet' => $projet, 'version' => $version, 'annee' => $annee, 'emises' => $emises]);
+		$version= $dfct->getVersion($projet, $annee);
+
+		$menu   = [];
+	    $menu[] = Menu::projet_annee();
+
+		$debut_periode = $version -> getFctStamp();
+		if ($debut_periode==null)
+		{ 
+			$d = $annee . '-01-01';
+			$debut_periode = new \DateTime($d);
+		}
+		
+		$fin_periode   = new GramcDateTime('-1 day');
+		
+		$form   = $this->createFormBuilder()
+			->add('fctstamp', DateType::class,
+                    [
+                    'data'   => $fin_periode,
+                    'label'  => 'Fin de pếriode:',
+                    'widget' => 'single_text'
+                    ])
+            ->add('submit', SubmitType::class, ['label' => 'OK'])
+            ->getForm();
+
+        $form->handleRequest($request);
+        if ( $form->isSubmitted() && $form->isValid() )
+	    {
+			$fin_periode   = $form->getData()['fctstamp'];
+		}
+
+		$conso_periode = $dfct->getConsoPeriode($projet,$debut_periode,$fin_periode);
+		if ($conso_periode == -1) $conso_periode = 'N/A';
+
+		return $this->render('projetfct/dfctliste.html.twig', 
+							['projet'  => $projet, 
+							 'version' => $version, 
+							 'annee'   => $annee, 
+							 'emises'  => $emises,
+							 'form'    => $form->createView(),
+							 'debut'   => $debut_periode,
+							 'fin'     => $fin_periode,
+							 'conso'   => $conso_periode,
+							 'menu'    => $menu
+							 ]);
 	}
 	
     /**
@@ -107,9 +141,6 @@ class ProjetDfctController extends Controller
 	
 	public function downloaddfctAction(Projet $projet, $annee, $nb, Request $request)
 	{
-        if( ! Functions::projetACL( $version->getProjet() ) )
-            Functions::createException(__METHOD__ . ':' . __LINE__ .' problème avec ACL');
-
 		$dfct      = $this->get('app.gramc_DonneesFacturation');
 		$filename = $dfct->getPath($projet, $annee, $nb);
 		if ($filename == '')
@@ -122,4 +153,54 @@ class ProjetDfctController extends Controller
 			return Functions::pdf( file_get_contents ($filename ) );
 		}
 	}
+	
+	/**
+	 * Génération du pdf contenant les données de facturation
+	 * 
+     * @Route("/{id}/dfctgen/{fin_periode}", name="dfct_gen")
+     * @Method({"GET","POST"})
+     */
+    public function dfct_genAction(Projet $projet, \DateTime $fin_periode, Request $request)
+    {
+		$annee = $fin_periode->format('Y');
+		$dfct   = $this->get('app.gramc_DonneesFacturation');
+		$emises = $dfct->getNbEmises($projet, $annee);
+		$numero = count($emises) + 1;
+		$version= $dfct->getVersion($projet, $annee);
+		
+		$debut_periode = $version -> GetFctStamp();
+		if ($debut_periode==null)
+		{
+			$debut_periode = new \DateTime($annee.'-01-01');
+		}
+		else
+		{
+			// Dans version on stocke le fin de la période précédente
+			// Donc ici il faut prendre le lendemain
+			$debut_periode->add(new \DateInterval('P1D'));
+		}
+		
+		if ($fin_periode <= $debut_periode)
+		{
+			return $this->redirectToRoute('dfct_liste', array('id' => $projet->getId(), 'annee' => $annee));
+		}
+		
+		//$conso=10;
+		$conso    = $dfct->getConsoPeriode($projet, $debut_periode, $fin_periode);
+	    $html4pdf =  $this->render('projetfct/dfctpdf.html.twig',
+            [
+            'projet' => $projet,
+            'annee'  => $annee,
+            'numero' => $numero,
+            'debut_periode' => $debut_periode,
+            'fin_periode'   => $fin_periode,
+            'conso'  => $conso
+            ]
+            );
+
+		//return $html4pdf;
+	    $pdf = $this->get('knp_snappy.pdf')->getOutputFromHtml($html4pdf->getContent());
+	    return Functions::pdf( $pdf );
+    }
+		
 }

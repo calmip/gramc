@@ -312,9 +312,11 @@
                     data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
                 </td>
                 <td class="w15">
-                    <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/euro16.png') }}"
-                    title="{{ projet.idProjet }}: Données de facturation pour {{annee}}" alt="{{ projet.idProjet }}: Données de facturation pour {{annee}}"
-                    data-href="{{ absolute_url(path('dfct_liste', { 'id': projet.idProjet, 'annee' : annee })) }}" />
+                     
+                    <a href="{{ path('dfct_liste', { 'id':projet.idprojet,'annee': annee }) }}" 
+                    title="{{ projet.idProjet }}: Données de facturation pour {{annee}}" alt="{{ projet.idProjet }}: Données de facturation pour {{annee}}">
+                        <img class="bouton_poussoir" src="{{ asset('icones/euro16.png') }}" alt="Consulter" />
+                    </a>
                 </td>
                 {% endif %}
 

@@ -1,0 +1,47 @@
+{% extends 'default/base.html.twig' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% block mystyles %}
+        <link href="{{ absolute_url(asset('css/dfct.css'))  }}" rel="stylesheet" type="text/css" media="screen" />
+{% endblock mystyles %}
+
+{% block javascripts %}
+{% endblock javascripts %}
+
+{% block fil_ariane %}
+{% endblock fil_ariane %}
+
+{% block menu %}
+{% endblock menu %}
+
+{% block before_body %}
+{% endblock before_body %}
+
+{% block datatables %}
+{% endblock datatables %}
+
+{% block body %}
+<h1>CALMIP - Données de facturation</h1>
+
+<table id="dfct">
+	<tbody>
+		<tr class="titre"><th colspan=2>Données de facturation {{projet}}-{{numero}}</th></tr>
+		<tr><th class="horiz">Projet</th><td>{{projet}}</td></tr>
+		<tr><th class="horiz">Données de facturation numéro</th><td>{{numero}}</td></tr>
+		<tr><th class="horiz">Début de la période</th><td>{{debut_periode|date('d-M-Y')}}</td></tr>
+		<tr><th class="horiz">Fin de la période</th><td>{{fin_periode|date('d-M-Y')}}</td></tr>
+		<tr><th class="horiz">Consommation normalisée</th><td>{{conso}}</td></tr>
+	</tbody>
+</table>
+
+<h2>Evolution de la consommation sur la période</h2>
+<h2>Evolution de la consommation sur l'nnée {{annee}}</h2>
+{% endblock body %}
+
+
+

@@ -1079,3 +1079,15 @@ div.ui-dialog {
 	background: inherit;
 }
 
+/* Données de facturation */
+#generer_dfct {
+	font-size: 1.8em;
+	font-weight: bold;
+	color: white;
+	background-color: black;
+	margin: 0;
+	position: absolute;
+	left: 50%;
+	-ms-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+}

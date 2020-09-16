@@ -37,4 +37,4 @@ services:
         
      app.gramc_DonneesFacturation:
         class: AppBundle\GramcServices\DonneesFacturation
-        arguments: [%dfct_directory%]
+        arguments: [%dfct_directory%,"@doctrine.orm.entity_manager"]
