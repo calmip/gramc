@@ -80,7 +80,7 @@ class DonneesFacturation
 	private $dfct_directory;
 	private $em;
 	
-	public function __construct($dfct_directory='popo',EntityManager $em)
+	public function __construct($dfct_directory,EntityManager $em)
 	{
 		$this->dfct_directory = $dfct_directory;
 		$this->em             = $em;

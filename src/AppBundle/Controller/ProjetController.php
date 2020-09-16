@@ -55,9 +55,9 @@ use AppBundle\Workflow\Projet\ProjetWorkflow;
 use AppBundle\Workflow\Version\VersionWorkflow;
 use AppBundle\Utils\GramcDate;
 
-use AppBundle\GramcGraf\Calcul;
-use AppBundle\GramcGraf\CalculTous;
-use AppBundle\GramcGraf\Stockage;
+use AppBundle\GramcServices\GramcGraf\Calcul;
+use AppBundle\GramcServices\GramcGraf\CalculTous;
+use AppBundle\GramcServices\GramcGraf\Stockage;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -1362,16 +1362,16 @@ class ProjetController extends Controller
 		// Note - type ici n'a rien à voir avec le paramètre $utype
 		if ($ressource['type'] == 'calcul')
 		{
-	        $db_conso = $compta_repo->conso( $projet, $annee );
-			$dessin_heures = new Calcul();
-			$struct_data     = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+	        $db_conso      = $compta_repo->conso( $projet, $annee );
+			$dessin_heures = $this -> get('app.gramc.graf_calcul');
+			$struct_data   = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
 			$dessin_heures->resetConso($struct_data);
 	        $image_conso     = $dessin_heures->createImage($struct_data)[0];
 		}
 		elseif ($ressource['type'] == 'stockage')
 		{
 			$db_work     = $compta_repo->consoResPrj( $projet, $ressource, $annee );
-	        $dessin_work = new Stockage();
+			$dessin_work = $this -> get('app.gramc.graf_stockage');
 	        $struct_data = $dessin_work->createStructuredData($debut,$fin,$db_work,$ressource['unite']);
 	        $image_conso  = $dessin_work->createImage($struct_data, $ressource)[0];
 		}
@@ -1409,7 +1409,8 @@ class ProjetController extends Controller
 		$debut = new \DateTime( $annee . '-01-01');
 		$fin   = new \DateTime( $annee . '-12-31');
 
-        $dessin_heures = new CalculTous();
+        $dessin_heures = $this->get('app.gramc.graf_calcultous');
+
         $struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
         $image_conso     = $dessin_heures->createImage($struct_data)[0];
 
