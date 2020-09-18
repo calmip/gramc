@@ -164,7 +164,7 @@ class AdminuxController extends Controller
 
 	    $versions = $projet->getVersion();
 	    foreach( $versions as $version )
-	        if( $version->getEtatVersion() == Etat::ACTIF)
+	        if( $version->getEtatVersion() == Etat::ACTIF || $version->getEtatVersion() == Etat::ACTIF_TEST)
 			{
 	            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
 				{
@@ -463,7 +463,7 @@ class AdminuxController extends Controller
 					if ($c->getLogin())
 					{
 						$m = $c -> getCollaborateur() -> getMail();
-						if ($mail != null && $mail != $m)
+						if ($mail != null && strtolower($mail) != strtolower($m))
 						{
 							continue;
 						}
