@@ -99,11 +99,10 @@ class Calcul extends GramcGraf
     *
     * return = Un tableau de deux éléments:
     *             - L'image en base64
-    *             - La taille de l'image produite
+    *             - La taille de l'image produite (en octets)
     */
     public function createImage($structured_data, $ressource=null)
     {
-
         // Test s'il y a cpu ou gpu
         $no_cpu   = true;
         $no_gpu   = true;

@@ -49,7 +49,7 @@ use Doctrine\ORM\EntityManager;
 //use Symfony\Component\HttpFoundation\RedirectResponse;
 
 //use AppBundle\AppBundle;
-//use AppBundle\Utils\Functions;
+use AppBundle\Utils\Functions;
 //use AppBundle\Utils\Menu;
 //use AppBundle\Utils\Etat;
 //use AppBundle\Utils\Signal;
@@ -180,7 +180,7 @@ class DonneesFacturation
 		//    - Pas possible de faire des facturations avant le 20 Janvier
 		//    - On espère que le compteur a été remis à zéro avant le 20 Janvier...
 		//
-		
+		////echo('<br /><br /><br /><br /><br />');
 		$annee = $debut_periode->format('Y');
 		$repos = $this->em->getRepository(Compta::class);
 
@@ -198,7 +198,7 @@ class DonneesFacturation
 		$fin_periode_conso = clone $fin_periode;
 		$fin_periode_conso->add(new \DateInterval('P1D'));
 		$fin_conso = $repos->consoDateInt($projet,$fin_periode_conso);
-		//echo ($fin_periode_conso->format('Y-m-d')."###".$fin_conso);
+		////echo ($projet."###".$fin_periode_conso->format('Y-m-d==>'.$fin_conso));
 		if ($debut_conso >= $fin_conso)
 		{
 			$conso_periode = -1;
@@ -215,8 +215,11 @@ class DonneesFacturation
 	  */
 	public function savePdf(Projet $projet, $annee, $pdf)
 	{
-		$dir = getDirName($projet, $annee);
-		mkdir($dir,$mode=0750,$recursive = true);
+		$dir = $this->getDirName($projet, $annee);
+		if (! file_exists( $dir ))
+		{
+			mkdir($dir,$mode=0750,$recursive = true);
+		}
 		
 		$numeros = $this->getNbEmises($projet, $annee);
 		if (count($numeros)==0)
@@ -230,6 +233,7 @@ class DonneesFacturation
 		}
 
 		$path = $this->getPath($projet, $annee, $nb, true);
+
 		if ($path=='')
 		{
 			Functions::errorMessage(__METHOD__ . ":" . __LINE__ . " getPath renvoie vide ($projet $annee $nb");

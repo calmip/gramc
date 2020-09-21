@@ -55,7 +55,8 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
      */
     {
 		$conso_cpu = $this->consoResPrjDate($projet, ['ress' => 'cpu'], $date);
-		//echo ('<pre>cpu = ');print_r($conso_cpu);echo($projet."###".$date->format('Y-m-d')); echo('</pre>');
+		////echo('<pre>'.$projet."###".$date->format('Y-m-d').'</pre>');
+		////echo ('<pre>cpu = ');print_r($conso_cpu); echo('</pre>');
 		if ($conso_cpu == null)
 		{
 			$cpu = 0;
@@ -66,7 +67,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
 		}
 		
 		$conso_gpu = $this->consoResPrjDate($projet, ['ress' => 'gpu'], $date);
-		//echo ('<pre>gpu =');print_r($conso_gpu);echo('</pre>');
+		////echo ('<pre>gpu =');print_r($conso_gpu);echo('</pre>');
 		if ($conso_gpu == null)
 		{
 			$gpu = 0;
@@ -156,7 +157,8 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
     *********************/
     public function consoResPrjDate(Projet $projet, $ressource, \Datetime $date)
     {
-		//echo('<pre>'.$projet->getIdProjet()." ".print_r($ressource)." ".$date->format('Y-m-d').'</pre>');
+		////echo('<pre>#'.strtolower($projet->getIdProjet())."#".$date->format('Y-m-d')."#".$ressource['ress']."#</pre>");
+		//echo('<pre>#--->'.$projet->getIdProjet()."#".print_r($ressource)."#".$date->format('Y-m-d').'</pre>');
         $db_data = AppBundle::getManager()->createQuery(
             'SELECT c
             FROM AppBundle:Compta c
@@ -165,11 +167,13 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
             AND   c.ressource = :res
             AND   c.date = :date'
         )
-        ->setParameter ('projet', strtolower($projet->getIdProjet() ) )
+        //->setParameter ('projet', strtolower($projet->getIdProjet() ) )
+        ->setParameter ('projet', $projet)
         ->setParameter ('date',$date)
         ->setParameter ('res', $ressource['ress'])
         ->getResult();
 
+		////echo('<pre>'.print_r($db_data,true).'</pre>');
 		if( $db_data == null || empty( $db_data ) ) return null;
         return $db_data;
 	}

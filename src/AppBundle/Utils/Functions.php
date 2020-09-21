@@ -563,8 +563,12 @@ class Functions
 	/***************
 	 * Téléchargement d'un fichier pdf
 	 *****************/
-    static public function pdf($filename)
+    static public function pdf($filename, $dwnfn=null)
     {
+		if ($dwnfn==null)
+		{
+			$dwnfn = $filename;
+		}
         $response = new Response();
         if( preg_match( '/^\%PDF/', $filename ) )
 		{
@@ -575,10 +579,12 @@ class Functions
         elseif( $filename != null && file_exists( $filename ) && ! is_dir( $filename ) )
 		{
             $response->setContent(file_get_contents( $filename ) );
-            $response->headers->set('Content-Disposition', 'inline; filename="' . basename($filename) .'"' );
+            $response->headers->set('Content-Disposition', 'inline; filename="' . basename($dwnfn) .'"' );
 		}
         else
+        {
             $response->setContent('');
+		}
 
         $response->headers->set(
            'Content-Type',

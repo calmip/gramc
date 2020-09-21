@@ -43,7 +43,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 use Symfony\Component\HttpFoundation\Request;
 //use Symfony\Component\HttpFoundation\Response;
-//use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 //use AppBundle\AppBundle;
 use AppBundle\Utils\Functions;
@@ -52,7 +52,7 @@ use AppBundle\Utils\Menu;
 //use AppBundle\Utils\Signal;
 //use AppBundle\Workflow\Projet\ProjetWorkflow;
 //use AppBundle\Workflow\Version\VersionWorkflow;
-use AppBundle\Utils\GramcDateTime;
+use AppBundle\Utils\GramcDate;
 
 //use AppBundle\GramcGraf\Calcul;
 //use AppBundle\GramcGraf\CalculTous;
@@ -82,6 +82,7 @@ class ProjetDfctController extends Controller
      * @Route("/{id}/dfctliste/{annee}", name="dfct_liste")
      * @Method({"GET","POST"})
      */
+
 	public function dfctlisteAction(Projet $projet, $annee,  Request $request)
 	{
 		$em     = $this->getDoctrine()->getManager();
@@ -102,7 +103,8 @@ class ProjetDfctController extends Controller
 			$debut_periode = new \DateTime($d);
 		}
 		
-		$fin_periode   = new GramcDateTime('-1 day');
+		$fin_periode = new GramcDate();
+		$fin_periode->sub(new \DateInterval('P1D'));
 		
 		$form   = $this->createFormBuilder()
 			->add('fctstamp', DateType::class,
@@ -129,7 +131,7 @@ class ProjetDfctController extends Controller
 
 		// conso  sur la période
 		$struct_data   = $dessin_heures->createStructuredData($debut_periode,$fin_periode,$db_conso);
-		if ($struct_data > 10)
+		if (count($struct_data) > 10)
 		{
 			$dessin_heures->resetConso($struct_data);
 	        $image_conso_p = $dessin_heures->createImage($struct_data)[0];
@@ -141,7 +143,7 @@ class ProjetDfctController extends Controller
 
 		// conso sur toute l'année
 		$struct_data   = $dessin_heures->createStructuredData($jourdelan,$ssylvestre,$db_conso);
-		if ($struct_data > 10)
+		if (count($struct_data) > 10)
 		{
 			$dessin_heures->resetConso($struct_data);
 	        $image_conso_a = $dessin_heures->createImage($struct_data)[0];
@@ -175,7 +177,7 @@ class ProjetDfctController extends Controller
 	
 	public function downloaddfctAction(Projet $projet, $annee, $nb, Request $request)
 	{
-		$dfct      = $this->get('app.gramc_DonneesFacturation');
+		$dfct     = $this->get('app.gramc_DonneesFacturation');
 		$filename = $dfct->getPath($projet, $annee, $nb);
 		if ($filename == '')
 		{
@@ -184,7 +186,8 @@ class ProjetDfctController extends Controller
 		}
 		else
 		{
-			return Functions::pdf( file_get_contents ($filename ) );
+			$dwnfn = "Données_de_facturation_".$projet."_".$annee."_".$nb.".pdf";
+			return Functions::pdf($filename,$dwnfn);
 		}
 	}
 	
@@ -212,7 +215,7 @@ class ProjetDfctController extends Controller
 		}
 		else
 		{
-			// Dans version on stocke le fin de la période précédente
+			// Dans version on stocke la fin de la période précédente
 			// Donc ici il faut prendre le lendemain
 			$debut_periode->add(new \DateInterval('P1D'));
 		}
@@ -234,6 +237,7 @@ class ProjetDfctController extends Controller
 		{
 			$dessin_heures->resetConso($struct_data);
 	        $image_conso_p = $dessin_heures->createImage($struct_data)[0];
+	        //$image_conso_p = null;
 		}
 		else
 		{
@@ -246,6 +250,7 @@ class ProjetDfctController extends Controller
 		{
 			$dessin_heures->resetConso($struct_data);
 	        $image_conso_a = $dessin_heures->createImage($struct_data)[0];
+	        //$image_conso_a = null;
 		}
 		else
 		{
@@ -277,9 +282,12 @@ class ProjetDfctController extends Controller
 		$em->flush();
 		
 		// On sauvegarde le pdf
-		//$dfct->savePdf($projet, $annee, $pdf);
+		$dfct->savePdf($projet, $annee, $pdf);
 		
-	    return Functions::pdf( $pdf );
+		// On retourne à la liste
+		return $this->redirectToRoute('dfct_liste', ['id' => $projet->getId(), 'annee' => $annee]);
+
+//	    return Functions::pdf( $pdf );
     }
 		
 }
