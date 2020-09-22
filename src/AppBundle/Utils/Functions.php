@@ -1460,8 +1460,8 @@ class Functions
 			$num_projets[$acro]    += 1;
 			$liste_projets[$acro][] = $p['p']->getIdProjet();
 			
-			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeures();
-			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeures();
+			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeuresTotal();
+			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeuresTotal();
 			//if ($acro=='LA') echo 'LA '.$p['p']->getIdProjet().' ';			
 			$attr_heures[$acro] += $p['attrib'];
 			$conso[$acro]       += $p['c'];

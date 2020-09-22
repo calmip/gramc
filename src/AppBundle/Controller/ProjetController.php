@@ -991,8 +991,8 @@ class ProjetController extends Controller
                     'nom',
                     'laboratoire',
                     'heures demandées A',
-                    'heures attribuées A',
                     'heures demandées B',
+                    'heures attribuées A',
                     'heures attribuées B',
                     'rallonges',
                     'pénalités A',
@@ -1016,23 +1016,13 @@ class ProjetController extends Controller
             $line[] = $prj_array['resp']->getNom();
             $line[] = $prj_array['resp']->getPrenom();
             $line[] = $prj_array['labo'];
-            if (!empty($va)) {
-                $line[] = $va->getDemHeures();
-                $line[] = $va->getAttrHeures();
-            } else {
-                $line[] = '';
-                $line[] = '';
-            }
-            if (!empty($vb)) {
-                $line[] = $vb->getDemHeures();
-                $line[] = $vb->getAttrHeures();
-            } else {
-                $line[] = '';
-                $line[] = '';
-            }
+            $line[] = empty($va)?'':$va->getDemHeures();
+            $line[] = empty($vb)?'':$vb->getDemHeures();
+            $line[] = empty($va)?'':$va->getAttrHeures();
+            $line[] = empty($vb)?'':$vb->getAttrHeures();
             $line[] = $prj_array['r'];
-            $line[] = $prj_array['penal_a'];
-            $line[] = $prj_array['penal_b'];
+            $line[] = -$prj_array['penal_a'];
+            $line[] = -$prj_array['penal_b'];
             $line[] = $prj_array['attrib'];
             $line[] = $prj_array['q'];
             $line[] = $prj_array['c'];
