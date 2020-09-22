@@ -1,25 +1,30 @@
 {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block menu %}
+{{ gramcmacros.menu(menu) }}
+<nav><ul><a class="lien_actif" href="{{ path('statistiques',{'annee': annee}) }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
+{% endblock menu %}
+
 
 {% block myjavascripts %}
 <script type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
 {% endblock myjavascripts %}
 
-{% block menu %}
-<nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
-{% endblock menu %}
 
 {% block body %}
 
 <section>
 
-<h1>Répartition des heures par metathématique de l'année {{ annee }}</h1>
+<h1>Répartition des heures par {{ titre }} - {{ annee }}</h1>
 
 {{ form_start(form) }}
 {{ form_widget(form.annee) }}{{ form_widget(form.submit) }}
 {{ form_end(form) }}
 
-<form action="{{ path('statistiques_metathematique_csv', { 'annee' : annee }) }}">
-<input type="submit" value="Télécharger en csv les statistiques par metathématique de l'année {{ annee }}">
+{% set route='statistiques_' ~ titre ~ '_csv' %}
+<form action="{{ path(route, { 'annee' : annee }) }}">
+<input type="submit" value="Télécharger en csv les statistiques par {{titre}} - année {{ annee }}">
 </form>
 
 <br />
@@ -27,7 +32,7 @@
 <table>
     <thead>
          <tr>
-        <td>Metathématique</td>
+        <td>{{titre}}</td>
         <td>Nombre de projets</td>
         <td>Heures demandées</td>
         <td>Heures attribuées</td>
@@ -47,6 +52,7 @@
     </tbody>
 </table>
 
+
 <table>
     <tbody>
         <tr>
@@ -64,10 +70,10 @@
             </td>
         </tr>
         <tr>
-            <td>Nombre de projets par metathématique</td>
-            <td>Nombre d'heures demandées par metathématique</td>
-            <td>Nombre d'heures attribuées par metathématique</td>
-            <td>Nombre d'heures consommées par metathématique</td>
+            <td>Nombre de projets par {{titre}}</td>
+            <td>Nombre d'heures demandées par {{titre}}</td>
+            <td>Nombre d'heures attribuées par {{titre}}</td>
+            <td>Nombre d'heures consommées par {{titre}}</td>
         <tr>
     </tbody>
 </table>

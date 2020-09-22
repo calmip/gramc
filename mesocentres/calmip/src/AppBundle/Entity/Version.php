@@ -3074,8 +3074,8 @@ class Version implements Demande
 
     // MetaEtat d'une version (et du projet associé)
     // Ne sert que pour l'affichage des états de version
-    public function getMetaEtat()
-    {
+	public function getMetaEtat()
+	{
         //$projet =  $this->getProjet();
         //if( $projet != null )
         //{

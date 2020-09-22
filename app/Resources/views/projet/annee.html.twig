@@ -322,10 +322,10 @@
                 </td>
                
                 <td class="w170">
-                    <a href="mailto:{{ projet.responsable.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ projet.responsable.prenom }} {{ projet.responsable.nom }}
+                    <a href="mailto:{{ prj_array.resp.mail }}"><img src="{{ asset('icones/mail_send.png') }}" alt="Envoyer un mail" /></a>{{ prj_array.resp.prenom }} {{ prj_array.resp.nom }}
                 </td>
                 <td class="w80">
-                    {{ gramcmacros.tronquer_chaine(projet.laboratoire,20) }}
+                    {{ gramcmacros.tronquer_chaine(prj_array.labo,20) }}
                 </td>
                 <td class="w15">
                    {# {% if not projet.rapportactivite %}
@@ -375,7 +375,7 @@
                 </td>
                 {% if noconso==false %}
                 <td class="w80 penalite" >
-                    {{ (prj_array.penal_a + prj_array.penal_b) }}
+                    {{ -(prj_array.penal_a + prj_array.penal_b) }}
                 </td>
                 {% endif %}
                 <td class="w80 attr" >

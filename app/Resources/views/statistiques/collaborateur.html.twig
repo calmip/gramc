@@ -1,7 +1,9 @@
 {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
 
 {% block menu %}
-<nav><ul><a class="lien_actif" href="{{ path('statistiques') }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
+{{ gramcmacros.menu(menu) }}
+<nav><ul><a class="lien_actif" href="{{ path('statistiques',{'annee': annee}) }}" title="Statistiques">Retour aux statistiques</a></ul></nav>
 {% endblock menu %}
 
 {% block myjavascripts %}
