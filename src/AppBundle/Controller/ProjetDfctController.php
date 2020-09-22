@@ -123,7 +123,7 @@ class ProjetDfctController extends Controller
 		}
 
 		$conso_periode = $dfct->getConsoPeriode($projet,$debut_periode,$fin_periode);
-		if ($conso_periode == -1) $conso_periode = 'N/A';
+		//if ($conso_periode == -1) $conso_periode = 'N/A';
 		
 		$compta_repo   = $em -> getRepository(Compta::class);
         $db_conso      = $compta_repo->conso( $projet, $annee );

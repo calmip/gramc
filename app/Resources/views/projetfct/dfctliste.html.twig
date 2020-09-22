@@ -32,7 +32,7 @@
 	    <tbody>
 			<tr><th class="horiz">Début de la période</th><td>{{debut|date('Y-m-d')}}</td></tr> 
 			<tr><th class="horiz">Fin de la période</th><td>{{ form_start(form) }}{{ form_widget(form.fctstamp) }}{{ form_widget(form.submit) }}{{ form_end(form) }}</td></td></tr>
-			<tr><th class="horiz">Consommation</th><td>{{conso}}</td></tr> 
+			<tr><th class="horiz">Consommation</th><td>{% if conso>=0%}{{conso}}{% else %}N/A <em>(modifiez la date)</em>{% endif %}</td></tr> 
 		</tbody>
 	</table>
 
@@ -45,7 +45,9 @@
 		<img class="dfct" src="data:image/png;base64,{{ dessin_annee }}" />
 	{% endif %}
 	
+	{% if conso > 0 %}
 	<button id="generer_dfct" type="button" onclick=document.location.href="{{path('dfct_gen',{ 'id' : projet, 'fin_periode': fin|date('Y-m-d') }) }}"> Générer de nouvelles données</button>
+	{% endif %}
 </section>
 
 	
