@@ -231,7 +231,9 @@ Le laboratoire associé au projet est le laboratoire du responsable
 <tbody>
     <tr>
         <th>Login</th>
+        {% if version.etat==5 or version.etat == 23 %}
         <th>User</th>
+        {% endif %}
         <th>Prénom</th>
         <th>Nom</th>
         <th>Mail</th>
@@ -243,6 +245,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
     {% for user in version.CollaborateurVersion %}
     <tr>
         <td>{% if( user.login == true) %}Oui{% else %}Non{% endif %}</td>
+		{% if version.etat==5 or version.etat == 23 %}
         <td>{% if (user.login == true) %}
                {% if user.loginname==null %}
                   <img src="{{ asset('icones/attention16.png') }}" alt="Compte non encore créé" title="compte non encore créé" />
@@ -250,6 +253,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
                   <tt>{{ user.loginname }}</tt>
                {% endif %}
             {% else %}  - {% endif %}</td>
+        {% endif %}
         <td>{{ user.Collaborateur.prenom }}</td>
         <td>{{ user.Collaborateur.nom }}</td>
         <td>{{ user.Collaborateur.mail }}</td>
