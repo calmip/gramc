@@ -222,7 +222,7 @@
 </div>
 
 {# largeur = largeur des colonnes + padding + bordure #}
-{% set width=45+3*15+4*170+6*80+ 21*20 + 20 + 20 %}
+{% set width=45+4*15+4*170+6*80+ 21*20 + 20 + 20 + 20 %}
 {% if noconso==false %}
    {% set width = 15 + 6*80 + width %}
 	{% if isRecupPrintemps %}
@@ -240,7 +240,9 @@
                 <th class="w45">N°</th>
                 <th class="w15"></th>
                 <th class="w15" title="Etat">E</th>
-                {% if noconso==false %}<th class="w15" title="Consommation">C</th>{% endif %}
+                {% if noconso==false %}<th class="w15" title="Consommation">C</th>
+                <th class="w15" title="Données de facturation">F</th>
+                {% endif %}
                 <th class="w170" title="Etat du projet">Titre</th>
                 <th class="w170">Thématique</th>
                 <th class="w170">Rattachement</th>
@@ -308,6 +310,14 @@
                     <img id="bconso_{{ projet.idProjet }}"  class="bouton_poussoir conso" src="{{ asset('icones/courbe.png') }}"
                     title="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}" alt="{{ projet.idProjet }}: Evolution de la consommation pour {{annee}}"
                     data-href="{{ absolute_url(path('projet_conso', { 'id': projet.idProjet, 'annee' : annee })) }}" />
+                </td>
+                <td class="w15">
+                     
+                    <a href="{{ path('dfct_liste', { 'id':projet.idprojet,'annee': annee }) }}" 
+                    title="{{ projet.idProjet }}: Données de facturation pour {{annee}}" alt="{{ projet.idProjet }}: Données de facturation pour {{annee}}"
+                    target = "_blank">
+                        <img class="bouton_poussoir" src="{{ asset('icones/euro16.png') }}" alt="Consulter" />
+                    </a>
                 </td>
                 {% endif %}
 

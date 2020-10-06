@@ -56,6 +56,7 @@ function display_conso(e) {
 		$('#dialog-compta').dialog( "option", "height", 'auto' );
 		$('#dialog-compta').dialog( "option", "width", 'auto' );
 		$('#dialog-compta').dialog('open');
+		$('.dialog-close').on('click',function(){ $( '#dialog-compta' ).dialog('close') });
 	})
 };
 
@@ -85,8 +86,7 @@ $( document ).ready(function() {
 	*****************************/
 	$('.conso').on('click',display_conso);
 	$( '#dialog-compta' ).hover(function() {
-		$('#dialog-compta .conso').on('click',display_conso);
+		$('.conso').on('click',display_conso);
 	});
-
 });
 

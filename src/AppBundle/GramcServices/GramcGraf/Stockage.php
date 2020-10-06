@@ -1,6 +1,27 @@
 <?php
 
-namespace AppBundle\GramcGraf;
+/**
+ * This file is part of GRAMC (Computing Ressource Granting Software)
+ * GRAMC stands for : Gestion des Ressources et de leurs Attributions pour Mésocentre de Calcul
+ *
+ * GRAMC is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  GRAMC is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRAMC.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  authors : Emmanuel Courcelle - C.N.R.S. - UMS 3667 - CALMIP
+ *            Nicolas Renon - Université Paul Sabatier - CALMIP
+ **/
+
+namespace AppBundle\GramcServices\GramcGraf;
 
 use AppBundle\Utils\Functions;
 
@@ -86,7 +107,7 @@ class Stockage extends GramcGraf
     public function createImage($structured_data,$ressource)
     {
 		// Compatibilité
-		if ($ressource==null) $ressource = AppBundle::getParameter('ressources_conso_group')['2']; // work_space
+		if ($ressource==null) $ressource = $this->ressources_conso_group['2']; // work_space
 
         // tester si les données existent
         $no_prj   = true;

@@ -1064,8 +1064,8 @@ class Projet
     {
 	    $subAnnee   = substr( strval($annee), -2 );
 	    $repository = AppBundle::getRepository(Version::class);
-	    $versionA   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
-	    $versionB   = AppBundle::getRepository(Version::class)->findBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
+	    $versionA   = AppBundle::getRepository(Version::class)->findOneBy( [ 'idVersion' => $subAnnee . 'A' . $this->getIdProjet(), 'projet' => $this ] );
+	    $versionB   = AppBundle::getRepository(Version::class)->findOneBy( [ 'idVersion' => $subAnnee . 'B' . $this->getIdProjet(), 'projet' => $this ] );
 	
 	    $versions = [];
 	    if( $versionA != null ) $versions['A'] = $versionA;
