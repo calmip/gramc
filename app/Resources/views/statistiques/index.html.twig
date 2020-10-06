@@ -9,8 +9,6 @@
 
 <section>
 
-
-
 <h1>Statistiques de l'année {{ annee }}</h1>
 
 {{ form_start(form) }}
@@ -23,8 +21,6 @@
 
 
 {# <p style="float:right;"><button name="format" value="csv">Télécharger en csv</button></p> #}
-
-
 
 
 <table id="tab_nb_projets_total_annee">
@@ -44,12 +40,19 @@
     </tbody>
 </table>
 
-
-
 <table><tbody>
     <tr><th colspan="2">Bilan des collaborateurs</th></tr>
     <tr><th class="left">Nombre de collaborateurs</th><td>{{ num_individus }}</td></tr>
-    <tr><th class="left">Nombre de collaborateurs uniques</th><td>{{ num_individus_uniques }}</td></tr>
+    <tr><th class="left">Nombre de collaborateurs uniques<br /><small>(dans le projet)</small></th><td>{{ num_individus_uniques }}</td></tr>
+</tbody></table>
+
+<table><tbody>
+    <tr><th colspan="2">Bilan des laboratoires</th></tr>
+    <tr><th class="left">1 seul projet</th><td>{{ lab_hist['== 1'] }}</td></tr>
+    <tr><th class="left">de 2  à 5  projets</th><td>{{ lab_hist['<= 5'] }}</td></tr>
+    <tr><th class="left">de 6  à 10 projets</th><td>{{ lab_hist['<=10'] }}</td></tr>
+    <tr><th class="left">de 10 à 20 projets</th><td>{{ lab_hist['<=20'] }}</td></tr>
+    <tr><th class="left">plus de 20 projets</th><td>{{ lab_hist['> 20'] }}</td></tr>
 </tbody></table>
 
 <table id="tab_heures_calcul_total_annee"><tbody>
