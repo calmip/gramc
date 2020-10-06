@@ -1420,14 +1420,15 @@ class Menu
 	
 	
 	    $version = $projet->versionActive();
+	    $max_rall= AppBundle::getParameter("max_rall");
 	
 	    if( $version == null )
 	        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
 	    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
 	        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà en cours de traitement !";
 	    // TODO - Mettre ce nombre en paramètre !!!!
-	    elseif( count($version->getRallonge()) >= 2)
-			$menu['raison']         =   "Pas plus de 2 rallonges par session !";
+	    elseif( count($version->getRallonge()) >= $max_rall)
+			$menu['raison']         =   "Pas plus de $max_rall rallonges par session !";
 	    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
 	    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
 	    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
