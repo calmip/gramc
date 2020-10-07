@@ -84,8 +84,10 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
      * Se limite aux projets P* et T* (exclusion des projets E*)
      */
     {
+		$annee = intval($annee);
+		$nannee= $annee + 1;
         $debut = new \DateTime( $annee . '-01-01');
-        $fin   = new \DateTime( $annee . '-12-31');
+        $fin   = new \DateTime( $nannee . '-01-10');
 
         $db_data = AppBundle::getManager()->createQuery(
             'SELECT c.date,c.ressource,sum(c.conso) AS conso

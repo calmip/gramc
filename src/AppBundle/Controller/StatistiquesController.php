@@ -150,7 +150,8 @@ class StatistiquesController extends Controller
         //$db_conso = $em->getRepository(Compta::class)->consoTotale( $annee, 'cpu' );
         //$dessin_heures = $this->get('app.gramc.graf_calcultous');
  		//$debut = new \DateTime( $annee . '-01-01');
-		//$fin   = new \DateTime( $annee . '-12-31');
+ 		//$nannee= $annee + 1;
+		//$fin   = new \DateTime( $nannee . '-01-02');
         //$struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
         //$dessin_heures->derivConso($struct_data);
  
@@ -170,7 +171,7 @@ class StatistiquesController extends Controller
             'conso_nouveaux'          => $conso_nouveaux,
             'conso_renouvelles'       => $conso_renouvelles,
             'lab_hist'                => $lab_hist,
-          //  'struct_data' => $struct_data
+            //'struct_data' => $struct_data
 		]);
     }
 

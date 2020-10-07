@@ -1376,12 +1376,12 @@ class ProjetController extends Controller
     /**
      * Affichage graphique de la consommation de TOUS les projets
      *
-     * @Route("/{ressource/{ressource}/tousconso/{annee}/{derivee}", name="tous_projets_conso")
+     * @Route("/{ressource/{ressource}/tousconso/{annee}/{mois}", name="tous_projets_conso")
      * @Method("GET")
      * @Security("has_role('ROLE_ADMIN')")
      */
 
-    public function consoTousAction($ressource,$annee,$derivee)
+    public function consoTousAction($ressource,$annee,$mois)
     {
 
 		if ( $ressource != 'cpu' && $ressource != 'gpu' )
@@ -1400,10 +1400,15 @@ class ProjetController extends Controller
 
         $dessin_heures = $this->get('app.gramc.graf_calcultous');
 
-        $struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
-        $dessin_heures->resetConso($struct_data);
-        if ($derivee!=0)
+        if ($mois!=0)
         {
+	        $struct_data = $dessin_heures->createStructuredDataMensuelles($annee,$db_conso);
+	        $dessin_heures->derivConso($struct_data);
+		}
+		else
+        {
+	        $struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+	        $dessin_heures->resetConso($struct_data);
 	        $dessin_heures->derivConso($struct_data);
 		}
         $image_conso     = $dessin_heures->createImage($struct_data)[0];

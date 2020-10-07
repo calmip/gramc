@@ -257,7 +257,8 @@ class Calcul extends GramcGraf
 
    /* Calcul de la dérivée, pour connaître la consommation journalière
 	* 
-	* On calcule la différence entre N et N-1 sauf sur quota
+	* On calcule la différence entre N et N-1 sauf sur quota.
+	* Si la différence est <0, on garde 0
 	* 
 	* TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
 	*/
@@ -281,8 +282,8 @@ class Calcul extends GramcGraf
 
 	
 			$deltat = ($key - $cp['key']) / $jour;		// Le temps en jours (en principe 1)
-			$structured_data[$key]['gpu'] = ($structured_data[$key]['gpu'] - $cp['gpu']) / $deltat;
-			$structured_data[$key]['cpu'] = ($structured_data[$key]['cpu'] - $cp['cpu']) / $deltat;
+			$structured_data[$key]['gpu'] = ($structured_data[$key]['gpu'] < $cp['gpu']) ? 0 : ($structured_data[$key]['gpu'] - $cp['gpu']) / $deltat;
+			$structured_data[$key]['cpu'] = ($structured_data[$key]['cpu'] < $cp['cpu']) ? 0 : ($structured_data[$key]['cpu'] - $cp['cpu']) / $deltat;
 		}
 	}
 }
