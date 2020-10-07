@@ -19,6 +19,9 @@ use AppBundle\Entity\Laboratoire;
 use AppBundle\Entity\Etablissement;
 use AppBundle\Entity\Statut;
 
+// Pour debug
+//use AppBundle\Entity\Compta;
+
 use AppBundle\Utils\Functions;
 use AppBundle\Utils\Menu;
 
@@ -142,7 +145,15 @@ class StatistiquesController extends Controller
 			else if ($v > 1)  $lab_hist["<= 5"] += 1;
 			else              $lab_hist["== 1"] += 1;
 		}
-		
+
+		// debug
+        //$db_conso = $em->getRepository(Compta::class)->consoTotale( $annee, 'cpu' );
+        //$dessin_heures = $this->get('app.gramc.graf_calcultous');
+ 		//$debut = new \DateTime( $annee . '-01-01');
+		//$fin   = new \DateTime( $annee . '-12-31');
+        //$struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+        //$dessin_heures->derivConso($struct_data);
+ 
 	    return $this->render('statistiques/index.html.twig',
 		[
             'form'                    => $data['form']->createView(),
@@ -158,7 +169,8 @@ class StatistiquesController extends Controller
             'num_individus_uniques'   => count( $individus_uniques   ),
             'conso_nouveaux'          => $conso_nouveaux,
             'conso_renouvelles'       => $conso_renouvelles,
-            'lab_hist'                => $lab_hist
+            'lab_hist'                => $lab_hist,
+          //  'struct_data' => $struct_data
 		]);
     }
 

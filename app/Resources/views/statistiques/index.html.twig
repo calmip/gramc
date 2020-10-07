@@ -1,6 +1,10 @@
 {% extends 'default/base.html.twig' %}
 {% import "default/macros.html.twig" as gramcmacros %}
 
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
 {% block menu %}
 {{ gramcmacros.menu(menu) }}
 {% endblock menu %}
@@ -100,10 +104,23 @@
 </tbody>
 </table>
 
+	<div class="lien-pdf">
+	    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee, 'derivee' : 1 })) }}"/>
+	</div>
+	<div class="lien-pdf">
+	    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee, 'derivee' : 1 })) }}"/>
+	</div>
+
+<div id="dialog-compta"></div>
 </div>
 
 
 </section>
 
+{# dump(struct_data) #}
 
 {% endblock %}

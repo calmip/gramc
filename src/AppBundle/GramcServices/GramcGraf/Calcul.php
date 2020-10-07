@@ -216,13 +216,14 @@ class Calcul extends GramcGraf
 		return [ base64_encode($image_data), $size];
     }
 
-	/* SEULEMENT POUR gramc */
-	// recherche de la remise à zéro dans les 20 premiers jours
-	// Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
-	// Sauf qu'on remet les compteurs à zéro en début d'année
-	// Ici on détecte le jour de remise à zéro avant le 20 Janvier
-	// et on met à zéro tout ce qui précède
-	// Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal
+   /* SEULEMENT POUR gramc 
+	* recherche de la remise à zéro dans les 20 premiers jours
+	* Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
+	* Sauf qu'on remet les compteurs à zéro en début d'année
+	* Ici on détecte le jour de remise à zéro avant le 20 Janvier
+	* et on met à zéro tout ce qui précède
+	* Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal
+	*/
 
 	// Modifier $structured_data
     public function resetConso(&$structured_data)
@@ -252,6 +253,37 @@ class Calcul extends GramcGraf
             $structured_data[$key]['quota'] = $structured_data[$remise_a_zero]['quota'];
             $structured_data[$key]['norm'] = $structured_data[$remise_a_zero]['norm'];
         }
+	}
+
+   /* Calcul de la dérivée, pour connaître la consommation journalière
+	* 
+	* On calcule la différence entre N et N-1 sauf sur quota
+	* 
+	* TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
+	*/
+    public function derivConso(&$structured_data)
+    {
+		$conso_precedente = ['cpu'=>0,'gpu'=>0, 'key'=>0];
+		$cp               = [];
+		$prems            = true;
+		$jour             = 24 * 3600;
+        foreach( $structured_data as $key => $item )
+        {
+			$cp = $conso_precedente;
+			$conso_precedente['gpu'] = $structured_data[$key]['gpu'];
+			$conso_precedente['cpu'] = $structured_data[$key]['cpu'];
+			$conso_precedente['key'] = $key;
+			if ($prems)
+			{
+				$prems = false;
+				continue;
+			}
+
+	
+			$deltat = ($key - $cp['key']) / $jour;		// Le temps en jours (en principe 1)
+			$structured_data[$key]['gpu'] = ($structured_data[$key]['gpu'] - $cp['gpu']) / $deltat;
+			$structured_data[$key]['cpu'] = ($structured_data[$key]['cpu'] - $cp['cpu']) / $deltat;
+		}
 	}
 }
 

@@ -31,7 +31,7 @@ class CalculTous extends Calcul
     /* Génère les données "StructuredData" qui seront utilisées par dessineConsoHeures
 	 * afin de faire le graphique de consommation des heures cpu+gpu pour TOUS les projets
 	 * Cette fonction est différente de celle qui se trouve dans Calcul car la requête SQL est différente et donc
-	 * $db_data est un tableau et tableaux et plus un tableau d'objets !
+	 * $db_data est un tableau de tableaux et plus un tableau d'objets !
 	 *
 	 * $debut, $fin = dates de début et fin
 	 * $db_data     = Le retour de la requête sql sur la table consommation
