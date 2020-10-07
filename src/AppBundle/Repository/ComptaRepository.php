@@ -87,7 +87,7 @@ class ComptaRepository extends \Doctrine\ORM\EntityRepository
 		$annee = intval($annee);
 		$nannee= $annee + 1;
         $debut = new \DateTime( $annee . '-01-01');
-        $fin   = new \DateTime( $nannee . '-01-10');
+        $fin   = new \DateTime( $nannee . '-01-02');
 
         $db_data = AppBundle::getManager()->createQuery(
             'SELECT c.date,c.ressource,sum(c.conso) AS conso

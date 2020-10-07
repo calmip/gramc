@@ -1381,7 +1381,7 @@ class ProjetController extends Controller
      * @Security("has_role('ROLE_ADMIN')")
      */
 
-    public function consoTousAction($ressource,$annee,$mois)
+    public function consoTousAction($ressource,$annee,$mois=false)
     {
 
 		if ( $ressource != 'cpu' && $ressource != 'gpu' )
@@ -1400,7 +1400,7 @@ class ProjetController extends Controller
 
         $dessin_heures = $this->get('app.gramc.graf_calcultous');
 
-        if ($mois!=0)
+        if ($mois == true)
         {
 	        $struct_data = $dessin_heures->createStructuredDataMensuelles($annee,$db_conso);
 	        $dessin_heures->derivConso($struct_data);
@@ -1409,7 +1409,6 @@ class ProjetController extends Controller
         {
 	        $struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
 	        $dessin_heures->resetConso($struct_data);
-	        $dessin_heures->derivConso($struct_data);
 		}
         $image_conso     = $dessin_heures->createImage($struct_data)[0];
 

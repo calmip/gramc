@@ -109,6 +109,9 @@ class CalculTous extends Calcul
 		
 		$this->resetConso($structured_data_raw);
 		$structured_data = [];
+		
+		// calcul des timestamps correspondant aux mois
+		// attention au timezone !!!
 		$keys  = [];
 		foreach (range(1,12) as $m)
 		{
@@ -117,6 +120,8 @@ class CalculTous extends Calcul
 			$key  = $date -> getTimestamp();
 			$keys[] = $key;
 		}
+		
+		// Si un timestamp n'est pas retouvé on met à zéro
 		$keys[] = $fin->getTimestamp();
 		foreach ($keys as $key)
 		{
