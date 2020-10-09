@@ -347,6 +347,7 @@ class ProjetController extends Controller
 	                'état',
 	                'titre',
 	                'thématique',
+	                'rattachement',
 	                'dari',
 	                'courriel',
 	                'prénom',
@@ -373,6 +374,7 @@ class ProjetController extends Controller
 					$version->getProjet()->getMetaEtat(),
 					Functions::string_conversion($version->getPrjTitre() ),
 					Functions::string_conversion($version->getPrjThematique() ),
+					Functions::string_conversion($version->getPrjRattachement() ),
 					$version->getPrjGenciDari(),
 					$responsable->getMail(),
 					Functions::string_conversion($responsable->getPrenom() ),
@@ -986,6 +988,7 @@ class ProjetController extends Controller
                     'projets '.$annee,
                     'titre',
                     'thématique',
+                    'rattachement',
                     'courriel du resp',
                     'prénom',
                     'nom',
@@ -1012,6 +1015,7 @@ class ProjetController extends Controller
             $line[] = $p->getIdProjet();
             $line[] = $p->getTitre();
             $line[] = $p->getThematique();
+			$line[] = $p->getRattachement();
             $line[] = $prj_array['resp']->getMail();
             $line[] = $prj_array['resp']->getNom();
             $line[] = $prj_array['resp']->getPrenom();
