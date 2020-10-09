@@ -19,6 +19,9 @@ use AppBundle\Entity\Laboratoire;
 use AppBundle\Entity\Etablissement;
 use AppBundle\Entity\Statut;
 
+// Pour debug
+//use AppBundle\Entity\Compta;
+
 use AppBundle\Utils\Functions;
 use AppBundle\Utils\Menu;
 
@@ -64,6 +67,10 @@ class StatistiquesController extends Controller
      */
     public function indexAction(Request $request,$annee=null)
     {
+		$em      = $this->getDoctrine()->getManager();
+		$prj_rep = $em->getRepository(Projet::class);
+		$ver_rep = $em->getRepository(Version::class);
+
 		$data = Functions::selectAnnee($request,$annee);
 		$annee= $data['annee'];
 
@@ -74,8 +81,8 @@ class StatistiquesController extends Controller
 	    $menu[] = Menu::statistiques_collaborateur( $annee );
 	    $menu[] = Menu::statistiques_repartition( $annee );
 
-	    $projets_renouvelles = AppBundle::getRepository(Projet::class)->findProjetsAnnee($annee, Functions::ANCIENS );
-	    $projets_nouveaux    = AppBundle::getRepository(Projet::class)->findProjetsAnnee($annee, Functions::NOUVEAUX );
+	    $projets_renouvelles = $prj_rep->findProjetsAnnee($annee, Functions::ANCIENS );
+	    $projets_nouveaux    = $prj_rep->findProjetsAnnee($annee, Functions::NOUVEAUX );
 	    
 	    $conso_nouveaux = 0;
 	    foreach( $projets_nouveaux as $projet )
@@ -89,32 +96,67 @@ class StatistiquesController extends Controller
 	    $num_projets_nouveaux    = count($projets_nouveaux);
 	    $num_projets             = $num_projets_renouvelles    +   $num_projets_nouveaux;
 
-	    $heures_tous             = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::TOUS );
-	    $heures_renouvelles      = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::ANCIENS );
-	    $heures_nouveaux         = AppBundle::getRepository(Projet::class)->heuresProjetsAnnee($annee, Functions::NOUVEAUX );
+	    $heures_tous             = $prj_rep->heuresProjetsAnnee($annee, Functions::TOUS );
+	    $heures_renouvelles      = $prj_rep->heuresProjetsAnnee($annee, Functions::ANCIENS );
+	    $heures_nouveaux         = $prj_rep->heuresProjetsAnnee($annee, Functions::NOUVEAUX );
 
-	    $versions          = AppBundle::getRepository(Version::class)->findVersionsAnnee($annee);
+	    $versions          = $ver_rep->findVersionsAnnee($annee);
 	    $individus         = [];
 	    $individus_uniques = [];
-	
+	    $labos             = [];
+	    $lab_hist          = ["== 1" => 0,
+							  "<= 5" => 0,
+							  "<=10" => 0,
+							  "<=20" => 0,
+							  "> 20" => 0 
+							 ];
+								
+		# Remplissage de $individus et $individus_uniques
 	    foreach( $versions as $version )
         {
 	        $collaborateurs_versions = $version->getCollaborateurVersion();
 	        foreach( $collaborateurs_versions as $collaborateurVersion )
             {
-	            $individu       = $collaborateurVersion->getCollaborateur();
+	            $individu   = $collaborateurVersion->getCollaborateur();
 	            if( $individu == null ) continue;
-	            $idIndividu     = $individu->getIdIndividu();
+	            $idIndividu = $individu->getIdIndividu();
 
-	            if( count( $collaborateurs_versions ) == 1 )
+	            if( count( $collaborateurs_versions ) == 1 ) 
+	            {
 	                $individus_uniques[$idIndividu] = $individu;
-
-	            $individus[$idIndividu] =   $individu;
-           }
+				}
+	            $individus[$idIndividu] = $individu;
+	            if ($collaborateurVersion->getResponsable())
+	            {
+					# Plutôt que d'utiliser $version->getLabo() qui rejoue la même boucle
+					$lab = $collaborateurVersion->getLabo()->getId();
+					if (! isset($labos[$lab])) $labos[$lab] = 0;
+					$labos[$lab] += 1;
+				}
+			}
         }
 
+		# Calcul de l'histogramme
+		foreach ($labos as $l=>$v)
+		{
+			if      ($v > 20) $lab_hist["> 20"] += 1;
+			else if ($v > 10) $lab_hist["<=20"] += 1;
+			else if ($v > 5)  $lab_hist["<=10"] += 1;
+			else if ($v > 1)  $lab_hist["<= 5"] += 1;
+			else              $lab_hist["== 1"] += 1;
+		}
+
+		// debug
+        //$db_conso = $em->getRepository(Compta::class)->consoTotale( $annee, 'cpu' );
+        //$dessin_heures = $this->get('app.gramc.graf_calcultous');
+ 		//$debut = new \DateTime( $annee . '-01-01');
+ 		//$nannee= $annee + 1;
+		//$fin   = new \DateTime( $nannee . '-01-02');
+        //$struct_data = $dessin_heures->createStructuredData($debut,$fin,$db_conso);
+        //$dessin_heures->derivConso($struct_data);
+ 
 	    return $this->render('statistiques/index.html.twig',
-            [
+		[
             'form'                    => $data['form']->createView(),
             'annee'                   => $annee,
             'menu'                    => $menu,
@@ -128,7 +170,9 @@ class StatistiquesController extends Controller
             'num_individus_uniques'   => count( $individus_uniques   ),
             'conso_nouveaux'          => $conso_nouveaux,
             'conso_renouvelles'       => $conso_renouvelles,
-            ]);
+            'lab_hist'                => $lab_hist,
+            //'struct_data' => $struct_data
+		]);
     }
 
 

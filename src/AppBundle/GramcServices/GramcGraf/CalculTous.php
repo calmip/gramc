@@ -24,6 +24,7 @@
 namespace AppBundle\GramcServices\GramcGraf;
 
 use AppBundle\Utils\Functions;
+use DateTime;
 
 
 class CalculTous extends Calcul
@@ -31,7 +32,7 @@ class CalculTous extends Calcul
     /* Génère les données "StructuredData" qui seront utilisées par dessineConsoHeures
 	 * afin de faire le graphique de consommation des heures cpu+gpu pour TOUS les projets
 	 * Cette fonction est différente de celle qui se trouve dans Calcul car la requête SQL est différente et donc
-	 * $db_data est un tableau et tableaux et plus un tableau d'objets !
+	 * $db_data est un tableau de tableaux et plus un tableau d'objets !
 	 *
 	 * $debut, $fin = dates de début et fin
 	 * $db_data     = Le retour de la requête sql sur la table consommation
@@ -46,6 +47,7 @@ class CalculTous extends Calcul
         $structured_data = [];
         $debut = $date_debut->getTimestamp();
         $fin   = $date_fin->getTimestamp();
+        $utc   = new \DateTimeZone("UTC");
 
         // Si pas de données (1er Janvier) on les crée artificiellement
         if (count($db_data) === 0)
@@ -55,9 +57,13 @@ class CalculTous extends Calcul
         }
         else
         {
+			//$utc = new \DateTimeZone("UTC");
             foreach( $db_data as $item )
             {
-                $key = $item['date']->getTimestamp();
+				$date= $item['date'];
+				$date->setTimeZone($utc);
+				$date->setTime(0,0);
+                $key = $date->getTimestamp();
                 if( $key < $debut || $key > $fin ) continue;
 
                 if ( array_key_exists ( $key , $structured_data ) )
@@ -82,5 +88,54 @@ class CalculTous extends Calcul
         }
 
         return $structured_data;
+	}
+	
+    /* Génère les données "StructuredData" qui seront utilisées par dessineConsoHeures, si mois=1
+     * Les données sont réduites à un item par mois
+     *
+	 * Retourne stuctured_data, c-a-d un array:
+	 *     key = timestamp
+	 *     val = [ 'cpu' => $conso_cpu, 'gpu' => $conso_gpu, 'quota' => $quota ]
+	 * Les champs 'cpu','gpu',quota' sont TOUS optionnels
+     */
+	public function createStructuredDataMensuelles($annee, $db_data)
+	{
+		$utc   = new \DateTimeZone("UTC");
+		$annee = intval($annee);
+		$nannee= $annee+1;
+		$debut = new \DateTime("$annee-01-01", $utc );
+		$fin   = new \DateTime("$nannee-01-01", $utc );
+		$structured_data_raw = $this->createStructuredData($debut, $fin, $db_data);
+		
+		$this->resetConso($structured_data_raw);
+		$structured_data = [];
+		
+		// calcul des timestamps correspondant aux mois
+		// attention au timezone !!!
+		$keys  = [];
+		foreach (range(1,12) as $m)
+		{
+			$m = sprintf("%'.02d",$m);
+			$date = new \DateTime("$annee-$m-01", $utc);
+			$key  = $date -> getTimestamp();
+			$keys[] = $key;
+		}
+		
+		// Si un timestamp n'est pas retouvé on met à zéro
+		$keys[] = $fin->getTimestamp();
+		foreach ($keys as $key)
+		{
+			if (isset($structured_data_raw[$key]))
+			{
+				$structured_data[$key] = $structured_data_raw[$key];
+			}
+			else
+			{
+				$szero = [ 'gpu' => 0, 'cpu' => 0, 'quota' => 0, 'norm' => 0];
+				$structured_data[$key] = $szero;
+			}
+		}
+		
+		return $structured_data;
 	}
 }
