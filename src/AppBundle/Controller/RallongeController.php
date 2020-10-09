@@ -689,24 +689,25 @@ class RallongeController extends Controller
      */
     public function affectationAction(Request $request)
     {
-	    $sessions   =  AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
+		$em = $this->getDoctrine()->getManager();
+	    $sessions = AppBundle::getRepository(Session::class) ->findBy( ['etatSession' => Etat::ACTIF ] );
 	    if ( isset( $sessions[0] ) )
-	        $session1   =  $sessions[0];
+	        $session1 = $sessions[0];
 	    else
-	        $session1   =  null;
+	        $session1 = null;
 	    $session = $session1;
 
 	    if ( isset( $sessions[1] ) )
         {
-	        $session2   =  $sessions[1];
-	        $session    =   $session2;
+	        $session2 = $sessions[1];
+	        $session  = $session2;
         }
 	    else
-	        $session2   =  null;
-        $annee    = $session->getAnneeSession();
+	        $session2 = null;
 
-	    //$projets =  AppBundle::getRepository(Projet::class)->findBy( ['etatProjet' => Etat::EDITION_EXPERTISE]);
-	    $all_rallonges =  AppBundle::getRepository(Rallonge::class)->findSessionRallonges($sessions);
+        $annee = $session->getAnneeSession();
+
+	    $all_rallonges = $em -> getRepository(Rallonge::class)->findSessionRallonges($sessions);
 	    
 		$affectationExperts = new AffectationExpertsRallonge($request, $all_rallonges, $this->get('form.factory'), $this->getDoctrine());
 		
@@ -723,62 +724,90 @@ class RallongeController extends Controller
 		}
 
 		// 2nde étape = Création des formulaires pour affichage et génération des données de "stats"
-	    $projets       = [];
+		//              On utilise $proj, un tableau associatif indexé par id_projet
+	    $proj = [];
 		foreach ($all_rallonges as $rallonge)
 		{
-			$version = $rallonge->getVersion();
-			$projet  = $version->getProjet();
+			$version   = $rallonge->getVersion();
+			$projet    = $version->getProjet();
 			$id_projet = $projet->getIdProjet();
-			if ( ! isset($projets[$id_projet] ))
+			if ( ! isset($proj[$id_projet] ))
 			{
 				$p = [];
-				$projets[$id_projet] = $p;
-	            $projets[$id_projet ]['projet']     = $projet;
-	            $projets[$id_projet ]['version']    = $version;
-	            $projets[ $id_projet ]['rallonges']  = [];
-	            $projets[ $id_projet ]['etat']       = $projet->getMetaEtat();
-	            $projets[ $id_projet ]['etatProjet']         = $projet->getEtatProjet();
-	            $projets[ $id_projet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
-	            $projets[ $id_projet ]['etatVersion']        = $version->getEtatVersion();
-	            $projets[ $id_projet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
-	            $projets[ $id_projet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
-	                           $expert = $rallonge->getExpert();
+				$proj[$id_projet] = $p;
+	            $proj[$id_projet ]['projet']      = $projet;
+	            $proj[$id_projet ]['version']     = $version;
+	            $proj[ $id_projet ]['rallonges']  = [];
+	            $proj[ $id_projet ]['etat']       = $projet->getMetaEtat();
+	            $proj[ $id_projet ]['etatProjet']         = $projet->getEtatProjet();
+	            $proj[ $id_projet ]['libelleEtatProjet']  = Etat::getLibelle( $projet->getEtatProjet() );
+	            $proj[ $id_projet ]['etatVersion']        = $version->getEtatVersion();
+	            $proj[ $id_projet ]['libelleEtatVersion'] = Etat::getLibelle( $version->getEtatVersion() );
+	            $proj[ $id_projet ]['conso']      = $projet->getConsoCalcul(  $version->getAnneeSession() );
+				$expert = $rallonge->getExpert();
                 if( $rallonge->getExpert() != null )
                 {
-					$projets[$id_projet]['affecte'] = true;
+					$proj[$id_projet]['affecte'] = true;
 				}
                 else
                 {
-					$projets[$id_projet]['affecte'] = false;
+					$proj[$id_projet]['affecte'] = false;
 				}
 
 	            if( $version->isNouvelle() )
-	                $projets[ $id_projet ]['NR']   =   'N';
+	                $proj[ $id_projet ]['NR'] = 'N';
 	            else
-	                $projets[ $id_projet ]['NR']   =   '';
+	                $proj[ $id_projet ]['NR'] = '';
 			}
-			$projets[ $id_projet ]['rallonges'][] = $rallonge;
+			$proj[ $id_projet ]['rallonges'][] = $rallonge;
 		}
 
-	    foreach( $projets as $key => $projet )
+		// 3 ème étape = Mise en forme pour l'affichage
+		// 				 Dans rowspan = le nombre de rallonges + 1
+		// 				 Dans rstate  = l'état de la dernière rallonge
+		//
+		// On recopie $proj dans $projets, qui pourra être trié
+		$projets = [];
+	    foreach( $proj as $key => $projet )
         {
-	        $projets[$key]['rowspan']  =   count( $projet['rallonges'] ) + 1;
+			$nr = count( $projet['rallonges'] );
+	        $projet['rowspan'] = $nr + 1;
+	        $projet['rstate']  = intval($projet['rallonges'][$nr-1]->getEtatRallonge());
+	        $projets[] = $projet;
         }
   
+		// On trie les projets en fonction de l'état de la dernière rallonge
+		usort($projets, "self::cmpProjetsByRallonges");
 		
-		$forms       = $affectationExperts->getExpertsForms();
-		$stats       = $affectationExperts->getStats();
+		
+		$forms = $affectationExperts->getExpertsForms();
+		$stats = $affectationExperts->getStats();
 		$titre = "Affectation des experts aux rallonges de l'année 20$annee"; 
 
         return $this->render('rallonge/affectation.html.twig',
 		[
-            'projets'       => $projets,
-            'forms'         => $forms,
-            'session1'      => $session1,
-            'session2'      => $session2,
-            'stats'         => $stats,
+            'projets'  => $projets,
+            'forms'    => $forms,
+            'session1' => $session1,
+            'session2' => $session2,
+            'stats'    => $stats,
 		]);
     }
+
+	// Cette fonction est utilisée par affectationAction, 
+	// elle permet d'écrire les rallonges de manière ordonnée
+	// D'abord les projets qui ont une rallonge en état "non actif"
+	//
+	private static function cmpProjetsByRallonges($a,$b)
+	{
+		if ($a['rstate'] == $b['rstate'])
+		{
+	        return 0;
+	    }
+	    return ($a['rstate'] < $b['rstate']) ? -1 : 1;
+	}
+
+
 
     /**
      * Deletes a rallonge entity.
