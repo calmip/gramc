@@ -30,7 +30,7 @@ use AppBundle\Entity\Session;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\Thematique;
 use AppBundle\Entity\Rattachement;
-//use AppBundle\Entity\Expertise;
+use AppBundle\Entity\Expertise;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\Sso;
 use AppBundle\Entity\CompteActivation;
