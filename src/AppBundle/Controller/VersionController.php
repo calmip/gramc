@@ -659,7 +659,7 @@ class VersionController extends Controller
 	        {
 	            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
 	            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
-	            return $this->render('projet/avant_envoyer_expert.html.twig',
+	            return $this->render('version/avant_envoyer_expert.html.twig',
 	                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
 	                    );
 
