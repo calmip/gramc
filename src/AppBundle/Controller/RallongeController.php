@@ -447,13 +447,13 @@ class RallongeController extends Controller
 	    $anneePrec  = $anneeCour - 1;
 	
 	    return $this->render('rallonge/avant_finaliser.html.twig',
-            [
+		[
             'erreurs'   => $erreurs,
             'rallonge'  => $rallonge,
             'edit_form' => $editForm->createView(),
             'anneePrec' => $anneePrec,
             'anneeCour' => $anneeCour
-            ]);
+		]);
     }
 
     /**
@@ -542,35 +542,35 @@ class RallongeController extends Controller
         $workflow = new RallongeWorkflow();
 
         if( $erreurs != null )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." L'envoi à l'expert de la rallonge " . $rallonge . " refusé à cause des erreurs !");
             return $this->redirectToRoute('avant_rallonge_envoyer', [ 'id' => $rallonge->getId() ]);
-            }
+		}
         elseif( ! $workflow->canExecute( Signal::CLK_VAL_DEM, $rallonge ) )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." L'envoi à l'expert de la rallonge " . $rallonge .
                 " refusé par le workflow, la rallonge est dans l'état " . Etat::getLibelle( $rallonge->getEtatRallonge() ) );
             return $this->redirectToRoute('avant_rallonge_envoyer', [ 'id' => $rallonge->getId() ]);
-            }
+		}
 
         $workflow->execute( Signal::CLK_VAL_DEM, $rallonge );
 
         $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
 
         return $this->render('rallonge/envoyer.html.twig',
-            [
+		[
             'rallonge'  => $rallonge,
             'projet'    => $projet,
             'session'   => $session,
-            ]);
+		]);
     }
 
 
@@ -587,16 +587,16 @@ class RallongeController extends Controller
         $workflow = new RallongeWorkflow();
 
         if( $erreurs != null )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." La finalisation de la rallonge " . $rallonge . " refusée à cause des erreurs !");
             return $this->redirectToRoute('avant_rallonge_finaliser', [ 'id' => $rallonge->getId() ]);
-            }
+		}
         elseif( ! $workflow->canExecute( Signal::CLK_VAL_PRS, $rallonge ) )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." La finalisation de la rallonge " . $rallonge .
                 " refusée par le workflow, la rallonge est dans l'état " . Etat::getLibelle( $rallonge->getEtatRallonge() ) );
             return $this->redirectToRoute('avant_rallonge_finaliser', [ 'id' => $rallonge->getId() ]);
-            }
+		}
 
         if( $rallonge->getValidation() == true )
             $workflow->execute( Signal::CLK_VAL_PRS, $rallonge );
@@ -605,22 +605,22 @@ class RallongeController extends Controller
 
         $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $rallonge->setAttrHeures( $rallonge->getNbHeuresAtt() );
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
 
         return $this->render('rallonge/rallonge_finalisee.html.twig',
-            [
+		[
             'erreurs'   => $erreurs,
             'rallonge'  => $rallonge,
             'projet'    => $projet,
             'session'   => $session,
-            ]);
+		]);
     }
 
 
@@ -642,16 +642,16 @@ class RallongeController extends Controller
         $workflow = new RallongeWorkflow();
 
         if( $erreurs != null )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." L'envoi au président de la rallonge " . $rallonge . " refusé à cause des erreurs !");
             return $this->redirectToRoute('avant_rallonge_envoyer_president', [ 'id' => $rallonge->getId() ]);
-            }
+		}
         elseif( ! $workflow->canExecute( Signal::CLK_VAL_EXP_OK, $rallonge ) )
-            {
+		{
             Functions::warningMessage(__METHOD__ . ":" . __LINE__ ." L'envoi au président de la rallonge " . $rallonge .
                 " refusé par le workflow, la rallonge est dans l'état " . Etat::getLibelle( $rallonge->getEtatRallonge() ) );
             return $this->redirectToRoute('avant_rallonge_envoyer_presdient', [ 'id' => $rallonge->getId() ]);
-            }
+		}
 
         if( $rallonge->getValidation() == true )
             $workflow->execute( Signal::CLK_VAL_EXP_OK, $rallonge );
@@ -663,10 +663,10 @@ class RallongeController extends Controller
 
         $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
-            $session = $version->getSession();
-            }
+			$session = $version->getSession();
+		}
         else
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
 
