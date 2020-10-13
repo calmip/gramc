@@ -1175,6 +1175,7 @@ class Menu
             $menu['incomplet']   = true;
             $menu['ok']          = true;
             $menu['param']       = $version->getIdVersion();
+			$menu['todo']        = "Lorsqu'il sera complété, envoyer le projet en <strong>expertise</strong>";
 		}
         else
         {
@@ -1635,8 +1636,9 @@ class Menu
         $menu['raison']         =   "La fiche projet signée a déjà été téléversée";
     else
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Téléverser la fiche projet";
+        $menu['ok']          = true;
+        $menu['commentaire'] = "Téléverser la fiche projet";
+        $menu['todo']        = "Télécharger la fiche projet, la faire signer et la téléverser à nouveau";
         }
 
     return $menu;
