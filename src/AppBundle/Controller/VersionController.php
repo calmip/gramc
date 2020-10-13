@@ -505,73 +505,97 @@ class VersionController extends Controller
      */
     public function changerResponsableAction(Version $version, Request $request)
     {
-
-	// Si changement d'état de la session alors que je suis connecté !
-	AppBundle::getSession()->remove('SessionCourante'); // remove cache
-
-    // ACL
-    $moi = AppBundle::getUser();
-
-    if( $version == null )
-        Functions::createException(__METHOD__ .":". __LINE__ .' version null');
-
-     if( Menu::changer_responsable($version)['ok'] == false )
-            Functions::createException(__METHOD__ . ":" . __LINE__ .
-                " impossible de changer de responsable parce que " . Menu::changer_responsable($version)['raison'] );
-
-    // préparation de la liste des responsables potentiels
-    $collaborateurs = $version->getCollaborateurs( false, true ); // pas moi, seulement éligibles
-
-     $change_form = AppBundle::createFormBuilder()
+		// Si changement d'état de la session alors que je suis connecté !
+		AppBundle::getSession()->remove('SessionCourante'); // remove cache
+	
+	    // ACL
+	    $moi = AppBundle::getUser();
+	
+	    if( $version == null )
+	    {
+	        Functions::createException(__METHOD__ .":". __LINE__ .' version null');
+		}
+	
+		if( Menu::changer_responsable($version)['ok'] == false )
+		{
+	            Functions::createException(__METHOD__ . ":" . __LINE__ .
+	                " impossible de changer de responsable parce que " . Menu::changer_responsable($version)['raison'] );
+		}
+	
+	    // préparation de la liste des responsables potentiels
+	    $collaborateurs = $version->getCollaborateurs( false, true ); // pas moi, seulement les éligibles
+	
+		$change_form = AppBundle::createFormBuilder()
             ->add('responsable',   EntityType::class,
-                    [
+				[
                     'multiple' => false,
                     'class' => 'AppBundle:Individu',
                     'required'  =>  true,
                     'label'     => '',
                     'choices' =>  $collaborateurs,
-                    ])
-        ->add('submit', SubmitType::class, ['label' => 'Nouveau responsable'])
-        ->getForm();
-
+				])
+	        ->add('submit', SubmitType::class, ['label' => 'Nouveau responsable'])
+	        ->getForm();
         $change_form->handleRequest($request);
-
+	
         $projet =  $version->getProjet();
-
+	
         if( $projet != null )
-            $idProjet   =   $projet->getIdProjet();
+        {
+			$idProjet   =   $projet->getIdProjet();
+		}
         else
-            {
+		{
             Functions::errorMessage(__METHOD__ .":". __LINE__ . " projet null pour version " . $version->getIdVersion());
             $idProjet   =   null;
-            }
-
+		}
+	
         if ( $change_form->isSubmitted() && $change_form->isValid() )
-            {
-            $moi = AppBundle::getUser();
-            //if( $moi == null || $version == null || ! in_array( $moi, $version->getResponsables() ) )
-            //  Functions::createException(__METHOD__ .":". __LINE__ . 'VersionController:changerResponsable : Seul le responsable du projet peut passer la main');
-
+		{
+			$ancien_responsable  = $version->getResponsable();
             $nouveau_responsable = $change_form->getData()['responsable'];
-            $version->changerResponsable( $moi, $nouveau_responsable );
+            if ($ancien_responsable != $nouveau_responsable)
+            {
+	            $version->changerResponsable($nouveau_responsable);
+	            
+	            $params = [ 
+							'ancien' => $ancien_responsable,
+						    'nouveau'=> $nouveau_responsable,
+							'version'=> $version
+						   ];
+	 
+	            // envoyer une notification à l'ancien et au nouveau responsable
+	            Functions::sendMessage ('notification/changement_resp_pour_ancien-sujet.html.twig',
+										'notification/changement_resp_pour_ancien-contenu.html.twig',
+										$params,
+										[$ancien_responsable]);
+				
+			    Functions::sendMessage ('notification/changement_resp_pour_nouveau-sujet.html.twig',
+										'notification/changement_resp_pour_nouveau-contenu.html.twig',
+										$params,
+										[$ancien_responsable]);
+	
+	 		    Functions::sendMessage ('notification/changement_resp_pour_admin-sujet.html.twig',
+										'notification/changement_resp_pour_admin-contenu.html.twig',
+										$params,
+										Functions::mailUsers( ['A'], null));
+			}
             return $this->redirectToRoute('consulter_version',
-                [
-                'version' => $version->getIdVersion(),
-                'id'    =>  $idProjet,
-                ]
-                );
-            }
-
-     return $this->render('version/responsable.html.twig',
-            [
-            'projet' => $idProjet,
-            'change_form'   => $change_form->createView(),
-            'version'   =>  $version,
-            'session'   =>  $version->getSession(),
-            ]
-            );
-
-    }
+				[
+	                'version' => $version->getIdVersion(),
+	                'id'    =>  $idProjet,
+				]);
+		}
+	
+		return $this->render('version/responsable.html.twig',
+			[
+	            'projet' => $idProjet,
+	            'change_form'   => $change_form->createView(),
+	            'version'   =>  $version,
+	            'session'   =>  $version->getSession(),
+            ]);
+	
+	}
 
 
     /**

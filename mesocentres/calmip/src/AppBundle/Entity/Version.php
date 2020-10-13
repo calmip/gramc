@@ -2740,11 +2740,11 @@ class Version implements Demande
 
     ////////////////////////////////////////////////
 
-    public function changerResponsable(Individu $old, Individu $new)
+    public function changerResponsable(Individu $new)
     {
-        $em =   AppBundle::getManager();
+		$em =   AppBundle::getManager();
         foreach( $this->getCollaborateurVersion() as $item )
-            {
+		{
             $collaborateur = $item->getCollaborateur();
             if( $collaborateur == null )
             {
@@ -2769,23 +2769,9 @@ class Version implements Demande
                 $em->persist( $item );
             }
 
-            /*
-
-            if( $collaborateur->isEqualTo( $old ) )
-                {
-                $item->setResponsable(false);
-                $em->persist( $item );
-                }
-            elseif( $collaborateur->isEqualTo( $new ) )
-                {
-                $item->setResponsable(true);
-                $em->persist( $item );
-                }
-            */
-            }
+		}
         $em->flush();
     }
-
 
     /*
      *

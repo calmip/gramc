@@ -270,7 +270,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des fichiers)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     * param $users                     Liste d'utilisateurs à qui envoyer des emails (cf mailUsers)
      *
      *********/
     static public function sendMessage( $twig_sujet, $twig_contenu, $params, $users = null )
@@ -298,7 +298,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des strings)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     * param $users                     Liste d'utilisateurs à qui envoyer des emails (cf mailUsers)
      *
      *********/
     static public function sendMessageFromString( $twig_sujet, $twig_contenu, $params, $users = null )
@@ -384,9 +384,8 @@ class Functions
 
     static public function mailUsers( $mail_roles = [], $objet = null )
     {
-    $users  =   [];
-
-    foreach ( $mail_roles as $mail_role )
+	    $users  =   [];
+	    foreach ( $mail_roles as $mail_role )
         {
             switch( $mail_role )
             {
@@ -477,7 +476,7 @@ class Functions
                     break;
             }
         }
-    return $users;
+	    return $users;
     }
 
     /////////////////////////
