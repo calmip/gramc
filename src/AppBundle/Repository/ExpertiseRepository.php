@@ -77,11 +77,12 @@ public function findExpertisesByThematiqueForAllSessions(Thematique $thematique)
          ->getResult();
 }
 
+// 14-10-2020 -> Ne garde que les expertises pour lesquelles definitif vaut 0
 public function findExpertisesByExpert(Individu $expert, Session $session)
 {
     $dql     =   'SELECT e FROM AppBundle:Expertise e';
     $dql    .=  " INNER JOIN AppBundle:Version v WITH e.version = v ";
-    $dql    .=  " WHERE ( v.session = :session AND e.expert = :expert ) ";
+    $dql    .=  " WHERE ( v.session = :session AND e.expert = :expert AND e.definitif = 0 ) ";
 
     return $this->getEntityManager()
          ->createQuery( $dql )

@@ -509,6 +509,12 @@ class ExpertiseController extends Controller
                 " n'est pas un expert de l'expertise " . $expertise . ", c'est " . $expertise->getExpert() );
         }
 
+		// Si expertise déjà faite on revient à la liste
+		if ($expertise->getDefinitif())
+		{
+			return $this->redirectToRoute('expertise_liste');
+		}
+		
 		$em         = $this->getDoctrine()->getManager();
         $expertiseRepository = $em->getRepository(Expertise::class);
         $session    = Functions::getSessionCourante();
