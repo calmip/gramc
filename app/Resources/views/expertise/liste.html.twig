@@ -117,7 +117,11 @@
         </thead>
         <tbody>
           {% for expertise in expertises_hors_thematique %}
-                    <tr class="gras">
+                {% if( expertise.expert == true and session.etatsession != 2) %}
+                    <tr class="gras" >
+				{% else %}
+				    <tr class="leger" >
+			    {% endif %}
                         <td>{{ expertise.projetId }}</td>
                         <td>{# Si la session est en etat demande l'expert n'est pas encore définitivement attribué #}
 							{% if( expertise.expert == true and session.etatsession != 2) %}

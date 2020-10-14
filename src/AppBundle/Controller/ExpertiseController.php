@@ -226,17 +226,17 @@ class ExpertiseController extends Controller
 	 */
     public function listeAction()
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $moi    =   AppBundle::getUser();
+        $em  = $this->getDoctrine()->getManager();
+        $moi = AppBundle::getUser();
         if( is_string( $moi ) ) Functions::createException();
 
         $mes_thematiques     = $moi->getThematique();
         $expertiseRepository = $em->getRepository(Expertise::class);
         $session             = Functions::getSessionCourante();
 
-	// Les expertises affectées à cet expert
+		// Les expertises affectées à cet expert
         $expertises  = $expertiseRepository->findExpertisesByExpert($moi, $session);
+        
         # Pour une session B on lit aussi les expertises de la session A (il peut y avoir des projets tests qui trainent)
         if ($session->getTypeSession())
         {
