@@ -193,12 +193,12 @@
 	{% if prev!=null %}
 		<a href="{{ path('expertise_modifier', { 'id' : prev.id } ) }}"><img class="left bouton_poussoir" src="{{ asset('icones/go-prev.png') }}" title="{{prev.version.projet}}" alt="Expertise précédente" /></a>
 	{% else %}
-		<img class="left bouton_inactif" src="{{ asset('icones/go-prev.svg') }}" title="Pas d'expertise précédente" alt="Pas d'expertise précédente" />
+		<img class="left bouton_inactif" src="{{ asset('icones/go-prev.png') }}" title="Pas d'expertise précédente" alt="Pas d'expertise précédente" />
 	{% endif %}
 	{% if next!=null %}
 		<a href="{{ path('expertise_modifier', { 'id' : next.id } ) }}"><img class="right bouton_poussoir" src="{{ asset('icones/go-next.png') }}"title="{{next.version.projet}}" alt="Expertise suivante" /></a>
 	{% else %}
-		<img class="right bouton_inactif" src="{{ asset('icones/go-next.svg') }}"title="Pas d'expertise suivante" alt="Pas d'expertise suivante" />
+		<img class="right bouton_inactif" src="{{ asset('icones/go-next.png') }}"title="Pas d'expertise suivante" alt="Pas d'expertise suivante" />
 	{% endif %}
 </div>
 
