@@ -1,3 +1,10 @@
+v 2.6.0
+-------
+    - Ajout de la notion de rattachement
+    - Amélioration de l'écran d'affectation des experts
+    - Amélioration de l'écran d'expertise
+    - Possibilité de générer des données de facturation sur certains projets
+
 v 2.5.8
 -------
     - Bug - Les projets tests à expertiser de la session A n'apparaissaient pas en session B 
