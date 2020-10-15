@@ -55,6 +55,7 @@ class BilanSessionB extends BilanSession
 		$id_session      = $this->id_session;
         $entetes = ['Projet',
                     'Thématique',
+                    'Rattachement',
                     'Responsable scientifique',
                     'Laboratoire',
                     'Expert',
@@ -190,6 +191,7 @@ class BilanSessionB extends BilanSession
 			[
 				$projet,
 				'"'. $version->getPrjThematique() .'"',
+				'"'. $version->getPrjRattachement() .'"',
 				'"'.$version->getResponsable() .'"',
 				'"'.$version->getLabo().'"',
 				( $version->getResponsable()->getExpert() ) ? '*******' : $version->getExpert(),

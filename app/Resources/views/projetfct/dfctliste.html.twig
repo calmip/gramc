@@ -1,0 +1,54 @@
+                                           {% extends 'default/base.html.twig' %}
+{% import "default/macros.html.twig" as gramcmacros %}
+
+{% block body %}
+
+<section>
+	{{ gramcmacros.menu(menu) }}
+
+    <h1>{{projet}}: Données de facturation pour {{annee}}</h1>
+	<table class="projet">
+	    <tbody> 
+	        <tr><th class="horiz">Titre</th><td>{{ version.prjTitre }}</td></tr>
+	        <tr><th class="horiz">Thématique</th><td>{{ version.prjThematique }}</td></tr>
+	        <tr><th class="horiz">Sous Thématique</th><td>{{ version.prjSousThematique }}</td></tr>
+	        <tr><th class="horiz">Rattachement</th><td>{{ version.prjRattachement }}</td></tr>
+	    </tbody>
+	</table>
+
+	{% if emises|length == 0 %}
+	<em>Aucune donnée de facturation actuellement</em>
+	{% else %}
+	<h2>Données déjà émises</h2>
+	<ul>
+	{% for e in emises %}
+	<li><a href="{{ path('dfct_dl_projet', {'id':projet, 'annee':annee, 'nb':e}) }}">Données déjà émises ({{e}})</a> </li>
+	{% endfor %}
+	</ul>
+	{% endif %}
+	
+	<h2>Nouvelles données de facturation</h2>
+	<table class="projet">
+	    <tbody>
+			<tr><th class="horiz">Début de la période</th><td>{{debut|date('Y-m-d')}}</td></tr> 
+			<tr><th class="horiz">Fin de la période</th><td>{{ form_start(form) }}{{ form_widget(form.fctstamp) }}{{ form_widget(form.submit) }}{{ form_end(form) }}</td></td></tr>
+			<tr><th class="horiz">Consommation</th><td>{% if conso>=0%}{{conso}}{% else %}N/A <em>(modifiez la date)</em>{% endif %}</td></tr> 
+		</tbody>
+	</table>
+
+	{% if dessin_periode != null %}
+	<h2>Evolution de la consommation sur la période</h2>
+	<img class="dfct" src="data:image/png;base64,{{ dessin_periode }}" />
+	{% endif %}
+	{% if dessin_annee != null %}
+		<h2>Evolution de la consommation sur l'année {{annee}}</h2>
+		<img class="dfct" src="data:image/png;base64,{{ dessin_annee }}" />
+	{% endif %}
+	
+	{% if conso > 0 %}
+	<button id="generer_dfct" type="button" onclick=document.location.href="{{path('dfct_gen',{ 'id' : projet, 'fin_periode': fin|date('Y-m-d') }) }}"> Générer de nouvelles données</button>
+	{% endif %}
+</section>
+
+	
+{% endblock body %}

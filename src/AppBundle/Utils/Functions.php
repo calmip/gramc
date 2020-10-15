@@ -179,17 +179,16 @@ class Functions
         $journal = new Journal();
         $journal->setStamp( new \DateTime() );
 
-
         if( AppBundle::getUser() instanceof Individu )
-            {
+		{
             $journal->setIdIndividu( AppBundle::getUser()->getId() );
             $journal->setIndividu( AppBundle::getUser() );
-            }
+		}
         else
-            {
+		{
             $journal->setIdIndividu( null );
             $journal->setIndividu( null );
-            }
+		}
 
         $journal->setGramcSessId( AppBundle::getSession()->getId() );
         $journal->setIp( AppBundle::getClientIp() );
@@ -201,15 +200,17 @@ class Functions
 
         // nous testons des problèmes de Doctrine pour éviter une exception
         if( AppBundle::getEnvironment() != 'test' )
-            {
+		{
             if( $em->isOpen() )
-                {
+			{
                 $em->persist( $journal );
                 $em->flush();
-                }
+			}
             else
+            {
                 AppBundle::getLogger()->error('Entity manager closed, message = ' . $message);
-            }
+			}
+		}
 
         return $journal;
     }
@@ -269,7 +270,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des fichiers)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     * param $users                     Liste d'utilisateurs à qui envoyer des emails (cf mailUsers)
      *
      *********/
     static public function sendMessage( $twig_sujet, $twig_contenu, $params, $users = null )
@@ -297,7 +298,7 @@ class Functions
      *
      * param $twig_sujet, $twig_contenu Templates Twig des messages (ce sont des strings)
      * param $params                    La notification est un template twig, le contenu de $params est passé à la fonction de rendu
-     * param $users                     Liste d'utilisateurs à qui envoyer ou des emails (cf mailUsers)
+     * param $users                     Liste d'utilisateurs à qui envoyer des emails (cf mailUsers)
      *
      *********/
     static public function sendMessageFromString( $twig_sujet, $twig_contenu, $params, $users = null )
@@ -383,9 +384,8 @@ class Functions
 
     static public function mailUsers( $mail_roles = [], $objet = null )
     {
-    $users  =   [];
-
-    foreach ( $mail_roles as $mail_role )
+	    $users  =   [];
+	    foreach ( $mail_roles as $mail_role )
         {
             switch( $mail_role )
             {
@@ -476,7 +476,7 @@ class Functions
                     break;
             }
         }
-    return $users;
+	    return $users;
     }
 
     /////////////////////////
@@ -562,8 +562,12 @@ class Functions
 	/***************
 	 * Téléchargement d'un fichier pdf
 	 *****************/
-    static public function pdf($filename)
+    static public function pdf($filename, $dwnfn=null)
     {
+		if ($dwnfn==null)
+		{
+			$dwnfn = $filename;
+		}
         $response = new Response();
         if( preg_match( '/^\%PDF/', $filename ) )
 		{
@@ -574,10 +578,12 @@ class Functions
         elseif( $filename != null && file_exists( $filename ) && ! is_dir( $filename ) )
 		{
             $response->setContent(file_get_contents( $filename ) );
-            $response->headers->set('Content-Disposition', 'inline; filename="' . basename($filename) .'"' );
+            $response->headers->set('Content-Disposition', 'inline; filename="' . basename($dwnfn) .'"' );
 		}
         else
+        {
             $response->setContent('');
+		}
 
         $response->headers->set(
            'Content-Type',
@@ -742,18 +748,20 @@ class Functions
 
     public static function formError( $data, $constraintes )
     {
-    $violations = [];
-    $violations = AppBundle::getContainer()->get('validator')->validate( $data, $constraintes );
-
-    if (0 !== count($violations) )
+	    $violations = [];
+	    $violations = AppBundle::getContainer()->get('validator')->validate( $data, $constraintes );
+	
+	    if (0 !== count($violations) )
         {
-        $errors = "<strong>Erreur : </strong>";
-        foreach ($violations as $violation)
-            $errors .= $violation->getMessage() .' ';
-        return $errors;
+	        $errors = "<strong>Erreur : </strong>";
+	        foreach ($violations as $violation)
+	            $errors .= $violation->getMessage() .' ';
+	        return $errors;
         }
-    else
-        return "Erreur indeterminée concernant des données soumises, les limites du système ont été probablement dépassées";
+	    else
+	    {
+	        return "Erreur indeterminée concernant des données soumises, les limites du système ont été probablement dépassées";
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1181,13 +1189,18 @@ class Functions
 
     /**
      * Liste tous les projets qui ont une version cette annee
-     *       Utilise par ProjetController et AdminuxController
+     *       Utilise par ProjetController et AdminuxController, et aussi par StatistiquesController
      *
      * Param : $annee
-     *         $isRecupPrintemps (true/false, def=false)
-     *         $isRecupAutomne (true/false, def=false)
+     *         $isRecupPrintemps (true/false, def=false) -> Calcule les heures récupérables au printemps
+     *         $isRecupAutomne (true/false, def=false)   -> Calcule les heures récupérables à l'Automne
+     * 
      * Return: [ $projets, $total ] Un tableau de tableaux pour les projets, et les données consolidées
      *
+     * NOTE - Si un projet a DEUX VERSIONS et change de responsable, donc de laboratoire, au cours de l'année, 
+     *        on affiche les données de la VERSION A (donc celles du début d'année)
+     * 		  Cela peut conduire à une erreur à la marge dans les statistiques
+     * 
      */
 
      // Ajoute les champs 'c','g','q', 'cp' au tableau $p
@@ -1258,6 +1271,8 @@ class Functions
             $p['p']      = $v->getProjet();
             $p['va']     = $v;
             $p['penal_a']= $v->getPenalHeures();
+            $p['labo']   = $v->getLabo();
+            $p['resp']   = $v->getResponsable();
 
             // Ces champs seront renseignés en session B
             $p['vb']      = null;
@@ -1331,6 +1346,10 @@ class Functions
                 $p['recuperable'] = 0;
                 $p['r']  = 0;
                 $p['attrib'] = 0;
+                $p['labo']   = $v->getLabo();         // Si version A et B on choisit le labo
+				$p['resp']   = $v->getResponsable();  // et le responsable de la version B (pas obligatoirement le même)
+
+
             }
             $p['vb']      = $v;
             $rallonges    = $v->getRallonge();
@@ -1397,8 +1416,68 @@ class Functions
 		return [$projets,$total];
     }
 
-    // supprimer les répertoires
+	/*
+	 * Appelle projetsParAnnee et renvoie les tableaux suivants, indexés par le critère
+	 * 
+	 *    - Nombre de projets
+	 *    - Heures demandées
+	 *    - Heures attribuées
+	 *    - Heures consommées
+	 *    - Liste des projets
+	 * 
+	 * $annee   = Année
+	 * $critere = Un nom de getter de Version permettant de consolider partiellement les données
+	 *            Le getter renverra un acronyme (laboratoire, établissement etc)
+	 *            (ex = getAcroLaboratoire())
+	 * 
+	 * Fonction utilisée pour les statistiques et pour le bilan annuel
+	 */
+	public static function projetsParCritere($annee, $critere)
+	{
+		// pour debug echo '<br><br><br><br><br><br>';
+		$projets = Functions::projetsParAnnee($annee)[0];
+		
+		// La liste des acronymes
+		$acros       = [];
+		
+		// Ces quatre tableaux sont indexés par l'acronyme ($acro)
+		$num_projets   = [];
+		$liste_projets = [];
+		$dem_heures    = [];
+		$attr_heures   = [];
+		$conso         = [];
 
+
+		// Remplissage des quatre tableaux précédents
+		foreach ($projets as $p)
+		{
+			$v    = ($p['vb']==null) ? $p['va'] : $p['vb'];
+			$acro = $v -> $critere();
+			if ($acro == "") $acro = "Autres";
+
+	        if( ! in_array($acro, $acros))               $acros[]              = $acro;
+            if( !array_key_exists($acro, $num_projets )) $num_projets[$acro]   = 0;
+            if( !array_key_exists($acro, $dem_heures ))  $dem_heures[$acro]    = 0;
+            if( !array_key_exists($acro, $attr_heures )) $attr_heures[$acro]   = 0;
+            if( !array_key_exists($acro, $conso ))       $conso[$acro]         = 0;
+            if( !array_key_exists($acro, $liste_projets))$liste_projets[$acro] = [];
+			
+			$num_projets[$acro]    += 1;
+			$liste_projets[$acro][] = $p['p']->getIdProjet();
+			
+			if ( $p['va'] != null ) $dem_heures[$acro] += $p['va']->getDemHeuresTotal();
+			if ( $p['vb'] != null ) $dem_heures[$acro] += $p['vb']->getDemHeuresTotal();
+			//if ($acro=='LA') echo 'LA '.$p['p']->getIdProjet().' ';			
+			$attr_heures[$acro] += $p['attrib'];
+			$conso[$acro]       += $p['c'];
+		}
+		
+	    asort( $acros );
+	    
+	    return [$acros, $num_projets, $liste_projets, $dem_heures, $attr_heures, $conso];
+	}	
+
+    // supprimer les répertoires
     public static function erase_parameter_directory( $parameter, $projet = 'none')
         {
         if( AppBundle::hasParameter($parameter) )

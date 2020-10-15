@@ -1,9 +1,11 @@
 Bonjour
 
-Merci d'expertiser (si possible rapidement) la demande d'attributions pour le projet
-n° {{ object.version.projet }} (resp {{ object.version.responsable |raw }})
+Merci d'expertiser (si possible rapidement) la ou les demandes d'attributions pour le(s) projet(s):
+{% for version in object %}
+   - n° {{ version.projet }} (resp {{ version.responsable |raw }})
+{% endfor %}
 
-Retrouver la page d'expertise : {{ absolute_url(path('expertise_modifier', { 'id' : object.id })) |raw }}
+Retrouver la liste des expertises demandées: {{ absolute_url(path('expertise_liste')) }}
 
 Merci pour votre participation,
 - gramc -

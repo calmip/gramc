@@ -73,6 +73,25 @@
     </tr>
  </table>
 
+ <table id="ratt">
+    <tr>
+        <th colspan="3">Rattachements</th>
+    </tr>
+    {% for key,value in rattachements %}
+    <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+        <td><input type="checkbox" class="cb" id="r{{ idRattachements[key] }}" checked="checked" /></td>
+    </tr>
+
+    {% endfor %}
+    <tr>
+        <th>Tout décocher</th>
+        <td>&nbsp;</td>
+        <td><input type="checkbox" id="rX" checked="checked" /></td>
+    </tr>
+ </table>
+
  <table>
     <tr>
         <th colspan="3">Etats des projets</th>
@@ -220,6 +239,7 @@
             <th title="Etat">E</th>
             <th>titre</th>
             <th>Thématique</th>
+            <th>Rattachement</th>
             <th>dari</th>
             <th>Responsable</th>
             <th>Laboratoire</th>
@@ -307,6 +327,13 @@
             <td>
             {% endif %}
             </td>
+            {% if version.prjRattachement != null %}
+				<td class="r{{ idRattachements[version.prjRattachement.libelleRattachement] }}">{{ version.prjRattachement }}
+            {% else %}
+            <td>
+            {% endif %}
+            </td>
+
             <td>
                 {{ version.prjGenciDari }}
             </td>

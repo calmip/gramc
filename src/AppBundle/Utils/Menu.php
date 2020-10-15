@@ -768,6 +768,27 @@ class Menu
 
     //////////////////////////////////////
 
+    public static function rattachements()
+    {
+	    $menu['name']   =   'gerer_rattachements';
+	    $menu['commentaire']    =   "Gérer la liste des rattachements";
+	    $menu['lien']           =   "Rattachements";
+
+	    if( AppBundle::isGranted('ROLE_OBS') )
+		{
+	        $menu['ok'] = true;
+		}
+	    else
+		{
+	        $menu['ok'] = false;
+	        $menu['raison'] = "Vous devez être au moins un observateur pour accéder à cette page";
+		}
+
+	    return $menu;
+    }
+
+    //////////////////////////////////////
+
     public static function metathematiques()
     {
 	    $menu['name']   =   'gerer_metaThematiques';
@@ -1094,20 +1115,22 @@ class Menu
 
     //////////////////////////////////////////////////////////////////
 
-    public static function envoyer_expert( Projet $projet)
+    public static function envoyer_expert( Version $version)
     {
-        if( $projet == null ) return [];
+        if( $version == null ) return [];
+        
+        $projet = $version -> getProjet();
 
         $menu['name']           =   'avant_envoyer_expert';
-        $menu['param']          =   $projet->getIdProjet();
+        $menu['param']          =   $version->getIdVersion();
         $menu['lien']           =   "Envoyer à l'expert";
         $menu['commentaire']    =   "Vous ne pouvez pas envoyer ce projet à l'expert";
         $menu['ok']             =   false;
         $menu['raison']         =   "";
         $menu['incomplet']      =   false;
 
-        $version      = $projet->derniereVersion();
         $etatVersion  = $version->getEtatVersion();
+        
         // true si le projet est un projet test OU un projet fil de l'eau
         $type_projet  = $version->getProjet()->getTypeProjet();
         $isProjetTest = ($type_projet == Projet::PROJET_FIL || $type_projet == Projet::PROJET_TEST);
@@ -1117,12 +1140,7 @@ class Menu
         else
             $etatSession = null;
 
-        if( $version == null)
-        {
-            $menu['raison'] = "Pas de projet à soumettre";
-            Functions::errorMessage(__METHOD__ . ' le projet ' . Functions::show( $projet ) . " n'a pas de version !");
-        }
-        elseif( $version->getSession() == null )
+        if( $version->getSession() == null )
         {
             $menu['raison'] = "Pas de session attachée à ce projet !";
             Functions::errorMessage(__METHOD__ . ' la version ' . Functions::show( $version ) . " n'a pas de session attachée !");
@@ -1145,19 +1163,19 @@ class Menu
             $menu['raison'] = "Le projet test a déjà été envoyé à l'expert !";
         elseif( $etatVersion !=  Etat::EDITION_DEMANDE && $etatVersion !=  Etat::EDITION_TEST )
             $menu['raison'] = "Le responsable du projet n'a pas demandé de renouvellement";
-        //elseif( $etatSession != Etat::EDITION_DEMANDE &&  $etatSession != Etat::EDITION_EXPERTISE  && $isProjetTest == false )
         elseif( $etatSession != Etat::EDITION_DEMANDE && $isProjetTest == false )
             $menu['raison'] = "Nous ne sommes pas en période de demandes de ressources";
         elseif( VersionModifController::versionValidate( $version ) != [] )
 		{
 			//Functions::debugMessage(__METHOD__ . ' '.$version->getIdVersion() . ' ' . print_r(VersionModifController::versionValidate( $version ), true));
 
-            $menu['raison']         = "Votre demande est incomplète";
-            $menu['name']           =   'version_avant_modifier';
-            $menu['commentaire']    =   "Vous ne pouvez pas envoyer ce projet à l'expert parce que votre demande est incomplète";
-            $menu['incomplet']      =   true;
-            $menu['ok']             =   true;
-            $menu['param']          =   $version->getIdVersion();
+            $menu['raison']      = "Votre demande est incomplète";
+            $menu['name']        = 'version_avant_modifier';
+            $menu['commentaire'] = "Vous ne pouvez pas envoyer ce projet à l'expert parce que votre demande est incomplète";
+            $menu['incomplet']   = true;
+            $menu['ok']          = true;
+            $menu['param']       = $version->getIdVersion();
+			$menu['todo']        = "Lorsqu'il sera complété, envoyer le projet en <strong>expertise</strong>";
 		}
         else
         {
@@ -1403,14 +1421,15 @@ class Menu
 	
 	
 	    $version = $projet->versionActive();
+	    $max_rall= AppBundle::getParameter("max_rall");
 	
 	    if( $version == null )
 	        $menu['raison']         =   "Le projet " . $projet . " n'est pas actif !";
 	    elseif( AppBundle::getRepository(Rallonge::class)->findRallongesOuvertes($projet) != null )
 	        $menu['raison']         =   "Une autre rallonge du projet " . $projet . " est déjà en cours de traitement !";
 	    // TODO - Mettre ce nombre en paramètre !!!!
-	    elseif( count($version->getRallonge()) >= 2)
-			$menu['raison']         =   "Pas plus de 2 rallonges par session !";
+	    elseif( count($version->getRallonge()) >= $max_rall)
+			$menu['raison']         =   "Pas plus de $max_rall rallonges par session !";
 	    //elseif( $version->getEtatVersion()  == Etat::NOUVELLE_VERSION_DEMANDEE )
 	    //    $menu['raison']         =   "Un renouvellement du projet " . $projet . " est déjà accepté !";
 	    elseif( AppBundle::isGranted('ROLE_ADMIN')  )
@@ -1617,8 +1636,9 @@ class Menu
         $menu['raison']         =   "La fiche projet signée a déjà été téléversée";
     else
         {
-        $menu['ok']             =   true;
-        $menu['commentaire']    =   "Téléverser la fiche projet";
+        $menu['ok']          = true;
+        $menu['commentaire'] = "Téléverser la fiche projet";
+        $menu['todo']        = "Télécharger la fiche projet, la faire signer et la téléverser à nouveau";
         }
 
     return $menu;

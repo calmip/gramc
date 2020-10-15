@@ -33,13 +33,14 @@
         <table id="affecte_experts">
             <thead>
                 <tr>
-				    <th title="Cocher la case pour sélectionner ce projet">S</th>
+				    <th title="Cocher la case pour sélectionner ce projet ou cochez Inverser la sélection (en bas)">S</th>
                     <th >N</th>
                     <th >N°</th>
                     <th >&nbsp;</th>
                     <th title="Etat">E</th>
                     <th >Titre</th>
                     <th >Thématique</th>
+					<th >Rattachement</th>
                     <th >Responsable</th>
                     <th >Laboratoire</th>
                     <th title="Affecté">A</th>
@@ -82,6 +83,11 @@
                 </td>
                 {% if( version.prjThematique != null ) %}
                 <td class="t{{ version.prjThematique.idThematique }} w170">{{ version.prjThematique }}</td>
+                {% else %}
+                <td ></td>
+                {% endif %}
+                {% if( version.prjRattachement != null ) %}
+                <td class="r{{ version.prjRattachement.idRattachement }} w170">{{version.prjRattachement}}</td>
                 {% else %}
                 <td ></td>
                 {% endif %}

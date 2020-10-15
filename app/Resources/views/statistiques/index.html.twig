@@ -1,6 +1,10 @@
 {% extends 'default/base.html.twig' %}
 {% import "default/macros.html.twig" as gramcmacros %}
 
+{% block myjavascripts %}
+<script  type="text/javascript" src="{{ asset('js/projet.js') }}" ></script>
+{% endblock myjavascripts %}
+
 {% block menu %}
 {{ gramcmacros.menu(menu) }}
 {% endblock menu %}
@@ -8,8 +12,6 @@
 {% block body %}
 
 <section>
-
-
 
 <h1>Statistiques de l'année {{ annee }}</h1>
 
@@ -23,8 +25,6 @@
 
 
 {# <p style="float:right;"><button name="format" value="csv">Télécharger en csv</button></p> #}
-
-
 
 
 <table id="tab_nb_projets_total_annee">
@@ -44,12 +44,19 @@
     </tbody>
 </table>
 
-
-
 <table><tbody>
     <tr><th colspan="2">Bilan des collaborateurs</th></tr>
     <tr><th class="left">Nombre de collaborateurs</th><td>{{ num_individus }}</td></tr>
-    <tr><th class="left">Nombre de collaborateurs uniques</th><td>{{ num_individus_uniques }}</td></tr>
+    <tr><th class="left">Nombre de collaborateurs uniques<br /><small>(dans le projet)</small></th><td>{{ num_individus_uniques }}</td></tr>
+</tbody></table>
+
+<table><tbody>
+    <tr><th colspan="2">Bilan des laboratoires</th></tr>
+    <tr><th class="left">1 seul projet</th><td>{{ lab_hist['== 1'] }}</td></tr>
+    <tr><th class="left">de 2  à 5  projets</th><td>{{ lab_hist['<= 5'] }}</td></tr>
+    <tr><th class="left">de 6  à 10 projets</th><td>{{ lab_hist['<=10'] }}</td></tr>
+    <tr><th class="left">de 10 à 20 projets</th><td>{{ lab_hist['<=20'] }}</td></tr>
+    <tr><th class="left">plus de 20 projets</th><td>{{ lab_hist['> 20'] }}</td></tr>
 </tbody></table>
 
 <table id="tab_heures_calcul_total_annee"><tbody>
@@ -97,10 +104,23 @@
 </tbody>
 </table>
 
+	<div class="lien-pdf">
+	    <img id="bconso_allcpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation cpu {{annee}} - Tous les projets" title="Visualiser la consommation cpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'cpu', 'annee' : annee, 'mois' : 1 })) }}"/>
+	</div>
+	<div class="lien-pdf">
+	    <img id="bconso_allgpu" class="bouton_poussoir conso" src="{{ asset('icones/conso64.png') }}"
+	        alt="Consommation gpu {{annee}} - Tous les projets" title="Visualiser la consommation gpu {{annee}} - Tous les projets"
+	        data-href="{{ absolute_url(path('tous_projets_conso', { 'ressource' : 'gpu', 'annee' : annee, 'mois' : 1 })) }}"/>
+	</div>
+
+<div id="dialog-compta"></div>
 </div>
 
 
 </section>
 
+{# dump(struct_data) #}
 
 {% endblock %}

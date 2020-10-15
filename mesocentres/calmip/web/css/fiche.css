@@ -62,3 +62,8 @@ div.encadrement p {
     text-align: center;
     font-size: .7em;
 }
+
+table#dfct tr.titre {
+	background-color: black;
+	color: white;
+}

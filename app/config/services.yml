@@ -35,3 +35,19 @@ services:
         class: AppBundle\Utils\AppBundleInitialize
         arguments: ['@kernel']
         
+     app.gramc_DonneesFacturation:
+        class: AppBundle\GramcServices\DonneesFacturation
+        arguments: [%dfct_directory%,"@doctrine.orm.entity_manager"]
+        
+     app.gramc.graf_calcul:
+        class: AppBundle\GramcServices\GramcGraf\Calcul
+        arguments: ['ressources_conso_group','ressources_conso_user']
+     
+     app.gramc.graf_stockage:
+        class: AppBundle\GramcServices\GramcGraf\Stockage
+        arguments: ['ressources_conso_group','ressources_conso_user']
+
+     app.gramc.graf_calcultous:
+        class: AppBundle\GramcServices\GramcGraf\CalculTous
+        arguments: ['ressources_conso_group','ressources_conso_user']
+          

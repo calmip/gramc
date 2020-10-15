@@ -1,0 +1,39 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+<section>
+    <h1>Rattachements</h1>
+    
+    <div class="message warning">Un rattachement est une institution à laquelle est rattachée le projet. Pour chaque rattachement il y a un ou plusieurs experts associés. 
+    <strong>Le rattachement prend la priorité sur les thématiques pour le choix automatique des experts.</strong></div>
+
+    {% import "default/macros.html.twig" as gramcmacros %}
+    {{ gramcmacros.menu(menu) }}
+
+    <table id="general" >
+    <thead>
+    <tr>
+		{% if is_granted('ROLE_ADMIN') %}<th colspan="2">&nbsp;</th>{% endif %}<th>Libellé</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for ratt in rattachements %}
+        <tr>
+			{% if is_granted('ROLE_ADMIN') %}
+            <td>
+                <a class="suppression" href="{{ path('supprimer_rattachement',{'id' : ratt.idRattachement }) }}" title="Supprimer">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_supprimer() }}" alt="Supprimer" /></a>
+            </td>
+            <td>
+                <a class="modification" href="{{ path('modifier_rattachement',{'id' : ratt.idRattachement }) }}" title="Modifier le libellé">
+                <img class="bouton_poussoir" src="{{ gramcmacros.img_modifier() }}" alt="Modifier" /></a>
+            </td>
+            {% endif %}
+            <td>{{ ratt.libelleRattachement }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+</section>
+
+{% endblock body  %}

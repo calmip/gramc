@@ -137,7 +137,8 @@ class VersionWorkflow extends Workflow
                 ])
              ->addState( Etat::NOUVELLE_VERSION_DEMANDEE, // quand une autre version est EN_ATTENTE
                 [
-                Signal::CLK_SESS_DEB    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_DEB, [], true),
+                // Si on reçoit SESS_DEB dans cet état, on FERME la version
+                Signal::CLK_SESS_DEB    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
                 Signal::CLK_SESS_FIN    => new VersionTransition(Etat::TERMINE, Signal::CLK_SESS_FIN, [], true),
                 Signal::CLK_FERM        => new VersionTransition(Etat::TERMINE, Signal::CLK_FERM,     [], true),
                 ])

@@ -57,6 +57,7 @@ class BilanSessionA extends BilanSession
 		$id_session      = $this->id_session;
         $entetes = ['Projet',
                     'Thématique',
+                    'Rattachement',
                     'Responsable scientifique',
                     'Laboratoire',
                     'Rapport',
@@ -195,6 +196,7 @@ class BilanSessionA extends BilanSession
 			[
 				$projet,
 				'"'. $version->getPrjThematique() .'"',
+				'"'. $version->getPrjRattachement() .'"',
 				'"'.$version->getResponsable() .'"',
 				'"'.$version->getLabo().'"',
 				( $version->hasRapportActivite() == true ) ? 'OUI' : 'NON',

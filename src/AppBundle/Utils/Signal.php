@@ -58,39 +58,32 @@ class Signal
     const CLK_AFFECTER          = 50;
     const CLK_DESAFFECTER       = 51;
 
-
-
     const   LIBELLE_SIGNAL  =
-        [
-            self::INCONNU               => 'INCONNU',
-            self::CLK_DEMANDE           => 'CLK_DEMANDE',
-            self::DAT_DEB_DEM           => 'DAT_DEB_DEM',
-            self::DAT_FIN_DEM           => 'DAT_FIN_DEM',
-            self::CLK_VAL_DEM           => 'CLK_VAL_DEM',
-            self::CLK_ATTR_PRS          => 'CLK_ATTR_PRS',
-            self::CLK_VAL_EXP_OK        => 'CLK_VAL_EXP_OK',
-            self::CLK_VAL_EXP_KO        => 'CLK_VAL_EXP_KO',
-            self::CLK_VAL_EXP_CONT      => 'CLK_VAL_EXP_CONT',
-            self::CLK_VAL_PRS           => 'CLK_VAL_PRS',
-            self::CLK_SESS_DEB               => 'CLK_SESS_DEB',
-            self::CLK_SESS_FIN               => 'CLK_SESS_FIN',
-            self::CLK_FERM              => 'CLK_FERM',
-            self::DAT_STDBY             => 'DAT_STDBY',
-            self::CLK_ARR               => 'CLK_ARR',
-            self::FIN_EVENEMENTS        => 'FIN_EVENEMENTS',
+	[
+		self::INCONNU          => 'INCONNU',
+		self::CLK_DEMANDE      => 'CLK_DEMANDE',
+		self::DAT_DEB_DEM      => 'DAT_DEB_DEM',
+		self::DAT_FIN_DEM      => 'DAT_FIN_DEM',
+		self::CLK_VAL_DEM      => 'CLK_VAL_DEM',
+		self::CLK_ATTR_PRS     => 'CLK_ATTR_PRS',
+		self::CLK_VAL_EXP_OK   => 'CLK_VAL_EXP_OK',
+		self::CLK_VAL_EXP_KO   => 'CLK_VAL_EXP_KO',
+		self::CLK_VAL_EXP_CONT => 'CLK_VAL_EXP_CONT',
+		self::CLK_VAL_PRS      => 'CLK_VAL_PRS',
+		self::CLK_SESS_DEB     => 'CLK_SESS_DEB',
+		self::CLK_SESS_FIN     => 'CLK_SESS_FIN',
+		self::CLK_FERM         => 'CLK_FERM',
+		self::DAT_STDBY        => 'DAT_STDBY',
+		self::CLK_ARR          => 'CLK_ARR',
+		self::FIN_EVENEMENTS   => 'FIN_EVENEMENTS',
 
-            self::CLK_SESS_DEB               =>  'DAT_SESS_DEB',
-            self::CLK_SESS_FIN               =>  'DAT_SESS_FIN',
+		self::CLK_TEST         =>  'CLK_TEST',
+		//self::CLK_ERASE        =>  'CLK_ERASE',
 
-            //self::FERMER_RALLONGE       => 'FERMER_RALLONGE',
-            //self::CLK_VAL_EXP_OK_RETARD => 'CLK_VAL_EXP_OK_RETARD',
-            self::CLK_TEST              =>  'CLK_TEST',
-            //self::CLK_ERASE             =>  'CLK_ERASE',
+		self::CLK_AFFECTER     =>  'CLK_AFFECTER',
+		self::CLK_DESAFFECTER  =>  'CLK_DESAFFECTER',
 
-            self::CLK_AFFECTER          =>  'CLK_AFFECTER',
-            self::CLK_DESAFFECTER       =>  'CLK_DESAFFECTER',
-
-        ];
+	];
 
     public static function getLibelle($signal)
     {

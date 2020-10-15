@@ -103,30 +103,50 @@ class AffectationExpertsRallonge extends AffectationExperts
 		$em->flush();
 	}
 
+	
+	/******
+	 * Ajoute des données dans le tableau notifications
+	 * 
+	 * notifications = tableau associatif
+	 *                 clé = $expert
+	 *                 val = Liste de $demandes
+	 * 
+	 * params $demande La demande (=version) correspondante
+	 *****/
+	protected function addNotification($demande)
+	{
+		//$notifications = $this    -> notifications;
+		$expert = $demande -> getExpert();
+		$exp_mail = $expert -> getMail();
+		if (!array_key_exists($exp_mail, $this->notifications))
+		{
+			$this->notifications[$exp_mail] = [];
+		}
+		$this->notifications[$exp_mail][] = $demande;
+	}
+	
 	/******
 	* Appelée quand on clique sur Notifier les experts
-	* Envoie une notification aux experts passés en paramètre
-	*
-	* params $experts  = liste d'experts (pas utilisé)
-	*        $rallonge = la version à expertiser
+	* Envoie une notification aux experts du tableau notifications
 	*
 	*****/
-	protected function notifierExperts($experts, $rallonge)
+	protected function notifierExperts()
 	{
-		$expert = $rallonge -> getExpert();
-		if ($expert != null)
+		$notifications = $this->notifications;
+		
+		Functions::debugMessage( __METHOD__ . count($notifications) . " notifications à envoyer");
+
+		foreach ($notifications as $e => $liste_d)
 		{
-			$dest = $expert->getMail();
-			if ($dest!=null)
-			{
-				$params = [ 'object' => $rallonge ];
-				Functions::sendMessage ('notification/affectation_expert_rallonge-sujet.html.twig',
-										'notification/affectation_expert_rallonge-contenu.html.twig',
-										$params,
-										[ $dest ]);
-			}
+			$dest   = [ $e ];
+			$params = [ 'object' => $liste_d ];
+			//Functions::debugMessage( __METHOD__ . "Envoi d'un message à " . join(',',$dest) . " - " . Functions::show($liste_d) );
+
+			Functions::sendMessage ('notification/affectation_expert_rallonge-sujet.html.twig',
+									'notification/affectation_expert_rallonge-contenu.html.twig',
+									$params,
+									$dest);
 		}
 	}
-
 }
 

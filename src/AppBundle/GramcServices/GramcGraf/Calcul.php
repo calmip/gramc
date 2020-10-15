@@ -1,6 +1,27 @@
 <?php
 
-namespace AppBundle\GramcGraf;
+/**
+ * This file is part of GRAMC (Computing Ressource Granting Software)
+ * GRAMC stands for : Gestion des Ressources et de leurs Attributions pour Mésocentre de Calcul
+ *
+ * GRAMC is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  GRAMC is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRAMC.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  authors : Emmanuel Courcelle - C.N.R.S. - UMS 3667 - CALMIP
+ *            Nicolas Renon - Université Paul Sabatier - CALMIP
+ **/
+
+namespace AppBundle\GramcServices\GramcGraf;
 
 use AppBundle\Utils\Functions;
 
@@ -10,7 +31,9 @@ class Calcul extends GramcGraf
 	 * afin de faire le graphique de consommation des heures cpu+gpu pour un projet
 	 *
 	 * TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
-	 *        Il faudrait utiliser la valeur du champ 'ress' du paramètre 'ressources_conso'
+	 *        Il faudrait utiliser la valeur du champ 'ress' de la variable protégée
+	 *        ressources_conso_group['1']['ress'] -> 'cpu,gpu'
+	 *        (code à généraliser !)
 	 *
 	 * $debut, $fin = dates de début et fin
 	 * $db_data     = Le retour de la requête sql sur la table consommation
@@ -76,11 +99,10 @@ class Calcul extends GramcGraf
     *
     * return = Un tableau de deux éléments:
     *             - L'image en base64
-    *             - La taille de l'image produite
+    *             - La taille de l'image produite (en octets)
     */
     public function createImage($structured_data, $ressource=null)
     {
-
         // Test s'il y a cpu ou gpu
         $no_cpu   = true;
         $no_gpu   = true;
@@ -194,13 +216,14 @@ class Calcul extends GramcGraf
 		return [ base64_encode($image_data), $size];
     }
 
-	/* SEULEMENT POUR gramc */
-	// recherche de la remise à zéro dans les 20 premiers jours
-	// Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
-	// Sauf qu'on remet les compteurs à zéro en début d'année
-	// Ici on détecte le jour de remise à zéro avant le 20 Janvier
-	// et on met à zéro tout ce qui précède
-	// Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal
+   /* SEULEMENT POUR gramc 
+	* recherche de la remise à zéro dans les 20 premiers jours
+	* Normalement la conso en heures de calculs ne fait que grandir (sauf problème technique)
+	* Sauf qu'on remet les compteurs à zéro en début d'année
+	* Ici on détecte le jour de remise à zéro avant le 20 Janvier
+	* et on met à zéro tout ce qui précède
+	* Si vous remettez les compteurs à zéro après le 20 janvier, vous êtes mal
+	*/
 
 	// Modifier $structured_data
     public function resetConso(&$structured_data)
@@ -230,6 +253,38 @@ class Calcul extends GramcGraf
             $structured_data[$key]['quota'] = $structured_data[$remise_a_zero]['quota'];
             $structured_data[$key]['norm'] = $structured_data[$remise_a_zero]['norm'];
         }
+	}
+
+   /* Calcul de la dérivée, pour connaître la consommation journalière
+	* 
+	* On calcule la différence entre N et N-1 sauf sur quota.
+	* Si la différence est <0, on garde 0
+	* 
+	* TODO - les noms de ressources 'cpu' et 'gpu' sont hardcodés
+	*/
+    public function derivConso(&$structured_data)
+    {
+		$conso_precedente = ['cpu'=>0,'gpu'=>0, 'key'=>0];
+		$cp               = [];
+		$prems            = true;
+		$jour             = 24 * 3600;
+        foreach( $structured_data as $key => $item )
+        {
+			$cp = $conso_precedente;
+			$conso_precedente['gpu'] = $structured_data[$key]['gpu'];
+			$conso_precedente['cpu'] = $structured_data[$key]['cpu'];
+			$conso_precedente['key'] = $key;
+			if ($prems)
+			{
+				$prems = false;
+				continue;
+			}
+
+	
+			$deltat = ($key - $cp['key']) / $jour;		// Le temps en jours (en principe 1)
+			$structured_data[$key]['gpu'] = ($structured_data[$key]['gpu'] < $cp['gpu']) ? 0 : ($structured_data[$key]['gpu'] - $cp['gpu']) / $deltat;
+			$structured_data[$key]['cpu'] = ($structured_data[$key]['cpu'] < $cp['cpu']) ? 0 : ($structured_data[$key]['cpu'] - $cp['cpu']) / $deltat;
+		}
 	}
 }
 

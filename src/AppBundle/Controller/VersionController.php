@@ -31,6 +31,11 @@ use AppBundle\Entity\Session;
 use AppBundle\Entity\Individu;
 use AppBundle\Entity\CollaborateurVersion;
 use AppBundle\Entity\RapportActivite;
+use AppBundle\Entity\Expertise;
+
+use AppBundle\PropositionExperts\PropositionExperts;
+use AppBundle\PropositionExperts\PropositionExpertsType1;
+use AppBundle\PropositionExperts\PropositionExpertsType2;
 
 use AppBundle\Workflow\Projet\ProjetWorkflow;
 
@@ -500,73 +505,97 @@ class VersionController extends Controller
      */
     public function changerResponsableAction(Version $version, Request $request)
     {
-
-	// Si changement d'état de la session alors que je suis connecté !
-	AppBundle::getSession()->remove('SessionCourante'); // remove cache
-
-    // ACL
-    $moi = AppBundle::getUser();
-
-    if( $version == null )
-        Functions::createException(__METHOD__ .":". __LINE__ .' version null');
-
-     if( Menu::changer_responsable($version)['ok'] == false )
-            Functions::createException(__METHOD__ . ":" . __LINE__ .
-                " impossible de changer de responsable parce que " . Menu::changer_responsable($version)['raison'] );
-
-    // préparation de la liste des responsables potentiels
-    $collaborateurs = $version->getCollaborateurs( false, true ); // pas moi, seulement éligibles
-
-     $change_form = AppBundle::createFormBuilder()
+		// Si changement d'état de la session alors que je suis connecté !
+		AppBundle::getSession()->remove('SessionCourante'); // remove cache
+	
+	    // ACL
+	    $moi = AppBundle::getUser();
+	
+	    if( $version == null )
+	    {
+	        Functions::createException(__METHOD__ .":". __LINE__ .' version null');
+		}
+	
+		if( Menu::changer_responsable($version)['ok'] == false )
+		{
+	            Functions::createException(__METHOD__ . ":" . __LINE__ .
+	                " impossible de changer de responsable parce que " . Menu::changer_responsable($version)['raison'] );
+		}
+	
+	    // préparation de la liste des responsables potentiels
+	    $collaborateurs = $version->getCollaborateurs( false, true ); // pas moi, seulement les éligibles
+	
+		$change_form = AppBundle::createFormBuilder()
             ->add('responsable',   EntityType::class,
-                    [
+				[
                     'multiple' => false,
                     'class' => 'AppBundle:Individu',
                     'required'  =>  true,
                     'label'     => '',
                     'choices' =>  $collaborateurs,
-                    ])
-        ->add('submit', SubmitType::class, ['label' => 'Nouveau responsable'])
-        ->getForm();
-
+				])
+	        ->add('submit', SubmitType::class, ['label' => 'Nouveau responsable'])
+	        ->getForm();
         $change_form->handleRequest($request);
-
+	
         $projet =  $version->getProjet();
-
+	
         if( $projet != null )
-            $idProjet   =   $projet->getIdProjet();
+        {
+			$idProjet   =   $projet->getIdProjet();
+		}
         else
-            {
+		{
             Functions::errorMessage(__METHOD__ .":". __LINE__ . " projet null pour version " . $version->getIdVersion());
             $idProjet   =   null;
-            }
-
+		}
+	
         if ( $change_form->isSubmitted() && $change_form->isValid() )
-            {
-            $moi = AppBundle::getUser();
-            //if( $moi == null || $version == null || ! in_array( $moi, $version->getResponsables() ) )
-            //  Functions::createException(__METHOD__ .":". __LINE__ . 'VersionController:changerResponsable : Seul le responsable du projet peut passer la main');
-
+		{
+			$ancien_responsable  = $version->getResponsable();
             $nouveau_responsable = $change_form->getData()['responsable'];
-            $version->changerResponsable( $moi, $nouveau_responsable );
+            if ($ancien_responsable != $nouveau_responsable)
+            {
+	            $version->changerResponsable($nouveau_responsable);
+	            
+	            $params = [ 
+							'ancien' => $ancien_responsable,
+						    'nouveau'=> $nouveau_responsable,
+							'version'=> $version
+						   ];
+	 
+	            // envoyer une notification à l'ancien et au nouveau responsable
+	            Functions::sendMessage ('notification/changement_resp_pour_ancien-sujet.html.twig',
+										'notification/changement_resp_pour_ancien-contenu.html.twig',
+										$params,
+										[$ancien_responsable]);
+				
+			    Functions::sendMessage ('notification/changement_resp_pour_nouveau-sujet.html.twig',
+										'notification/changement_resp_pour_nouveau-contenu.html.twig',
+										$params,
+										[$ancien_responsable]);
+	
+	 		    Functions::sendMessage ('notification/changement_resp_pour_admin-sujet.html.twig',
+										'notification/changement_resp_pour_admin-contenu.html.twig',
+										$params,
+										Functions::mailUsers( ['A'], null));
+			}
             return $this->redirectToRoute('consulter_version',
-                [
-                'version' => $version->getIdVersion(),
-                'id'    =>  $idProjet,
-                ]
-                );
-            }
-
-     return $this->render('version/responsable.html.twig',
-            [
-            'projet' => $idProjet,
-            'change_form'   => $change_form->createView(),
-            'version'   =>  $version,
-            'session'   =>  $version->getSession(),
-            ]
-            );
-
-    }
+				[
+	                'version' => $version->getIdVersion(),
+	                'id'    =>  $idProjet,
+				]);
+		}
+	
+		return $this->render('version/responsable.html.twig',
+			[
+	            'projet' => $idProjet,
+	            'change_form'   => $change_form->createView(),
+	            'version'   =>  $version,
+	            'session'   =>  $version->getSession(),
+            ]);
+	
+	}
 
 
     /**
@@ -608,15 +637,127 @@ class VersionController extends Controller
      */
     public function avant_modifierAction(Request $request, Version $version )
     {
-    // ACL
-    if( Menu::modifier_version($version)['ok'] == false )
-        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
-            " parce que : " . Menu::modifier_version($version)['raison'] );
+	    // ACL
+	    if( Menu::modifier_version($version)['ok'] == false )
+	        Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de modifier la version " . $version->getIdVersion().
+	            " parce que : " . Menu::modifier_version($version)['raison'] );
+	
+	    return $this->render('version/avant_modifier.html.twig',
+		[
+			'version'   => $version
+		]);
+    }
 
-    return $this->render('version/avant_modifier.html.twig',
-            [
-            'version'   => $version
-            ]);
+    /**
+     * envoyer à l'expert
+     *
+     * @Route("/{id}/avant_envoyer", name="avant_envoyer_expert")
+     * @Method({"GET","POST"})
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+    public function avantEnvoyerAction(Version $version,  Request $request)
+    {
+	    Functions::MenuACL( Menu::envoyer_expert($version), "Impossible d'envoyer la version " . $version->getIdVersion() . " à l'expert", __METHOD__, __LINE__ );
+
+	    $projet  = $version->getProjet();
+	    $session = $version->getSession();
+
+	    $form = AppBundle::createFormBuilder()
+	            ->add('CGU',   CheckBoxType::class,
+	                    [
+	                    'required'  =>  false,
+	                    'label'     => '',
+	                    ])
+	        ->add('envoyer', SubmitType::class, ['label' => "Envoyer à l'expert"])
+	        ->add('annuler', SubmitType::class, ['label' => "Annuler"])
+	        ->getForm();
+
+	    $form->handleRequest($request);
+	    if ( $form->isSubmitted() && $form->isValid() )
+	    {
+	        $CGU = $form->getData()['CGU'];
+	        if( $form->get('annuler')->isClicked() )
+	             return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+
+	        if( $CGU == false && $form->get('envoyer')->isClicked() )
+	        {
+	            //Functions::errorMessage(__METHOD__  .":". __LINE__ . " CGU pas acceptées ");
+	            //return $this->redirectToRoute('consulter_projet',[ 'id' => $projet->getIdProjet() ] );
+	            return $this->render('version/avant_envoyer_expert.html.twig',
+	                    [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'KO' ]
+	                    );
+
+	        }
+	        elseif ( $CGU == true && $form->get('envoyer')->isClicked() )
+	        {
+	            $version->setCGU( true );
+	            Functions::sauvegarder( $version );
+	            return $this->redirectToRoute('envoyer_expert',[ 'id' => $version->getIdVersion() ] );
+	        }
+	        else
+	            Functions::createException(__METHOD__ .":". __LINE__ ." Problème avec le formulaire d'envoi à l'expert du projet " . $version->getIdVersion());
+	    }
+
+	    return $this->render('version/avant_envoyer_expert.html.twig',
+	                        [ 'projet' => $projet, 'form' => $form->createView(), 'session' => $session, 'cgu' => 'OK' ]
+	                        );
+
+    }
+
+    /**
+     * envoyer à l'expert
+     *
+     * @Route("/{id}/envoyer", name="envoyer_expert")
+     * @Method("GET")
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+    public function envoyerAction(Version $version,  Request $request)
+    {
+		$em = $this->getDoctrine()->getManager();
+		Functions::MenuACL( Menu::envoyer_expert($version), " Impossible d'envoyer la version " . $version->getIdVersion() . " à l'expert", __METHOD__, __LINE__ );
+	
+		$projet = $version -> getProjet();
+		
+		if( Menu::envoyer_expert($version)['incomplet'] == true )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Version " . $version->getIdVersion() . " incomplet envoyé à l'expert !");
+	
+		if( $version->getCGU() == false )
+		    Functions::createException(__METHOD__ .":". __LINE__ ." Pas d'acceptation des CGU " . $projet->getIdProjet());
+	
+	    // S'il y a déjà une expertise on ne fait rien
+	    // Sinon on la crée et on appelle le programme d'affectation automatique des experts
+		if( count( $version->getExpertise() ) > 0 )
+        {
+		    Functions::noticeMessage(__METHOD__ . ":" . __LINE__ . " Expertise de la version " . $version . " existe déjà");
+        }
+		else
+        {
+		    $expertise = new Expertise();
+		    $expertise->setVersion( $version );
+	
+		    // Attention, l'algorithme de proposition des experts dépend du type de projet
+		    $prop_expert = PropositionExperts::factory($em,$version);
+		    $expert      = $prop_expert->getProposition($version);
+            if ($expert != null)
+            {
+				$expertise->setExpert( $expert );
+		    }
+		    Functions::sauvegarder( $expertise );
+        }
+
+		$projetWorkflow = new ProjetWorkflow();
+		$rtn = $projetWorkflow->execute( Signal::CLK_VAL_DEM, $projet );
+	
+		//Functions::debugMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet . " est dans l'état " . Etat::getLibelle( $projet->getObjectState() )
+		//    . "(" . $projet->getObjectState() . ")" );
+
+		if( $rtn == true )
+		    return $this->render('version/envoyer_expert.html.twig', [ 'projet' => $projet, 'session' => $version->getSession() ] );
+		else
+        {
+		    Functions::errorMessage(__METHOD__ .  ":" . __LINE__ . " Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+		    return new Response("Le projet " . $projet->getIdProjet() . " n'a pas pu etre envoyé à l'expert correctement");
+        }
     }
 
 
@@ -919,94 +1060,97 @@ class VersionController extends Controller
 
     private function handleRapport(Request $request, Version $version, $annee = null )
     {
-    $format_fichier = new \Symfony\Component\Validator\Constraints\File(
-                [
-                'mimeTypes'=> [ 'application/pdf' ],
-                'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
-                'maxSize' => "2048k",
-                'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
-                'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
-                ]);
+		$format_fichier = new \Symfony\Component\Validator\Constraints\File(
+			[
+			'mimeTypes'=> [ 'application/pdf' ],
+			'mimeTypesMessage'=>' Le fichier doit être un fichier pdf. ',
+			'maxSize' => "2048k",
+			'uploadIniSizeErrorMessage' => ' Le fichier doit avoir moins de {{ limit }} {{ suffix }}. ',
+			'maxSizeMessage' => ' Le fichier est trop grand ({{ size }} {{ suffix }}), il doit avoir moins de {{ limit }} {{ suffix }}. ',
+			]);
 
-     $form = $this
-           ->get('form.factory')
-           ->createNamedBuilder( 'rapport', FormType::class, [], ['csrf_protection' => false ] )
-           ->add('rapport', FileType::class,
-                [
-                'required'          =>  true,
-                'label'             => "Rapport d'activité",
-                'constraints'       => [$format_fichier , new PagesNumber() ]
+		$form = $this
+			->get('form.factory')
+			->createNamedBuilder( 'rapport', FormType::class, [], ['csrf_protection' => false ] )
+			->add('rapport', FileType::class,
+				[
+					'required'          =>  true,
+					'label'             => "Rapport d'activité",
+					'constraints'       => [$format_fichier , new PagesNumber() ]
                 ])
-           ->getForm();
-     //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
+			->getForm();
+		//Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " form data = " . Functions::show( $request->request->get('rapport') ) );
 
-     $form->handleRequest( $request );
+		$form->handleRequest( $request );
 
-     if( $form->isSubmitted() && $form->isValid() )
+		if( $form->isSubmitted() && $form->isValid() )
         {
-        $tempFilename = $form->getData()['rapport'];
-        if( $annee == null)
-            $annee = $version->anneeRapport();
+	        $tempFilename = $form->getData()['rapport'];
+	        if( $annee == null)
+	            $annee = $version->anneeRapport();
+	
+	        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
+	            $file = new File( $tempFilename );
+	        elseif( is_dir( $tempFilename ) )
+	            return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
+	        else
+	            return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
+	
+	        $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
 
-        if( is_file( $tempFilename ) && ! is_dir( $tempFilename ) )
-            $file = new File( $tempFilename );
-        elseif( is_dir( $tempFilename ) )
-            return "Erreur interne : Le nom  " . $tempFilename . " correspond à un répertoire" ;
-        else
-            return "Erreur interne : Le fichier " . $tempFilename . " n'existe pas" ;
-
-        $dir = AppBundle::getParameter('rapport_directory') . '/' . $annee;
-
-        if(  ! file_exists( $dir ) )
-            mkdir( $dir );
-        elseif( ! is_dir(  $dir ) )
+	        if(  ! file_exists( $dir ) )
+	        {
+	            mkdir( $dir );
+			}
+	        elseif( ! is_dir(  $dir ) )
             {
-            unlink( $dir );
-            mkdir( $dir );
+	            unlink( $dir );
+	            mkdir( $dir );
             }
 
-        //$file->move( $dir, $version->getIdVersion() . ".pdf" );
-        //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
-        $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
-        $file->move( $dir, $filename );
-        $filename = $dir . "/" . $filename;
+	        //$file->move( $dir, $version->getIdVersion() . ".pdf" );
+	        //$filename = $dir . "/" . $version->getIdVersion() . ".pdf";
+	        $filename = $annee . $version->getProjet()->getIdProjet() . ".pdf";
+	        $file->move( $dir, $filename );
+	        $filename = $dir . "/" . $filename;
 
-        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
+	        Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " Rapport d'activité de l'année " . $annee . " téléversé dans le fichier " . $filename );
 
-        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
-        // création de la table RapportActivite
-        $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
+	        //Functions::debugMessage(__METHOD__ . ':' . __LINE__ . " filename = " . $filename );
+	        // création de la table RapportActivite
+	        $rapportActivite = AppBundle::getRepository(RapportActivite::class)->findOneBy(
                 [
                 'projet' => $version->getProjet(),
                 'annee' => $annee,
                 ]);
-        if( $rapportActivite == null )
-            $rapportActivite    = new RapportActivite( $version->getProjet(), $annee);
+	        if( $rapportActivite == null )
+	            $rapportActivite    = new RapportActivite( $version->getProjet(), $annee);
 
-        $rapportActivite->setTaille( filesize( $filename ) );
-        $rapportActivite->setNomFichier($filename);
-        $rapportActivite->setFiledata("");
+	        $rapportActivite->setTaille( filesize( $filename ) );
+	        $rapportActivite->setNomFichier($filename);
+	        $rapportActivite->setFiledata("");
 
-        $em =   AppBundle::getManager();
-        $em->persist( $rapportActivite  );
-        $em->flush();
-
-        return 'OK';
+	        $em =   AppBundle::getManager();
+	        $em->persist( $rapportActivite  );
+	        $em->flush();
+	
+	        return 'OK';
         }
-    elseif( $form->isSubmitted() && ! $form->isValid() )
+		elseif( $form->isSubmitted() && ! $form->isValid() )
         {
-        if( isset( $form->getData()['rapport'] ) )
-            return  Functions::formError( $form->getData()['rapport'], [$format_fichier , new PagesNumber() ]) ;
-        else
-            return "Les fichier n'a pas été soumis correctement";
-         }
-    elseif( $request->isXMLHttpRequest() )
-       return "Le formulaire n'a pas été soumis";
-    else
-        return $form;
-
-
-
+	        if( isset( $form->getData()['rapport'] ) )
+	            return  Functions::formError( $form->getData()['rapport'], [$format_fichier , new PagesNumber() ]) ;
+	        else
+	            return "Le fichier n'a pas été soumis correctement";
+		}
+		elseif( $request->isXMLHttpRequest() )
+		{
+			return "Le formulaire n'a pas été soumis";
+		}
+	    else
+	    {
+	        return $form;
+		}
     }
 
     private static function modifyRapport(Projet $projet, $annee, $filename )

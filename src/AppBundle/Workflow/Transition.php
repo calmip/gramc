@@ -24,6 +24,8 @@
 
 namespace AppBundle\Workflow;
 use AppBundle\Utils\Functions;
+use AppBundle\Utils\Etat;
+use AppBundle\Utils\Signal;
 
 /************************
  * Transition - Implémente une transition d'états
@@ -36,9 +38,9 @@ use AppBundle\Utils\Functions;
  ************************/
 abstract class Transition
 {
-	const DEBUG = true;					// Activer - ou pas - le debug dans les transitions
+	const DEBUG = false;				// Activer - ou pas - le debug dans les transitions
 										// ATTENTION ! Mettre à false pour la prod, sinon perte de perfs !
-	const FAST  = false;				    // TODO - VIRER TOUTE PROPAGATION DANS canExecute !!!
+	const FAST  = false;				// TODO - VIRER TOUTE PROPAGATION DANS canExecute !!!
 										// Si FAST est à false, on appelle canExecute pour TOUS les objets
 										// Si canExecute sur Session on appelle canExecute pour tous les versions,
 										// Les versions appellent canExecute pour tous les projets etc.

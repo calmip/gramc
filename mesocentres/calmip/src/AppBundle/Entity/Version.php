@@ -521,6 +521,17 @@ class Version implements Demande
      */
     private $prjThematique;
 
+
+    /**
+     * @var \AppBundle\Entity\Rattachement
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Rattachement")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="prj_id_rattachement", referencedColumnName="id_rattachement")
+     * })
+     */
+    private $prjRattachement;
+
     /**
      * @var \AppBundle\Entity\Session
      *
@@ -565,6 +576,14 @@ class Version implements Demande
      */
     private $dataNombreDatasets;
     /////////
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="fct_stamp", type="datetime", nullable=true)
+     */
+    private $fctStamp;
+
 
     /**
     * @ORM\PrePersist
@@ -2171,6 +2190,30 @@ class Version implements Demande
     }
 
     /**
+     * Set fctStamp
+     *
+     * @param \DateTime $fctStamp
+     *
+     * @return Version
+     */
+    public function setFctStamp($fctStamp)
+    {
+        $this->fctStamp = $fctStamp;
+
+        return $this;
+    }
+
+    /**
+     * Get fctStamp
+     *
+     * @return \DateTime
+     */
+    public function getFctStamp()
+    {
+        return $this->fctStamp;
+    }
+
+    /**
      * Set sondVolDonnPerm
      *
      * @param string $sondVolDonnPerm
@@ -2451,6 +2494,30 @@ class Version implements Demande
     }
 
     /**
+     * Set prjRattachement
+     *
+     * @param \AppBundle\Entity\Rattachement $prjRattachement
+     *
+     * @return Version
+     */
+    public function setPrjRattachement(\AppBundle\Entity\Rattachement $prjRattachement = null)
+    {
+        $this->prjRattachement = $prjRattachement;
+
+        return $this;
+    }
+
+    /**
+     * Get prjRattachement
+     *
+     * @return \AppBundle\Entity\Rattachement
+     */
+    public function getPrjRattachement()
+    {
+        return $this->prjRattachement;
+    }
+
+    /**
      * Set session
      *
      * @param \AppBundle\Entity\Session $session
@@ -2673,11 +2740,11 @@ class Version implements Demande
 
     ////////////////////////////////////////////////
 
-    public function changerResponsable(Individu $old, Individu $new)
+    public function changerResponsable(Individu $new)
     {
-        $em =   AppBundle::getManager();
+		$em =   AppBundle::getManager();
         foreach( $this->getCollaborateurVersion() as $item )
-            {
+		{
             $collaborateur = $item->getCollaborateur();
             if( $collaborateur == null )
             {
@@ -2702,23 +2769,9 @@ class Version implements Demande
                 $em->persist( $item );
             }
 
-            /*
-
-            if( $collaborateur->isEqualTo( $old ) )
-                {
-                $item->setResponsable(false);
-                $em->persist( $item );
-                }
-            elseif( $collaborateur->isEqualTo( $new ) )
-                {
-                $item->setResponsable(true);
-                $em->persist( $item );
-                }
-            */
-            }
+		}
         $em->flush();
     }
-
 
     /*
      *
@@ -3039,8 +3092,8 @@ class Version implements Demande
 
     // MetaEtat d'une version (et du projet associé)
     // Ne sert que pour l'affichage des états de version
-    public function getMetaEtat()
-    {
+	public function getMetaEtat()
+	{
         //$projet =  $this->getProjet();
         //if( $projet != null )
         //{

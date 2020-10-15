@@ -382,15 +382,24 @@ class AdminuxController extends Controller
 	 *
 	 */
 
-	// curl --netrc -H "Content-Type: application/json" -X POST  -d '{ "projet" : "P0044", "mail" : null }' https://attribution-ressources-dev.calmip.univ-toulouse.fr/gramc2-manu/adminux/users/get
+	// curl --netrc -H "Content-Type: application/json" -X POST  -d '{ "projet" : "P0044", "mail" : null, "session" : "19A" }' https://attribution-ressources-dev.calmip.univ-toulouse.fr/gramc2-manu/adminux/users/get
 
 	 public function usersGetAction(Request $request)
 	 {
 		$em = $this->getDoctrine()->getManager();
-		$content  = json_decode($request->getContent(),true);
+		$raw_content = $request->getContent();
+		if ($raw_content == '' || $raw_content == '{}')
+		{
+			$content = null;
+		}
+		else
+		{
+			$content  = json_decode($request->getContent(),true);
+		}
 		if ($content == null)
 		{
 			$id_projet = null;
+			$id_session= null;
 			$mail      = null;
 		}
 		else

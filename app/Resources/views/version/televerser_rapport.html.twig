@@ -4,9 +4,14 @@
 
 <section>
 
-    <h2>Téléverser votre rapport d'activité pour l'année 2017</h2>
+    <h2>Téléverser votre rapport d'activité pour l'année {{ annee }}</h2>
 
-    <div class="message warning">Le fichier doit être <strong>un pdf de taille inférieure à 10 Mo</strong></div>
+    <div class="message warning">Le fichier doit être:
+       <ul>
+		   <li><strong>un pdf</strong> de taille <strong>inférieure à 10 Mo</strong></li>
+		   <li>et de <strong>moins de {{max_page_nb}} pages</strong></li>
+	   </ul>
+    </div>
     {{ form_start( form ) }}
     {{ form_label( form.rapport, "Votre rapport d'activité : " ) }}{{ form_widget( form.rapport ) }}<br>
     <input name="submit" value="Envoyer" type="submit">

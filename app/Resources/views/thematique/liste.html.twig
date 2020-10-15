@@ -1,10 +1,15 @@
 {% extends 'default/base.html.twig' %}
+    {% import "default/macros.html.twig" as gramcmacros %}
 
 {% block body %}
 <section>
-    <h1>Thématiques utilisables par les projets gramc</h1>
+    <h1>Thématiques</h1>
 
-    {% import "default/macros.html.twig" as gramcmacros %}
+    <div class="message warning">Les projets sont associés à des <strong>thématiques scientifiques</strong>. A chaque thématique correspond 
+    <strong>un ou plusieurs experts</strong>. La liste des experts associés à chaque thématique est utilisée lors de l'attribution automatique d'un expert.
+    Attention le rattachement est également utilisé, et <strong>l'expert associé au rattachement prend la priorité sur l'expert de la thématique.</strong>
+    </div>
+
     {{ gramcmacros.menu(menu) }}
 
     <table id="general" >

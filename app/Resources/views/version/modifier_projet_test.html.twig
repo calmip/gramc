@@ -77,8 +77,6 @@
     <br><br>
     <h3>Informations générales</h3>
     <table class="projet"><tbody>
-
-
     <tr>
         <th class="horiz">{{ form_label( form.prjTitre  ,"Titre du projet *" ) }}</th>
         <td>{{ form_widget( form.prjTitre  ,
@@ -95,9 +93,13 @@
         <th class="horiz">{{ form_label( form.prjThematique, "Thématique principale du projet" ) }} </th>
         <td>{{ form_widget( form.prjThematique ) }}</td>
     </tr>
+    </tbody></table>
 
-
-
+    <table class="projet"><tbody>
+	<tr>
+        <th class="horiz">{{ form_label( form.prjRattachement, "Rattachement du projet" ) }} </th>
+        <td>{{ form_widget( form.prjRattachement ) }}</td>
+    </tr>
     </tbody></table>
 
     <div class="message warning">Les heures sont comptées en heures normalisées</div>
@@ -130,6 +132,7 @@
 
     <h4 id="collabs">Personnes participant au projet</h4>
     <div class="message warning"><strong>Astuce:</strong> Commencez par l'adresse mail !</div>
+    <div class="message warning"><strong>ATTENTION:</strong> Au moins un de vos collaborateurs doit avoir la case login cochée !</div>
 
     <div id="liste_des_collaborateurs">
     {{ form_widget(collaborateur_form) }}

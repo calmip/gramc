@@ -112,6 +112,7 @@ parameters:
     signature_directory: '%kernel.root_dir%/../data/fiches'
     rapport_directory: '%kernel.root_dir%/../data/rapports'
     fig_directory: '%kernel.root_dir%/../data/figures'
+    dfct_directory:      '%kernel.root_dir%/../data/dfct'
 
     # Nombre d'heures pouvant être demandées pour un projet test
     heures_projet_test: 5000

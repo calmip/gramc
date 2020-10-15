@@ -46,6 +46,7 @@ use Symfony\Component\HttpFoundation\Response;
 use AppBundle\Form\ChoiceList\ExpertChoiceLoader;
 
 use AppBundle\Entity\Thematique;
+use AppBundle\Entity\Rattachement;
 use AppBundle\AppBundle;
 use AppBundle\Utils\Etat;
 use AppBundle\Utils\Functions;
@@ -60,18 +61,20 @@ class AffectationExperts
 	// Constructeur: Certains objets sont protégés dans les controleurs, 
 	// donc on les passe séparément à affectationExperts
 	// Arguments: $request   
-	//			  $demandes	 La liste des demandes (array)
+	//			  $demandes	 La liste des demandes (array de versions)
 	//            $ff        Form factory
 	//            $dct       getDoctrine()
 
 	function __construct (Request $request, $demandes, $ff, $dct)
 	{
-		$this->formFactory = $ff;
-		$this->doctrine    = $dct;
-		$this->request     = $request;
-		$this->demandes    = $demandes;
-		$this->form_buttons= null;
-		$this->thematiques = null;
+		$this->formFactory   = $ff;
+		$this->doctrine      = $dct;
+		$this->request       = $request;
+		$this->demandes      = $demandes;
+		$this->notifications = []; // notifications à envoyer, mises en réserve
+		$this->form_buttons  = null;
+		$this->thematiques   = null;
+		$this->rattachements = null;
 	}
 	
 	// Renvoie le formulaire des boutons principaux 
@@ -134,6 +137,51 @@ class AffectationExperts
 		}
         return $this->thematiques;
 	}
+	
+	/*********************************************
+	 * getTableauRattachements = Calcule et renvoie le tableau des rattachements, 
+	 * avec pour chacun la liste des experts associés et 
+	 * le nombre de projets affectés au rattachement
+	 * 
+	 * return: Le tableau des rattachements
+	 * 
+	 ***************************************************/
+	public function getTableauRattachements()
+	{
+		if ($this->rattachements==null)
+		{
+			// Construction du tableau des thématiques
+		    $rattachements = [];
+		    foreach( AppBundle::getRepository(Rattachement::class)->findAll() as $rattachement )
+	        {
+		        foreach( $rattachement->getExpert() as $expert )
+		        {
+		            if( $expert->getExpert() == false )
+	                {
+		                Functions::warningMessage( __METHOD__ . ':' . __LINE__ . " $expert" . " est supprimé de la thématique pour ce projet" . $rattachement);
+		                Functions::noRattachement( $expert );
+	                }
+				}
+		        $rattachements[ $rattachement->getIdRattachement() ] =
+		            ['rattachement' => $rattachement, 'experts' => $rattachement->getExpert(), 'projets' => 0 ];
+	        }
+	        
+	        // Remplissage avec le nb de demandes par thématiques
+	        $demandes = $this->demandes;
+	        foreach( $demandes as $demande )
+			{
+	            $etatDemande    =   $demande->getEtat();
+	            if( $etatDemande == Etat::EDITION_DEMANDE || $etatDemande == Etat::ANNULE ) continue; 
+	        
+				if( $demande->getPrjRattachement() != null )
+	            {
+	                $rattachements[ $demande->getPrjRattachement()->getIdRattachement() ]['projets']++;
+				}
+			}
+			$this->rattachements = $rattachements;
+		}
+        return $this->rattachements;
+	}
 
 	/*********************************************
 	 * traitementFormulaires
@@ -142,6 +190,10 @@ class AffectationExperts
 	 ********/
 	public function traitementFormulaires()
 	{
+		$this->clearNotifications();
+		
+		// Traitements différentiés suivant le bouton sur lequel on a cliqué
+		$form_buttons = $this->getFormButtons();
 		$request  = $this->request;
 		$demandes = $this->demandes;
         foreach( $demandes as $demande )
@@ -167,8 +219,6 @@ class AffectationExperts
 				$experts_affectes[] = $f->getData()['expert'];
 			}
 
-			// Traitements différentiés suivant le bouton sur lequel on a cliqué
-			$form_buttons = $this->getFormButtons();
 			if ($form_buttons->get('sub1')->isClicked())
 			{
 				$this->affecterExpertsToDemande($experts_affectes,$demande);
@@ -176,7 +226,7 @@ class AffectationExperts
 			elseif ($form_buttons->get('sub2')->isClicked())
 			{
 				$this->affecterExpertsToDemande($experts_affectes,$demande);
-				$this->notifierExperts($experts_affectes,$demande);
+				$this->addNotification($demande);
 			}
 			elseif ($form_buttons->get('sub3')->isClicked())
 			{
@@ -191,6 +241,10 @@ class AffectationExperts
 			{
 				continue;
 			}
+		}
+		if ($form_buttons->get('sub2')->isClicked())
+		{
+			$this->notifierExperts();
 		}
 	}
 
@@ -546,7 +600,63 @@ class AffectationExperts
 		}
 		return $forms;
     }
+
+	/******
+	 * Efface le tableau notifications
+	 *****/ 
+	protected function clearNotifications()
+	{
+		$this->notifications = [];
+	}
+	
+	/******
+	 * Ajoute des données dans le tableau notifications
+	 * 
+	 * notifications = tableau associatif
+	 *                 clé = $expert
+	 *                 val = Liste de $demandes
+	 * 
+	 * params $demande La demande (=version) correspondante
+	 *****/
+	protected function addNotification($demande)
+	{
+		//$notifications = $this    -> notifications;
+		$expertises    = $demande -> getExpertise();
+		foreach ($expertises as $e)
+		{
+			$exp_mail = $e -> getExpert() -> getMail();
+			if (!array_key_exists($exp_mail, $this->notifications))
+			{
+				$this->notifications[$exp_mail] = [];
+			}
+			$this->notifications[$exp_mail][] = $demande;
+		}
+	}
+	 
+	/******
+	* Appelée quand on clique sur Notifier les experts
+	* Envoie une notification aux experts du tableau notifications
+	*
+	*****/
+	protected function notifierExperts()
+	{
+		$notifications = $this->notifications;
 		
+		Functions::debugMessage( __METHOD__ . count($notifications) . " notifications à envoyer");
+
+		foreach ($notifications as $e => $liste_d)
+		{
+			$dest   = [ $e ];
+			$params = [ 'object' => $liste_d ];
+			//Functions::debugMessage( __METHOD__ . "Envoi d'un message à " . join(',',$dest) . " - " . Functions::show($liste_d) );
+
+			Functions::sendMessage ('notification/affectation_expert_version-sujet.html.twig',
+									'notification/affectation_expert_version-contenu.html.twig',
+									$params,
+									$dest);
+		}
+	}
+
 	/******
 	* Appelée quand on clique sur Notifier les experts
 	* Envoie une notification aux experts passés en paramètre
@@ -555,7 +665,7 @@ class AffectationExperts
 	*        $demande = la demande à expertiser
 	*
 	*****/
-	protected function notifierExperts($experts, $demande)
+	protected function notifierExperts_AJETER($experts, $demande)
 	{
 		$expertises = $demande->getExpertise();
 		foreach ($expertises as $e)

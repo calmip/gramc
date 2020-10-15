@@ -69,14 +69,10 @@ hr.retour {
     text-align: left;
 }
 
+
 div.gauche {
-	width: 20%;
+	width: 50%;
 	float: left;
-	background-color: blue;
-	font-weight: bold;
-}
-div.droite {
-	margin-left: 20%;
 }
 
 .petit {
@@ -171,18 +167,46 @@ table#profil_horiz tr td.resp {
 	background-color: black;
 }
 
-/* formulaire de projet => Boutons sauvegarder etc. */
+/* formulaire de projet/expertise => Boutons sauvegarder etc. */
 /* Page affectation (presque) pareil */
-#quitter {
+#quitter, #envoyer {
 	position: fixed;
 	top: 115px;
 	right: 0;
-	text-align: right;
-	max-width: 200px;
+	text-align: left;
+	width: 200px;
 	background-color:  black;
 	border: red 2px solid;
 
 }
+#envoyer {
+	top: 305px;
+}
+#quitter img {
+	height: 32px;
+	border: none;
+}
+#quitter img.left {
+	position: relative;
+	left: 0px;
+	margin-left: 10px;
+}
+#quitter img.right {
+	margin-left: 110px;
+}
+	
+#quitter input, #quitter button, .quitter button, #envoyer button {
+	margin: 10px;
+	width: 180px;
+}
+#quitter input:first-of-type, #quitter button:first-of-type {
+	margin-bottom: 0;
+}
+#quitter input:last-of-type, #quitter button:last-of-type {
+	margin-top: 0;
+}
+
+
 #bouton_affecter {
 	width: 200px;
 	position: fixed;
@@ -205,16 +229,11 @@ table#profil_horiz tr td.resp {
 	border: 4px outset #c0c0c0;
 }
 
-
-#quitter input, #quitter button, .quitter button {
-	margin: 10px;
-	width: 180px;
+#form_prjRattachement {
+	margin: 10px 0;
 }
-#quitter input:first-child, #quitter button:first-child {
-	margin-bottom: 0;
-}
-#quitter input:last-child, #quitter button:last-child {
-	margin-top: 0;
+#form_prjRattachement label {
+	padding-right: 2em;
 }
 
 /* Le bouton Fermer dans le téléchargement d'images "classique" */
@@ -284,6 +303,16 @@ table.projet {
 
 table.projet th.horiz {
 	width: 33%;
+}
+
+/* Appliqué à tr, mettre la ligne en gras */
+table.projet .gras {
+	font-weight: bold;
+}
+
+/* Appliqué à tr, mettre la ligne en pâle */
+table.projet .leger {
+	opacity: .6;
 }
 
 /* Le formulaire projet */
@@ -569,7 +598,7 @@ td.ERREUR {
 
 /* Les boutons */
 /* bouton_poussoir: je presse une fois et ça revient */
-img.bouton_poussoir, input.bouton_poussoir {
+img.bouton_poussoir, input.bouton_poussoir, img.bouton_inactif {
 	border: 2px outset #c0c0c0;
 	opacity: 0.6;
 	padding: 1px;
@@ -609,7 +638,8 @@ img.bouton_on:hover {
 	width: 15px;
 	height: 15px;
 	}
-/* Bouton de tri du tableaux utilisateurs */
+	
+/* Bouton de tri du tableau utilisateurs */
 #utilisateurs button {
 	background: none;
 	}
@@ -1047,4 +1077,39 @@ div.ui-dialog {
 /* Les onglets du formulaire de projet */
 .ui-widget-content {
 	background: inherit;
+}
+
+/* Données de facturation */
+#generer_dfct {
+	font-size: 1.8em;
+	font-weight: bold;
+	color: white;
+	background-color: black;
+	margin: 0;
+	position: absolute;
+	left: 50%;
+	-ms-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+}
+
+table.dfct tr.titre {
+	background-color: black;
+	color: white;
+}
+
+table.dfct {
+	border-collapse: collapse;
+	margin: 1em auto;
+}
+
+table.dfct tr,td,th {
+	border: solid black 2px;
+}
+
+img.dfct {
+	display: block;
+	margin: 1em auto;
+	padding: 1em;
+	border: 2px solid black;
+	//background-color: grey;
 }

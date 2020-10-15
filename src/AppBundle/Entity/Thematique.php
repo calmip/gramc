@@ -98,7 +98,7 @@ class Thematique
     {
         $this->expert = new \Doctrine\Common\Collections\ArrayCollection();
         $this->version = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->projetTest = new \Doctrine\Common\Collections\ArrayCollection();
+        //$this->projetTest = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**

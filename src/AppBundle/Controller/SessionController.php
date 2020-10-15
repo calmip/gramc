@@ -771,77 +771,27 @@ class SessionController extends Controller
      */
     public function bilanLaboCsvAction(Request $request, $annee)
     {
-        $entetes = ['Laboratoire','Nombre de projets','Heures attribuées','Heure consommées','projets'];
+        $entetes = ['Laboratoire','Nombre de projets','Heures demandées','Heures attribuées','Heure consommées','projets'];
+        $sortie  = join("\t",$entetes) . "\n";
 
-        $sortie     =   join("\t",$entetes) . "\n";
+        $stats   = Functions::projetsParCritere($annee, 'getAcroLaboratoire');
+		$acros         = $stats[0];
+		$num_projets   = $stats[1];
+		$liste_projets = $stats[2];
+		$dem_heures    = $stats[3];
+		$attr_heures   = $stats[4];
+		$conso         = $stats[5];
 
-        //////////////////////////////
-
-        // $annee = 2017, 2018, etc. (4 caractères)
-        $session_id_A = substr($annee, 2, 2) . 'A';
-        $session_id_B = substr($annee, 2, 2) . 'B';
-        $session_A = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_A ]);
-        $session_B = AppBundle::getRepository(Session::class)->findOneBy(['idSession' => $session_id_B ]);
-
-        $versions_A= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_A ] );
-        $versions_B= AppBundle::getRepository(Version::class)->findBy( ['session' => $session_B ] );
-
-        // Tableau $laboratoires = tableau associatif
-        //     clé = Sigle du laboratoire tel qu'il est dans la base de données
-        //     valeur = Un tableau associatifs:
-        //              attrHeures -> Somme des heures attribuées à ce laboratoire
-        //              projets    -> [] projets ayant une version cette année dans ce laboratoire
-        $laboratoires=[];
-        foreach ( array_merge($versions_A, $versions_B) as $v)
-        {
-            $projet  = $v -> getProjet();
-            $acro    = $v -> getResponsable() -> getLabo() -> getAcroLabo();
-            if ( ! array_key_exists($acro,$laboratoires) ) {
-                $labo=[];
-                $labo['attrHeures'] = 0;
-                $labo['projets'] = [];
-                $laboratoires[$acro] = $labo;
-            }
-            $labo = $laboratoires[$acro];
-            $labo['attrHeures'] += $v->getAttrHeures();
-            foreach ($v->getRallonge() as $r)
-            {
-                $labo['attrHeures'] += $r->getAttrHeures();
-            }
-            $labo['attrHeures'] -= $v->getPenalHeures();
-            if ( ! in_array($projet,$labo['projets'])) {
-                $labo['projets'][] = $projet;
-            }
-            $laboratoires[$acro] = $labo;
-        }
-
-        $keys = array_keys($laboratoires);
-        sort($keys);
-
-        // Calcul du csv, ligne par ligne
-        foreach ($keys as $k)
+        // Calcul du csv
+        foreach ($acros as $k)
         {
             $ligne   = [];
             $ligne[] = $k;
-            $l       = $laboratoires[$k];
-
-            $projets = $l['projets'];
-            $ligne[] = count($projets);
-            $ligne[] = $l['attrHeures'];
-
-            // Calculer la consommation pour chaque laboratoire à partir de la liste des projets
-            // NOTE - Ce calcul n'a pas trop de sens si $année est l'année courante !!!
-            $c = 0;
-            $id_projets = [];
-            foreach ($projets as $p)
-            {
-                $c += $p -> getConsoCalcul($annee);
-                $id_projets[] = $p -> getIdProjet();
-            }
-
-            $ligne[] = $c;
-            $ligne[] = implode(',',$id_projets);
-
+            $ligne[] = $num_projets[$k];
+            $ligne[] = $dem_heures[$k];
+            $ligne[] = $attr_heures[$k];
+            $ligne[] = $conso[$k];
+            $ligne[] = implode(',',$liste_projets[$k]);
             $sortie .= join("\t",$ligne) . "\n";
         }
 
