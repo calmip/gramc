@@ -1,7 +1,9 @@
 Bonjour
 
-Une demande de rallonge de ressources {{mesoc}} a été reçue de {{  app.user |raw }}.
-Adresse: {{ app.user.mail |raw }}
+Une demande de rallonge de ressources {{mesoc}} a été reçue de {{  object.version.responsable |raw }}
+{% if app.user != object.version.responsable %}(via {{app.user}}, {{app.user.mail}})
+{% endif %}
+Adresse: {{ object.version.responsable.mail |raw }}
 
 Cette demande a été transférée pour information aux adresses suivantes: {{ liste_mail_destinataires |raw }}
 ainsi qu'au président du comité d'attributions.
