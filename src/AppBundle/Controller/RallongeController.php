@@ -232,8 +232,10 @@ class RallongeController extends Controller
     {
         // ACL
         if( Menu::rallonge_modifier($rallonge)['ok'] == false )
+        {
             Functions::createException(__METHOD__ . " impossible de modifier la rallonge " . $rallonge->getIdRallonge().
                 " parce que : " . Menu::rallonge_modifier($rallonge)['raison'] );
+		}
 
         $editForm = $this->createFormBuilder($rallonge)
             ->add('demHeures', IntegerType::class, [ 'required'       =>  false ] )
@@ -244,41 +246,44 @@ class RallongeController extends Controller
 
         $version = $rallonge->getVersion();
         if( $version != null )
-            {
+		{
             $projet = $version->getProjet();
             $session = $version->getSession();
-            }
+		}
         else
+        {
             Functions::createException(__METHOD__ . ":" . __LINE__ . " rallonge " . $rallonge . " n'est pas associée à une version !");
-
+		}
+		
         $erreurs = [];
         $editForm->handleRequest($request);
-
         if ($editForm->isSubmitted()  )
-            {
+		{
             $erreurs = Functions::dataError( $rallonge);
-
             AppBundle::getManager()->flush();
 
             if( $editForm->get('fermer')->isClicked() )
+            {
+			    $menu[]   = Menu::rallonge_modifier( $rallonge );
+			    $menu[]   = Menu::rallonge_envoyer( $rallonge );
                 return $this->render('rallonge/fermer.html.twig',
-                    [
+				[
                     'rallonge'  => $rallonge,
                     'projet'    => $projet,
                     'session'   => $session,
                     'erreurs'   => $erreurs,
-                     ]);
-
-            }
-
+                    'menu'      => $menu,
+				 ]);
+			}
+		}
         return $this->render('rallonge/modifier.html.twig',
-            [
+		[
             'rallonge'  => $rallonge,
             'projet'    => $projet,
             'session'   => $session,
             'edit_form' => $editForm->createView(),
             'erreurs'   => $erreurs,
-            ]);
+		]);
     }
 
      /**

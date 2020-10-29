@@ -1,5 +1,5 @@
 {% extends 'default/base.html.twig' %}
-
+{% import "default/macros.html.twig" as gramcmacros %}
 {% block body %}
 
 <section>
@@ -20,8 +20,9 @@
         {% endfor %}
         </div>
     {% endif %}
-
-    <a class="lien_actif" href="{{ path( 'rallonge_consulter', { 'id': rallonge.idRallonge } )}}" title="Retourner à la rallonge">Retourner</a>
+    
+    {{ gramcmacros.menu(menu) }}
+    <nav><ul><li><a class="lien_actif" href="{{ path( 'rallonge_consulter', { 'id': rallonge.idRallonge } )}}" title="Retourner à la rallonge">Vers la rallonge</a></li></ul></nav>
 
 </section>
 
