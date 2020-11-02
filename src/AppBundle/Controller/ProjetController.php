@@ -1217,6 +1217,8 @@ class ProjetController extends Controller
      */
     public function nouveauAction(Request $request, $type)
     {
+		$em = $this->getDoctrine()->getManager();
+
 		// Si changement d'état de la session alors que je suis connecté !
 		// + contournement d'un problème lié à Doctrine
         AppBundle::getSession()->remove('SessionCourante'); // remove cache
@@ -1229,7 +1231,17 @@ class ProjetController extends Controller
             Functions::createException(__METHOD__ . ":" . __LINE__ . " impossible de créer un nouveau projet parce que $raison");
          }
 
-        $session    = Functions::getSessionCourante();
+		$mois = GramcDate::get()->format('m');
+		if ($type==2 && $mois<12)
+		{
+			// TODO - Patch entièrement AFFREUX à corriger d'URGENCE
+			$repos   = $em -> getRepository(Session::class);
+			$session = $repos -> findOneBy( [ 'idSession' => '20B' ]);
+		}
+		else
+		{
+			$session    = Functions::getSessionCourante();
+		}
 
 		$prefixes = AppBundle::getParameter('prj_prefix');
 		if ( !isset ($prefixes[$type]) || $prefixes[$type]==="" )
