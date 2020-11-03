@@ -445,8 +445,8 @@ class Menu
         // manu, 11 juin 2019: tout le monde peut créer un projet test. Vraiment ???
         //elseif( ! self::peut_creer_projets() )
         //    $menu['raison'] = "Vous n'avez pas le droit de créer un projet test, peut-être faut-il mettre à jour votre profil ?";
-        elseif( $etat_session == Etat::EDITION_DEMANDE )
-            $menu['raison'] = "Il n'est pas possible de créer un projet test en période d'attribution";
+//        elseif( $etat_session == Etat::EDITION_DEMANDE )
+//            $menu['raison'] = "Il n'est pas possible de créer un projet test en période d'attribution";
         else
             {
             $menu['commentaire'] = "Créer un projet test: 5000h max, uniquement pour faire des essais et avoir une idée du nombre d'heures dont vous avez besoin.";

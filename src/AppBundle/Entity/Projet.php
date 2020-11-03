@@ -146,7 +146,19 @@ class Projet
         $this->rapportActivite = new \Doctrine\Common\Collections\ArrayCollection();
         $this->etatProjet   = Etat::EDITION_DEMANDE;
         $this->typeProjet   = $type;
-        $annee              = Functions::getSessionCourante()->getAnneeSession();
+        
+        // Patch absolument affreux - en relation avec le patch ProjetController L1237
+        //$annee              = Functions::getSessionCourante()->getAnneeSession();
+
+		$mois = GramcDate::get()->format('m');
+        if ($type==2  && $mois < 12)
+        {
+			$annee = 20;
+		}
+		else
+		{
+			$annee = 21;
+		}
         $this->idProjet     = NextProjetId::NextProjetId($annee, $type);
         //$this->idProjet     = AppBundle::getRepository(Projet::class)->nextId( Functions::getSessionCourante(), $type );
     }
