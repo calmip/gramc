@@ -529,22 +529,23 @@ class Projet
 		}
         $etat_version   =   $version->getEtatVersion();
 
-        if ( $etat_version ==  Etat::EDITION_DEMANDE       ) return 'EDITION';
-        elseif ( $etat_version ==  Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
-        elseif ( $etat_version ==  Etat::EDITION_TEST      ) return 'EDITION';
-        elseif ( $etat_version ==  Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
-        elseif ( $etat_version ==  Etat::ACTIF || $etat_version == Etat::ACTIF_TEST )
+        if     ( $etat_version == Etat::EDITION_DEMANDE   ) return 'EDITION';
+        elseif ( $etat_version == Etat::EDITION_EXPERTISE ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::EDITION_TEST      ) return 'EDITION';
+        elseif ( $etat_version == Etat::EXPERTISE_TEST    ) return 'EXPERTISE';
+        elseif ( $etat_version == Etat::ACTIF             )
         {
 			// Permet d'afficher un signe particulier pour les projets non renouvelés en période de demande pour une session A
             $session = Functions::getSessionCourante();
-            if( $session->getEtatSession() == Etat::EDITION_DEMANDE &&  $session->getLibelleTypeSession() === 'A' )
+            if ( $session->getEtatSession() == Etat::EDITION_DEMANDE && $session->getLibelleTypeSession() === 'A' )
                 return 'NONRENOUVELE'; // Non renouvelé
             else
                 return 'ACCEPTE'; // Projet ou rallonge accepté par le comité d'attribution
         }
-        elseif ( $etat_version ==  Etat::EN_ATTENTE        ) return 'ACCEPTE';
-        elseif ( $etat_version ==  Etat::TERMINE           ) return 'STANDBY';
-        elseif ($veract == null                            ) return 'STANDBY';
+        elseif ( $etat_version == Etat::ACTIF_TEST        ) return 'ACCEPTE'; // projet-test non renouvelable
+        elseif ( $etat_version == Etat::EN_ATTENTE        ) return 'ACCEPTE';
+        elseif ( $etat_version == Etat::TERMINE           ) return 'STANDBY';
+        elseif ( $veract       == null                    ) return 'STANDBY';
 	}
 
      /**

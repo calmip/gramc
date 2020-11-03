@@ -448,11 +448,10 @@ class Menu
 //        elseif( $etat_session == Etat::EDITION_DEMANDE )
 //            $menu['raison'] = "Il n'est pas possible de créer un projet test en période d'attribution";
         else
-            {
+		{
             $menu['commentaire'] = "Créer un projet test: 5000h max, uniquement pour faire des essais et avoir une idée du nombre d'heures dont vous avez besoin.";
             $menu['ok'] = true;
-            }
-
+		}
         return $menu;
     }
 
