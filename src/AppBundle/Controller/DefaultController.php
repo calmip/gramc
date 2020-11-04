@@ -53,16 +53,16 @@ class DefaultController extends Controller
      * @Route("/symfony", name="homepage")
      * @Security("has_role('ROLE_ADMIN')")
      */
-    public function indexAction(Request $request)
-    {
+    //public function indexAction(Request $request)
+    //{
 
-    return $this->render('default/base_test.html.twig');
+    //return $this->render('default/base_test.html.twig');
 
         // replace this example code with whatever you need
-        return $this->render('default/index.html.twig', [
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-        ]);
-    }
+        //return $this->render('default/index.html.twig', [
+        //    'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+        //]);
+    //}
 
     /**
      * @Route("/test", name="test")

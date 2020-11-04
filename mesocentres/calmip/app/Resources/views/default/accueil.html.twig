@@ -16,7 +16,7 @@
 <div class="message info"><h2>Informations</h2>
 
 {{ block ('message') }}
-<p>En attendant, <strong>vous pouvez demander un supplément de ressources</strong>
+<p><strong>Vous pouvez demander un supplément de ressources</strong>
  pour votre projet en écrivant à <a href="mailto:{{ mailadmin }}">{{ mailadmin }}</a><br />
 
 {% if projet_test %}
@@ -28,7 +28,12 @@ Si vous ne connaissez pas encore {{mesoc}}, vous pouvez demander un <strong>proj
 </div>
 
 {% else %}
-
+{% if session.etatsession == 2 %}
+<div class="message warning"><h2>Session d'attribution en cours</h2>
+<p>La session {{ session }} d'attribution de ressources sur le Mésocentre {{ mesoc }} est ouverte, 
+vous avez jusqu'au <strong>{{ session.datefinsession | date('d-m-y') }}</strong> pour saisir vos demandes.</p>
+</div>
+{% endif %}
 <div class="message info"><h2>Démarrage</h2>
 Merci de cliquer sur connexion en haut à droite de l'écran pour démarrer.<br />
 Vous devrez utiliser les identifiants de votre établissement d'appartenance.

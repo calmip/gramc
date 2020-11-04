@@ -8,10 +8,10 @@
 {% elseif  init.getLibelleEtatSessionCourante.getIdEtat ==  'EDITION_DEMANDE' %}
             
                 {% if init.cette_session()['jours'] == 0 %}
-                    vous avez encore <strong>JUSQU'A CE SOIR</strong> pour envoyer votre projet pour expertise
+                    Vous avez encore <strong>JUSQU'A CE SOIR</strong> pour envoyer votre projet pour expertise
                     
                 {% elseif init.cette_session()['jours'] > 0 %}
-                    vous avez jusqu'au <strong>{{ init.cette_session()['fin_sess'] }}  </strong> pour envoyer votre projet pour expertise
+                    Vous avez jusqu'au <strong>{{ init.cette_session()['fin_sess'] }}  </strong> pour envoyer votre projet pour expertise
                     
                 {% else %}
                     ATTENTION, la date de fin de session est dépassée

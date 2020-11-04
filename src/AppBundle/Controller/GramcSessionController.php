@@ -154,7 +154,9 @@ class GramcSessionController extends Controller
 		$menu[] = Menu::administrateur();
 		$menu[] = Menu::president();
 		$menu[] = Menu::aide();
-        return $this->render('default/accueil.html.twig', ['menu' => $menu, 'projet_test' => Menu::nouveau_projet_test()['ok'] ]);
+		
+		$session= Functions::getSessionCourante();
+        return $this->render('default/accueil.html.twig', ['menu' => $menu, 'projet_test' => Menu::nouveau_projet_test()['ok'], 'session' => $session ]);
 	}
 
     /**
