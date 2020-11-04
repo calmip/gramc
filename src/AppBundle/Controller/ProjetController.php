@@ -1223,7 +1223,7 @@ class ProjetController extends Controller
 		// + contournement d'un problème lié à Doctrine
         AppBundle::getSession()->remove('SessionCourante'); // remove cache
 
-        // NOTE - Pour ce controlleur, on identifie les types par un chiffre (voir Entity/Projet.php)
+        // NOTE - Pour ce controleur, on identifie les types par un chiffre (voir Entity/Projet.php)
         $m = Menu::nouveau_projet("$type");
         if ($m == null || $m['ok']==false)
         {
@@ -1281,17 +1281,12 @@ class ProjetController extends Controller
         $collaborateurVersion   =   new CollaborateurVersion( $moi );
         $collaborateurVersion->setVersion( $version );
         $collaborateurVersion->setResponsable( true );
+		$projet->setVersionDerniere( $version );     
 
-        $em         = AppBundle::getManager();
         $em->persist( $projet );
         $em->persist( $version );
         $em->persist( $collaborateurVersion );
         $em->flush();
-
-        if( $version instanceof Version )
-            $projet->setVersionDerniere( $version );
-        else
-            return new Response( Functions::show( $version ) );
 
         return $this->redirectToRoute('modifier_version',[ 'id' => $version->getIdVersion() ] );
 
@@ -1443,16 +1438,16 @@ class ProjetController extends Controller
      */
     public function accueilAction()
     {
-	    $individu       =   AppBundle::getUser();
-	    $id_individu    =   $individu->getIdIndividu();
+	    $individu    = AppBundle::getUser();
+	    $id_individu = $individu->getIdIndividu();
 
-	    $projetRepository       =   AppBundle::getRepository(Projet::class);
+	    $projetRepository    = AppBundle::getRepository(Projet::class);
 
-	    $list_projets_collab =   $projetRepository-> getProjetsCollab($id_individu, false, true);
-	    $list_projets_resp   =   $projetRepository-> getProjetsCollab($id_individu, true, false);
+	    $list_projets_collab = $projetRepository-> getProjetsCollab($id_individu, false, true);
+	    $list_projets_resp   = $projetRepository-> getProjetsCollab($id_individu, true, false);
 
-	    $projets_term       =   $projetRepository-> get_projets_etat( $id_individu, 'TERMINE' );
-	    $projets_standby = []; // todo -> Virer définitivement ce code, les projets en standby sont maintenant affichés avec les projets actifs, pas avec les projets terminés
+	    $projets_term        = $projetRepository-> get_projets_etat( $id_individu, 'TERMINE' );
+	    $projets_standby     = []; // todo -> Virer définitivement ce code, les projets en standby sont maintenant affichés avec les projets actifs, pas avec les projets terminés
 
 	    $session_actuelle       =   Functions::getSessionCourante();
 
@@ -1483,13 +1478,14 @@ class ProjetController extends Controller
 	            $rallonges  =  $versionActive ->getRallonge();
 	        else
 	            $rallonges  = null;
+
 	        $projets_collab[]   =
-	            [
-	            'projet'    =>  $projet,
-	            'conso'     =>  $projet->getConsoCalculP(),
-	            'rallonges' =>  $rallonges,
-	            'cpt_rall'  =>  count($rallonges),
-	            ];
+            [
+	            'projet'    => $projet,
+	            'conso'     => $projet->getConsoCalculP(),
+	            'rallonges' => $rallonges,
+	            'cpt_rall'  => count($rallonges),
+            ];
 		}
 
 		$prefixes = AppBundle::getParameter('prj_prefix');
@@ -1499,14 +1495,13 @@ class ProjetController extends Controller
 		}
 
 	    return $this->render('projet/demandeur.html.twig',
-	            [
-	            'projets_collab'  => $projets_collab,
-	            'projets_resp'    => $projets_resp,
-	            'projets_term'    => $projets_term,
-	            'projets_standby' => $projets_standby,
-	            'menu'            =>  $menu,
-	            ]
-	            );
+		[
+            'projets_collab'  => $projets_collab,
+            'projets_resp'    => $projets_resp,
+            'projets_term'    => $projets_term,
+            'projets_standby' => $projets_standby,
+            'menu'            =>  $menu,
+		]);
     }
 
     ///**
