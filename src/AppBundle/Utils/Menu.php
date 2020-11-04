@@ -909,20 +909,20 @@ class Menu
 
     public static function modifier_collaborateurs( Version $version )
     {
-        $menu['name']   =   'modifier_collaborateurs';
-        $menu['param']  =   $version->getIdVersion();
-        $menu['lien']           =   "Collaborateurs";
+        $menu['name']  = 'avant_modifier_collaborateurs';
+        $menu['param'] = $version->getIdVersion();
+        $menu['lien']  = "Collaborateurs";
 
         if( AppBundle::isGranted('ROLE_ADMIN') )
         {
-            $menu['commentaire']    =   "Modifier les collaborateurs en tant qu'administrateur";
-            $menu['ok']             = true;
+            $menu['commentaire'] = "Modifier les collaborateurs en tant qu'administrateur";
+            $menu['ok']          = true;
         }
         elseif( ! $version->isResponsable() )
         {
-        	$menu['ok']     = false;
-        	$menu['commentaire']     = 'Bouton inactif';
-            $menu['raison'] = "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
+        	$menu['ok']          = false;
+        	$menu['commentaire'] = 'Bouton inactif';
+            $menu['raison']      = "Seul le responsable du projet peut ajouter ou supprimer des collaborateurs";
 		}
 		else
 		{

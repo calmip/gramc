@@ -1,0 +1,24 @@
+{% extends 'default/base.html.twig' %}
+
+{% block body %}
+
+<section>
+    <div class="message warning">
+        <h2>Modification de la liste des collaborateurs</h2>
+        <p class="centrage"><em>A faire notamment pour demander des ouvertures de comptes</em></p>
+        <p>Le projet {{ version.projet }} est <strong>en cours de renouvellement</strong>.<br>
+           Souhaitez-vous:
+           <ul>
+               <li><a href="{{ path( 'modifier_collaborateurs', { 'id': veract } ) }}">Modifier la <strong>version active</strong></a> (ouverture du compte tout de suite) ? </li>
+               <li><a href="{{ path( 'modifier_collaborateurs', { 'id': version } ) }}">Modifier la <strong>version en cours d'édition</strong></a> (ouverture du compte lors de l'attribution d'heures de calcul ?)</li>
+           </ul>
+        </p>
+        <strong>NOTE</strong> - Si vous répondez oui aux deux questions vous devrez entrer <strong>deux fois</strong> votre demande
+	</div>
+	
+	<div class="message warning">
+		<p class="centrage">Dans tous les cas n'oubliez pas de <strong>cocher la case Login</strong> si vous demandez l'ouverture d'un compte sur le calculateur !</p>
+    </div>
+</section>
+
+{% endblock body %}

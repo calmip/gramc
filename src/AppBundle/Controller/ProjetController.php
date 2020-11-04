@@ -1697,26 +1697,26 @@ class ProjetController extends Controller
 
 		$menu = [];
 	    if( AppBundle::isGranted('ROLE_ADMIN')  ) $menu[] = Menu::rallonge_creation( $projet );
-	    $menu[] =   Menu::changer_responsable($version);
-	    $menu[] =   Menu::renouveler_version($version);
-	    $menu[] =   Menu::modifier_version( $version );
-	    $menu[] =   Menu::envoyer_expert( $version );
-	    $menu[] =   Menu::modifier_collaborateurs( $version );
-		$menu[] =   Menu::donnees( $version );
-	    $menu[] =   Menu::telechargement_fiche( $version );
-	    $menu[] =   Menu::televersement_fiche( $version );
+	    $menu[] = Menu::changer_responsable($version);
+	    $menu[] = Menu::renouveler_version($version);
+	    $menu[] = Menu::modifier_version( $version );
+	    $menu[] = Menu::envoyer_expert( $version );
+	    $menu[] = Menu::modifier_collaborateurs( $version );
+		$menu[] = Menu::donnees( $version );
+	    $menu[] = Menu::telechargement_fiche( $version );
+	    $menu[] = Menu::televersement_fiche( $version );
 
 	    $etat_version = $version->getEtatVersion();
 	    if( ($etat_version == Etat::ACTIF || $etat_version == Etat::TERMINE ) && ! $version->hasRapport( $version->getAnneeSession() ) )
 	    {
-		    $menu[] =   Menu::telecharger_modele_rapport_dactivite( $version );
-	        $menu[] =   Menu::televerser_rapport_annee( $version );
+		    $menu[] = Menu::telecharger_modele_rapport_dactivite( $version );
+	        $menu[] = Menu::televerser_rapport_annee( $version );
 		}
 		
-	    $menu[] =   Menu::gerer_publications( $projet );
-	    $img_expose_1   =   Functions::image_parameters('img_expose_1', $version);
-	    $img_expose_2   =   Functions::image_parameters('img_expose_2', $version);
-	    $img_expose_3   =   Functions::image_parameters('img_expose_3', $version);
+	    $menu[] = Menu::gerer_publications( $projet );
+	    $img_expose_1 = Functions::image_parameters('img_expose_1', $version);
+	    $img_expose_2 = Functions::image_parameters('img_expose_2', $version);
+	    $img_expose_3 = Functions::image_parameters('img_expose_3', $version);
 
 	    /*
 	    if( $img_expose_1 == null )
@@ -1725,9 +1725,9 @@ class ProjetController extends Controller
 	        Functions::debugMessage(__METHOD__.':'.__LINE__ . " img_expose1 non null");
 	    */
 
-	    $img_justif_renou_1 =   Functions::image_parameters('img_justif_renou_1', $version);
-	    $img_justif_renou_2 =   Functions::image_parameters('img_justif_renou_2', $version);
-	    $img_justif_renou_3 =   Functions::image_parameters('img_justif_renou_3', $version);
+	    $img_justif_renou_1 = Functions::image_parameters('img_justif_renou_1', $version);
+	    $img_justif_renou_2 = Functions::image_parameters('img_justif_renou_2', $version);
+	    $img_justif_renou_3 = Functions::image_parameters('img_justif_renou_3', $version);
 
 	    $toomuch = false;
 	    if ($session->getLibelleTypeSession()=='B' && ! $version->isNouvelle()) {
@@ -1738,21 +1738,20 @@ class ProjetController extends Controller
 	    }
 
 	    return $this->render('projet/consulter_projet_sess.html.twig',
-	            [
-	            'projet' => $projet,
-	            'version_form'   => $session_form->createView(),
-	            'version'   =>  $version,
-	            'session'   =>  $session,
-	            'menu'      =>  $menu,
-	            'img_expose_1'  =>  $img_expose_1,
-	            'img_expose_2'  =>  $img_expose_2,
-	            'img_expose_3'  =>  $img_expose_3,
-	            'img_justif_renou_1'    =>  $img_justif_renou_1,
-	            'img_justif_renou_2'    =>  $img_justif_renou_2,
-	            'img_justif_renou_3'    =>  $img_justif_renou_3,
-	            'toomuch'               => $toomuch
-	            ]
-	            );
+		[
+            'projet'        => $projet,
+            'version_form'  => $session_form->createView(),
+            'version'       => $version,
+            'session'       => $session,
+            'menu'          => $menu,
+            'img_expose_1'  => $img_expose_1,
+            'img_expose_2'  => $img_expose_2,
+            'img_expose_3'  => $img_expose_3,
+            'img_justif_renou_1' => $img_justif_renou_1,
+            'img_justif_renou_2' => $img_justif_renou_2,
+            'img_justif_renou_3' => $img_justif_renou_3,
+            'toomuch'            => $toomuch
+		]);
 	}
 
 	// Consulter les projets de type 2 (projets test)
