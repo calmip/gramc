@@ -1,3 +1,9 @@
+v 2.6.3
+------
+    - Correction de Bugs (création des projets tests en fin d'année)
+    - Possibilité d'ouvrir un compte sur plusieurs versions de projets (lorsqu'un projet est en édition)
+    - API = Possibilité de modifier le compte d'un utilisateur sur un projet en attente, pas seulement actif
+
 v 2.6.0
 -------
     - Ajout de la notion de rattachement

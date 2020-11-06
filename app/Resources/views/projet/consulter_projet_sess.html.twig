@@ -245,7 +245,7 @@ Le laboratoire associé au projet est le laboratoire du responsable
     {% for user in version.CollaborateurVersion %}
     <tr>
         <td>{% if( user.login == true) %}Oui{% else %}Non{% endif %}</td>
-		{% if version.etat==5 or version.etat == 23 %}
+		{% if version.etat==5 or version.etat == 4 %}
         <td>{% if (user.login == true) %}
                {% if user.loginname==null %}
                   <img src="{{ asset('icones/attention16.png') }}" alt="Compte non encore créé" title="compte non encore créé" />

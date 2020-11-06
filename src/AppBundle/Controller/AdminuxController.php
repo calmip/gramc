@@ -164,7 +164,10 @@ class AdminuxController extends Controller
 
 	    $versions = $projet->getVersion();
 	    foreach( $versions as $version )
-	        if( $version->getEtatVersion() == Etat::ACTIF || $version->getEtatVersion() == Etat::ACTIF_TEST)
+	        if( $version->getEtatVersion() == Etat::ACTIF             || 
+	            $version->getEtatVersion() == Etat::ACTIF_TEST        ||
+	            $version->getEtatVersion() == Etat::EN_ATTENTE        
+	          )
 			{
 	            foreach( $version->getCollaborateurVersion() as $collaborateurVersion )
 				{
