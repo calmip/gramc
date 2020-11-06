@@ -1015,6 +1015,47 @@ class VersionModifController extends Controller
     }
 
     /**
+     * Avant de modifier les collaborateurs d'une version.
+     * On demande de quelle version il s'agit !
+     *
+     * @Route("/{id}/avant_collaborateurs", name="avant_modifier_collaborateurs")
+     * @Method({"GET", "POST"})
+     * @Security("has_role('ROLE_DEMANDEUR')")
+     */
+	public function avantModifierCollaborateursAction(Version $version, Request $request)
+	{
+		/* Si le bouton modifier est actif, il faut demander de quelle version il s'agit ! */
+        $modifier_version_menu = Menu::modifier_version( $version );
+		if ($modifier_version_menu['ok'] == true)
+		{
+			$projet = $version->getProjet();
+			$veract = $projet->getVersionActive();
+			
+			// Si pas de version active (nouveau projet) = pas de problème on redirige sur l'édition en cours
+			if ($veract == null)
+			{
+				return $this->redirectToRoute('modifier_version',['id' => $version, '_fragment' => 'liste_des_collaborateurs'] );
+			}
+			
+			// Si version active on demande de préciser quelle version !
+			else
+			{
+		        return $this->render('version/avant_modifier_collaborateurs.html.twig',
+	            [
+		            'veract'  => $veract,
+		            'version' => $version
+	            ]);
+			}
+		}
+		
+		// bouton modifier_version inactif: on modifie les collabs de la version demandée !
+		else
+		{
+			return $this->redirectToRoute('modifier_collaborateurs', ['id' => $version]);
+		}
+	}
+	
+    /**
      * Modifier les collaborateurs d'une version.
      *
      * @Route("/{id}/collaborateurs", name="modifier_collaborateurs")
